@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { forceSimulation } from 'd3-force';
+import { forceSimulation, forceLink, forceManyBody, forceCollide } from 'd3-force';
 import { JSDOM } from 'jsdom';
 import { createOrderedGraphLayout, createOrderedOrbitLayout, orderedNodeRadius } from '../src/features/knowledge/orderedGraphLayout.js';
 import { orderedTimeForks } from './fixtures/orderedTimeForks.mjs';
@@ -14,16 +14,21 @@ function layout(graph, factory = createOrderedOrbitLayout) {
     return { orbit, structural, at: id => graph.nodes.find(node => node.id === id) };
 }
 
-test('ordered skeleton ignores global forces and a satellite receives only its owning anchor spring', () => {
+function localSimulation(graph, orbit, { alphaTarget = 0 } = {}) {
+    return forceSimulation(graph.nodes).stop().velocityDecay(0.32).alphaDecay(0.018).alphaTarget(alphaTarget)
+        .force('local', alpha => orbit.tick(alpha));
+}
+
+test('ordered skeleton ignores global forces while an Event accelerates towards its own Time', () => {
     const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
     assert.equal(event.orderedOrbit.anchorId, time.id);
     orbit.move(event, time.x, time.y - 112);
     time.x += 100; time.y += 50; time.vx = 1e6; time.vy = -1e6;
-    event.x += 60; event.vx = -1e6; event.vy = 1e6;
+    event.x += 60; event.vx = event.vy = 0;
     orbit.tick(1);
     assert.equal(time.x, time.orderedTargetX); assert.equal(time.y, time.orderedTargetY);
     assert.equal(time.vx, 0); assert.equal(time.vy, 0);
-    assert.ok(Math.abs(event.vx + 7.2) < 1e-9); assert.ok(Math.abs(event.vy) < 1e-9);
+    assert.ok(event.vx < 0, 'the owning Time pulls an Event displaced to its right back toward its orbit');
 });
 
 test('dense remote branches and cross links do not pull an event away from its nearest anchor', () => {
@@ -40,23 +45,26 @@ test('dense remote branches and cross links do not pull an event away from its n
     assert.equal(at('dense-20').orderedOrbit.anchorId, 'fork-november');
 });
 
-test('ordinary satellites animate with local inertia, settle near their owner and avoid only their own group', () => {
+test('ordinary satellites move through physical coordinates, stay near their owner and avoid their own group', () => {
     const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
     const start = { x: event.x, y: event.y }, anchor = { x: time.x, y: time.y };
-    const simulation = forceSimulation(graph.nodes).stop().velocityDecay(0.32).alphaDecay(0.018).force('local', alpha => orbit.tick(alpha));
+    const simulation = localSimulation(graph, orbit);
     simulation.tick(8);
     assert.ok(Math.hypot(event.x - start.x, event.y - start.y) > 4, 'expansion has visible motion rather than starting at an exact frozen slot');
     const speed = Math.hypot(event.vx, event.vy); assert.ok(speed > 0.1);
     simulation.tick(340);
     assert.deepEqual({ x: time.x, y: time.y }, anchor);
-    assert.ok(Math.abs(Math.hypot(event.x - time.x, event.y - time.y) - 112) < 1);
+    assert.ok(Math.hypot(event.x - time.x, event.y - time.y) < 190, 'the owner remains a bounded physical tether');
     assert.equal(event.fx, null); assert.equal(event.fy, null);
     graph.nodes.push({ id: 'neighbor', label: 'Event' });
     graph.relationships.push({ id: 'neighbor-at', source: 'neighbor', target: time.id, type: 'AT' });
     orbit.rebuild(graph.nodes, graph.relationships);
     orbit.move(event, time.x, time.y - 112); orbit.move(at('neighbor'), time.x + 1, time.y - 112);
+    const nearBefore = Math.hypot(event.x - at('neighbor').x, event.y - at('neighbor').y);
+    assert.ok(nearBefore < 2);
     simulation.nodes(graph.nodes).alpha(1).tick(340);
-    assert.ok(Math.hypot(event.x - at('neighbor').x, event.y - at('neighbor').y) > 20, 'local collision is active even when manual target offsets overlap');
+    assert.ok(Math.hypot(event.x - at('neighbor').x, event.y - at('neighbor').y) > 40,
+        'same-owner collision must physically separate two Events with overlapping targets');
     simulation.stop();
 });
 
@@ -76,7 +84,7 @@ test('new orbit slots avoid neighboring skeleton nodes and their caption band wi
     simulation.tick(340); clear(); simulation.stop();
 });
 
-test('a fresh satellite avoids the Time spine while a saved near-rail slot keeps its layout and moves visibly clear', () => {
+test('a fresh satellite avoids the Time spine while an old near-rail slot clears through real physics', () => {
     const graphAtLowerAnchor = () => {
         const graph = orderedTimeForks();
         createOrderedGraphLayout().rebuild(graph.nodes, { relationships: graph.relationships, completeParentIds: graph.completeParentIds });
@@ -94,16 +102,18 @@ test('a fresh satellite avoids the Time spine while a saved near-rail slot keeps
     saved.event.y = saved.event.previousY = 8;
     saved.event.orderedOrbit = { anchorId: saved.anchor.id, slot: 0 };
     orbit.rebuild(saved.graph.nodes, saved.graph.relationships, { restore: true });
-    const baseline = structuredClone(saved.graph.nodes);
+    const savedOrbit = structuredClone(saved.event.orderedOrbit), fixedTime = { x: saved.anchor.x, y: saved.anchor.y };
     assert.equal(saved.event.orderedOrbit.slot, 0, 'an existing canvas retains its saved orbit choice');
+    const simulation = localSimulation(saved.graph, orbit, { alphaTarget: 0.08 });
     for (let frame = 0; frame < 360; frame++) {
-        orbit.advanceAmbient(1000 / 60, { scale: 0.74 });
+        simulation.tick();
         if (frame >= 60 && frame % 30 === 0) {
-            const point = orbit.renderPoint(saved.event, 0);
-            assert.ok(Math.abs(point.y) > 21, 'the visible Event circle stays clear of the Time spine after settling');
+            assert.ok(Math.abs(saved.event.y) > 21, 'the physical Event circle stays clear of the Time spine');
         }
     }
-    assert.deepEqual(saved.graph.nodes, baseline, 'rail avoidance remains display-only for saved canvas positions');
+    simulation.stop();
+    assert.deepEqual(saved.event.orderedOrbit, savedOrbit, 'physics preserves the saved orbit choice');
+    assert.deepEqual({ x: saved.anchor.x, y: saved.anchor.y }, fixedTime, 'physics leaves the ordered axis fixed');
 });
 
 test('new slots also avoid already assigned foreign orbits without introducing cross-owner attraction', () => {
@@ -145,19 +155,50 @@ test('source and structural edges never propagate ownership; ordinary business d
     const { orbit, at } = layout(graph);
     assert.equal(at('child').orderedOrbit.anchorId, 'fork-afternoon');
     assert.equal(orbit.controlled(at('chunk')), false); assert.equal(orbit.controlled(at('source-only')), false);
+    assert.equal(orbit.physicalLink(at('fork-afternoon'), at('chunk')), true,
+        'a source Chunk must still receive a real physical spring from its Time');
+    assert.equal(orbit.physicalLink(at('chunk'), at('source-only')), true,
+        'a provenance edge must be able to pull its Chunk and knowledge endpoint together');
+    assert.equal(orbit.physicalLink(at('fork-event'), at('fork-afternoon')), true,
+        'the owning Time physically tethers its Event');
+    assert.equal(orbit.physicalLink(at('fork-event'), at('fork-november')), false,
+        'a different Time cannot pull this Event off its owner');
     graph.nodes = graph.nodes.filter(node => node.id !== 'fork-afternoon'); orbit.rebuild(graph.nodes, graph.relationships);
     assert.equal(at('fork-event').orderedOrbit, undefined); assert.equal(at('child').orderedOrbit, undefined);
 });
 
-test('dragging an anchor carries only its satellites and manual orbit offsets survive rebuild and restore', () => {
+test('moving a Time anchor pulls its Event elastically rather than teleporting a rigid group', () => {
     const graph = orderedTimeForks(), { orbit, structural, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
+    const controlGraph = orderedTimeForks(), control = layout(controlGraph);
     const old = { x: event.x, y: event.y }, other = { x: at('fork-noon').x, y: at('fork-noon').y };
-    structural.move(time, time.x + 80, time.y - 20); orbit.sync();
-    assert.equal(event.x, old.x + 80); assert.equal(event.y, old.y - 20);
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
+    const controlSimulation = localSimulation(controlGraph, control.orbit, { alphaTarget: 0.08 });
+    simulation.tick(180); controlSimulation.tick(180);
+    const before = { x: event.x, y: event.y }, oldTime = { x: time.x, y: time.y };
+    assert.deepEqual(before, { x: control.at('fork-event').x, y: control.at('fork-event').y });
+    structural.move(time, time.x + 120, time.y); orbit.sync();
+    assert.equal(time.x - oldTime.x, 120);
+    assert.deepEqual({ x: event.x, y: event.y }, before,
+        'moving Time must not rigidly translate its Event in the same frame');
+    simulation.tick(80); controlSimulation.tick(80);
+    const causalShift = event.x - control.at('fork-event').x;
+    assert.ok(causalShift > 20 && causalShift < 120,
+        `the owner spring should produce a delayed, bounded response relative to an unmoved control (${causalShift.toFixed(1)}px)`);
+    assert.ok(Math.hypot(event.x - time.x, event.y - time.y) < 190, 'the Event remains locally tethered');
+    simulation.tick(240); controlSimulation.tick(240);
+    assert.ok(event.x - control.at('fork-event').x > causalShift + 15,
+        'the Event continues to respond to the displaced owner across later physics frames');
+    assert.deepEqual({ x: time.x, y: time.y }, { x: oldTime.x + 120, y: oldTime.y });
     assert.deepEqual({ x: at('fork-noon').x, y: at('fork-noon').y }, other);
+    simulation.stop(); controlSimulation.stop();
+    assert.ok(Math.hypot(event.x - old.x, event.y - old.y) > 20);
+});
+
+test('manual Event offsets survive rebuild and restore without reassigning their owner', () => {
+    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
     orbit.move(event, time.x + 120, time.y + 60); const saved = structuredClone(event.orderedOrbit);
     orbit.rebuild(graph.nodes, graph.relationships, { restore: true }); orbit.tick(1);
-    assert.deepEqual(event.orderedOrbit, saved); assert.equal(event.vx, 0); assert.equal(event.vy, 0);
+    assert.deepEqual(event.orderedOrbit, saved);
     event.fx = event.x; event.fy = event.y;
     orbit.rebuild(graph.nodes, graph.relationships, { restore: true });
     assert.equal(event.fx, null); assert.equal(event.fy, null, 'restored legacy focus pins cannot override the owning anchor');
@@ -165,79 +206,146 @@ test('dragging an anchor carries only its satellites and manual orbit offsets su
     assert.equal(event.orderedOrbit.offset, undefined); assert.notEqual(event.y, time.y + 60);
 });
 
-test('owned knowledge keeps moving physically after the graph settles while Time and saved coordinates stay fixed', () => {
+test('owned knowledge has dynamic physical coordinates while Time stays fixed', () => {
     const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
-    const simulation = forceSimulation(graph.nodes).stop().velocityDecay(0.32).alphaDecay(0.018).force('local', alpha => orbit.tick(alpha));
-    simulation.tick(600); simulation.stop();
-    assert.equal(orbit.hasAmbientMotion(), true);
-    const saved = structuredClone(graph.nodes), initial = orbit.renderPoint(event, 0), rendered = [initial];
-    for (let frame = 1; frame <= 360; frame++) {
-        orbit.advanceAmbient(1000 / 60, { scale: 1 });
-        if (frame % 30 === 0) {
-            const point = orbit.renderPoint(event, 0);
-            rendered.push(point);
-            assert.ok(Math.hypot(point.x - time.x, point.y - time.y) < 180, 'the free event remains near its own Time node');
-            assert.deepEqual(orbit.renderPoint(time, 0), { x: time.x, y: time.y }, 'Time never joins the ambient physics');
-        }
-    }
-    assert.ok(rendered.some(point => Math.hypot(point.x - initial.x, point.y - initial.y) > 12), 'a settled event must visibly move across the canvas, beyond a tiny decorative wobble');
-    assert.deepEqual(graph.nodes, saved, 'ongoing physical motion never changes persisted positions, velocities, pins or orbit offsets');
-});
-
-test('ambient physics accepts interpolated points and honours pause, reduced-motion and dragging', () => {
-    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
-    for (let frame = 0; frame < 150; frame++) orbit.advanceAmbient(1000 / 60, { scale: 1 });
-    const point = orbit.renderPoint(event, 0), source = { ...event, x: event.x + 30, y: event.y - 40 };
-    assert.deepEqual(orbit.renderPoint(source, 0), { x: point.x + 30, y: point.y - 40 });
-    for (const options of [{ active: false }, { held: true }]) assert.deepEqual(orbit.renderPoint(event, 0, options), { x: event.x, y: event.y });
-    assert.deepEqual(orbit.renderPoint(time, 0), { x: time.x, y: time.y }, 'ordered skeleton never moves');
-    assert.deepEqual(orbit.renderPoint({ id: 'missing', x: 1, y: 2 }, 0), { x: 1, y: 2 });
-    assert.deepEqual(orbit.renderPoint(event, 0), point, 'without an animation step, pause keeps the event at its last visible position');
-    graph.nodes.push({ id: 'source', label: 'Chunk', x: 5, y: 6 });
-    graph.relationships.push({ source: 'source', target: event.id, type: 'EXTRACTED_FROM' });
-    orbit.rebuild(graph.nodes, graph.relationships);
-    assert.deepEqual(orbit.renderPoint(at('source'), 0), { x: 5, y: 6 });
-    assert.equal(createOrderedOrbitLayout().hasAmbientMotion(), false);
+    const originalTime = { x: time.x, y: time.y }, initial = { x: event.x, y: event.y };
+    assert.equal(orbit.hasDynamicMotion(), true);
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
+    simulation.tick(8);
+    assert.ok(Math.hypot(event.x - initial.x, event.y - initial.y) > 4,
+        'movement must change the real D3 position rather than adding a draw-only offset');
+    simulation.tick(350);
+    assert.deepEqual({ x: time.x, y: time.y }, originalTime);
+    assert.ok(Math.hypot(event.x - time.x, event.y - time.y) < 190);
+    simulation.stop();
+    assert.equal(createOrderedOrbitLayout().hasDynamicMotion(), false);
     orbit.rebuild(graph.nodes.filter(node => node.ordered), []);
-    assert.equal(orbit.hasAmbientMotion(), false);
+    assert.equal(orbit.hasDynamicMotion(), false);
 });
 
-test('ambient physics restarts reproducibly by node identity after restore, regardless of input order', () => {
-    const graph = orderedTimeForks(), other = structuredClone(graph);
-    const first = layout(graph), restored = layout(other), id = 'fork-event';
-    for (let frame = 0; frame < 180; frame++) first.orbit.advanceAmbient(1000 / 60, { scale: 1 });
-    const moving = first.orbit.renderPoint(first.at(id), 0);
-    assert.ok(Math.hypot(moving.x - first.at(id).x, moving.y - first.at(id).y) > 1, 'there is transient motion to clear');
-    first.orbit.rebuild(graph.nodes, graph.relationships, { restore: true });
-    assert.deepEqual(first.orbit.renderPoint(first.at(id), 0), moving, 'restoring an unchanged owner and slot within the session keeps its visible trajectory');
-    assert.deepEqual(restored.orbit.renderPoint(restored.at(id), 0), { x: restored.at(id).x, y: restored.at(id).y }, 'a fresh load begins at its saved base position');
-    first.orbit.resetAmbient();
-    restored.orbit.resetAmbient();
-    other.nodes.reverse(); other.relationships.reverse();
-    restored.orbit.rebuild(other.nodes, other.relationships, { restore: true });
-    first.orbit.rebuild(graph.nodes, graph.relationships, { restore: true });
-    for (let frame = 0; frame < 180; frame++) {
-        first.orbit.advanceAmbient(1000 / 60, { scale: 1 });
-        restored.orbit.advanceAmbient(1000 / 60, { scale: 1 });
-    }
-    assert.deepEqual(restored.orbit.renderPoint(restored.at(id), 0), first.orbit.renderPoint(first.at(id), 0));
-    assert.deepEqual(restored.orbit.renderPoint(restored.at('fork-afternoon'), 0), first.orbit.renderPoint(first.at('fork-afternoon'), 0));
+test('Chunk provenance becomes a physical link without making the Chunk a rigid ordered satellite', () => {
+    const graph = orderedTimeForks();
+    graph.nodes.push({ id: 'source', label: 'Chunk', name: '原始段落', radius: 18 });
+    graph.relationships.push({ id: 'source-event', source: 'source', target: 'fork-event', type: 'EXTRACTED_FROM' });
+    const { orbit, at } = layout(graph), source = at('source'), event = at('fork-event'), time = at('fork-afternoon');
+    assert.equal(source.orderedOrbit, undefined, 'provenance cannot make a Chunk inherit one arbitrary Time owner');
+    assert.equal(orbit.physicalLink(source, event), true);
+    assert.equal(orbit.physicalLink(event, time), true);
+    source.x = time.x; source.y = time.y - 100;
+    const sourceLinks = graph.relationships.filter(edge => edge.id === 'source-event' &&
+        orbit.physicalLink(at(edge.source), at(edge.target))).map(edge => ({ source: edge.source, target: edge.target }));
+    assert.equal(sourceLinks.length, 1, 'the real source edge must reach the D3 force link');
+    const link = forceLink(sourceLinks).id(node => node.id).distance(170).strength(0.22);
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.06 }).force('source', link);
+    const initialDistance = Math.hypot(source.x - event.x, source.y - event.y);
+    simulation.tick(340); simulation.stop();
+    const distance = Math.hypot(source.x - event.x, source.y - event.y);
+    assert.ok(distance < 260 && distance < initialDistance + 80,
+        `the source Chunk must remain near its connected Event, not drift to the world origin (${distance.toFixed(1)}px)`);
+    assert.ok(Math.hypot(source.x, source.y) > 300, 'a Chunk connected to distant Time content must not collapse to the world origin');
 });
 
-test('both renderers use the identical ownership, orbit and rigid skeleton contract', async () => {
+test('an isolated Chunk does not receive perpetual wind in an ordered graph', () => {
+    const graph = orderedTimeForks();
+    graph.nodes.push({ id: 'isolated-chunk', label: 'Chunk', x: 420, y: 260, vx: 0, vy: 0 });
+    const { orbit, at } = layout(graph), chunk = at('isolated-chunk');
+    const start = { x: chunk.x, y: chunk.y };
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
+    simulation.tick(120); simulation.stop();
+    assert.deepEqual({ x: chunk.x, y: chunk.y }, start,
+        'an unconnected source has no owner or provenance spring to drive its motion');
+});
+
+test('an unrelated Chunk/Event source component does not inherit another Time branch motion', () => {
+    const graph = orderedTimeForks();
+    graph.nodes.push({ id: 'unrelated-event', label: 'Event', x: 420, y: 240, vx: 0, vy: 0 },
+        { id: 'unrelated-chunk', label: 'Chunk', x: 450, y: 260, vx: 0, vy: 0 });
+    graph.relationships.push({ id: 'unrelated-source', source: 'unrelated-chunk', target: 'unrelated-event', type: 'EXTRACTED_FROM' });
+    const { orbit, at } = layout(graph);
+    assert.equal(orbit.sourceAnchored(at('unrelated-event')), false);
+    assert.equal(orbit.sourceAnchored(at('unrelated-chunk')), false);
+    assert.equal(orbit.sourceAnchored(at('fork-event')), false);
+    const start = { x: at('unrelated-event').x, y: at('unrelated-event').y };
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
+    simulation.tick(120); simulation.stop();
+    assert.deepEqual({ x: at('unrelated-event').x, y: at('unrelated-event').y }, start,
+        'continuous motion elsewhere must not add random wind to an unanchored Event');
+    assert.ok(Math.hypot(at('unrelated-chunk').x - start.x, at('unrelated-chunk').y - start.y) < 40,
+        'an unanchored Chunk still follows its local source, without drifting away');
+});
+
+test('a source-only view without Time keeps normal D3 links without continuous ordered motion', () => {
+    const graph = { nodes: [{ id: 'event', label: 'Event', x: 0, y: 0 },
+        { id: 'chunk', label: 'Chunk', x: 140, y: 0 }],
+    relationships: [{ id: 'source', source: 'chunk', target: 'event', type: 'EXTRACTED_FROM' }] };
+    const orbit = createOrderedOrbitLayout(); orbit.rebuild(graph.nodes, graph.relationships);
+    assert.equal(orbit.hasDynamicMotion(), false);
+    assert.equal(orbit.sourceAnchored(graph.nodes[0]), false);
+    assert.equal(orbit.sourceAnchored(graph.nodes[1]), false);
+    assert.equal(orbit.physicalLink(graph.nodes[0], graph.nodes[1]), true);
+});
+
+test('a multi-source Chunk stays in the local region of its moving source Events', () => {
+    const graph = orderedTimeForks();
+    graph.nodes.push({ id: 'second-event', label: 'Event', name: '另一事件' },
+        { id: 'shared-chunk', label: 'Chunk', name: '共同来源', radius: 18 });
+    graph.relationships.push(
+        { id: 'second-time', source: 'second-event', target: 'fork-afternoon', type: 'HAPPENED_AT' },
+        { id: 'source-one', source: 'shared-chunk', target: 'fork-event', type: 'EXTRACTED_FROM' },
+        { id: 'source-two', source: 'shared-chunk', target: 'second-event', type: 'EXTRACTED_FROM' },
+    );
+    const { orbit, at } = layout(graph), chunk = at('shared-chunk'), time = at('fork-afternoon');
+    chunk.x = time.x - 350; chunk.y = time.y - 480;
+    const links = graph.relationships.filter(edge => orbit.physicalLink(at(edge.source), at(edge.target)))
+        .map(edge => ({ source: edge.source, target: edge.target, sourceLink: edge.type === 'EXTRACTED_FROM' }));
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.06 })
+        .force('link', forceLink(links).id(node => node.id)
+            .distance(edge => edge.sourceLink ? 135 : 180)
+            .strength(edge => edge.sourceLink ? 0.07 : 0.18))
+        .force('charge', forceManyBody().strength(node => node.ordered ? 0 : -120).distanceMin(35))
+        .force('collision', forceCollide(node => (node.radius || 18) + 30).strength(0.8));
+    // As in both renderers, the ordered force runs after all other forces.
+    simulation.force('local', null).force('local', alpha => orbit.tick(alpha));
+    simulation.tick(360); simulation.stop();
+    const sources = [at('fork-event'), at('second-event')];
+    const center = { x: sources.reduce((sum, node) => sum + node.x, 0) / 2,
+        y: sources.reduce((sum, node) => sum + node.y, 0) / 2 };
+    const centerDistance = Math.hypot(chunk.x - center.x, chunk.y - center.y);
+    assert.ok(centerDistance < 150,
+        `a shared source must remain around the moving source centroid, rather than drifting off canvas (${centerDistance.toFixed(1)}px; chunk=${JSON.stringify({ x: chunk.x, y: chunk.y })}; sources=${JSON.stringify(sources.map(node => ({ x: node.x, y: node.y })))})`);
+    assert.ok(sources.every(node => Math.hypot(chunk.x - node.x, chunk.y - node.y) < 230),
+        'both provenance links stay locally readable');
+    assert.deepEqual({ x: time.x, y: time.y }, { x: time.orderedTargetX, y: time.orderedTargetY });
+});
+
+test('rebuild preserves a valid owner and slot without resetting the physical position', () => {
+    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event');
+    const simulation = localSimulation(graph, orbit); simulation.tick(40); simulation.stop();
+    const savedOrbit = structuredClone(event.orderedOrbit), position = { x: event.x, y: event.y };
+    graph.nodes.reverse(); graph.relationships.reverse();
+    orbit.rebuild(graph.nodes, graph.relationships, { restore: true });
+    assert.deepEqual(event.orderedOrbit, savedOrbit);
+    assert.deepEqual({ x: event.x, y: event.y }, position,
+        'restoring unchanged graph data must not teleport a moving Event back to an initial orbit slot');
+});
+
+test('both renderers use the identical ownership, physical links and rigid skeleton contract', async () => {
     const source = await readFile(new URL('../../../Python/Chat-With-Me-Backend/application/management_pages/static/graph-ordered-layout.js', import.meta.url), 'utf8');
     const context = { window: {} }; vm.runInNewContext(source, context);
     const graph = orderedTimeForks(), other = structuredClone(graph);
     const chat = layout(graph), management = layout(other, context.window.CWMOrderedGraphLayout.createOrderedOrbitLayout);
     assert.deepEqual(JSON.parse(JSON.stringify(other.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))), JSON.parse(JSON.stringify(graph.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))));
-    assert.equal(chat.orbit.hasAmbientMotion(), management.orbit.hasAmbientMotion());
-    for (const scale of [0.3, 1, 2]) {
-        for (let frame = 0; frame < 90; frame++) {
-            chat.orbit.advanceAmbient(1000 / 60, { scale });
-            management.orbit.advanceAmbient(1000 / 60, { scale });
-        }
-        const rendered = management.orbit.renderPoint(management.at('fork-event'), 0, { scale });
-        assert.deepEqual({ ...rendered }, chat.orbit.renderPoint(chat.at('fork-event'), 0, { scale }));
+    assert.equal(chat.orbit.hasDynamicMotion(), management.orbit.hasDynamicMotion());
+    for (const [left, right] of [['fork-event', 'fork-afternoon'], ['fork-event', 'fork-november'], ['fork-day11', 'fork-day15']])
+        assert.equal(chat.orbit.physicalLink(chat.at(left), chat.at(right)),
+            management.orbit.physicalLink(management.at(left), management.at(right)));
+    const chatSimulation = localSimulation(graph, chat.orbit), managementSimulation = localSimulation(other, management.orbit);
+    chatSimulation.tick(90); managementSimulation.tick(90);
+    chatSimulation.stop(); managementSimulation.stop();
+    for (const id of ['fork-event', 'fork-afternoon']) {
+        const a = chat.at(id), b = management.at(id);
+        assert.ok(Math.abs(a.x - b.x) < 1e-6 && Math.abs(a.y - b.y) < 1e-6,
+            `${id} has the same physical position in chat and management`);
     }
 });
 

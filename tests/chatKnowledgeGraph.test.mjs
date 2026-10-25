@@ -64,10 +64,10 @@ function screenCenter(ui, ids = ui.controller.getNodes().map(node => node.id)) {
 }
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.001, `${actual} should be near ${expected}`);
 
-test('owned knowledge keeps floating after physics settles without moving the skeleton or saved layout', t => {
+test('owned knowledge keeps moving through real physics while the ordered skeleton stays fixed', t => {
     const ui = setup(t), node = id => ui.svg.querySelector(`[data-node-id="${id}"]`);
     ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
-    assert.equal(ui.svg.dataset.physicsState, 'settled'); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
+    assert.equal(ui.svg.dataset.physicsState, 'running'); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
     const state = ui.controller.getViewState(), before = node('fork-event').getAttribute('transform'),
         skeleton = [...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')),
         edge = ui.svg.querySelector('.ordered-business'), path = edge.getAttribute('d');
@@ -75,22 +75,26 @@ test('owned knowledge keeps floating after physics settles without moving the sk
     assert.notEqual(node('fork-event').getAttribute('transform'), before);
     assert.notEqual(edge.getAttribute('d'), path, 'relationship endpoints follow the visible node');
     assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
-    assert.deepEqual(ui.controller.getViewState(), state, 'visible motion never changes saved coordinates or orbit offsets');
-    assert.equal(ui.svg.dataset.physicsState, 'settled', 'ongoing rendering must not reheat D3');
+    assert.notDeepEqual(ui.controller.getNodePositions(), state.positions.map(({ id, x, y }) => ({ id, x, y })), 'the actual physical coordinates must move');
+    assert.deepEqual(ui.controller.getViewState().positions.find(value => value.id === 'fork-event').orderedOrbit,
+        state.positions.find(value => value.id === 'fork-event').orderedOrbit, 'physical motion does not rewrite the owner');
+    assert.equal(ui.svg.dataset.physicsState, 'running', 'D3 must keep applying link and collision forces');
+    const physical = ui.controller.getNodePositions().find(value => value.id === 'fork-event');
+    assert.equal(node('fork-event').getAttribute('transform'), `translate(${physical.x.toFixed(2)} ${physical.y.toFixed(2)})`, 'rendering uses D3 coordinates directly');
     const scale = cameraValues(ui.svg)[2], renderPoint = () => node('fork-event').getAttribute('transform').match(/-?\d+(?:\.\d+)?/g).map(Number);
     const sampled = [];
     for (let index = 0; index < 12; index++) { ui.run(30); sampled.push(renderPoint()); }
     const travel = Math.max(...sampled.flatMap(a => sampled.map(b => Math.hypot(a[0] - b[0], a[1] - b[1]) * scale)));
     assert.ok(travel > 12, `owned knowledge should visibly move after settling (screen travel ${travel.toFixed(1)}px)`);
-    assert.deepEqual(ui.controller.getViewState(), state, 'continuous physical motion must not leak into saved layout');
+    assert.notDeepEqual(ui.controller.getViewState(), state, 'the current physical position is part of a canvas snapshot');
     assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
     ui.controller.setEdgeAnimation(false); const noFlow = node('fork-event').getAttribute('transform'); ui.run(90);
     assert.notEqual(node('fork-event').getAttribute('transform'), noFlow, 'edge highlights and node movement are independent');
     ui.controller.restoreViewState(state);
     assert.deepEqual(ui.controller.getNodePositions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
-    const restoredState = ui.controller.getViewState(), restored = node('fork-event').getAttribute('transform'); ui.run(90);
+    const restored = node('fork-event').getAttribute('transform'); ui.run(90);
     assert.notEqual(node('fork-event').getAttribute('transform'), restored);
-    assert.deepEqual(ui.controller.getViewState(), restoredState);
+    assert.equal(ui.svg.dataset.physicsState, 'running', 'restoring a saved view must resume live physics');
 });
 
 test('owned floating pauses, respects reduced motion and resumes after viewport and document visibility changes', t => {
@@ -111,6 +115,27 @@ test('owned floating pauses, respects reduced motion and resumes after viewport 
     Object.defineProperty(doc, 'hidden', { configurable: true, value: false }); doc.dispatchEvent(new ui.dom.window.Event('visibilitychange'));
     ui.run(60); assert.notEqual(transform(), hidden);
     ui.controller.destroy(); assert.equal(ui.frames.size, 0); assert.equal(ui.observerDisconnected(), true);
+});
+
+test('a source Chunk starts near related knowledge and follows its provenance through D3', t => {
+    const ui = setup(t), graph = orderedTimeForks();
+    graph.nodes.push({ id: 'source-chunk', label: 'Chunk', name: '原文片段' });
+    graph.relationships.push({ id: 'source-evidence', source: 'fork-event', target: 'source-chunk', type: 'EXTRACTED_FROM' });
+    const at = id => ui.controller.getNodePositions().find(node => node.id === id);
+    ui.controller.setData(knowledgeGraphPresentation(graph));
+    const event = at('fork-event'), chunk = at('source-chunk'), time = at('fork-afternoon');
+    assert.ok(Math.hypot(chunk.x - event.x, chunk.y - event.y) < 130, 'new Chunk is seeded near its source-connected knowledge');
+    const saved = ui.controller.getViewState();
+    ui.controller.restoreViewState({ ...saved, positions: saved.positions.map(point => point.id === 'source-chunk'
+        ? { ...point, x: point.x + 400, y: point.y + 200 } : point) });
+    const before = Math.hypot(at('source-chunk').x - at('fork-event').x, at('source-chunk').y - at('fork-event').y);
+    ui.run(180);
+    const after = Math.hypot(at('source-chunk').x - at('fork-event').x, at('source-chunk').y - at('fork-event').y);
+    assert.ok(after < before - 100, `provenance spring pulls Chunk toward Event (${before.toFixed(1)} → ${after.toFixed(1)})`);
+    assert.deepEqual(at('fork-afternoon'), time, 'the Time node remains fixed while Chunk and Event move');
+    assert.equal(ui.svg.querySelector('.source-link')?.getAttribute('d'),
+        ui.svg.querySelector('.source-flow')?.getAttribute('d'), 'source edge follows physical positions');
+    assert.equal(ui.svg.dataset.physicsState, 'running');
 });
 
 test('clicking a settled owned node without dragging does not stop its ongoing movement', t => {
@@ -190,8 +215,8 @@ test('ordered chat nodes remain a small rigid sorted row across force, drag, foc
     assert.match(ui.svg.querySelector('[data-node-id="unknown"] text').textContent, /未定位/);
     ui.run(420); assert.equal(positions().get('late').x, before.get('late').x);
     assert.ok(Math.abs(positions().get('entity').y - before.get('entity').y) > 5, 'an anchored event animates into its orbit instead of being frozen');
-    near(positions().get('entity').x, positions().get('late').x);
-    assert.ok(Math.hypot(positions().get('entity').x - positions().get('late').x, positions().get('entity').y - positions().get('late').y) < 120, 'its own anchor still bounds the animation');
+    assert.ok(Math.hypot(positions().get('entity').x - positions().get('late').x, positions().get('entity').y - positions().get('late').y) < 190,
+        'the event remains physically tethered to its own anchor without a fixed x coordinate');
     point(ui.dom, ui.svg.querySelector('[data-node-id="early"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 280, 170);
     const moved = positions(); assert.equal(moved.get('late').x - moved.get('early').x, delta); assert.equal(moved.get('late').y, moved.get('early').y);
@@ -302,7 +327,9 @@ test('dense ordered regions cannot attract another anchors satellites, and dragg
         graph.relationships.push({ id: `anchor-${index}`, source: id, target: 'fork-november', type: 'AT' }, { id: `cross-${index}`, source: id, target: 'fork-event', type: 'RELATED' });
     }
     ui.controller.setData(knowledgeGraphPresentation(graph)); ui.run(420);
-    assert.ok(Math.hypot(positions().get('fork-event').x - before.get('fork-event').x, positions().get('fork-event').y - before.get('fork-event').y) < 0.5, 'only subpixel settling is allowed, independent of remote density');
+    assert.ok(Math.hypot(positions().get('fork-event').x - positions().get('fork-afternoon').x,
+        positions().get('fork-event').y - positions().get('fork-afternoon').y) < 200,
+    'an event keeps its own Time tether while unrelated owner groups continue their own physics');
     const local = positions().get('fork-event');
     for (const node of graph.nodes.filter(node => node.labels?.includes('OrderedNode'))) assert.deepEqual(positions().get(node.id), before.get(node.id), `${node.id} stays on the flow skeleton`);
     assert.equal(ui.controller.getViewState().positions.find(node => node.id === 'fork-event').orderedOrbit.anchorId, 'fork-afternoon');
@@ -310,7 +337,8 @@ test('dense ordered regions cannot attract another anchors satellites, and dragg
     point(ui.dom, ui.svg.querySelector('[data-node-id="fork-afternoon"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 225, 165); point(ui.dom, ui.dom.window, 'pointerup', 225, 165);
     const moved = positions(), dx = moved.get('fork-afternoon').x - before.get('fork-afternoon').x, dy = moved.get('fork-afternoon').y - before.get('fork-afternoon').y;
-    near(moved.get('fork-event').x - local.x, dx); near(moved.get('fork-event').y - local.y, dy);
+    assert.ok(Math.hypot(dx, dy) > 5, 'the user can move the Time skeleton while physics is paused');
+    assert.deepEqual(moved.get('fork-event'), local, 'paused related knowledge must not teleport with a dragged Time node');
     assert.deepEqual(moved.get('fork-november'), before.get('fork-november'));
     const saved = ui.controller.getViewState(); ui.controller.relayout(); ui.controller.restoreViewState(saved);
     assert.deepEqual(positions(), moved);
@@ -319,7 +347,9 @@ test('dense ordered regions cannot attract another anchors satellites, and dragg
     const manual = positions(), orbit = ui.controller.getViewState().positions.find(node => node.id === 'fork-event').orderedOrbit;
     assert.ok(orbit.offset); assert.notDeepEqual(manual.get('fork-event'), moved.get('fork-event'));
     ui.controller.setData(knowledgeGraphPresentation(graph)); ui.controller.setPhysics(true); ui.run(420);
-    near(positions().get('fork-event').x, manual.get('fork-event').x); near(positions().get('fork-event').y, manual.get('fork-event').y);
+    assert.ok(Math.hypot(positions().get('fork-event').x - positions().get('fork-afternoon').x,
+        positions().get('fork-event').y - positions().get('fork-afternoon').y) < 200,
+    'after resuming, the event follows the moved Time through a soft physical tether');
     assert.equal(ui.controller.getRelationships().length, graph.relationships.length);
 });
 
@@ -390,7 +420,9 @@ test('relationship preference, visibility, reduced motion and graph pause gate a
 test('initial layout remains centered until physics settles, while user zoom cancels automatic framing', t => {
     const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(420);
     assert.equal(ui.svg.dataset.physicsState, 'settled');
-    const centered = screenCenter(ui); near(centered[0], 320); near(centered[1], 150);
+    const centered = screenCenter(ui);
+    assert.ok(Math.abs(centered[0] - 320) < 12 && Math.abs(centered[1] - 150) < 12,
+        'the initial graph is framed near the center before manual camera control');
     const positions = ui.controller.getNodePositions(); ui.controller.relayout(); ui.run(2); ui.controller.zoom(0.7);
     const manualCamera = camera(ui.svg); ui.run(420); assert.equal(camera(ui.svg), manualCamera);
     assert.notDeepEqual(ui.controller.getNodePositions(), positions, 'Physics continues after canceling camera tracking');
@@ -592,7 +624,9 @@ test('reduced motion, pause, hide and destroy stop work; captions remain plain t
     assert.equal(ui.ready(), 1, 'pausing before the first frame must still finish initial rendering');
     assert.equal(ui.frames.size, 0); assert.equal(ui.svg.querySelectorAll('img').length, 0);
     assert.match(ui.svg.querySelector('[data-node-id="root"] title').textContent, /<img/);
-    ui.controller.setPhysics(true); ui.run(2); assert.ok(ui.frames.size > 0);
+    ui.controller.setPhysics(true); ui.run(2);
+    assert.equal(ui.frames.size, 0, 'reduced motion prevents an automatic animation even after resuming physics');
+    ui.setReducedMotion(false); assert.ok(ui.frames.size > 0, 'turning reduced motion off can resume ordinary force layout');
     ui.controller.setPhysics(false); assert.equal(ui.frames.size, 0);
     const next = fixture(); next.nodes = next.nodes.filter(node => node.id !== 'chunk');
     ui.controller.setData(knowledgeGraphPresentation(next));

@@ -11,37 +11,48 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     let camera = { x: 320, y: 150, scale: 1 }, width = 640, height = 300;
     let selected = null, hovered = null, focused = new Set(), multiSelected = new Set(), pendingFocus = null, drag = null, pinch = null, marquee = null;
     let frame = 0, lastTime = null, elapsed = 0, ready = false, destroyed = false, initialFit = false, fittedView = null, movedAt = 0;
-    let ambientTime = 0, ambientStamp = null, ambientPaint = null;
-    let enabled = true, edgeAnimationEnabled = edgeAnimation !== false, inViewport = true;
+    let enabled = true, edgeAnimationEnabled = edgeAnimation !== false, inViewport = true, orderedPresent = false;
     const step = 1000 / 60, listeners = [], pointers = new Map();
     const orderedLayout = createOrderedGraphLayout();
     const orbitLayout = createOrderedOrbitLayout();
     const controlled = node => orbitLayout.controlled(node);
     const flexibleTime = node => node?.ordered?.hierarchy === true;
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
-    const link = forceLink([]).id(node => node.id).distance(180).strength(edge => 0.18 / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
+    const link = forceLink([]).id(node => node.id)
+        .distance(edge => edge.sourceLink ? 135 : 180)
+        .strength(edge => (edge.sourceLink ? 0.07 : 0.18) / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
     const simulation = forceSimulation([]).stop().alpha(0).alphaMin(0.003).alphaDecay(0.018).velocityDecay(0.32)
-        .force('link', link).force('charge', forceManyBody().strength(node => controlled(node) ? 0 : -120).distanceMin(35))
+        .force('link', link).force('charge', forceManyBody().strength(node => node.ordered ? 0 : node.isChunk ? -80 : -120).distanceMin(35))
         .force('collision', forceCollide(node => node.radius + 30).strength(0.8).iterations(2))
-        .force('x', forceX(0).strength(node => controlled(node) ? 0 : 0.035)).force('y', forceY(0).strength(node => controlled(node) ? 0 : 0.035))
+        .force('x', forceX(0).strength(node => node.ordered || node.orderedOrbit || orderedPresent && orbitLayout.sourceAnchored(node) ? 0 : 0.035))
+        .force('y', forceY(0).strength(node => node.ordered || node.orderedOrbit || orderedPresent && orbitLayout.sourceAnchored(node) ? 0 : 0.035))
         .force('ordered', alpha => orbitLayout.tick(alpha));
     const listen = (target, type, callback, options) => {
         target.addEventListener(type, callback, options);
         listeners.push(() => target.removeEventListener(type, callback, options));
     };
-    const ambientRunning = () => !destroyed && enabled && inViewport && !doc.hidden && !reducedMotion?.matches && !drag && !pinch && !marquee && orbitLayout.hasAmbientMotion();
-    // The ordered skeleton settles with D3. Owned knowledge keeps a separate
-    // local spring simulation running while visible, without reheating D3 or
-    // changing coordinates saved in graph history.
+    const dynamicRunning = () => !destroyed && enabled && inViewport && !doc.hidden && !reducedMotion?.matches && orbitLayout.hasDynamicMotion();
+    function refreshPhysics() {
+        if (!enabled || doc.hidden || !inViewport || reducedMotion?.matches) {
+            simulation.alphaTarget(0).alpha(0);
+            svg.dataset.physicsState = enabled ? 'settled' : 'paused';
+            return;
+        }
+        if (dynamicRunning()) {
+            simulation.alphaTarget(drag?.moved ? 0.35 : 0.06).alpha(Math.max(0.06, simulation.alpha()));
+            svg.dataset.physicsState = 'running';
+        }
+        else simulation.alphaTarget(0);
+    }
     function updateEdgeAnimation() {
         svg.dataset.edgeAnimation = String(edgeAnimationEnabled);
         svg.dataset.edgeAnimationActive = String(!destroyed && enabled && inViewport && !doc.hidden && !reducedMotion?.matches);
-        svg.dataset.nodeAnimationActive = String(ambientRunning());
-        ambientStamp = null;
+        refreshPhysics();
+        svg.dataset.nodeAnimationActive = String(dynamicRunning());
         if (destroyed || doc.hidden || !inViewport) {
             if (frame) win.cancelAnimationFrame(frame);
             frame = 0; lastTime = null; elapsed = 0;
-        } else if (nodes.size && (orbitLayout.hasAmbientMotion() || enabled && simulation.alpha() > simulation.alphaMin())) requestDraw();
+        } else if (nodes.size && enabled && simulation.alpha() > simulation.alphaMin()) requestDraw();
     }
     const visibilityObserver = typeof win.IntersectionObserver === 'function' ? new win.IntersectionObserver(entries => {
         inViewport = entries.some(entry => entry.isIntersecting);
@@ -49,8 +60,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     }) : null;
     visibilityObserver?.observe(svg);
     if (reducedMotion?.addEventListener) listen(reducedMotion, 'change', () => {
-        if (reducedMotion.matches) orbitLayout.resetAmbient();
         updateEdgeAnimation();
+        if (!reducedMotion.matches && enabled && !dynamicRunning() && nodes.size > 1) animate(0.2);
     });
     updateEdgeAnimation();
     const element = (tag, attributes = {}) => {
@@ -124,9 +135,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     function draw() {
         orbitLayout.sync();
         for (const node of nodes.values()) {
-            const position = orbitLayout.renderPoint(node, ambientTime, { active: !reducedMotion?.matches, scale: camera.scale, held: drag?.moved && drag.node === node });
-            node.renderX = position.x; node.renderY = position.y;
-            node.element.setAttribute('transform', `translate(${position.x.toFixed(2)} ${position.y.toFixed(2)})`);
+            node.renderX = node.x; node.renderY = node.y;
+            node.element.setAttribute('transform', `translate(${node.x.toFixed(2)} ${node.y.toFixed(2)})`);
             node.labelElement.style.fontSize = flexibleTime(node) ? '12px' : `${Math.max(10, 10 / camera.scale)}px`;
         }
         for (const view of views.values()) {
@@ -173,36 +183,37 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     }
     function tick(time) {
         frame = 0;
-        if (destroyed || doc.hidden || !inViewport) { lastTime = null; ambientStamp = null; return; }
+        if (destroyed || doc.hidden || !inViewport) { lastTime = null; return; }
         try {
-            const simulating = enabled && simulation.alpha() > simulation.alphaMin(), floating = ambientRunning();
-            if (!simulating && floating && ambientPaint != null && time - ambientPaint < 1000 / 30 - 0.1) { requestDraw(); return; }
-            if (floating) {
-                const delta = ambientStamp == null ? 0 : Math.max(0, Math.min(64, time - ambientStamp));
-                ambientTime += delta;
-                orbitLayout.advanceAmbient(delta, { scale: camera.scale });
-                ambientStamp = time; ambientPaint = time;
-            } else ambientStamp = null;
-            svg.dataset.nodeAnimationActive = String(floating);
+            refreshPhysics();
+            svg.dataset.nodeAnimationActive = String(dynamicRunning());
             if (enabled && simulation.alpha() > simulation.alphaMin()) {
                 elapsed += lastTime == null ? step : Math.max(0, Math.min(64, time - lastTime));
                 lastTime = time;
                 while (elapsed + 0.00001 >= step) { simulation.tick(); elapsed = Math.max(0, elapsed - step); }
             }
-            if (initialFit && (!enabled || simulation.alpha() < 0.2) && !drag && !pinch && !marquee) {
-                frameCamera(undefined, fittedView?.maxZoom ?? 1.5);
-                if (!enabled || simulation.alpha() <= simulation.alphaMin()) initialFit = false;
+            if (initialFit && !drag && !pinch && !marquee) {
+                const continuous = dynamicRunning();
+                if (!enabled || !continuous || simulation.alpha() < 0.2)
+                    frameCamera(undefined, fittedView?.maxZoom ?? 1.5);
+                // A finite layout may keep drifting after alpha first reaches
+                // 0.2, so finish its initial framing at the actual final tick.
+                // A continuously moving ordered view frames once after warmup.
+                if (!enabled || (continuous ? simulation.alpha() < 0.2 : simulation.alpha() <= simulation.alphaMin()))
+                    initialFit = false;
             }
             draw();
             if (!ready) { ready = true; onReady?.(); }
             if (enabled && simulation.alpha() > simulation.alphaMin()) requestDraw();
-            else { lastTime = null; elapsed = 0; svg.dataset.physicsState = enabled ? 'settled' : 'paused'; if (floating) requestDraw(); }
+            else { lastTime = null; elapsed = 0; svg.dataset.physicsState = enabled ? 'settled' : 'paused'; }
         } catch (error) { simulation.alpha(0); onError?.(error); }
     }
     function requestDraw() {
         if (!destroyed && !frame && !doc.hidden && inViewport) frame = win.requestAnimationFrame(tick);
     }
     function animate(heat = 0.35) {
+        refreshPhysics();
+        if (!enabled || reducedMotion?.matches || doc.hidden || !inViewport) { requestDraw(); return; }
         simulation.alpha(Math.max(heat, simulation.alpha()));
         svg.dataset.physicsState = enabled ? 'running' : 'paused';
         requestDraw();
@@ -210,7 +221,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     function clearFocus() {
         cancelAutoFit();
         focused.clear(); multiSelected.clear(); selected = null; pendingFocus = null;
-        for (const node of nodes.values()) if (node !== drag?.node && (!node.ordered || flexibleTime(node))) node.fx = node.fy = null;
+        for (const node of nodes.values()) if (node !== drag?.node && !node.ordered) node.fx = node.fy = null;
         focusStyles();
     }
     function selectNodes(ids) {
@@ -268,7 +279,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (destroyed) return;
         closeOrderedMenu();
         endMarquee(true);
-        const before = nodes.size, keepNodes = new Set(next.nodes.map(node => node.id));
+        const before = nodes.size, added = new Set(), keepNodes = new Set(next.nodes.map(node => node.id));
         for (const [id, node] of nodes) if (!keepNodes.has(id)) { node.element.remove(); nodes.delete(id); focused.delete(id); multiSelected.delete(id); }
         if (drag?.node && !keepNodes.has(drag.node.id)) cancelGesture();
         if (!nodes.has(selected)) selected = multiSelected.values().next().value || focused.values().next().value || null;
@@ -280,12 +291,32 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             if (!node) {
                 const angle = nodes.size * 2.399963229728653, radius = 40 + Math.sqrt(nodes.size + 1) * 54;
                 node = { id: raw.id, x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, vx: 0, vy: 0 };
-                nodes.set(node.id, node); createNode(node);
+                nodes.set(node.id, node); added.add(node.id); createNode(node);
             }
             Object.assign(node, { name: raw.name, label: raw.label, labels: raw.labels, properties: raw.properties, isChunk: isSourceChunk(raw), degree: degrees.get(node.id) || 0 });
         }
         orderedLayout.rebuild(nodes.values(), { relationships: next.relationships, completeParentIds: next.completeParentIds });
         orbitLayout.rebuild(nodes.values(), next.relationships);
+        orderedPresent = [...nodes.values()].some(node => Boolean(node.ordered));
+        const provenanceTypes = new Set(['EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'ILLUSTRATES']);
+        const provenanceNeighbors = new Map();
+        for (const relationship of next.relationships) {
+            if (!provenanceTypes.has(relationship.type)) continue;
+            const a = nodes.get(relationship.from), b = nodes.get(relationship.to);
+            if (!a || !b || a.isChunk === b.isChunk) continue;
+            const chunk = a.isChunk ? a : b, knowledge = a.isChunk ? b : a;
+            if (!provenanceNeighbors.has(chunk.id)) provenanceNeighbors.set(chunk.id, new Set());
+            provenanceNeighbors.get(chunk.id).add(knowledge.id);
+        }
+        for (const id of added) {
+            const chunk = nodes.get(id), neighbors = [...(provenanceNeighbors.get(id) || [])]
+                .map(neighborId => nodes.get(neighborId)).filter(node => Number.isFinite(node?.x) && Number.isFinite(node?.y));
+            if (!chunk?.isChunk || !neighbors.length) continue;
+            const centerX = neighbors.reduce((sum, node) => sum + node.x, 0) / neighbors.length;
+            const centerY = neighbors.reduce((sum, node) => sum + node.y, 0) / neighbors.length;
+            chunk.x = centerX; chunk.y = centerY + (centerY < 0 ? -90 : 90);
+            chunk.vx = chunk.vy = 0;
+        }
         if (drag?.node && drag.moved && nodes.has(drag.node.id)) {
             drag.node = nodes.get(drag.node.id); drag.node.fx = drag.node.x; drag.node.fy = drag.node.y;
         }
@@ -342,7 +373,11 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             const path = element('path', { class: `ordered-route ordered-route-${value.kind}`, fill: 'none', 'data-layout-only': 'true', 'data-route-kind': value.kind, 'aria-hidden': 'true' });
             convergenceLayer.append(path); return { ...value, element: path };
         });
-        link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.filter(edge => !controlled(nodes.get(edge.source)) && !controlled(nodes.get(edge.target))).map(edge => ({ ...edge })));
+        const provenance = new Set(next.edges.filter(edge => edge.sourceLink).map(edge => JSON.stringify([edge.from, edge.to].sort())));
+        link.links([]); simulation.nodes([...nodes.values()]);
+        link.links(next.links.filter(edge => orbitLayout.physicalLink(nodes.get(edge.source), nodes.get(edge.target)))
+            .map(edge => ({ ...edge, sourceLink: provenance.has(JSON.stringify([edge.source, edge.target].sort()))
+                || nodes.get(edge.source).isChunk || nodes.get(edge.target).isChunk })));
         if (!before && nodes.size) {
             if (nodes.size === 1) { const only = nodes.values().next().value; if (!only.ordered) only.x = only.y = 0; }
             fit(); initialFit = nodes.size > 1;
@@ -383,9 +418,11 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         cancelAutoFit(); draw();
     }
     function releaseDrag() {
-        if (drag?.node && drag.moved) { if (!drag.node.ordered || flexibleTime(drag.node)) drag.node.fx = drag.node.fy = null; simulation.alphaTarget(0); animate(0.25); }
+        const moved = Boolean(drag?.node && drag.moved);
+        if (moved && (!drag.node.ordered || flexibleTime(drag.node))) drag.node.fx = drag.node.fy = null;
         drag = null; svg.classList.remove('dragging');
-        ambientStamp = null; if (ambientRunning()) requestDraw();
+        if (moved) animate(0.25);
+        else refreshPhysics();
     }
     function cancelGesture() {
         const captured = new Set([...pointers.keys(), drag?.pointerId]);
@@ -410,7 +447,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (event.button === 0 && event.pointerType !== 'touch' && (event.ctrlKey || event.metaKey)) {
             releaseDrag();
             if (frame) win.cancelAnimationFrame(frame);
-            frame = 0; lastTime = null; elapsed = 0; ambientStamp = null;
+            frame = 0; lastTime = null; elapsed = 0;
             marquee = { pointerId: event.pointerId, start: current, base: pickedIds(), moved: false };
             event.preventDefault(); return;
         }
@@ -467,8 +504,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (drag?.pointerId === event.pointerId) { if (drag.moved) movedAt = Date.now(); releaseDrag(); }
         if (pointers.size < 2) {
             pinch = null;
-            ambientStamp = null;
-            if (ambientRunning()) requestDraw();
+            if (dynamicRunning()) requestDraw();
         }
         if (svg.hasPointerCapture?.(event.pointerId)) svg.releasePointerCapture(event.pointerId);
     };
@@ -526,7 +562,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             }
             cancelAutoFit();
             selected = null; focused.clear(); multiSelected = new Set((state.selected || []).filter(id => nodes.has(id)));
-            focusStyles(); draw(); ambientStamp = null; if (ambientRunning()) requestDraw(); return true;
+            focusStyles(); draw(); refreshPhysics(); if (enabled && simulation.alpha() > simulation.alphaMin()) requestDraw(); return true;
         },
         expanding(id, value) { nodes.get(String(id))?.element.classList.toggle('expanding', Boolean(value)); },
         getNodes: () => [...nodes.values()].map(({ id, name, label }) => ({ id, name, label })),

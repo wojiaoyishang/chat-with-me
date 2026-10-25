@@ -520,8 +520,7 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   const { dom, document } = ui, at = id => positionOf(document.querySelector(`[data-node-id="${id}"]`)),
     timeIds = full.nodes.filter(node => node.labels?.includes('OrderedNode')).map(node => node.id),
     positions = () => new Map(full.nodes.map(node => [node.id, at(node.id)])),
-    readCache = () => JSON.parse(JSON.stringify(dom.window.CWMGraphWorkspace.read('/api|db-default|'))),
-    closePoint = (actual, expected) => assert.ok(distance(actual, expected) < 0.03, `${actual} should remain near ${expected}`);
+    readCache = () => JSON.parse(JSON.stringify(dom.window.CWMGraphWorkspace.read('/api|db-default|')));
   document.querySelector('[data-node-id="fork-noon"]').dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true })); await settle(70);
   ui.runFrames(420); await settle(170);
   const before = positions(), initialCache = readCache(), cachedNode = id => initialCache.nodes.find(node => node.id === id);
@@ -541,11 +540,11 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   pointer(dom, document.querySelector('[data-node-id="fork-noon"]'), 'pointerdown', 400, 270);
   pointer(dom, dom.window, 'pointermove', 425, 290); ui.runFrames(1);
   pointer(dom, dom.window, 'pointerup', 425, 290); ui.runFrames(1);
-  const moved = positions(), delta = moved.get('fork-noon').map((value, index) => value - dragBefore.get('fork-noon')[index]);
+  const moved = positions();
   for (const id of timeIds) if (id !== 'fork-noon') assert.deepEqual(at(id), dragBefore.get(id), 'a time drag never shifts a different skeleton anchor');
-  for (const id of [local.id, nearby.id]) closePoint(at(id), dragBefore.get(id).map((value, index) => value + delta[index]));
-  closePoint(at(shared.id), dragBefore.get(shared.id).map((value, index) => value + (sharedOwner === 'fork-noon' ? delta[index] : 0)));
-  assert.deepEqual(at('orbit-remote-0'), dragBefore.get('orbit-remote-0'));
+  assert.notDeepEqual(moved.get('fork-noon'), dragBefore.get('fork-noon'));
+  for (const id of [local.id, nearby.id, shared.id, source.id, sourceOnly.id, 'orbit-remote-0'])
+    assert.deepEqual(at(id), dragBefore.get(id), 'paused physics does not rigidly translate free nodes with Time');
   document.querySelector('#graph-undo').click(); ui.runFrames(1);
   for (const id of [...timeIds, local.id, nearby.id, shared.id, 'orbit-remote-0']) assert.deepEqual(at(id), dragBefore.get(id));
   pointer(dom, document.querySelector(`[data-node-id="${local.id}"]`), 'pointerdown', 400, 270);
@@ -567,8 +566,11 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   assert.deepEqual(full, original); await settle(80);
 });
 
-test('settled owned knowledge nodes move on a flexible tether while skeleton, cached positions, and paused states remain stable', async t => {
-  const full = orderedTimeGraph(), responder = (url, options) => {
+test('live physics keeps Time fixed while an Event and its source Chunk respond to real links', async t => {
+  const full = orderedTimeGraph();
+  full.nodes.push({ id: 'source-chunk', label: 'Chunk', name: '原文片段' });
+  full.relationships.push({ id: 'event-source', source: 'event', target: 'source-chunk', type: 'EXTRACTED_FROM' });
+  const responder = (url, options) => {
     if (url.pathname === '/api/knowledge/graph') return full;
     if (url.pathname === '/api/knowledge/canvas') {
       const body = JSON.parse(options.body), ids = new Set(body.nodeIds), edgeIds = new Set(body.edgeIds);
@@ -577,32 +579,42 @@ test('settled owned knowledge nodes move on a flexible tether while skeleton, ca
   };
   const ui = await page(responder, { controlledAnimation: true, observeVisibility: true }); t.after(() => ui.dom.window.close());
   const { dom, document } = ui, svg = document.querySelector('#knowledge-canvas'), event = document.querySelector('[data-node-id="event"]'),
+    chunk = document.querySelector('[data-node-id="source-chunk"]'),
     ordered = full.nodes.filter(node => node.labels?.includes('OrderedNode')).map(node => document.querySelector(`[data-node-id="${node.id}"]`)),
     skeleton = () => ordered.map(node => node.getAttribute('transform')),
     edge = document.querySelector('[data-edge-id="event-time"]'),
     cache = () => JSON.parse(JSON.stringify(dom.window.CWMGraphWorkspace.read('/api|db-default|'))).nodes;
+  assert.ok(distance(positionOf(chunk), positionOf(event)) < 180, 'a newly loaded source Chunk starts near its referenced Event');
   ui.runFrames(800); await settle(180);
   const fixed = skeleton(), before = positionOf(event), beforeEdge = edge.getAttribute('d'), saved = cache(),
-    owner = document.querySelector('[data-node-id="minute"]'), traveled = [before], edgeSamples = [beforeEdge];
-  assert.equal(svg.dataset.physicsState, 'settled');
+    owner = document.querySelector('[data-node-id="minute"]'), traveled = [before], chunkTraveled = [positionOf(chunk)], edgeSamples = [beforeEdge];
+  assert.equal(svg.dataset.physicsState, 'running');
   assert.equal(svg.dataset.nodeAnimationActive, 'true');
-  assert.equal(ui.pendingFrames(), 1, 'settling physics retains exactly one visual frame chain');
+  assert.equal(ui.pendingFrames(), 1, 'continuous physical simulation has exactly one frame chain');
   for (let sample = 0; sample < 8; sample += 1) {
     ui.runFrames(60);
     traveled.push(positionOf(event));
+    chunkTraveled.push(positionOf(chunk));
     edgeSamples.push(edge.getAttribute('d'));
   }
   const traveledSpan = Math.max(...traveled.flatMap(a => traveled.map(b => distance(a, b))));
-  const xSpan = Math.max(...traveled.map(point => point[0])) - Math.min(...traveled.map(point => point[0]));
-  const ySpan = Math.max(...traveled.map(point => point[1])) - Math.min(...traveled.map(point => point[1]));
-  assert.ok(traveledSpan > 16, `ordinary knowledge should visibly travel around its owner after D3 settles; span=${traveledSpan}`);
-  assert.ok(xSpan > 8 && ySpan > 8, `the tether allows two-dimensional movement; x=${xSpan}, y=${ySpan}`);
+  assert.ok(traveledSpan > 4, `the Event should move under sustained real forces; span=${traveledSpan}`);
+  assert.ok(Math.max(...chunkTraveled.flatMap(a => chunkTraveled.map(b => distance(a, b)))) > 2, 'the source Chunk should move with the same physics engine');
   const ownerDistance = traveled.map(point => distance(point, positionOf(owner)));
   assert.ok(ownerDistance.every(value => value < 260), `the owner tether prevents free knowledge from drifting away; max=${Math.max(...ownerDistance)}`);
+  assert.ok(chunkTraveled.every(point => distance(point, positionOf(event)) < 320), 'the source relation keeps Chunk near its Event');
   assert.ok(new Set(edgeSamples).size > 2, 'association geometry follows the freely moving endpoint');
   assert.deepEqual(skeleton(), fixed, 'the entire ordered skeleton stays exactly fixed');
-  assert.equal(svg.dataset.physicsState, 'settled', 'ordinary motion does not keep the global D3 solver hot');
-  assert.deepEqual(cache(), saved, 'ambient drawing never writes transient offsets into cached coordinates');
+  assert.equal(svg.dataset.physicsState, 'running', 'the actual D3 solver stays active');
+  assert.deepEqual(cache(), saved, 'continuous motion does not rewrite the cached workspace on every frame');
+  const [cx, cy, scale] = cameraOf(document), [ex, ey] = positionOf(event), beforeDragChunk = positionOf(chunk);
+  const screenX = cx + ex * scale, screenY = cy + ey * scale;
+  pointer(dom, event, 'pointerdown', screenX, screenY);
+  pointer(dom, dom.window, 'pointermove', screenX + 100, screenY + 30); ui.runFrames(1);
+  ui.runFrames(45);
+  assert.ok(distance(positionOf(chunk), beforeDragChunk) > 3, 'dragging Event transfers force to its source Chunk');
+  assert.deepEqual(skeleton(), fixed, 'Time remains fixed while neighboring free nodes react');
+  pointer(dom, dom.window, 'pointerup', screenX + 100, screenY + 30); ui.runFrames(40);
   const control = document.querySelector('#graph-physics'), beforePause = event.getAttribute('transform'); control.click();
   assert.equal(event.getAttribute('transform'), beforePause, 'pause freezes the exact last painted sample without a phase jump');
   const paused = event.getAttribute('transform'); ui.runFrames(180);
@@ -633,7 +645,7 @@ test('settled owned knowledge nodes move on a flexible tether while skeleton, ca
   assert.ok(reloaded.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'));
   const reloadedEvent = reloaded.document.querySelector('[data-node-id="event"]'), restored = positionOf(reloadedEvent);
   reloaded.runFrames(100);
-  assert.ok(distance(positionOf(reloadedEvent), restored) > 0.1, 'an already settled cached graph immediately resumes ambient motion');
+  assert.ok(distance(positionOf(reloadedEvent), restored) > 0.1, 'a cached graph resumes physical motion');
   const stablePositions = items => items.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, ...(orderedOrbit ? { orderedOrbit } : {}) }));
   assert.deepEqual(stablePositions(JSON.parse(JSON.stringify(reloaded.dom.window.CWMGraphWorkspace.read('/api|db-default|'))).nodes), stablePositions(cached));
 });
@@ -2015,7 +2027,7 @@ test("cancelled pointer drags release the node, settle again, and never refit th
   }
 });
 
-test("reduced motion keeps the graph animation setting enabled and lets the user pause it", async (t) => {
+test("reduced motion suspends automatic physics while retaining the graph animation control", async (t) => {
   const { dom, document, runFrames, pendingFrames } = await page(undefined, {
     controlledAnimation: true,
     fullGraph: true,
@@ -2026,11 +2038,8 @@ test("reduced motion keeps the graph animation setting enabled and lets the user
     original = positionsOf(document);
   assert.equal(control.getAttribute("aria-pressed"), "true");
   runFrames(20);
-  assert.ok(
-    positionsOf(document).some(
-      (point, index) => distance(point, original[index]) > 1,
-    ),
-  );
+  assert.deepEqual(positionsOf(document), original);
+  assert.equal(pendingFrames(), 0);
   control.click();
   assert.equal(control.getAttribute("aria-pressed"), "false");
   const paused = positionsOf(document);
