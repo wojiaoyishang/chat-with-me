@@ -16,7 +16,7 @@ const fixture = () => ({ nodes: [
     { id: 'semantic', from: 'root', to: 'other', type: '关联' },
 ] });
 
-function setup(t, { reducedMotion = false, onExpand, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
+function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
     const dom = new JSDOM(`<section><svg><g data-graph-camera><g data-graph-edges></g><g data-graph-nodes></g></g></svg>${controlsHeight ? '<div data-graph-controls></div>' : ''}</section>`, { pretendToBeVisual: true });
     const { window } = dom, svg = window.document.querySelector('svg'), frames = new Map();
     let sequence = 0, time = 0, ready = 0;
@@ -34,7 +34,7 @@ function setup(t, { reducedMotion = false, onExpand, controlsHeight = 0, edgeAni
     svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, width: dimensions.width, height: dimensions.height });
     const controls = window.document.querySelector('[data-graph-controls]');
     if (controls) controls.getBoundingClientRect = () => ({ top: dimensions.height - dimensions.controlsHeight - 10, height: dimensions.controlsHeight });
-    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, edgeAnimation });
+    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, edgeAnimation });
     t.after(() => { controller.destroy(); dom.window.close(); });
     return { dom, svg, controller, frames, ready: () => ready,
         setVisible(value) { visibility?.([{ isIntersecting: value }]); },
@@ -60,6 +60,33 @@ function screenCenter(ui, ids = ui.controller.getNodes().map(node => node.id)) {
         y + scale * (Math.min(...points.map(n => n.y - n.radius)) + Math.max(...points.map(n => n.y + n.radius))) / 2];
 }
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.001, `${actual} should be near ${expected}`);
+
+test('ordered context menu supports pointer and keyboard, stays inside the canvas, and closes without changing layout', t => {
+    const selected = [], expanded = [], ui = setup(t, { onOrderedNeighbors: id => selected.push(id), onExpand: id => expanded.push(id) });
+    ui.controller.setData(knowledgeGraphPresentation({ nodes: [
+        { id: 'time', label: 'Time', name: '时间', labels: ['Time', 'OrderedNode'], properties: { ordered_axis: 'axis', ordered_kind: 'time', ordered_key: '1' } },
+        { id: 'legacy', label: 'Time', name: '旧时间' },
+    ], relationships: [] })); ui.run(420);
+    const doc = ui.dom.window.document, node = ui.svg.querySelector('[data-node-id="time"]'), legacy = ui.svg.querySelector('[data-node-id="legacy"]'),
+        positions = ui.controller.getNodePositions(), menu = () => doc.querySelector('[role="menu"]');
+    const context = (target, x = 999, y = 999) => { const event = new ui.dom.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y }); target.dispatchEvent(event); return event; };
+    assert.equal(context(legacy).defaultPrevented, false); assert.equal(menu(), null);
+    assert.equal(context(node).defaultPrevented, true); assert.ok(menu());
+    assert.ok(Number.parseFloat(menu().style.left) <= 640 - 190 - 8); assert.ok(Number.parseFloat(menu().style.top) <= 300 - 40 - 8);
+    assert.equal(doc.activeElement.getAttribute('role'), 'menuitem'); assert.equal(node.getAttribute('aria-expanded'), 'true');
+    doc.activeElement.dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    assert.equal(menu(), null); assert.equal(doc.activeElement, node); assert.equal(node.getAttribute('aria-expanded'), 'false');
+    const keyboard = new ui.dom.window.KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }); node.dispatchEvent(keyboard);
+    assert.equal(keyboard.defaultPrevented, true); assert.ok(menu());
+    menu().querySelector('button').click(); assert.deepEqual(selected, ['time']); assert.equal(menu(), null);
+    node.dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true })); assert.ok(menu());
+    doc.body.click(); assert.equal(menu(), null);
+    assert.deepEqual(ui.controller.getNodePositions(), positions);
+    context(node); ui.resize(320); assert.equal(menu(), null);
+    context(node); ui.controller.destroy(); assert.equal(menu(), null);
+    assert.deepEqual(ui.controller.getNodePositions(), []);
+    assert.ok(positions.length === 2); assert.deepEqual(expanded, [], 'opening the menu must not invoke all-neighbor expansion');
+});
 
 test('ordered chat nodes remain a small rigid sorted row across force, drag, focus, restore and partial queries', t => {
     const ordered = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: { ordered_axis: 'timeline', ordered_kind: 'time', ordered_key: key, ordered_value: id, ...extra } });

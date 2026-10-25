@@ -43,6 +43,91 @@ test('chat double-click queries the scoped backend, appends neighbors, and prese
     assert.equal(ui.msg.network.nodes.length, 1, 'manual expansion must not rewrite conversation history');
 });
 
+const orderedChatNode = (id, key) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: {
+    ordered_axis: 'timeline', ordered_kind: 'time', ordered_key: key, ordered_value: id,
+} });
+async function orderedMenu(ui, id = 'root', keyboard = false) {
+    await act(async () => ui.container.querySelector(`[data-node-id="${id}"]`).dispatchEvent(keyboard
+        ? new ui.dom.window.KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true })
+        : new ui.dom.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 600, clientY: 280 })));
+    return ui.container.querySelector('[role="menu"]');
+}
+async function showOrdered(ui, id = 'root') {
+    const menu = await orderedMenu(ui, id); assert.ok(menu);
+    await act(async () => menu.querySelector('[role="menuitem"]').click());
+}
+
+test('chat ordered menu uses scoped immediate neighbors and one undo entry without changing double-click expansion', async t => {
+    const root = orderedChatNode('root', '20'), previous = orderedChatNode('previous', '10'), next = orderedChatNode('next', '30'), calls = [];
+    const ui = await setup(t, async (url, options) => {
+        calls.push([url, options]);
+        return url.endsWith('/ordered-neighbors') ? { databaseId: options.params.databaseId, centerId: 'root', previousId: 'previous', nextId: 'next', nodes: [root, previous, next], relationships: [
+            { id: 'previous-root', source: 'previous', target: 'root', type: 'NEXT_ORDERED' }, { id: 'root-next', source: 'root', target: 'next', type: 'NEXT_ORDERED' },
+        ] } : { nodes: [root, { id: 'far-entity', label: 'Event' }], relationships: [] };
+    });
+    ui.msg.network.nodes = [root, { id: 'unrelated', label: 'Event' }];
+    const original = structuredClone(ui.msg.network);
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await showOrdered(ui);
+    assert.equal(calls[0][0], '/knowledge/nodes/root/ordered-neighbors'); assert.deepEqual(calls[0][1].params, { databaseId: 'default', conversationId: 'conv' });
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 4); assert.equal(ui.container.querySelectorAll('.ordered-link').length, 2);
+    assert.ok(ui.container.querySelector('[data-node-id="unrelated"]')); assert.deepEqual(ui.msg.network, original);
+    await showOrdered(ui); assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已在画布中显示/);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelector('[data-node-id="next"]'), null); assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销展示前后顺序节点/);
+    await act(async () => ui.container.querySelector('[aria-label="重做图谱操作"]').click()); assert.ok(ui.container.querySelector('[data-node-id="previous"]'));
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(calls.at(-1)[0], '/knowledge/nodes/root/graph'); assert.equal(calls.at(-1)[1].params.depth, 1);
+    assert.ok(ui.container.querySelector('[data-node-id="far-entity"]'));
+});
+
+test('chat ordered menu reports empty results without fabricating segments and adds edge-only results to history', async t => {
+    const root = orderedChatNode('root', '20'), next = orderedChatNode('next', '30');
+    let empty = true;
+    const ui = await setup(t, async () => ({ centerId: 'root', previousId: null, nextId: empty ? null : 'next', nodes: empty ? [root] : [root, next],
+        relationships: empty ? [] : [{ id: 'actual-next', source: 'root', target: 'next', type: 'NEXT_ORDERED' }] }));
+    ui.msg.network.nodes = [root, next];
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await showOrdered(ui); assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /没有可展示/);
+    assert.equal(ui.container.querySelectorAll('.knowledge-edge').length, 0); assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    empty = false; await showOrdered(ui); assert.equal(ui.container.querySelectorAll('.ordered-link').length, 1);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 2); assert.equal(ui.container.querySelectorAll('.ordered-link').length, 0);
+});
+
+test('ordered requests deduplicate against all-neighbor expansion and can be cancelled with undo', async t => {
+    let resolveRequest, signal, count = 0;
+    const ui = await setup(t, (_url, options) => { signal = options.signal; count++; return new Promise(resolve => { resolveRequest = resolve; }); });
+    ui.msg.network.nodes = [orderedChatNode('root', '20')];
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await showOrdered(ui); await showOrdered(ui);
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(count, 1);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click()); assert.equal(signal.aborted, true);
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /取消刚才的顺序节点请求/);
+    await act(async () => resolveRequest({ centerId: 'root', nodes: [orderedChatNode('late', '30')], relationships: [] }));
+    assert.equal(ui.container.querySelector('[data-node-id="late"]'), null);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+});
+
+test('chat ordered menu supports keyboard closing and disappears when database scope changes', async t => {
+    let complete, signal;
+    const ui = await setup(t, (_url, options) => { signal = options.signal; return new Promise(resolve => { complete = resolve; }); });
+    ui.msg.network = { databaseId: 'library-a', nodes: [orderedChatNode('root', '20')], relationships: [], databaseViews: {
+        'library-b': { databaseId: 'library-b', nodes: [{ id: 'b-root', label: 'Event' }], relationships: [] },
+    } };
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    assert.ok(await orderedMenu(ui, 'root', true));
+    await act(async () => ui.dom.window.document.activeElement.dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    assert.equal(ui.container.querySelector('[role="menu"]'), null); assert.equal(ui.dom.window.document.activeElement.dataset.nodeId, 'root');
+    await showOrdered(ui); assert.ok(await orderedMenu(ui));
+    await switchDatabase(ui, 'library-b'); assert.equal(signal.aborted, true); assert.equal(ui.container.querySelector('[role="menu"]'), null);
+    await act(async () => complete({ databaseId: 'library-a', centerId: 'root', nodes: [orderedChatNode('private', '30')], relationships: [] }));
+    assert.equal(ui.container.querySelector('[data-node-id="private"]'), null); assert.ok(ui.container.querySelector('[data-node-id="b-root"]'));
+    assert.equal(ui.container.querySelector('.chat-knowledge-feedback'), null);
+});
+
 test('a live graph publication opens a missing preview and follows later AI database scopes without reloading', async t => {
     const ui = await setup(t, async () => { throw new Error('publishing a graph must not query node details'); });
     const initialMessage = { ...ui.msg };

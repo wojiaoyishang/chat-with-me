@@ -67,6 +67,9 @@
 .chat-knowledge-toolbar button { display: flex; align-items: center; justify-content: center; min-height: 25px; min-width: 25px; padding: 3px 6px; border-radius: 6px; font-size: 10px; white-space: nowrap; cursor: pointer; transition: color 0.15s, background 0.15s; }
 .chat-knowledge-toolbar button:not(:disabled):hover, .chat-knowledge-toolbar button:focus-visible { background: #eef3ff; color: #274ba3; outline: none; }
 .chat-knowledge-toolbar button:disabled { opacity: 0.4; cursor: not-allowed; }
+.chat-knowledge-ordered-menu { position: absolute; z-index: 5; max-width: calc(100% - 16px); padding: 4px; border: 1px solid #e3e9f2; border-radius: 9px; background: #fff; box-shadow: 0 6px 22px #24364d26; }
+.chat-knowledge-ordered-menu button { display: block; width: 100%; padding: 7px 10px; border-radius: 5px; color: #344158; font-size: 12px; text-align: left; cursor: pointer; }
+.chat-knowledge-ordered-menu button:hover, .chat-knowledge-ordered-menu button:focus-visible { background: #eef3ff; color: #274ba3; outline: none; }
 @media (max-width: 480px) {
     .chat-knowledge-heading { align-items: flex-start; gap: 5px; flex-direction: column; padding: 9px 12px; }
     .chat-knowledge-heading small { font-size: 10px; }

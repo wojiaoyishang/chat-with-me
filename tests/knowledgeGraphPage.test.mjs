@@ -349,6 +349,115 @@ test('standalone ordered rows preserve exact order and rigid dragging without in
   assert.equal(at('early')[1], at('late')[1]); assert.equal(at('late')[0] - at('early')[0], delta);
 });
 
+const menuOrderedNode = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: {
+  ordered_axis: 'timeline', ordered_kind: 'time', ordered_key: key, ordered_value: id, ...extra,
+} });
+
+test('ordered neighbor action is limited to genuine nodes, appends actual adjacency and creates one undo entry', async (t) => {
+  const center = menuOrderedNode('center', '20'), previous = menuOrderedNode('previous', '10'), next = menuOrderedNode('next', '30'),
+    unrelated = { id: 'unrelated', name: '已有知识', label: 'Event' }, legacy = { id: 'legacy-time', name: '旧时间', label: 'Time' },
+    incomplete = { id: 'incomplete', name: '未配置轴', label: 'Time', labels: ['Time', 'OrderedNode'], properties: {} },
+    initial = [center, unrelated, legacy, incomplete], edges = [
+      { id: 'previous-next', source: 'previous', target: 'center', type: 'NEXT_ORDERED' },
+      { id: 'center-next', source: 'center', target: 'next', type: 'NEXT_ORDERED' },
+    ];
+  const ui = await page((url) => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: initial, relationships: [] };
+    if (url.pathname.endsWith('/ordered-neighbors')) return { centerId: 'center', nodes: [previous, center, next], relationships: edges, previousId: 'previous', nextId: 'next', databaseId: 'db-default' };
+  }, { controlledAnimation: true, conversationId: 'ordered-context' });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  for (const id of ['legacy-time', 'incomplete', 'unrelated']) {
+    openNodeMenu(dom, document, id);
+    assert.equal(document.querySelector('[data-action="ordered-neighbors"]'), null);
+  }
+  const action = openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]');
+  assert.equal(action.textContent, '展示前后顺序节点'); action.click(); await settle(70);
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 6);
+  assert.ok(document.querySelector('[data-node-id="unrelated"]'));
+  assert.deepEqual([...document.querySelectorAll('.ordered-link')].map(edge => edge.dataset.edgeId).sort(), ['center-next', 'previous-next']);
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-neighbors'));
+  assert.equal(request.parsed.searchParams.get('databaseId'), 'db-default');
+  assert.equal(request.parsed.searchParams.get('conversationId'), 'ordered-context');
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle(70);
+  assert.match(document.getElementById('notice').textContent, /已在画布中显示/);
+  assert.match(document.getElementById('graph-undo').title, /撤销展示前后顺序节点/);
+  document.getElementById('graph-undo').click();
+  assert.equal(document.querySelectorAll('.knowledge-node').length, initial.length);
+  assert.equal(document.querySelectorAll('.ordered-link').length, 0);
+  assert.equal(document.getElementById('graph-undo').disabled, true, 'a repeated no-op must not add a second history entry');
+  await settle();
+});
+
+test('ordered neighbor action reports an empty result and reuses already loaded nodes while adding only real segments', async (t) => {
+  const center = menuOrderedNode('center', '20'), previous = menuOrderedNode('previous', '10');
+  let empty = true;
+  const ui = await page((url) => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [center, previous], relationships: [] };
+    if (url.pathname.endsWith('/ordered-neighbors')) return empty
+      ? { centerId: 'center', nodes: [center], relationships: [], previousId: null, nextId: null }
+      : { centerId: 'center', nodes: [center, previous], relationships: [{ id: 'actual-next', source: 'previous', target: 'center', type: 'NEXT_ORDERED' }], previousId: 'previous', nextId: null };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  const show = async () => { openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle(); };
+  await show();
+  assert.match(document.getElementById('notice').textContent, /没有可展示/);
+  assert.equal(document.querySelectorAll('.knowledge-edge').length, 0); assert.equal(document.getElementById('graph-undo').disabled, true);
+  empty = false; await show();
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 2); assert.equal(document.querySelectorAll('.ordered-link').length, 1);
+  document.getElementById('graph-undo').click();
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 2); assert.equal(document.querySelectorAll('.ordered-link').length, 0);
+  await settle();
+});
+
+test('undo aborts pending ordered neighbors and ignores a response that arrives after cancellation', async (t) => {
+  const center = menuOrderedNode('center', '20'), next = menuOrderedNode('next', '30');
+  let complete;
+  const ui = await page((url) => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [center], relationships: [] };
+    if (url.pathname.endsWith('/ordered-neighbors')) return new Promise(resolve => { complete = resolve; });
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle();
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-neighbors'));
+  assert.equal(request.signal.aborted, false); assert.equal(document.getElementById('graph-undo').disabled, false);
+  document.getElementById('graph-undo').click();
+  assert.equal(request.signal.aborted, true);
+  complete({ centerId: 'center', nodes: [center, next], relationships: [{ id: 'late-next', source: 'center', target: 'next', type: 'NEXT_ORDERED' }], previousId: null, nextId: 'next' });
+  await settle();
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 1); assert.equal(document.querySelectorAll('.knowledge-edge').length, 0);
+  assert.equal(document.getElementById('graph-undo').disabled, true);
+});
+
+test('ordered neighbor failures preserve the canvas and scope changes abort and discard late results', async (t) => {
+  const center = menuOrderedNode('center', '20'), next = menuOrderedNode('next', '30'), other = { id: 'other-scope', label: 'Event', name: '新范围知识' };
+  let fail = true, complete;
+  const ui = await page((url) => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [url.searchParams.get('conversationId') === 'new-context' ? other : center], relationships: [] };
+    if (url.pathname.endsWith('/ordered-neighbors')) {
+      if (fail) return new Response(JSON.stringify({ success: false, message: '无权读取顺序节点' }), { status: 403 });
+      return new Promise(resolve => { complete = resolve; });
+    }
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle(70);
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 1); assert.equal(document.getElementById('graph-undo').disabled, true);
+  assert.match(document.getElementById('notice').textContent, /无权读取顺序节点/);
+  fail = false;
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle();
+  const request = ui.calls.filter(call => call.parsed.pathname.endsWith('/ordered-neighbors')).at(-1);
+  await switchScope(dom, document, 'new-context');
+  assert.equal(request.signal.aborted, true);
+  complete({ centerId: 'center', nodes: [center, next], relationships: [{ id: 'late-next', source: 'center', target: 'next', type: 'NEXT_ORDERED' }], previousId: null, nextId: 'next' });
+  await settle();
+  assert.ok(document.querySelector('[data-node-id="other-scope"]'));
+  assert.equal(document.querySelector('[data-node-id="next"]'), null); assert.equal(document.querySelectorAll('.knowledge-edge').length, 0);
+  assert.equal(document.getElementById('graph-undo').disabled, true);
+});
+
 const canvasKey = (conversationId = "", databaseId = "db-default") =>
   `cwm.knowledge.canvas.v1:${encodeURIComponent(`/api|${databaseId}|${conversationId}`)}`;
 const visibleContextMenu = (document) => {

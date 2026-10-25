@@ -2,7 +2,7 @@ import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY
 import { graphEdgeGeometry, isSourceChunk } from './knowledgeGraphPresentation.js';
 import { createOrderedGraphLayout } from '../../../../knowledge/orderedGraphLayout.js';
 
-export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, markerId, edgeAnimation = true } = {}) {
+export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, markerId, edgeAnimation = true } = {}) {
     const doc = svg.ownerDocument, win = doc.defaultView;
     const cameraLayer = svg.querySelector('[data-graph-camera]'), nodeLayer = svg.querySelector('[data-graph-nodes]'), edgeLayer = svg.querySelector('[data-graph-edges]');
     const controlsLayer = svg.parentElement?.querySelector('[data-graph-controls]');
@@ -11,6 +11,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     let selected = null, hovered = null, focused = new Set(), multiSelected = new Set(), pendingFocus = null, drag = null, pinch = null, marquee = null;
     let frame = 0, lastTime = null, elapsed = 0, ready = false, destroyed = false, initialFit = false, fittedView = null, movedAt = 0;
     let enabled = true, edgeAnimationEnabled = edgeAnimation !== false, inViewport = true;
+    let orderedMenu = null, orderedMenuNode = null;
     const step = 1000 / 60, listeners = [], pointers = new Map();
     const orderedLayout = createOrderedGraphLayout();
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -42,6 +43,34 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     };
     const marqueeRect = element('rect', { class: 'graph-marquee', hidden: '', 'aria-hidden': 'true' });
     svg.append(marqueeRect);
+    function closeOrderedMenu(restoreFocus = false) {
+        const node = nodes.get(orderedMenuNode);
+        orderedMenu?.remove(); orderedMenu = null; orderedMenuNode = null;
+        node?.element.setAttribute('aria-expanded', 'false');
+        if (restoreFocus) node?.element.focus({ preventScroll: true });
+    }
+    function openOrderedMenu(node, x, y) {
+        if (!node.ordered || !onOrderedNeighbors || !svg.parentElement) return;
+        closeOrderedMenu(); selectNodes([node.id]);
+        const host = svg.parentElement, rect = host.getBoundingClientRect(), menu = doc.createElement('div'), button = doc.createElement('button');
+        menu.className = 'chat-knowledge-ordered-menu'; menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', '顺序节点操作');
+        button.type = 'button'; button.setAttribute('role', 'menuitem'); button.textContent = '展示前后顺序节点';
+        button.addEventListener('click', () => { const id = node.id; closeOrderedMenu(true); onOrderedNeighbors(id); });
+        menu.addEventListener('keydown', event => {
+            if (event.key === 'Tab') closeOrderedMenu(true);
+            else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) { event.preventDefault(); button.focus(); }
+        });
+        menu.append(button); host.append(menu); orderedMenu = menu; orderedMenuNode = node.id;
+        const size = menu.getBoundingClientRect(), hostWidth = rect.width || width, hostHeight = rect.height || height;
+        menu.style.left = `${Math.max(8, Math.min(hostWidth - (size.width || 190) - 8, x - rect.left))}px`;
+        menu.style.top = `${Math.max(8, Math.min(hostHeight - (size.height || 40) - 8, y - rect.top))}px`;
+        node.element.setAttribute('aria-expanded', 'true'); button.focus({ preventScroll: true });
+    }
+    listen(doc, 'pointerdown', event => { if (orderedMenu && !orderedMenu.contains(event.target)) closeOrderedMenu(); }, true);
+    listen(doc, 'click', event => { if (orderedMenu && !orderedMenu.contains(event.target)) closeOrderedMenu(); }, true);
+    listen(doc, 'keydown', event => {
+        if (orderedMenu && event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeOrderedMenu(true); }
+    }, true);
     const pickedIds = () => marquee?.preview || new Set([...multiSelected, ...focused, ...(selected ? [selected] : [])]);
     const applyCamera = () => {
         cameraLayer.setAttribute('transform', `translate(${camera.x} ${camera.y}) scale(${camera.scale})`);
@@ -179,7 +208,17 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
             if (Date.now() - movedAt < 220 || node.isChunk || event.ctrlKey || event.metaKey) return;
             onExpand?.(node.id);
         });
+        group.addEventListener('contextmenu', event => {
+            if (!node.ordered || !onOrderedNeighbors) return;
+            event.preventDefault(); event.stopPropagation(); openOrderedMenu(node, event.clientX, event.clientY);
+        });
         group.addEventListener('keydown', event => {
+            if (node.ordered && onOrderedNeighbors && (event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey))) {
+                event.preventDefault(); event.stopPropagation();
+                const rect = svg.getBoundingClientRect();
+                openOrderedMenu(node, rect.left + camera.x + node.x * camera.scale, rect.top + camera.y + node.y * camera.scale);
+                return;
+            }
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault(); event.stopPropagation();
                 if (event.ctrlKey || event.metaKey) { toggleNode(node.id); return; }
@@ -208,6 +247,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
             Object.assign(node, { name: raw.name, label: raw.label, labels: raw.labels, properties: raw.properties, isChunk: isSourceChunk(raw), degree: degrees.get(node.id) || 0 });
         }
         orderedLayout.rebuild(nodes.values());
+        if (orderedMenu && !nodes.get(orderedMenuNode)?.ordered) closeOrderedMenu();
         for (const raw of next.nodes) {
             const node = nodes.get(raw.id);
             node.radius = node.ordered ? 8 : Math.min(25, 15 + Math.sqrt(node.degree) * 1.1);
@@ -215,12 +255,14 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
             node.element.classList.toggle('ordered-missing', node.ordered?.missing === true);
             if (node.ordered) node.element.dataset.orderedAxis = node.ordered.axis;
             else delete node.element.dataset.orderedAxis;
+            if (node.ordered && onOrderedNeighbors) { node.element.setAttribute('aria-haspopup', 'menu'); node.element.setAttribute('aria-expanded', String(orderedMenuNode === node.id)); }
+            else { node.element.removeAttribute('aria-haspopup'); node.element.removeAttribute('aria-expanded'); }
             node.circle.setAttribute('r', node.radius); node.circle.setAttribute('fill', raw.color);
             node.labelElement.setAttribute('y', node.radius + 16);
             const characters = Array.from(node.ordered?.missing ? `未定位 · ${node.ordered.value || node.name}` : node.ordered?.value || node.name);
             node.labelElement.textContent = characters.slice(0, 13).join('') + (characters.length > 13 ? '…' : '');
             node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · 拖动移动整条顺序轴` : ''}${node.isChunk ? '' : ' · 双击展开关联'}`;
-            node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : '，双击或空格展开关联'}。`);
+            node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : '，双击或空格展开关联'}${node.ordered && onOrderedNeighbors ? '，右键或菜单键展示前后顺序节点' : ''}。`);
         }
         const keepEdges = new Set(next.edges.map(edge => edge.id));
         for (const [id, view] of views) if (!keepEdges.has(id)) { view.element.remove(); view.flowElement.remove(); view.labelElement.remove(); views.delete(id); }
@@ -280,6 +322,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     }
     const point = event => { const rect = svg.getBoundingClientRect(); return { x: event.clientX - rect.left, y: event.clientY - rect.top }; };
     function zoom(factor, pointX = width / 2, pointY = height / 2) {
+        closeOrderedMenu();
         const previous = camera.scale; camera.scale = Math.max(0.12, Math.min(3.5, previous * factor));
         camera.x = pointX - (pointX - camera.x) / previous * camera.scale;
         camera.y = pointY - (pointY - camera.y) / previous * camera.scale;
@@ -300,6 +343,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         requestDraw();
     }
     listen(svg, 'pointerdown', event => {
+        closeOrderedMenu();
         if (event.pointerType !== 'touch' && event.button !== 0 && event.button !== 1) return;
         endMarquee(true);
         const current = point(event);
@@ -364,7 +408,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         if (svg.hasPointerCapture?.(event.pointerId)) svg.releasePointerCapture(event.pointerId);
     };
     listen(win, 'pointerup', pointerEnd); listen(win, 'pointercancel', pointerEnd);
-    listen(win, 'blur', () => { endMarquee(true); releaseDrag(); pointers.clear(); pinch = null; });
+    listen(win, 'blur', () => { closeOrderedMenu(); endMarquee(true); releaseDrag(); pointers.clear(); pinch = null; });
     listen(svg, 'wheel', event => { event.preventDefault(); const current = point(event); zoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY)) * 0.003), current.x, current.y); }, { passive: false });
     for (const type of ['mousedown', 'auxclick']) listen(svg, type, event => { if (event.button === 1) { event.preventDefault(); event.stopPropagation(); } });
     listen(svg, 'click', event => { if (!event.ctrlKey && !event.metaKey && !event.target.closest('[data-node-id]') && Date.now() - movedAt >= 220) clearFocus(); });
@@ -379,6 +423,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     });
     listen(doc, 'visibilitychange', () => { updateEdgeAnimation(); lastTime = null; if (doc.hidden) { endMarquee(true); if (frame) win.cancelAnimationFrame(frame); frame = 0; releaseDrag(); pointers.clear(); pinch = null; } else requestDraw(); });
     const resize = () => {
+        closeOrderedMenu();
         const rect = svg.getBoundingClientRect(), nextWidth = rect.width || 640, nextHeight = rect.height || 300;
         camera.x += (nextWidth - width) / 2; camera.y += (nextHeight - height) / 2; width = nextWidth; height = nextHeight;
         if (fittedView) frameCamera(fittedView.ids || undefined, fittedView.maxZoom);
@@ -395,6 +440,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         }),
         restoreViewState(state) {
             if (destroyed || !state || !state.camera) return false;
+            closeOrderedMenu();
             for (const point of state.positions || []) {
                 const node = nodes.get(String(point.id));
                 if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: point.fx ?? null, fy: point.fy ?? null, vx: 0, vy: 0 });
@@ -414,6 +460,6 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
         setPhysics(value) { enabled = Boolean(value); updateEdgeAnimation(); if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
         relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true }); fit(); initialFit = true; animate(0.65); },
-        destroy() { if (destroyed) return; destroyed = true; updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
+        destroy() { if (destroyed) return; destroyed = true; closeOrderedMenu(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };
 }
