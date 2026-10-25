@@ -135,12 +135,52 @@ test('dragging an anchor carries only its satellites and manual orbit offsets su
     assert.equal(event.orderedOrbit.offset, undefined); assert.notEqual(event.y, time.y + 60);
 });
 
+test('owned knowledge keeps a bounded ambient breath after physical settling without changing saved positions', () => {
+    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event');
+    const simulation = forceSimulation(graph.nodes).stop().velocityDecay(0.32).alphaDecay(0.018).force('local', alpha => orbit.tick(alpha));
+    simulation.tick(600); simulation.stop();
+    assert.equal(orbit.hasAmbientMotion(), true);
+    const saved = structuredClone(graph.nodes), rendered = [0, 1700, 3400, 5100].map(time => orbit.renderPoint(event, time));
+    assert.ok(rendered.some(point => Math.hypot(point.x - rendered[0].x, point.y - rendered[0].y) > 1), 'a settled node still visibly breathes');
+    for (const scale of [0.08, 0.6, 1, 4]) for (let time = 0; time < 60000; time += 173) {
+        const point = orbit.renderPoint(event, time, { scale }), displacement = Math.hypot(point.x - event.x, point.y - event.y);
+        assert.ok(displacement <= 8, 'ambient motion stays bounded in world coordinates');
+        assert.ok(displacement * scale <= 4.6 + 1e-9, 'screen movement stays subtle when zooming in');
+    }
+    assert.deepEqual(graph.nodes, saved, 'rendering never changes coordinates, velocities, pins or saved orbit offsets');
+});
+
+test('ambient motion is stable by ID, accepts interpolated points and honours pause and drag controls', () => {
+    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
+    const point = orbit.renderPoint(event, 12345), source = { ...event, x: event.x + 30, y: event.y - 40 };
+    assert.deepEqual(orbit.renderPoint(source, 12345), { x: point.x + 30, y: point.y - 40 });
+    for (const options of [{ active: false }, { held: true }]) assert.deepEqual(orbit.renderPoint(event, 12345, options), { x: event.x, y: event.y });
+    assert.deepEqual(orbit.renderPoint(time, 12345), { x: time.x, y: time.y }, 'ordered skeleton never breathes');
+    assert.deepEqual(orbit.renderPoint({ id: 'missing', x: 1, y: 2 }, 12345), { x: 1, y: 2 });
+    graph.nodes.push({ id: 'source', label: 'Chunk', x: 5, y: 6 });
+    graph.relationships.push({ source: 'source', target: event.id, type: 'EXTRACTED_FROM' });
+    orbit.rebuild(graph.nodes, graph.relationships);
+    assert.deepEqual(orbit.renderPoint(at('source'), 12345), { x: 5, y: 6 });
+    const restore = createOrderedOrbitLayout(), restored = structuredClone(graph.nodes);
+    restore.rebuild(restored.reverse(), [...graph.relationships].reverse(), { restore: true });
+    const restoredEvent = restored.find(node => node.id === event.id);
+    assert.deepEqual(restore.renderPoint(restoredEvent, 12345), orbit.renderPoint(event, 12345), 'refresh and input ordering preserve the same phase');
+    assert.equal(createOrderedOrbitLayout().hasAmbientMotion(), false);
+    orbit.rebuild(graph.nodes.filter(node => node.ordered), []);
+    assert.equal(orbit.hasAmbientMotion(), false);
+});
+
 test('both renderers use the identical ownership, orbit and rigid skeleton contract', async () => {
     const source = await readFile(new URL('../../../Python/Chat-With-Me-Backend/application/management_pages/static/graph-ordered-layout.js', import.meta.url), 'utf8');
     const context = { window: {} }; vm.runInNewContext(source, context);
     const graph = orderedTimeForks(), other = structuredClone(graph);
-    layout(graph); layout(other, context.window.CWMOrderedGraphLayout.createOrderedOrbitLayout);
+    const chat = layout(graph), management = layout(other, context.window.CWMOrderedGraphLayout.createOrderedOrbitLayout);
     assert.deepEqual(JSON.parse(JSON.stringify(other.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))), JSON.parse(JSON.stringify(graph.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))));
+    assert.equal(chat.orbit.hasAmbientMotion(), management.orbit.hasAmbientMotion());
+    for (const time of [0, 750, 14000]) for (const scale of [0.3, 1, 2]) {
+        const rendered = management.orbit.renderPoint(management.at('fork-event'), time, { scale });
+        assert.deepEqual({ ...rendered }, chat.orbit.renderPoint(chat.at('fork-event'), time, { scale }));
+    }
 });
 
 test('only skeleton lines stop flowing; ordinary ordered associations keep their dotted bidirectional highlight', async t => {

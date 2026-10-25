@@ -374,6 +374,11 @@ export function createOrderedOrbitLayout() {
     const sourceNode = node => node?.label === 'Chunk' || node?.labels?.includes('Chunk') || isInternalOrderAxis(node);
     const ignored = new Set(['NEXT_ORDERED', 'ORDERED_CONTAINS', 'HAS_ORDERED_NODE', 'EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'CHILD_OF', 'ILLUSTRATES']);
     const finitePoint = value => value && Number.isFinite(value.x) && Number.isFinite(value.y);
+    const ambientSeed = id => {
+        let hash = 2166136261;
+        for (const char of String(id)) hash = Math.imul(hash ^ char.codePointAt(0), 16777619);
+        return hash >>> 0;
+    };
     const anchorCompare = (a, b) => orderedNodeRadius(a.ordered) - orderedNodeRadius(b.ordered) || a.id.localeCompare(b.id);
     const slotOffset = slot => {
         const ring = Math.floor(slot / 8), radius = 112 + ring * 76;
@@ -494,6 +499,21 @@ export function createOrderedOrbitLayout() {
             anchorPositions = new Map([...groups.keys()].map(id => [id, { x: nodes.get(id).x, y: nodes.get(id).y }]));
         },
         controlled(node) { return Boolean(node?.ordered || node?.orderedOrbit); },
+        hasAmbientMotion() { return groups.size > 0; },
+        renderPoint(node, timeMs, { active = true, scale = 1, held = false } = {}) {
+            const point = { x: node?.x, y: node?.y }, member = nodes.get(String(node?.id));
+            if (!active || held || !finitePoint(point) || !member?.orderedOrbit || member.ordered || sourceNode(member)) return point;
+            // This is a bounded display-only breath, never a physical force or
+            // saved coordinate. ID-derived periods keep reloads and two views
+            // consistent while avoiding synchronised circling around anchors.
+            const seed = ambientSeed(member.id), time = Number.isFinite(timeMs) ? timeMs : 0;
+            const phase = (seed % 6283) / 1000, phaseY = ((seed >>> 8) % 6283) / 1000;
+            const periodX = 5200 + seed % 3400, periodY = 5700 + (seed >>> 5) % 3300;
+            const amplitude = Math.min(8, 4.6 / (Number.isFinite(scale) && scale > 0 ? scale : 1));
+            point.x += amplitude * 0.82 * Math.sin(time * Math.PI * 2 / periodX + phase);
+            point.y += amplitude * 0.57 * Math.sin(time * Math.PI * 2 / periodY + phaseY);
+            return point;
+        },
         tick(alpha) {
             syncAnchors();
             for (const [id, members] of groups) {

@@ -43,7 +43,7 @@ for (const implementation of ['chat', 'management']) {
         assert.equal(ui.root(), null);
     });
 
-    test(`${implementation}: blank canvas and ordinary nodes select dynamic ordered types; ordered actions stay distinct`, async t => {
+    test(`${implementation}: blank canvas and ordinary nodes select dynamic ordered types; ordered expansion has one entry`, async t => {
         const skeletons = [], nearest = [], related = [], neighbors = [];
         const ui = setup(t, implementation, { getOrderedTypes: async () => types,
             onOrderedSkeleton: (...args) => skeletons.push(args), onNearestOrdered: (...args) => nearest.push(args),
@@ -62,12 +62,13 @@ for (const implementation of ['chat', 'management']) {
 
         ui.open({ id: 'rank', label: 'Priority', ordered: { kind: 'number' } });
         assert.equal(ui.action('ordered-nearest'), null);
+        assert.equal(ui.action('ordered-neighbors'), null, 'one skeleton action replaces redundant ordered expansion choices');
         assert.equal(ui.action('node-expand').textContent, '展开关联');
         ui.action('node-expand').click();
         assert.deepEqual(related, implementation === 'chat' ? [['rank', 'related']] : [['rank']]);
         ui.open({ id: 'rank', label: 'Priority', ordered: { kind: 'number' } });
-        ui.action('ordered-neighbors').click(); assert.deepEqual(neighbors, ['rank']);
-        ui.open({ id: 'rank', label: 'Priority', ordered: { kind: 'number' } });
+        assert.equal(ui.action('ordered-neighbors'), null);
+        assert.deepEqual(neighbors, [], 'removing the menu entry does not invoke the retained callback');
         ui.action('ordered-skeleton').click(); assert.deepEqual(skeletons, [[null, 'Chapter'], ['rank', 'Priority']]);
     });
 

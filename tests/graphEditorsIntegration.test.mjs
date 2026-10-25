@@ -55,8 +55,9 @@ async function orderedMenu(ui, id = 'root', keyboard = false) {
     return ui.container.querySelector('[role="menu"]');
 }
 async function showOrdered(ui, id = 'root') {
-    const menu = await orderedMenu(ui, id); assert.ok(menu);
-    await act(async () => menu.querySelector('[data-action="ordered-neighbors"]').click());
+    const controller = ui.store.get('nvlInstance');
+    assert.equal(typeof controller?.showOrderedNeighbors, 'function');
+    await act(async () => { controller.showOrderedNeighbors(id); });
 }
 async function selectOrderedType(ui, label, id = null) {
     if (id == null) await act(async () => ui.container.querySelector('.chat-knowledge-canvas').dispatchEvent(
@@ -187,7 +188,7 @@ test('global chat skeleton requests deduplicate, cancel with undo, and ignore la
     assert.equal(ui.container.querySelector('[data-node-id="late-other-db"]'), null);
 });
 
-test('chat ordered menu uses scoped immediate neighbors and one undo entry without changing double-click expansion', async t => {
+test('chat low-level ordered neighbors retain scoped queries and undo while the menu offers one skeleton action', async t => {
     const root = orderedChatNode('root', '20'), previous = orderedChatNode('previous', '10'), next = orderedChatNode('next', '30'), calls = [];
     const ui = await setup(t, async (url, options) => {
         calls.push([url, options]);
@@ -198,6 +199,9 @@ test('chat ordered menu uses scoped immediate neighbors and one undo entry witho
     ui.msg.network.nodes = [root, { id: 'unrelated', label: 'Event' }];
     const original = structuredClone(ui.msg.network);
     await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    const menu = await orderedMenu(ui);
+    assert.equal(menu.querySelector('[data-action="ordered-neighbors"]'), null);
+    assert.equal(menu.querySelector('[data-action="ordered-skeleton"]').textContent, '展开有序骨架');
     await showOrdered(ui);
     assert.equal(calls[0][0], '/knowledge/nodes/root/ordered-neighbors'); assert.deepEqual(calls[0][1].params, { databaseId: 'default', conversationId: 'conv' });
     assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 4); assert.equal(ui.container.querySelectorAll('.ordered-link').length, 2);
@@ -212,7 +216,7 @@ test('chat ordered menu uses scoped immediate neighbors and one undo entry witho
     assert.ok(ui.container.querySelector('[data-node-id="far-entity"]'));
 });
 
-test('chat ordered menu reports empty results without fabricating segments and adds edge-only results to history', async t => {
+test('chat low-level ordered neighbors report empty results without fabricating segments and add edge-only results to history', async t => {
     const root = orderedChatNode('root', '20'), next = orderedChatNode('next', '30');
     let empty = true;
     const ui = await setup(t, async () => ({ centerId: 'root', previousId: null, nextId: empty ? null : 'next', nodes: empty ? [root] : [root, next],

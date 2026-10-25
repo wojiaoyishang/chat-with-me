@@ -10,7 +10,7 @@ const normalizeTypes = data => {
 
 // A DOM menu shared by graph renderers. It owns focus and request cancellation;
 // callers own graph mutations, scope validation and action feedback.
-export function createKnowledgeGraphContextMenu({ host, getBounds, getOrderedTypes, onExpand, onOrderedNeighbors, onOrderedSkeleton, onNearestOrdered } = {}) {
+export function createKnowledgeGraphContextMenu({ host, getBounds, getOrderedTypes, onExpand, onOrderedSkeleton, onNearestOrdered } = {}) {
     const doc = host.ownerDocument, win = doc.defaultView, listeners = [];
     let menu = null, submenu = null, trigger = null, origin = null, current = null, request = null, destroyed = false, generation = 0, submenuFocusRequested = false;
     const listen = (target, type, callback, options) => {
@@ -109,7 +109,6 @@ export function createKnowledgeGraphContextMenu({ host, getBounds, getOrderedTyp
         if (node) {
             if (!node.isChunk && onExpand) root.append(action('展开关联', 'node-expand', () => invoke(onExpand, node.id, 'related')));
             if (node.ordered) {
-                if (onOrderedNeighbors) root.append(action('展示前后顺序节点', 'ordered-neighbors', () => invoke(onOrderedNeighbors, node.id)));
                 if (onOrderedSkeleton || onExpand) root.append(action('展开有序骨架', 'ordered-skeleton', () => onOrderedSkeleton ? invoke(onOrderedSkeleton, node.id, node.label) : invoke(onExpand, node.id, 'skeleton')));
             } else if (getOrderedTypes && onNearestOrdered) root.append(typeAction('找到最近的有序节点', 'ordered-nearest'));
         } else if (getOrderedTypes && onOrderedSkeleton) root.append(typeAction('展开有序骨架', 'ordered-skeleton'));

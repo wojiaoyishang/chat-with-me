@@ -58,6 +58,7 @@ async function page(
     databaseId = "",
     localSettings,
     iframeParent,
+    observeVisibility = false,
   } = {},
 ) {
   const config = JSON.stringify({ kind: "knowledge", apiBase: "/api" });
@@ -77,6 +78,7 @@ async function page(
   for (const [key, value] of Object.entries(seedStorage))
     dom.window.sessionStorage.setItem(key, value);
   const frames = new Map();
+  const intersectionObservers = [], motionListeners = new Set();
   let nextFrame = 0;
   let animationTime = 0;
   if (controlledAnimation) {
@@ -89,7 +91,14 @@ async function page(
   }
   dom.window.matchMedia = (query) => ({
     matches: reducedMotion && query.includes("prefers-reduced-motion"),
+    addEventListener(type, listener) { if (type === 'change' && query.includes('prefers-reduced-motion')) motionListeners.add(listener); },
+    removeEventListener(type, listener) { if (type === 'change') motionListeners.delete(listener); },
   });
+  if (observeVisibility) dom.window.IntersectionObserver = class {
+    constructor(callback) { this.callback = callback; intersectionObservers.push(this); }
+    observe() {}
+    disconnect() {}
+  };
   dom.window.HTMLElement.prototype.scrollIntoView = () => {};
   dom.window.HTMLDialogElement.prototype.showModal = function () {
     this.open = true;
@@ -226,6 +235,8 @@ async function page(
       }
     },
     pendingFrames: () => frames.size,
+    setCanvasVisible(visible) { intersectionObservers.forEach(observer => observer.callback([{ isIntersecting: visible }])); },
+    setReducedMotion(matches) { motionListeners.forEach(listener => listener({ matches })); },
     dumpStorage() {
       return Object.fromEntries(
         Array.from({ length: dom.window.sessionStorage.length }, (_, index) => {
@@ -348,7 +359,7 @@ test('standalone ordered rows preserve exact order and rigid dragging without in
   assert.ok(Math.abs(dragged[0] - before[0] - 70 / scale) < 0.02);
   assert.equal(at('late')[0] - dragged[0], delta); assert.equal(at('late')[1], dragged[1]); assert.deepEqual(at('unknown'), missing);
   pointer(dom, dom.window, 'pointerup', x + 70, y + 45); ui.runFrames(420);
-  assert.deepEqual(at('early'), dragged); assert.equal(ui.pendingFrames(), 0);
+  assert.deepEqual(at('early'), dragged); assert.equal(ui.pendingFrames(), 1, 'the ordinary event keeps one ambient frame chain while ordered positions stay fixed');
   document.getElementById('graph-layout').click(); ui.runFrames(420);
   assert.equal(at('early')[1], at('late')[1]); assert.equal(at('late')[0] - at('early')[0], delta);
 });
@@ -505,7 +516,7 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
       return { ...full, nodes: full.nodes.filter(node => ids.has(node.id)), relationships: full.relationships.filter(edge => edgeIds.has(edge.id)) };
     }
   };
-  const ui = await page(responder, { controlledAnimation: true }); t.after(() => ui.dom.window.close());
+  const ui = await page(responder, { controlledAnimation: true, reducedMotion: true }); t.after(() => ui.dom.window.close());
   const { dom, document } = ui, at = id => positionOf(document.querySelector(`[data-node-id="${id}"]`)),
     timeIds = full.nodes.filter(node => node.labels?.includes('OrderedNode')).map(node => node.id),
     positions = () => new Map(full.nodes.map(node => [node.id, at(node.id)])),
@@ -546,7 +557,7 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   document.querySelector('#refresh').click(); await settle(180); ui.runFrames(420); await settle(170);
   assert.deepEqual(at(local.id), draggedEvent, 'refresh preserves the ordinary orbit offset');
   const saved = readCache(); assert.deepEqual(saved.nodes.find(node => node.id === local.id).orderedOrbit, savedOrbit);
-  const reloaded = await page(responder, { controlledAnimation: true, seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
+  const reloaded = await page(responder, { controlledAnimation: true, reducedMotion: true, seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
   const restoredAt = id => positionOf(reloaded.document.querySelector(`[data-node-id="${id}"]`));
   assert.ok(reloaded.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'), 'cached identities are authorized again on reload');
   assert.deepEqual(restoredAt(local.id), draggedEvent);
@@ -554,6 +565,66 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   assert.deepEqual(restoredAt(local.id), draggedEvent, 'restarting physics retains the cached orbit offset');
   for (const id of timeIds) assert.deepEqual(restoredAt(id), dragBefore.get(id));
   assert.deepEqual(full, original); await settle(80);
+});
+
+test('settled owned knowledge nodes keep subtle visual motion while skeleton, cached positions, and paused states remain stable', async t => {
+  const full = orderedTimeGraph(), responder = (url, options) => {
+    if (url.pathname === '/api/knowledge/graph') return full;
+    if (url.pathname === '/api/knowledge/canvas') {
+      const body = JSON.parse(options.body), ids = new Set(body.nodeIds), edgeIds = new Set(body.edgeIds);
+      return { ...full, nodes: full.nodes.filter(node => ids.has(node.id)), relationships: full.relationships.filter(edge => edgeIds.has(edge.id)) };
+    }
+  };
+  const ui = await page(responder, { controlledAnimation: true, observeVisibility: true }); t.after(() => ui.dom.window.close());
+  const { dom, document } = ui, svg = document.querySelector('#knowledge-canvas'), event = document.querySelector('[data-node-id="event"]'),
+    ordered = full.nodes.filter(node => node.labels?.includes('OrderedNode')).map(node => document.querySelector(`[data-node-id="${node.id}"]`)),
+    skeleton = () => ordered.map(node => node.getAttribute('transform')),
+    edge = document.querySelector('[data-edge-id="event-time"]'),
+    cache = () => JSON.parse(JSON.stringify(dom.window.CWMGraphWorkspace.read('/api|db-default|'))).nodes;
+  ui.runFrames(800); await settle(180);
+  const fixed = skeleton(), before = positionOf(event), beforeEdge = edge.getAttribute('d'), saved = cache();
+  assert.equal(svg.dataset.physicsState, 'settled');
+  assert.equal(svg.dataset.nodeAnimationActive, 'true');
+  assert.equal(ui.pendingFrames(), 1, 'settling physics retains exactly one visual frame chain');
+  ui.runFrames(95); await settle(180);
+  assert.ok(distance(positionOf(event), before) > 0.1, 'ordinary knowledge still visibly floats after D3 settles');
+  assert.ok(distance(positionOf(event), before) < 10, 'the floating displacement stays local and subtle');
+  assert.notEqual(edge.getAttribute('d'), beforeEdge, 'association geometry follows the moving endpoint');
+  assert.deepEqual(skeleton(), fixed, 'the entire ordered skeleton stays exactly fixed');
+  assert.deepEqual(cache(), saved, 'ambient drawing never writes transient offsets into cached coordinates');
+  const control = document.querySelector('#graph-physics'), beforePause = event.getAttribute('transform'); control.click();
+  assert.equal(event.getAttribute('transform'), beforePause, 'pause freezes the exact last painted sample without a phase jump');
+  const paused = event.getAttribute('transform'); ui.runFrames(180);
+  assert.equal(event.getAttribute('transform'), paused); assert.equal(ui.pendingFrames(), 0);
+  control.click(); ui.runFrames(800);
+  assert.notEqual(event.getAttribute('transform'), paused);
+  ui.setCanvasVisible(false); ui.runFrames(2);
+  const outside = event.getAttribute('transform'); ui.runFrames(100);
+  assert.equal(event.getAttribute('transform'), outside); assert.equal(ui.pendingFrames(), 0);
+  ui.setCanvasVisible(true); ui.runFrames(100);
+  assert.notEqual(event.getAttribute('transform'), outside);
+  ui.setReducedMotion(true); ui.runFrames(2);
+  const reduced = event.getAttribute('transform'); ui.runFrames(100);
+  assert.equal(event.getAttribute('transform'), reduced); assert.equal(ui.pendingFrames(), 0);
+  ui.setReducedMotion(false); ui.runFrames(100);
+  assert.notEqual(event.getAttribute('transform'), reduced);
+  Object.defineProperty(document, 'hidden', { configurable: true, value: true }); document.dispatchEvent(new dom.window.Event('visibilitychange'));
+  const hidden = event.getAttribute('transform'); ui.runFrames(100);
+  assert.equal(event.getAttribute('transform'), hidden); assert.equal(ui.pendingFrames(), 0);
+  Object.defineProperty(document, 'hidden', { configurable: true, value: false }); document.dispatchEvent(new dom.window.Event('visibilitychange')); ui.runFrames(100);
+  assert.notEqual(event.getAttribute('transform'), hidden);
+  dom.window.dispatchEvent(new dom.window.Event('pagehide')); ui.runFrames(100);
+  assert.equal(ui.pendingFrames(), 0);
+  dom.window.dispatchEvent(new dom.window.Event('pageshow')); ui.runFrames(100);
+  assert.equal(ui.pendingFrames(), 1);
+  await settle(180);
+  const cached = cache(), reloaded = await page(responder, { controlledAnimation: true, seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
+  assert.ok(reloaded.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'));
+  const reloadedEvent = reloaded.document.querySelector('[data-node-id="event"]'), restored = positionOf(reloadedEvent);
+  reloaded.runFrames(100);
+  assert.ok(distance(positionOf(reloadedEvent), restored) > 0.1, 'an already settled cached graph immediately resumes ambient motion');
+  const stablePositions = items => items.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, ...(orderedOrbit ? { orderedOrbit } : {}) }));
+  assert.deepEqual(stablePositions(JSON.parse(JSON.stringify(reloaded.dom.window.CWMGraphWorkspace.read('/api|db-default|'))).nodes), stablePositions(cached));
 });
 
 const menuOrderedNode = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: {
@@ -720,7 +791,7 @@ test('generic nearest reads abort on scope changes and late evidence cannot ente
   assert.equal(ui.document.querySelectorAll('.knowledge-edge').length, 0); assert.equal(ui.document.querySelector('#graph-undo').disabled, true);
 });
 
-test('ordered neighbor action is limited to genuine nodes, appends actual adjacency and creates one undo entry', async (t) => {
+test('ordered skeleton action is limited to genuine nodes, appends actual adjacency and creates one undo entry', async (t) => {
   const center = menuOrderedNode('center', '20'), previous = menuOrderedNode('previous', '10'), next = menuOrderedNode('next', '30'),
     unrelated = { id: 'unrelated', name: '已有知识', label: 'Event' }, legacy = { id: 'legacy-time', name: '旧时间', label: 'Time' },
     incomplete = { id: 'incomplete', name: '未配置轴', label: 'Time', labels: ['Time', 'OrderedNode'], properties: {} },
@@ -730,25 +801,28 @@ test('ordered neighbor action is limited to genuine nodes, appends actual adjace
     ];
   const ui = await page((url) => {
     if (url.pathname === '/api/knowledge/graph') return { nodes: initial, relationships: [] };
-    if (url.pathname.endsWith('/ordered-neighbors')) return { centerId: 'center', nodes: [previous, center, next], relationships: edges, previousId: 'previous', nextId: 'next', databaseId: 'db-default' };
+    if (url.pathname.endsWith('/ordered-graph')) return { centerId: 'center', nodes: [previous, center, next], relationships: edges, previousId: 'previous', nextId: 'next', databaseId: 'db-default' };
   }, { controlledAnimation: true, conversationId: 'ordered-context' });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui;
   for (const id of ['legacy-time', 'incomplete', 'unrelated']) {
     openNodeMenu(dom, document, id);
-    assert.equal(document.querySelector('[data-action="ordered-neighbors"]'), null);
+    assert.equal(document.querySelector('[data-action="ordered-skeleton"]'), null);
   }
-  const action = openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]');
-  assert.equal(action.textContent, '展示前后顺序节点'); action.click(); await settle(70);
+  const centerMenu = openNodeMenu(dom, document, 'center');
+  assert.equal(centerMenu.querySelector('[data-action="ordered-neighbors"]'), null);
+  assert.equal(centerMenu.querySelectorAll('[data-action="ordered-skeleton"]').length, 1);
+  const action = centerMenu.querySelector('[data-action="ordered-skeleton"]');
+  assert.equal(action.textContent, '展开有序骨架'); action.click(); await settle(70);
   assert.equal(document.querySelectorAll('.knowledge-node').length, 6);
   assert.ok(document.querySelector('[data-node-id="unrelated"]'));
   assert.deepEqual([...document.querySelectorAll('.ordered-link')].map(edge => edge.dataset.edgeId).sort(), ['center-next', 'previous-next']);
-  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-neighbors'));
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-graph'));
   assert.equal(request.parsed.searchParams.get('databaseId'), 'db-default');
   assert.equal(request.parsed.searchParams.get('conversationId'), 'ordered-context');
-  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle(70);
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-skeleton"]').click(); await settle(70);
   assert.match(document.getElementById('notice').textContent, /已在画布中显示/);
-  assert.match(document.getElementById('graph-undo').title, /撤销展示前后顺序节点/);
+  assert.match(document.getElementById('graph-undo').title, /撤销展开有序骨架/);
   document.getElementById('graph-undo').click();
   assert.equal(document.querySelectorAll('.knowledge-node').length, initial.length);
   assert.equal(document.querySelectorAll('.ordered-link').length, 0);
@@ -756,20 +830,20 @@ test('ordered neighbor action is limited to genuine nodes, appends actual adjace
   await settle();
 });
 
-test('ordered neighbor action reports an empty result and reuses already loaded nodes while adding only real segments', async (t) => {
+test('ordered skeleton action reports an empty result and reuses already loaded nodes while adding only real segments', async (t) => {
   const center = menuOrderedNode('center', '20'), previous = menuOrderedNode('previous', '10');
   let empty = true;
   const ui = await page((url) => {
     if (url.pathname === '/api/knowledge/graph') return { nodes: [center, previous], relationships: [] };
-    if (url.pathname.endsWith('/ordered-neighbors')) return empty
+    if (url.pathname.endsWith('/ordered-graph')) return empty
       ? { centerId: 'center', nodes: [center], relationships: [], previousId: null, nextId: null }
       : { centerId: 'center', nodes: [center, previous], relationships: [{ id: 'actual-next', source: 'previous', target: 'center', type: 'NEXT_ORDERED' }], previousId: 'previous', nextId: null };
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui;
-  const show = async () => { openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle(); };
+  const show = async () => { openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-skeleton"]').click(); await settle(); };
   await show();
-  assert.match(document.getElementById('notice').textContent, /没有可展示/);
+  assert.match(document.getElementById('notice').textContent, /当前结果已在画布中显示/);
   assert.equal(document.querySelectorAll('.knowledge-edge').length, 0); assert.equal(document.getElementById('graph-undo').disabled, true);
   empty = false; await show();
   assert.equal(document.querySelectorAll('.knowledge-node').length, 2); assert.equal(document.querySelectorAll('.ordered-link').length, 1);
@@ -778,17 +852,17 @@ test('ordered neighbor action reports an empty result and reuses already loaded 
   await settle();
 });
 
-test('undo aborts pending ordered neighbors and ignores a response that arrives after cancellation', async (t) => {
+test('undo aborts pending ordered skeleton reads and ignores a response that arrives after cancellation', async (t) => {
   const center = menuOrderedNode('center', '20'), next = menuOrderedNode('next', '30');
   let complete;
   const ui = await page((url) => {
     if (url.pathname === '/api/knowledge/graph') return { nodes: [center], relationships: [] };
-    if (url.pathname.endsWith('/ordered-neighbors')) return new Promise(resolve => { complete = resolve; });
+    if (url.pathname.endsWith('/ordered-graph')) return new Promise(resolve => { complete = resolve; });
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui;
-  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle();
-  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-neighbors'));
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-skeleton"]').click(); await settle();
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-graph'));
   assert.equal(request.signal.aborted, false); assert.equal(document.getElementById('graph-undo').disabled, false);
   document.getElementById('graph-undo').click();
   assert.equal(request.signal.aborted, true);
@@ -798,24 +872,24 @@ test('undo aborts pending ordered neighbors and ignores a response that arrives 
   assert.equal(document.getElementById('graph-undo').disabled, true);
 });
 
-test('ordered neighbor failures preserve the canvas and scope changes abort and discard late results', async (t) => {
+test('ordered skeleton failures preserve the canvas and scope changes abort and discard late results', async (t) => {
   const center = menuOrderedNode('center', '20'), next = menuOrderedNode('next', '30'), other = { id: 'other-scope', label: 'Event', name: '新范围知识' };
   let fail = true, complete;
   const ui = await page((url) => {
     if (url.pathname === '/api/knowledge/graph') return { nodes: [url.searchParams.get('conversationId') === 'new-context' ? other : center], relationships: [] };
-    if (url.pathname.endsWith('/ordered-neighbors')) {
+    if (url.pathname.endsWith('/ordered-graph')) {
       if (fail) return new Response(JSON.stringify({ success: false, message: '无权读取顺序节点' }), { status: 403 });
       return new Promise(resolve => { complete = resolve; });
     }
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui;
-  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle(70);
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-skeleton"]').click(); await settle(70);
   assert.equal(document.querySelectorAll('.knowledge-node').length, 1); assert.equal(document.getElementById('graph-undo').disabled, true);
   assert.match(document.getElementById('notice').textContent, /无权读取顺序节点/);
   fail = false;
-  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-neighbors"]').click(); await settle();
-  const request = ui.calls.filter(call => call.parsed.pathname.endsWith('/ordered-neighbors')).at(-1);
+  openNodeMenu(dom, document, 'center').querySelector('[data-action="ordered-skeleton"]').click(); await settle();
+  const request = ui.calls.filter(call => call.parsed.pathname.endsWith('/ordered-graph')).at(-1);
   await switchScope(dom, document, 'new-context');
   assert.equal(request.signal.aborted, true);
   complete({ centerId: 'center', nodes: [center, next], relationships: [{ id: 'late-next', source: 'center', target: 'next', type: 'NEXT_ORDERED' }], previousId: null, nextId: 'next' });

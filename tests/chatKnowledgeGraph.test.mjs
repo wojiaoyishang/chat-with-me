@@ -64,8 +64,59 @@ function screenCenter(ui, ids = ui.controller.getNodes().map(node => node.id)) {
 }
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.001, `${actual} should be near ${expected}`);
 
+test('owned knowledge keeps floating after physics settles without moving the skeleton or saved layout', t => {
+    const ui = setup(t), node = id => ui.svg.querySelector(`[data-node-id="${id}"]`);
+    ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
+    assert.equal(ui.svg.dataset.physicsState, 'settled'); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
+    const state = ui.controller.getViewState(), before = node('fork-event').getAttribute('transform'),
+        skeleton = [...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')),
+        edge = ui.svg.querySelector('.ordered-business'), path = edge.getAttribute('d');
+    ui.run(90);
+    assert.notEqual(node('fork-event').getAttribute('transform'), before);
+    assert.notEqual(edge.getAttribute('d'), path, 'relationship endpoints follow the visible node');
+    assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
+    assert.deepEqual(ui.controller.getViewState(), state, 'visual breathing never changes saved coordinates or orbit offsets');
+    assert.equal(ui.svg.dataset.physicsState, 'settled', 'ongoing rendering must not reheat D3');
+    ui.controller.setEdgeAnimation(false); const noFlow = node('fork-event').getAttribute('transform'); ui.run(90);
+    assert.notEqual(node('fork-event').getAttribute('transform'), noFlow, 'edge highlights and node movement are independent');
+    ui.controller.restoreViewState(state);
+    assert.deepEqual(ui.controller.getNodePositions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
+    const restoredState = ui.controller.getViewState(), restored = node('fork-event').getAttribute('transform'); ui.run(90);
+    assert.notEqual(node('fork-event').getAttribute('transform'), restored);
+    assert.deepEqual(ui.controller.getViewState(), restoredState);
+});
+
+test('owned floating pauses, respects reduced motion and resumes after viewport and document visibility changes', t => {
+    const ui = setup(t, { observeVisibility: true }), transform = () => ui.svg.querySelector('[data-node-id="fork-event"]').getAttribute('transform');
+    ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
+    ui.controller.setPhysics(false); const paused = transform(); ui.run(120);
+    assert.equal(transform(), paused); assert.equal(ui.frames.size, 0); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
+    ui.controller.setPhysics(true); ui.run(600);
+    ui.setReducedMotion(true); ui.run(2); const reduced = transform(); ui.run(120);
+    assert.equal(transform(), reduced); assert.equal(ui.frames.size, 0); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
+    ui.setReducedMotion(false); ui.run(60); assert.notEqual(transform(), reduced);
+    ui.setVisible(false); const offscreen = transform(); ui.run(120);
+    assert.equal(transform(), offscreen); assert.equal(ui.frames.size, 0);
+    ui.setVisible(true); ui.run(60); assert.notEqual(transform(), offscreen);
+    const doc = ui.dom.window.document;
+    Object.defineProperty(doc, 'hidden', { configurable: true, value: true }); doc.dispatchEvent(new ui.dom.window.Event('visibilitychange'));
+    const hidden = transform(); ui.run(120); assert.equal(transform(), hidden); assert.equal(ui.frames.size, 0);
+    Object.defineProperty(doc, 'hidden', { configurable: true, value: false }); doc.dispatchEvent(new ui.dom.window.Event('visibilitychange'));
+    ui.run(60); assert.notEqual(transform(), hidden);
+    ui.controller.destroy(); assert.equal(ui.frames.size, 0); assert.equal(ui.observerDisconnected(), true);
+});
+
+test('clicking a settled owned node without dragging does not stop its ongoing movement', t => {
+    const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
+    const node = ui.svg.querySelector('[data-node-id="fork-event"]');
+    point(ui.dom, node, 'pointerdown', 200, 130); ui.run(5);
+    point(ui.dom, ui.dom.window, 'pointerup', 200, 130);
+    const released = node.getAttribute('transform'); ui.run(90);
+    assert.notEqual(node.getAttribute('transform'), released); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
+});
+
 test('ordered context menu supports pointer and keyboard, stays inside the canvas, and closes without changing layout', t => {
-    const selected = [], expanded = [], ui = setup(t, { onOrderedNeighbors: id => selected.push(id), onExpand: id => expanded.push(id) });
+    const selected = [], expanded = [], ui = setup(t, { onOrderedSkeleton: id => selected.push(id), onExpand: id => expanded.push(id) });
     ui.controller.setData(knowledgeGraphPresentation({ nodes: [
         { id: 'time', label: 'Time', name: '时间', labels: ['Time', 'OrderedNode'], properties: { ordered_axis: 'axis', ordered_kind: 'time', ordered_key: '1' } },
         { id: 'legacy', label: 'Time', name: '旧时间' },
@@ -82,7 +133,8 @@ test('ordered context menu supports pointer and keyboard, stays inside the canva
     assert.equal(menu(), null); assert.equal(doc.activeElement, node); assert.equal(node.getAttribute('aria-expanded'), 'false');
     const keyboard = new ui.dom.window.KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }); node.dispatchEvent(keyboard);
     assert.equal(keyboard.defaultPrevented, true); assert.ok(menu());
-    menu().querySelector('[data-action="ordered-neighbors"]').click(); assert.deepEqual(selected, ['time']); assert.equal(menu(), null);
+    assert.equal(menu().querySelector('[data-action="ordered-neighbors"]'), null, 'ordered expansion has one menu entry');
+    menu().querySelector('[data-action="ordered-skeleton"]').click(); assert.deepEqual(selected, ['time']); assert.equal(menu(), null);
     node.dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true })); assert.ok(menu());
     doc.body.click(); assert.equal(menu(), null);
     assert.deepEqual(ui.controller.getNodePositions(), positions);
