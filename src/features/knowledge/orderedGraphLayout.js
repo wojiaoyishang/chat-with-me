@@ -617,13 +617,14 @@ export function createOrderedOrbitLayout() {
                 }
                 // Seeded, non-periodic impulses enter D3 velocity. Link springs,
                 // charge and collisions can change the resulting trajectory.
-                // This mild energy input keeps a visible free motion after the
-                // initial force layout cools, without dragging the fixed spine.
+                // Scale with D3's temperature like its physical forces. An
+                // inverse-alpha impulse overwhelmed cooled links and gravity,
+                // making ordinary nodes wander instead of gently settling.
                 const state = dynamics.get(node.id);
                 if (!state) continue;
                 state.windX = state.windX * 0.88 + (random(state) - 0.5) * 2.4;
                 state.windY = state.windY * 0.88 + (random(state) - 0.5) * 2.4;
-                const activity = Math.min(1, 0.08 / Math.max(alpha, 0.001));
+                const activity = Math.max(0, Math.min(0.08, alpha));
                 const wind = chunkNode(node) ? 0.22 : 0.9;
                 node.vx += state.windX * wind * activity;
                 node.vy += state.windY * wind * activity;

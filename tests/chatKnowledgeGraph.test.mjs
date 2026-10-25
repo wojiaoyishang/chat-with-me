@@ -85,7 +85,7 @@ test('owned knowledge keeps moving through real physics while the ordered skelet
     const sampled = [];
     for (let index = 0; index < 12; index++) { ui.run(30); sampled.push(renderPoint()); }
     const travel = Math.max(...sampled.flatMap(a => sampled.map(b => Math.hypot(a[0] - b[0], a[1] - b[1]) * scale)));
-    assert.ok(travel > 12, `owned knowledge should visibly move after settling (screen travel ${travel.toFixed(1)}px)`);
+    assert.ok(travel > 0.5 && travel < 12, `owned knowledge should gently move after settling (screen travel ${travel.toFixed(1)}px)`);
     assert.notDeepEqual(ui.controller.getViewState(), state, 'the current physical position is part of a canvas snapshot');
     assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
     ui.controller.setEdgeAnimation(false); const noFlow = node('fork-event').getAttribute('transform'); ui.run(90);

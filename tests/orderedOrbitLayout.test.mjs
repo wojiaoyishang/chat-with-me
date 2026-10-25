@@ -62,10 +62,37 @@ test('ordinary satellites move through physical coordinates, stay near their own
     orbit.move(event, time.x, time.y - 112); orbit.move(at('neighbor'), time.x + 1, time.y - 112);
     const nearBefore = Math.hypot(event.x - at('neighbor').x, event.y - at('neighbor').y);
     assert.ok(nearBefore < 2);
+    simulation.force('collision', forceCollide(node => (node.radius || 18) + 22).strength(0.8).iterations(2));
+    simulation.force('local', null).force('local', alpha => orbit.tick(alpha));
     simulation.nodes(graph.nodes).alpha(1).tick(340);
     assert.ok(Math.hypot(event.x - at('neighbor').x, event.y - at('neighbor').y) > 40,
         'same-owner collision must physically separate two Events with overlapping targets');
     simulation.stop();
+});
+
+test('a cooled ordinary graph moves gently without random impulses overpowering centering and collision', () => {
+    const graph = { nodes: [{ id: 'first', label: 'Event', x: -100, y: 0 },
+        { id: 'second', label: 'Event', x: 100, y: 0 }], relationships: [] };
+    const orbit = createOrderedOrbitLayout(); orbit.rebuild(graph.nodes, graph.relationships);
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.045 })
+        .force('charge', forceManyBody().strength(-120).distanceMin(35))
+        .force('x', forceX(0).strength(0.035)).force('y', forceY(0).strength(0.035))
+        .force('collision', forceCollide(48).strength(0.8));
+    simulation.force('local', null).force('local', alpha => orbit.tick(alpha));
+    simulation.tick(900);
+    const start = graph.nodes.map(({ x, y }) => ({ x, y }));
+    let maxStep = 0, maxExcursion = 0;
+    for (let step = 0; step < 360; step++) {
+        const previous = graph.nodes.map(({ x, y }) => ({ x, y })); simulation.tick();
+        for (const [index, node] of graph.nodes.entries()) {
+            maxStep = Math.max(maxStep, Math.hypot(node.x - previous[index].x, node.y - previous[index].y));
+            maxExcursion = Math.max(maxExcursion, Math.hypot(node.x - start[index].x, node.y - start[index].y));
+            assert.ok(Math.hypot(node.x, node.y) < 140, 'the ordinary graph stays near its physical center');
+        }
+    }
+    simulation.stop();
+    assert.ok(maxStep < 1, `settled motion must not lurch between frames (${maxStep.toFixed(2)}px)`);
+    assert.ok(maxExcursion > 0.1 && maxExcursion < 30, `motion remains subtle and bounded (${maxExcursion.toFixed(2)}px)`);
 });
 
 test('new orbit slots avoid neighboring skeleton nodes and their caption band without adding another owner', () => {

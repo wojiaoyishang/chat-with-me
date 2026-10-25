@@ -597,8 +597,9 @@ test('live physics keeps Time fixed while an Event and its source Chunk respond 
     edgeSamples.push(edge.getAttribute('d'));
   }
   const traveledSpan = Math.max(...traveled.flatMap(a => traveled.map(b => distance(a, b))));
-  assert.ok(traveledSpan > 4, `the Event should move under sustained real forces; span=${traveledSpan}`);
-  assert.ok(Math.max(...chunkTraveled.flatMap(a => chunkTraveled.map(b => distance(a, b)))) > 2, 'the source Chunk should move with the same physics engine');
+  assert.ok(traveledSpan > 0.1 && traveledSpan < 10, `settled Event motion stays gentle; span=${traveledSpan}`);
+  const chunkSpan = Math.max(...chunkTraveled.flatMap(a => chunkTraveled.map(b => distance(a, b))));
+  assert.ok(chunkSpan > 0.05 && chunkSpan < 20, `the source Chunk follows real forces without wandering; span=${chunkSpan}`);
   const ownerDistance = traveled.map(point => distance(point, positionOf(owner)));
   assert.ok(ownerDistance.every(value => value < 260), `the owner tether prevents free knowledge from drifting away; max=${Math.max(...ownerDistance)}`);
   assert.ok(chunkTraveled.every(point => distance(point, positionOf(event)) < 320), 'the source relation keeps Chunk near its Event');
