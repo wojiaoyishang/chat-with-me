@@ -44,7 +44,7 @@ await build({
             else if (requested === "@/config.js")
               contents = "export const BASE_BACKEND_URL='/api';";
             else if (requested === "@/lib/tools.jsx")
-              contents = "export const useLocalSetting=(_key,value)=>[value];";
+              contents = "export const useLocalSetting=(_key,value)=>[value];export const setLocalSetting=()=>{};";
             else if (requested === "@/components/ui/button")
               contents =
                 "export const Button=({variant,size,...props})=><button {...props}/>;";

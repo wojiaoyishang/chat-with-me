@@ -370,22 +370,11 @@ export function createOrderedGraphLayout() {
 // A semantic node has one visual owner. Other real relationships remain visible,
 // but never introduce competing springs or gravity across ordered branches.
 export function createOrderedOrbitLayout() {
-    let nodes = new Map(), groups = new Map(), dynamics = new Map(), anchoredSourceIds = new Set(), chunkNeighbors = new Map(), hasOrdered = false;
+    let nodes = new Map(), groups = new Map(), anchoredSourceIds = new Set(), chunkNeighbors = new Map(), hasOrdered = false;
     const chunkNode = node => node?.label === 'Chunk' || node?.labels?.includes('Chunk');
     const sourceNode = node => chunkNode(node) || isInternalOrderAxis(node);
     const ignored = new Set(['NEXT_ORDERED', 'ORDERED_CONTAINS', 'HAS_ORDERED_NODE', 'EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'CHILD_OF', 'ILLUSTRATES']);
     const finitePoint = value => value && Number.isFinite(value.x) && Number.isFinite(value.y);
-    const physicalSeed = id => {
-        let hash = 2166136261;
-        for (const char of String(id)) hash = Math.imul(hash ^ char.codePointAt(0), 16777619);
-        return hash >>> 0;
-    };
-    const random = state => {
-        let value = state.seed;
-        value ^= value << 13; value ^= value >>> 17; value ^= value << 5;
-        state.seed = value >>> 0 || 1;
-        return state.seed / 4294967296;
-    };
     const anchorCompare = (a, b) => orderedNodeRadius(a.ordered) - orderedNodeRadius(b.ordered) || a.id.localeCompare(b.id);
     const slotOffset = slot => {
         const ring = Math.floor(slot / 8), radius = 112 + ring * 76;
@@ -461,8 +450,6 @@ export function createOrderedOrbitLayout() {
                 }
             }
             groups = new Map();
-            const previousDynamics = dynamics;
-            dynamics = new Map();
             for (const node of nodes.values()) {
                 if (node.ordered || !owners.has(node.id)) { delete node.orderedOrbit; continue; }
                 const previous = !reset && node.orderedOrbit, candidates = owners.get(node.id);
@@ -473,10 +460,6 @@ export function createOrderedOrbitLayout() {
                 node.orderedOrbitNew = !valid || reset || restore && !valid;
                 if (!groups.has(anchorId)) groups.set(anchorId, []);
                 groups.get(anchorId).push(node);
-            }
-            for (const node of nodes.values()) if (!node.ordered) {
-                const previous = !reset && previousDynamics.get(node.id);
-                dynamics.set(node.id, previous || { seed: physicalSeed(node.id) || 1, windX: 0, windY: 0 });
             }
             // Only source components reaching an ordered owner omit world-
             // origin gravity. Other components retain normal centering forces;
@@ -541,7 +524,6 @@ export function createOrderedOrbitLayout() {
             }
         },
         controlled(node) { return Boolean(node?.ordered); },
-        hasDynamicMotion() { return nodes.size > 1 && dynamics.size > 0; },
         sourceAnchored(node) { return anchoredSourceIds.has(String(node?.id)); },
         physicalLink(a, b) {
             if (!a || !b || a === b || isInternalOrderAxis(a) || isInternalOrderAxis(b)) return false;
@@ -615,21 +597,6 @@ export function createOrderedOrbitLayout() {
                     node.y = rail.y + side * clearance;
                     if (node.vy * side < 0) node.vy *= -0.25;
                 }
-                // Seeded, non-periodic impulses enter D3 velocity. Link springs,
-                // charge and collisions can change the resulting trajectory.
-                // Scale with D3's temperature like its physical forces. An
-                // inverse-alpha impulse overwhelmed cooled links and gravity,
-                // making ordinary nodes wander instead of gently settling.
-                const state = dynamics.get(node.id);
-                if (!state) continue;
-                state.windX = state.windX * 0.88 + (random(state) - 0.5) * 2.4;
-                state.windY = state.windY * 0.88 + (random(state) - 0.5) * 2.4;
-                const activity = Math.max(0, Math.min(0.08, alpha));
-                // At rest nodes should look stationary. Keep background noise
-                // negligible; dragging, links and collisions drive movement.
-                const wind = chunkNode(node) ? 0.0022 : 0.009;
-                node.vx += state.windX * wind * activity;
-                node.vy += state.windY * wind * activity;
             }
         },
         sync: syncAnchors,

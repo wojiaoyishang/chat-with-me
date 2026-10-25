@@ -17,10 +17,12 @@ import {
 import { Button } from "@/components/ui/button";
 import apiClient, { isAuthRedirectError } from "@/lib/apiClient.js";
 import { BASE_BACKEND_URL } from "@/config.js";
-import { useLocalSetting } from "@/lib/tools.jsx";
+import { useLocalSetting, setLocalSetting } from "@/lib/tools.jsx";
 import {
   KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY,
   DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION,
+  KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY,
+  DEFAULT_KNOWLEDGE_GRAPH_PHYSICS_ANIMATION,
 } from "@/features/knowledge/graphSettings.js";
 
 const WorkflowEditor = lazy(
@@ -56,6 +58,10 @@ export default function BackendManagementPage({
     KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY,
     DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION,
   );
+  const [physicsAnimation] = useLocalSetting(
+    KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY,
+    DEFAULT_KNOWLEDGE_GRAPH_PHYSICS_ANIMATION,
+  );
   const query = new URLSearchParams(location.search);
   const taskId = kind === "tasks" ? query.get("taskId") : null;
   const incoming = location.state?.knowledgeImport;
@@ -90,10 +96,10 @@ export default function BackendManagementPage({
   const sendGraphPreferences = useCallback(() => {
     if (kind !== "knowledge") return;
     frame.current?.contentWindow?.postMessage(
-      { type: "cwm.graph-preferences", edgeAnimation: edgeAnimation === true },
+      { type: "cwm.graph-preferences", edgeAnimation: edgeAnimation === true, physicsAnimation: physicsAnimation !== false },
       window.location.origin,
     );
-  }, [kind, edgeAnimation]);
+  }, [kind, edgeAnimation, physicsAnimation]);
 
   useEffect(() => {
     if (ready) sendGraphPreferences();
@@ -124,6 +130,9 @@ export default function BackendManagementPage({
         return;
       const message = event.data;
       if (!message || typeof message !== "object") return;
+      if (kind === "knowledge" && message.type === "cwm.graph-physics-change" && typeof message.enabled === "boolean") {
+        setLocalSetting(KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY, message.enabled);
+      }
       if (kind === "tasks" && message.type === "cwm.workflow-editor") {
         setWorkflowRequest(
           (current) =>

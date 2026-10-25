@@ -18,7 +18,6 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     const controlled = node => orbitLayout.controlled(node);
     const flexibleTime = node => node?.ordered?.hierarchy === true;
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
-    enabled = !reducedMotion?.matches;
     const link = forceLink([]).id(node => node.id)
         .distance(edge => edge.sourceLink ? 135 : 180)
         .strength(edge => (edge.sourceLink ? 0.07 : 0.18) / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
@@ -32,26 +31,22 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         target.addEventListener(type, callback, options);
         listeners.push(() => target.removeEventListener(type, callback, options));
     };
-    const dynamicRunning = () => !destroyed && enabled && inViewport && !doc.hidden && orbitLayout.hasDynamicMotion();
+    const physicsRunning = () => !destroyed && enabled && inViewport && !doc.hidden
+        && nodes.size > 1 && simulation.alpha() > simulation.alphaMin();
     function refreshPhysics() {
-        if (!enabled || doc.hidden || !inViewport) {
-            simulation.alphaTarget(0).alpha(0);
-            svg.dataset.physicsState = enabled ? 'settled' : 'paused';
-            return;
-        }
-        if (dynamicRunning()) {
-            simulation.alphaTarget(drag?.moved ? 0.35 : 0.06).alpha(Math.max(0.06, simulation.alpha()));
-            svg.dataset.physicsState = 'running';
-        }
-        else simulation.alphaTarget(0);
+        // Gestures and graph changes provide finite heat; idle views never add
+        // energy. Visibility may suspend an unfinished layout without reheating it.
+        simulation.alphaTarget(0);
+        if (!enabled) simulation.alpha(0);
+        svg.dataset.physicsState = physicsRunning() ? 'running' : enabled ? 'settled' : 'paused';
+        svg.dataset.nodeAnimationActive = String(physicsRunning());
     }
     function updateEdgeAnimation() {
         svg.dataset.edgeAnimation = String(edgeAnimationEnabled);
         svg.dataset.edgeAnimationActive = String(!destroyed && enabled && inViewport && !doc.hidden);
-        svg.dataset.motionPreference = physicsPreference === null ? 'system' : physicsPreference ? 'enabled' : 'paused';
+        svg.dataset.motionPreference = physicsPreference === null ? 'default' : physicsPreference ? 'enabled' : 'paused';
         svg.dataset.reducedMotion = String(reducedMotion?.matches === true);
         refreshPhysics();
-        svg.dataset.nodeAnimationActive = String(dynamicRunning());
         if (destroyed || doc.hidden || !inViewport) {
             if (frame) win.cancelAnimationFrame(frame);
             frame = 0; lastTime = null; elapsed = 0;
@@ -62,12 +57,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         updateEdgeAnimation();
     }) : null;
     visibilityObserver?.observe(svg);
-    if (reducedMotion?.addEventListener) listen(reducedMotion, 'change', () => {
-        enabled = physicsPreference ?? !reducedMotion.matches;
-        onPhysicsChange?.(enabled);
-        updateEdgeAnimation();
-        if (enabled && !dynamicRunning() && nodes.size > 1) animate(0.2);
-    });
+    if (reducedMotion?.addEventListener) listen(reducedMotion, 'change', updateEdgeAnimation);
     updateEdgeAnimation();
     onPhysicsChange?.(enabled);
     const element = (tag, attributes = {}) => {
@@ -192,22 +182,16 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (destroyed || doc.hidden || !inViewport) { lastTime = null; return; }
         try {
             refreshPhysics();
-            svg.dataset.nodeAnimationActive = String(dynamicRunning());
             if (enabled && simulation.alpha() > simulation.alphaMin()) {
                 elapsed += lastTime == null ? step : Math.max(0, Math.min(64, time - lastTime));
                 lastTime = time;
                 while (elapsed + 0.00001 >= step) { simulation.tick(); elapsed = Math.max(0, elapsed - step); }
             }
             if (initialFit && !drag && !pinch && !marquee) {
-                const continuous = dynamicRunning();
-                if (!enabled || !continuous || simulation.alpha() < 0.2)
-                    frameCamera(undefined, fittedView?.maxZoom ?? 1.5);
-                // A finite layout may keep drifting after alpha first reaches
-                // 0.2, so finish its initial framing at the actual final tick.
-                // A continuously moving ordered view frames once after warmup.
-                if (!enabled || (continuous ? simulation.alpha() < 0.2 : simulation.alpha() <= simulation.alphaMin()))
-                    initialFit = false;
+                frameCamera(undefined, fittedView?.maxZoom ?? 1.5);
+                if (!enabled || simulation.alpha() <= simulation.alphaMin()) initialFit = false;
             }
+            refreshPhysics();
             draw();
             if (!ready) { ready = true; onReady?.(); }
             if (enabled && simulation.alpha() > simulation.alphaMin()) requestDraw();
@@ -220,8 +204,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     function animate(heat = 0.35) {
         refreshPhysics();
         if (!enabled || doc.hidden || !inViewport) { requestDraw(); return; }
-        simulation.alpha(Math.max(heat, simulation.alpha()));
-        svg.dataset.physicsState = enabled ? 'running' : 'paused';
+        if (nodes.size > 1) simulation.alpha(Math.max(heat, simulation.alpha()));
+        refreshPhysics();
         requestDraw();
     }
     function clearFocus() {
@@ -510,7 +494,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (drag?.pointerId === event.pointerId) { if (drag.moved) movedAt = Date.now(); releaseDrag(); }
         if (pointers.size < 2) {
             pinch = null;
-            if (dynamicRunning()) requestDraw();
+            if (physicsRunning()) requestDraw();
         }
         if (svg.hasPointerCapture?.(event.pointerId)) svg.releasePointerCapture(event.pointerId);
     };
@@ -575,7 +559,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         getNodePositions: () => [...nodes.values()].map(({ id, x, y }) => ({ id, x, y })),
         getRelationships: () => model?.relationships || [],
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
-        setPhysics(value) { physicsPreference = typeof value === 'boolean' ? value : null; enabled = physicsPreference ?? !reducedMotion?.matches; onPhysicsChange?.(enabled); updateEdgeAnimation(); if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
+        setPhysics(value) { const wasEnabled = enabled; physicsPreference = typeof value === 'boolean' ? value : null; enabled = physicsPreference ?? true; onPhysicsChange?.(enabled); updateEdgeAnimation(); if (wasEnabled === enabled) return; if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
         relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] }); orbitLayout.rebuild(nodes.values(), model?.relationships || [], { reset: true }); fit(); initialFit = true; animate(0.65); },
         destroy() { if (destroyed) return; destroyed = true; contextMenu.destroy(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };

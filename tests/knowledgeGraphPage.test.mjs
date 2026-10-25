@@ -288,7 +288,7 @@ test('knowledge edge animation obeys only trusted parent preferences and updates
     const svg = ui.document.getElementById('knowledge-canvas');
     assert.equal(svg.dataset.edgeAnimation, 'true');
     assert.equal(svg.dataset.edgeAnimationActive, 'true');
-    assert.equal(ui.pendingFrames(), 1, 'ordinary physics keeps one frame chain independent of edge highlights');
+    assert.equal(ui.pendingFrames(), 0, 'edge highlights never keep an idle force solver awake');
     const flows = [...svg.querySelectorAll('.knowledge-edge-flow')];
     assert.equal(flows.length, 2);
     for (const flow of flows) assert.equal(flow.getAttribute('d'), flow.previousElementSibling.getAttribute('d'));
@@ -300,7 +300,7 @@ test('knowledge edge animation obeys only trusted parent preferences and updates
     assert.equal(svg.dataset.edgeAnimation, 'true');
     send(trustedParent, 'http://localhost', false); assert.equal(svg.dataset.edgeAnimation, 'false');
     send(trustedParent, 'http://localhost', true); assert.equal(svg.dataset.edgeAnimation, 'true');
-    assert.equal(ui.pendingFrames(), 1); assert.equal(ui.document.getElementById('graph-camera').getAttribute('transform'), camera);
+    assert.equal(ui.pendingFrames(), 0); assert.equal(ui.document.getElementById('graph-camera').getAttribute('transform'), camera);
     ui.document.getElementById('graph-physics').click(); assert.equal(svg.dataset.edgeAnimationActive, 'false');
   } finally { ui.dom.window.close(); }
 });
@@ -359,7 +359,7 @@ test('standalone ordered rows preserve exact order and rigid dragging without in
   assert.ok(Math.abs(dragged[0] - before[0] - 70 / scale) < 0.02);
   assert.equal(at('late')[0] - dragged[0], delta); assert.equal(at('late')[1], dragged[1]); assert.deepEqual(at('unknown'), missing);
   pointer(dom, dom.window, 'pointerup', x + 70, y + 45); ui.runFrames(420);
-  assert.deepEqual(at('early'), dragged); assert.equal(ui.pendingFrames(), 1, 'the ordinary event keeps one ambient frame chain while ordered positions stay fixed');
+  assert.deepEqual(at('early'), dragged); assert.equal(ui.pendingFrames(), 0, 'ordinary nodes settle while ordered positions stay fixed');
   document.getElementById('graph-layout').click(); ui.runFrames(420);
   assert.equal(at('early')[1], at('late')[1]); assert.equal(at('late')[0] - at('early')[0], delta);
 });
@@ -516,7 +516,7 @@ test('dense time skeleton and single-owner slots preserve manual offsets through
       return { ...full, nodes: full.nodes.filter(node => ids.has(node.id)), relationships: full.relationships.filter(edge => edgeIds.has(edge.id)) };
     }
   };
-  const ui = await page(responder, { controlledAnimation: true, reducedMotion: true }); t.after(() => ui.dom.window.close());
+  const ui = await page(responder, { controlledAnimation: true, reducedMotion: true, localSettings: { KnowledgeGraphPhysicsAnimation: false } }); t.after(() => ui.dom.window.close());
   const { dom, document } = ui, at = id => positionOf(document.querySelector(`[data-node-id="${id}"]`)),
     timeIds = full.nodes.filter(node => node.labels?.includes('OrderedNode')).map(node => node.id),
     positions = () => new Map(full.nodes.map(node => [node.id, at(node.id)])),
@@ -555,7 +555,7 @@ test('dense time skeleton and single-owner slots preserve manual offsets through
   document.querySelector('#refresh').click(); await settle(180); ui.runFrames(420); await settle(170);
   assert.deepEqual(at(local.id), draggedEvent, 'refresh preserves the ordinary orbit offset');
   const saved = readCache(); assert.deepEqual(saved.nodes.find(node => node.id === local.id).orderedOrbit, savedOrbit);
-  const reloaded = await page(responder, { controlledAnimation: true, reducedMotion: true, seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
+  const reloaded = await page(responder, { controlledAnimation: true, reducedMotion: true, localSettings: JSON.parse(ui.dom.window.localStorage.getItem('LocalSetting')), seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
   const restoredAt = id => positionOf(reloaded.document.querySelector(`[data-node-id="${id}"]`));
   assert.ok(reloaded.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'), 'cached identities are authorized again on reload');
   assert.deepEqual(restoredAt(local.id), draggedEvent);
@@ -587,9 +587,9 @@ test('live physics keeps Time fixed while an Event and its source Chunk respond 
   ui.runFrames(800); await settle(180);
   const fixed = skeleton(), before = positionOf(event), beforeEdge = edge.getAttribute('d'), saved = cache(),
     owner = document.querySelector('[data-node-id="minute"]'), traveled = [before], chunkTraveled = [positionOf(chunk)], edgeSamples = [beforeEdge];
-  assert.equal(svg.dataset.physicsState, 'running');
-  assert.equal(svg.dataset.nodeAnimationActive, 'true');
-  assert.equal(ui.pendingFrames(), 1, 'continuous physical simulation has exactly one frame chain');
+  assert.equal(svg.dataset.physicsState, 'settled');
+  assert.equal(svg.dataset.nodeAnimationActive, 'false');
+  assert.equal(ui.pendingFrames(), 0, 'idle graphs schedule no physics frames');
   for (let sample = 0; sample < 8; sample += 1) {
     ui.runFrames(60);
     traveled.push(positionOf(event));
@@ -597,16 +597,16 @@ test('live physics keeps Time fixed while an Event and its source Chunk respond 
     edgeSamples.push(edge.getAttribute('d'));
   }
   const traveledSpan = Math.max(...traveled.flatMap(a => traveled.map(b => distance(a, b))));
-  assert.ok(traveledSpan > 0.1 && traveledSpan < 10, `settled Event motion stays gentle; span=${traveledSpan}`);
+  assert.ok(traveledSpan === 0, `settled Event motion stays gentle; span=${traveledSpan}`);
   const chunkSpan = Math.max(...chunkTraveled.flatMap(a => chunkTraveled.map(b => distance(a, b))));
-  assert.ok(chunkSpan > 0.05 && chunkSpan < 20, `the source Chunk follows real forces without wandering; span=${chunkSpan}`);
+  assert.ok(chunkSpan === 0, `the source Chunk follows real forces without wandering; span=${chunkSpan}`);
   const ownerDistance = traveled.map(point => distance(point, positionOf(owner)));
   assert.ok(ownerDistance.every(value => value < 260), `the owner tether prevents free knowledge from drifting away; max=${Math.max(...ownerDistance)}`);
   assert.ok(chunkTraveled.every(point => distance(point, positionOf(event)) < 320), 'the source relation keeps Chunk near its Event');
-  assert.ok(new Set(edgeSamples).size > 2, 'association geometry follows the freely moving endpoint');
+  assert.equal(new Set(edgeSamples).size, 1, 'idle association geometry stays exactly unchanged');
   assert.deepEqual(skeleton(), fixed, 'the entire ordered skeleton stays exactly fixed');
-  assert.equal(svg.dataset.physicsState, 'running', 'the actual D3 solver stays active');
-  assert.deepEqual(cache(), saved, 'continuous motion does not rewrite the cached workspace on every frame');
+  assert.equal(svg.dataset.physicsState, 'settled', 'the D3 solver sleeps until an actual edit or drag');
+  assert.deepEqual(cache(), saved, 'idle views do not rewrite the cached workspace');
   const [cx, cy, scale] = cameraOf(document), [ex, ey] = positionOf(event), beforeDragChunk = positionOf(chunk);
   const screenX = cx + ex * scale, screenY = cy + ey * scale;
   pointer(dom, event, 'pointerdown', screenX, screenY);
@@ -625,28 +625,28 @@ test('live physics keeps Time fixed while an Event and its source Chunk respond 
   const outside = event.getAttribute('transform'); ui.runFrames(100);
   assert.equal(event.getAttribute('transform'), outside); assert.equal(ui.pendingFrames(), 0);
   ui.setCanvasVisible(true); ui.runFrames(100);
-  assert.notEqual(event.getAttribute('transform'), outside);
+  assert.equal(event.getAttribute('transform'), outside, 'visibility does not wake a settled graph');
   ui.setReducedMotion(true); ui.runFrames(2);
   const reduced = event.getAttribute('transform'); ui.runFrames(100);
-  assert.notEqual(event.getAttribute('transform'), reduced, 'explicit enabling takes precedence over the system animation default');
-  assert.equal(ui.pendingFrames(), 1);
+  assert.equal(event.getAttribute('transform'), reduced, 'media preference changes must not wake an explicitly enabled, settled graph');
+  assert.equal(ui.pendingFrames(), 0);
   ui.setReducedMotion(false); ui.runFrames(100);
-  assert.notEqual(event.getAttribute('transform'), reduced);
+  assert.equal(event.getAttribute('transform'), reduced);
   Object.defineProperty(document, 'hidden', { configurable: true, value: true }); document.dispatchEvent(new dom.window.Event('visibilitychange'));
   const hidden = event.getAttribute('transform'); ui.runFrames(100);
   assert.equal(event.getAttribute('transform'), hidden); assert.equal(ui.pendingFrames(), 0);
   Object.defineProperty(document, 'hidden', { configurable: true, value: false }); document.dispatchEvent(new dom.window.Event('visibilitychange')); ui.runFrames(100);
-  assert.notEqual(event.getAttribute('transform'), hidden);
+  assert.equal(event.getAttribute('transform'), hidden);
   dom.window.dispatchEvent(new dom.window.Event('pagehide')); ui.runFrames(100);
   assert.equal(ui.pendingFrames(), 0);
   dom.window.dispatchEvent(new dom.window.Event('pageshow')); ui.runFrames(100);
-  assert.equal(ui.pendingFrames(), 1);
+  assert.equal(ui.pendingFrames(), 0);
   await settle(180);
   const cached = cache(), reloaded = await page(responder, { controlledAnimation: true, seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
   assert.ok(reloaded.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'));
   const reloadedEvent = reloaded.document.querySelector('[data-node-id="event"]'), restored = positionOf(reloadedEvent);
   reloaded.runFrames(100);
-  assert.ok(distance(positionOf(reloadedEvent), restored) > 0.1, 'a cached graph resumes physical motion');
+  assert.deepEqual(positionOf(reloadedEvent), restored, 'a cached graph preserves its exact physical layout');
   const stablePositions = items => items.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, ...(orderedOrbit ? { orderedOrbit } : {}) }));
   assert.deepEqual(stablePositions(JSON.parse(JSON.stringify(reloaded.dom.window.CWMGraphWorkspace.read('/api|db-default|'))).nodes), stablePositions(cached));
 });
@@ -2024,91 +2024,56 @@ test("cancelled pointer drags release the node, keep physics running, and never 
       `${cancelEvent} must not leave a node fixed`,
     );
     runFrames(500);
-    assert.equal(pendingFrames(), 1, 'free physics continues through a single frame chain');
+    assert.equal(pendingFrames(), 0, 'released nodes settle without remaining permanently pinned');
     assert.equal(camera.getAttribute("transform"), cameraAtDrag);
   }
 });
 
-test("reduced motion sets an honest default and explicit enabling starts real physics", async (t) => {
-  const { dom, document, runFrames, pendingFrames, setReducedMotion, setCanvasVisible, dumpStorage } = await page(undefined, {
-    controlledAnimation: true,
-    fullGraph: true,
-    reducedMotion: true,
-    observeVisibility: true,
+test("animation defaults on and the local preference survives refresh, scope changes and media changes", async (t) => {
+  const { dom, document, runFrames, pendingFrames, setReducedMotion, dumpStorage } = await page(undefined, {
+    controlledAnimation: true, fullGraph: true, reducedMotion: true,
   });
   t.after(() => dom.window.close());
-  const control = document.querySelector("#graph-physics"),
-    original = positionsOf(document);
-  assert.equal(control.getAttribute("aria-pressed"), "false");
-  assert.equal(control.textContent, '启用动画');
-  assert.match(control.title, /减少动画/);
-  runFrames(20);
-  assert.deepEqual(positionsOf(document), original);
-  assert.equal(pendingFrames(), 0);
+  const control = document.querySelector('#graph-physics'), original = positionsOf(document);
+  assert.equal(control.getAttribute('aria-pressed'), 'true'); runFrames(20);
+  assert.notDeepEqual(positionsOf(document), original, 'real layout forces run by default');
+  runFrames(600); const warmed = positionsOf(document); runFrames(600);
+  assert.deepEqual(positionsOf(document), warmed); assert.equal(pendingFrames(), 0);
   control.click();
-  assert.equal(control.getAttribute("aria-pressed"), "true");
-  assert.equal(control.textContent, '暂停动画');
-  runFrames(600);
-  const warmed = positionsOf(document); runFrames(120);
-  assert.notDeepEqual(positionsOf(document), warmed, 'user-enabled motion continues through real D3 coordinates after warmup');
-  assert.equal(pendingFrames(), 1);
+  assert.equal(JSON.parse(JSON.parse(dom.window.localStorage.getItem('LocalSetting')).KnowledgeGraphPhysicsAnimation), false);
   setReducedMotion(false); setReducedMotion(true); runFrames(120);
-  assert.equal(control.getAttribute('aria-pressed'), 'true', 'system changes preserve an explicit user choice');
+  assert.equal(control.getAttribute('aria-pressed'), 'false'); assert.deepEqual(positionsOf(document), warmed);
   await settle(180);
-  const reloaded = await page(undefined, { controlledAnimation: true, reducedMotion: true, seedStorage: dumpStorage() });
+  const reloaded = await page(undefined, { controlledAnimation: true, reducedMotion: true, localSettings: JSON.parse(dom.window.localStorage.getItem('LocalSetting')), seedStorage: dumpStorage() });
   t.after(() => reloaded.dom.window.close());
-  assert.equal(reloaded.document.querySelector('#graph-physics').getAttribute('aria-pressed'), 'true', 'refresh retains the explicit animation choice');
-  reloaded.runFrames(600); const restored = positionsOf(reloaded.document); reloaded.runFrames(120);
-  assert.notDeepEqual(positionsOf(reloaded.document), restored);
-  setCanvasVisible(false); const offscreen = positionsOf(document); runFrames(120);
-  assert.deepEqual(positionsOf(document), offscreen); assert.equal(pendingFrames(), 0);
-  setCanvasVisible(true); runFrames(120); assert.notDeepEqual(positionsOf(document), offscreen);
-  control.click();
-  const paused = positionsOf(document);
-  runFrames(120);
-  assert.deepEqual(positionsOf(document), paused);
-  assert.equal(pendingFrames(), 0);
-  setReducedMotion(false); runFrames(120);
-  assert.deepEqual(positionsOf(document), paused, 'a system change cannot undo a manual pause');
+  assert.equal(reloaded.document.querySelector('#graph-physics').getAttribute('aria-pressed'), 'false');
+  reloaded.runFrames(600); assert.equal(reloaded.pendingFrames(), 0);
+  control.click(); runFrames(20);
+  assert.equal(control.getAttribute('aria-pressed'), 'true'); assert.notDeepEqual(positionsOf(document), warmed);
+  runFrames(600); const settled = positionsOf(document);
+  dom.window.localStorage.setItem('LocalSetting', JSON.stringify({ KnowledgeGraphPhysicsAnimation:'false' }));
+  dom.window.dispatchEvent(new dom.window.StorageEvent('storage', { key:'LocalSetting' }));
+  assert.equal(control.getAttribute('aria-pressed'), 'false'); runFrames(600); assert.deepEqual(positionsOf(document), settled);
 });
 
-test("a graph without Time keeps physical motion across refresh and new neighbors", async (t) => {
-  const { dom, document, runFrames, pendingFrames } = await page(undefined, {
-    controlledAnimation: true,
-    fullGraph: true,
-  });
+test("a graph without Time stays still on hover and refresh, while new neighbors wake physical layout", async (t) => {
+  const { dom, document, runFrames, pendingFrames } = await page(undefined, { controlledAnimation: true, fullGraph: true });
   t.after(() => dom.window.close());
   runFrames(500);
-  const warmed = positionsOf(document), camera = document.querySelector('#graph-camera').getAttribute('transform');
-  assert.equal(
-    pendingFrames(),
-    1,
-    "ordinary nodes must not lose physics after the initial layout cools",
-  );
-  runFrames(60);
-  assert.ok(positionsOf(document).some((point, index) => distance(point, warmed[index]) > 0.1));
-  const beforeRefresh = positionsOf(document);
-  document.querySelector("#refresh").click();
-  await settle();
-  runFrames(60);
-  assert.ok(
-    positionsOf(document).some((point, index) => distance(point, beforeRefresh[index]) > 0.1),
-    "refreshing unchanged data must preserve continuous physics",
-  );
-  assert.equal(pendingFrames(), 1);
-  assert.equal(document.querySelector('#graph-camera').getAttribute('transform'), camera);
-  document
-    .querySelector('[data-node-id="node-2"]')
-    .dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
-  await settle();
-  assert.equal(document.querySelectorAll(".knowledge-node").length, 4);
+  const warmed = positionsOf(document), camera = document.querySelector('#graph-camera').getAttribute('transform'), node = document.querySelector('[data-node-id="node-2"]');
+  assert.equal(pendingFrames(), 0);
+  node.dispatchEvent(new dom.window.Event('pointerenter'));
+  pointer(dom, node, 'pointerdown', 250, 210); pointer(dom, dom.window, 'pointerup', 250, 210);
+  runFrames(600); assert.deepEqual(positionsOf(document), warmed); assert.equal(pendingFrames(), 0);
+  document.querySelector('#refresh').click(); await settle(); runFrames(120);
+  assert.deepEqual(positionsOf(document), warmed, 'refreshing unchanged topology must not reheat physics');
+  assert.equal(pendingFrames(), 0); assert.equal(document.querySelector('#graph-camera').getAttribute('transform'), camera);
+  node.dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true })); await settle();
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 4);
   runFrames(40);
-  assert.ok(
-    positionsOf(document)
-      .slice(0, warmed.length)
-      .some((point, index) => distance(point, warmed[index]) > 0.1),
-    "adding a connected neighbor preserves physical motion",
-  );
+  assert.ok(positionsOf(document).slice(0, warmed.length).some((point, index) => distance(point, warmed[index]) > 0.1), 'adding a connected neighbor triggers real forces');
+  runFrames(600); const settled = positionsOf(document); runFrames(600);
+  assert.deepEqual(positionsOf(document), settled); assert.equal(pendingFrames(), 0);
 });
 
 test("the force layout advances at the same pace on 60 Hz and 120 Hz displays", async (t) => {
@@ -2301,7 +2266,7 @@ test("successful database deletion clears undo so locally hidden history cannot 
   assert.equal(document.querySelector('[data-node-id="node-2"]'), null);
 });
 
-test("relayout undo restores exact positions then resumes physics without resetting the layout", async (t) => {
+test("relayout undo restores exact positions and leaves the restored layout asleep", async (t) => {
   const ui = await page(undefined, { controlledAnimation: true, fullGraph: true });
   t.after(() => ui.dom.window.close());
   ui.runFrames(40);
@@ -2312,7 +2277,7 @@ test("relayout undo restores exact positions then resumes physics without resett
   assert.deepEqual(positionsOf(ui.document), before);
   assert.deepEqual(cameraOf(ui.document), camera);
   ui.runFrames(20);
-  assert.notDeepEqual(positionsOf(ui.document), before, 'restored ordinary nodes remain physically active');
+  assert.deepEqual(positionsOf(ui.document), before, 'restored views stay exactly as the user left them');
   assert.deepEqual(cameraOf(ui.document), camera);
 });
 
@@ -2718,10 +2683,10 @@ test("a real page reload restores authorized nodes, hidden IDs, dragged layout a
     ),
   );
   first.runFrames(120);
-  assert.notDeepEqual(positionsOf(first.document), [
+  assert.deepEqual(positionsOf(first.document), [
     [-135, 90],
     [145, -70],
-  ], 'a restored ordinary graph continues physical motion without needing a Time node');
+  ], 'restoring a cached graph must not reheat it');
   assert.deepEqual(cameraOf(first.document), [385, 245, 1.6]);
   first.document.querySelector("#graph-physics").click();
   const svg = first.document.querySelector("#knowledge-canvas"),
@@ -2741,6 +2706,7 @@ test("a real page reload restores authorized nodes, hidden IDs, dragged layout a
   await settle(300);
   const layout = positionsOf(first.document),
     camera = cameraOf(first.document),
+    localSettings = JSON.parse(first.dom.window.localStorage.getItem('LocalSetting')),
     storage = first.dumpStorage(),
     serialized = storage[canvasKey()];
   assert.ok(serialized);
@@ -2755,6 +2721,7 @@ test("a real page reload restores authorized nodes, hidden IDs, dragged layout a
   const restored = await page(undefined, {
     controlledAnimation: true,
     seedStorage: storage,
+    localSettings,
   });
   t.after(() => restored.dom.window.close());
   assert.equal(restored.document.querySelectorAll(".knowledge-node").length, 2);

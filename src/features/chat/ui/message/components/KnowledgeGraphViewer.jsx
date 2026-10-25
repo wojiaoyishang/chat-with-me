@@ -7,7 +7,7 @@ import { createChatKnowledgeGraph } from './chatKnowledgeGraphRenderer.js';
 import apiClient from '@/lib/apiClient.js';
 import { mergeNetworkData, networkDatabaseId, networkDatabaseViews } from '../../../page/utils/networkMerge.js';
 import { useLocalSetting } from '@/lib/tools.jsx';
-import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
+import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION, KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_PHYSICS_ANIMATION } from '@/features/knowledge/graphSettings.js';
 import { createGraphHistory, graphHistoryShortcut } from '@/features/knowledge/graphHistory.js';
 import './KnowledgeGraphViewer.css';
 
@@ -27,8 +27,8 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, getOrder
     const recordCallback = useRef(onRecord);
     useEffect(() => { recordCallback.current = onRecord; }, [onRecord]);
     const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
-    const [physics, setPhysics] = useState(viewStates.current.get(scope)?.physics ?? null);
-    const [physicsEnabled, setPhysicsEnabled] = useState(() => physics ?? !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    const [physics, setPhysics] = useLocalSetting(KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_PHYSICS_ANIMATION);
+    const [physicsEnabled, setPhysicsEnabled] = useState(() => physics ?? true);
     const physicsRef = useRef(physics);
     physicsRef.current = physics;
     const [edgeAnimation] = useLocalSetting(KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION);

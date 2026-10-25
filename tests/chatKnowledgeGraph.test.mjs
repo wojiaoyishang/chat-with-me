@@ -64,58 +64,58 @@ function screenCenter(ui, ids = ui.controller.getNodes().map(node => node.id)) {
 }
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.001, `${actual} should be near ${expected}`);
 
-test('owned knowledge keeps moving through real physics while the ordered skeleton stays fixed', t => {
+test('owned knowledge sleeps exactly at rest and real physics resumes only after a node drag', t => {
     const ui = setup(t), node = id => ui.svg.querySelector(`[data-node-id="${id}"]`);
     ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
-    assert.equal(ui.svg.dataset.physicsState, 'running'); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
+    assert.equal(ui.svg.dataset.physicsState, 'settled'); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
+    assert.equal(ui.frames.size, 0, 'an idle graph stops scheduling physics frames');
     const state = ui.controller.getViewState(), before = node('fork-event').getAttribute('transform'),
         skeleton = [...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')),
         edge = ui.svg.querySelector('.ordered-business'), path = edge.getAttribute('d');
-    ui.run(90);
-    assert.notEqual(node('fork-event').getAttribute('transform'), before);
-    assert.notEqual(edge.getAttribute('d'), path, 'relationship endpoints follow the visible node');
+    ui.run(600);
+    assert.deepEqual(ui.controller.getViewState(), state, 'idle physical coordinates stay exactly unchanged');
+    assert.equal(edge.getAttribute('d'), path);
+    node('fork-event').dispatchEvent(new ui.dom.window.Event('pointerenter'));
+    ui.controller.setEdgeAnimation(false); ui.controller.setEdgeAnimation(true); ui.controller.zoom(0.9); ui.run(120);
+    assert.equal(node('fork-event').getAttribute('transform'), before, 'hover, highlights and camera changes never reheat the solver');
+    assert.equal(ui.frames.size, 0);
+    const [cx, cy, scale] = cameraValues(ui.svg), physical = state.positions.find(value => value.id === 'fork-event'),
+        x = cx + physical.x * scale, y = cy + physical.y * scale;
+    point(ui.dom, node('fork-event'), 'pointerdown', x, y);
+    point(ui.dom, ui.dom.window, 'pointermove', x + 80, y + 30); ui.run(5);
+    assert.notEqual(edge.getAttribute('d'), path, 'relationship endpoints follow the physical node while dragging');
+    assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
     assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
-    assert.notDeepEqual(ui.controller.getNodePositions(), state.positions.map(({ id, x, y }) => ({ id, x, y })), 'the actual physical coordinates must move');
-    assert.deepEqual(ui.controller.getViewState().positions.find(value => value.id === 'fork-event').orderedOrbit,
-        state.positions.find(value => value.id === 'fork-event').orderedOrbit, 'physical motion does not rewrite the owner');
-    assert.equal(ui.svg.dataset.physicsState, 'running', 'D3 must keep applying link and collision forces');
-    const physical = ui.controller.getNodePositions().find(value => value.id === 'fork-event');
-    assert.equal(node('fork-event').getAttribute('transform'), `translate(${physical.x.toFixed(2)} ${physical.y.toFixed(2)})`, 'rendering uses D3 coordinates directly');
-    const scale = cameraValues(ui.svg)[2], renderPoint = () => node('fork-event').getAttribute('transform').match(/-?\d+(?:\.\d+)?/g).map(Number);
-    const sampled = [];
-    for (let index = 0; index < 12; index++) { ui.run(30); sampled.push(renderPoint()); }
-    const travel = Math.max(...sampled.flatMap(a => sampled.map(b => Math.hypot(a[0] - b[0], a[1] - b[1]) * scale)));
-    assert.ok(travel < 0.5, `untouched owned knowledge should appear stationary after settling (screen travel ${travel.toFixed(2)}px)`);
-    assert.notDeepEqual(ui.controller.getViewState(), state, 'the current physical position is part of a canvas snapshot');
-    assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
-    ui.controller.setEdgeAnimation(false); const noFlow = node('fork-event').getAttribute('transform'); ui.run(90);
-    assert.notEqual(node('fork-event').getAttribute('transform'), noFlow, 'edge highlights and node movement are independent');
-    ui.controller.restoreViewState(state);
-    assert.deepEqual(ui.controller.getNodePositions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
-    const restored = node('fork-event').getAttribute('transform'); ui.run(90);
-    assert.notEqual(node('fork-event').getAttribute('transform'), restored);
-    assert.equal(ui.svg.dataset.physicsState, 'running', 'restoring a saved view must resume live physics');
+    point(ui.dom, ui.dom.window, 'pointerup', x + 80, y + 30); ui.run(600);
+    const settled = ui.controller.getViewState(); ui.run(600);
+    assert.deepEqual(ui.controller.getViewState(), settled, 'released nodes settle again without being permanently pinned');
+    assert.equal(settled.positions.find(value => value.id === 'fork-event').fx, null);
+    assert.equal(ui.frames.size, 0);
+    ui.controller.restoreViewState(state); ui.run(600);
+    assert.deepEqual(ui.controller.getNodePositions(), state.positions.map(({ id, x, y }) => ({ id, x, y })), 'undo preserves exact coordinates');
+    assert.deepEqual(ui.controller.getViewState().camera, state.camera);
+    const restored = ui.controller.getViewState(); ui.run(600); assert.deepEqual(ui.controller.getViewState(), restored);
 });
 
-test('owned floating pauses, respects reduced motion and resumes after viewport and document visibility changes', t => {
-    const ui = setup(t, { observeVisibility: true }), transform = () => ui.svg.querySelector('[data-node-id="fork-event"]').getAttribute('transform');
-    ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
+test('owned physics defaults on, pauses manually, and suspends unfinished movement while hidden', t => {
+    const ui = setup(t, { observeVisibility: true, reducedMotion: true }), transform = () => ui.svg.querySelector('[data-node-id="fork-event"]').getAttribute('transform');
+    ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(20);
+    assert.equal(ui.svg.dataset.nodeAnimationActive, 'true', 'animation defaults on even if the OS reduces motion');
     ui.controller.setPhysics(false); const paused = transform(); ui.run(120);
-    assert.equal(transform(), paused); assert.equal(ui.frames.size, 0); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
-    ui.controller.setPhysics(true); ui.run(600);
-    ui.controller.setPhysics(null);
-    ui.setReducedMotion(true); ui.run(2); const reduced = transform(); ui.run(120);
-    assert.equal(transform(), reduced); assert.equal(ui.frames.size, 0); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
-    ui.setReducedMotion(false); ui.run(60); assert.notEqual(transform(), reduced);
+    assert.equal(transform(), paused); assert.equal(ui.frames.size, 0);
+    ui.setReducedMotion(false); ui.run(60); assert.equal(transform(), paused, 'OS changes do not override a manual pause');
+    ui.controller.setPhysics(true); ui.run(20);
     ui.setVisible(false); const offscreen = transform(); ui.run(120);
     assert.equal(transform(), offscreen); assert.equal(ui.frames.size, 0);
-    ui.setVisible(true); ui.run(60); assert.notEqual(transform(), offscreen);
+    ui.setVisible(true); ui.run(20); assert.notEqual(transform(), offscreen);
     const doc = ui.dom.window.document;
     Object.defineProperty(doc, 'hidden', { configurable: true, value: true }); doc.dispatchEvent(new ui.dom.window.Event('visibilitychange'));
     const hidden = transform(); ui.run(120); assert.equal(transform(), hidden); assert.equal(ui.frames.size, 0);
     Object.defineProperty(doc, 'hidden', { configurable: true, value: false }); doc.dispatchEvent(new ui.dom.window.Event('visibilitychange'));
     ui.run(60); assert.notEqual(transform(), hidden);
-    ui.controller.destroy(); assert.equal(ui.frames.size, 0); assert.equal(ui.observerDisconnected(), true);
+    ui.run(600); const settled = transform(); ui.setVisible(false); ui.setVisible(true); ui.run(600);
+    assert.equal(transform(), settled); assert.equal(ui.frames.size, 0);
+    ui.controller.destroy(); assert.equal(ui.observerDisconnected(), true);
 });
 
 test('a source Chunk starts near related knowledge and follows its provenance through D3', t => {
@@ -130,7 +130,7 @@ test('a source Chunk starts near related knowledge and follows its provenance th
     ui.controller.restoreViewState({ ...saved, positions: saved.positions.map(point => point.id === 'source-chunk'
         ? { ...point, x: point.x + 400, y: point.y + 200 } : point) });
     const before = Math.hypot(at('source-chunk').x - at('fork-event').x, at('source-chunk').y - at('fork-event').y);
-    ui.run(180);
+    ui.controller.setPhysics(false); ui.controller.setPhysics(true); ui.run(180);
     const after = Math.hypot(at('source-chunk').x - at('fork-event').x, at('source-chunk').y - at('fork-event').y);
     assert.ok(after < before - 100, `provenance spring pulls Chunk toward Event (${before.toFixed(1)} → ${after.toFixed(1)})`);
     assert.deepEqual(at('fork-afternoon'), time, 'the Time node remains fixed while Chunk and Event move');
@@ -139,13 +139,16 @@ test('a source Chunk starts near related knowledge and follows its provenance th
     assert.equal(ui.svg.dataset.physicsState, 'running');
 });
 
-test('clicking a settled owned node without dragging does not stop its ongoing movement', t => {
+test('clicking and hovering a settled node does not restart physical motion', t => {
     const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);
-    const node = ui.svg.querySelector('[data-node-id="fork-event"]');
+    const node = ui.svg.querySelector('[data-node-id="fork-event"]'), before = ui.controller.getNodePositions();
+    node.dispatchEvent(new ui.dom.window.Event('pointerenter'));
     point(ui.dom, node, 'pointerdown', 200, 130); ui.run(5);
-    point(ui.dom, ui.dom.window, 'pointerup', 200, 130);
-    const released = node.getAttribute('transform'); ui.run(90);
-    assert.notEqual(node.getAttribute('transform'), released); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
+    point(ui.dom, ui.dom.window, 'pointermove', 202, 131);
+    point(ui.dom, ui.dom.window, 'pointerup', 202, 131);
+    node.dispatchEvent(new ui.dom.window.MouseEvent('click', { bubbles: true })); ui.run(600);
+    assert.deepEqual(ui.controller.getNodePositions(), before);
+    assert.equal(ui.svg.dataset.nodeAnimationActive, 'false'); assert.equal(ui.frames.size, 0);
 });
 
 test('ordered context menu supports pointer and keyboard, stays inside the canvas, and closes without changing layout', t => {
@@ -220,11 +223,11 @@ test('ordered chat nodes remain a small rigid sorted row across force, drag, foc
         'the event remains physically tethered to its own anchor without a fixed x coordinate');
     point(ui.dom, ui.svg.querySelector('[data-node-id="early"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 280, 170);
-    const moved = positions(); assert.equal(moved.get('late').x - moved.get('early').x, delta); assert.equal(moved.get('late').y, moved.get('early').y);
+    const moved = positions(); near(moved.get('late').x - moved.get('early').x, delta); assert.equal(moved.get('late').y, moved.get('early').y);
     assert.notEqual(moved.get('late').x, before.get('late').x); assert.equal(moved.get('unknown').y, before.get('unknown').y);
     point(ui.dom, ui.dom.window, 'pointerup', 280, 170); ui.run(420);
     ui.controller.focusNetwork(['late', 'early']); ui.run(420);
-    assert.equal(positions().get('late').x - positions().get('early').x, delta);
+    near(positions().get('late').x - positions().get('early').x, delta);
     const saved = ui.controller.getViewState(); ui.controller.relayout(); ui.controller.restoreViewState(saved); ui.run(420);
     near(positions().get('early').x, moved.get('early').x);
     ui.controller.setData(knowledgeGraphPresentation({ nodes: [network.nodes[0], ordered('later', '63745056000000004')], relationships: [] }));
@@ -372,11 +375,11 @@ test('chat streaming during a held time drag repins just that point and restorin
     assert.deepEqual(at(), restored, 'a stale held pointer must not overwrite the restored point');
 });
 
-test('ordinary graph physics and relationship highlights stay active with one frame chain', t => {
+test('ordinary graphs sleep while CSS highlights stay active and dragging wakes real physics', t => {
     const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(420);
     assert.equal(ui.svg.dataset.edgeAnimation, 'true');
     assert.equal(ui.svg.dataset.edgeAnimationActive, 'true');
-    assert.equal(ui.frames.size, 1, 'ordinary nodes keep a single physical simulation frame chain');
+    assert.equal(ui.frames.size, 0, 'highlight effects do not keep the physics solver awake');
     const flows = [...ui.svg.querySelectorAll('.knowledge-edge-flow')];
     assert.equal(flows.length, 3);
     for (const flow of flows) {
@@ -386,7 +389,7 @@ test('ordinary graph physics and relationship highlights stay active with one fr
     assert.equal(flows.filter(flow => flow.classList.contains('source-flow')).length, 1);
     const cameraBefore = camera(ui.svg), before = flows[0].getAttribute('d');
     ui.controller.setEdgeAnimation(false); ui.controller.setEdgeAnimation(true);
-    assert.equal(camera(ui.svg), cameraBefore); assert.equal(ui.frames.size, 1);
+    assert.equal(camera(ui.svg), cameraBefore); assert.equal(ui.frames.size, 0);
     point(ui.dom, ui.svg.querySelector('[data-node-id="root"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 280, 160); ui.run(1);
     assert.notEqual(flows[0].getAttribute('d'), before);
@@ -403,7 +406,7 @@ test('relationship preference, visibility, reduced motion and graph pause gate a
     ui.controller.setEdgeAnimation(true); assert.equal(ui.svg.dataset.edgeAnimation, 'true');
     ui.setVisible(false); assert.equal(ui.svg.dataset.edgeAnimationActive, 'false');
     ui.setVisible(true); assert.equal(ui.svg.dataset.edgeAnimationActive, 'true');
-    ui.setReducedMotion(true); assert.equal(ui.svg.dataset.edgeAnimationActive, 'false');
+    ui.setReducedMotion(true); assert.equal(ui.svg.dataset.edgeAnimationActive, 'true');
     ui.setReducedMotion(false); assert.equal(ui.svg.dataset.edgeAnimationActive, 'true');
     ui.controller.setPhysics(false); assert.equal(ui.svg.dataset.edgeAnimationActive, 'false');
     ui.controller.setPhysics(true); ui.run(420); assert.equal(ui.svg.dataset.edgeAnimationActive, 'true');
@@ -418,7 +421,7 @@ test('relationship preference, visibility, reduced motion and graph pause gate a
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge-flow').length, 0);
 });
 
-test('initial layout is framed once while continuous physics leaves the camera alone', t => {
+test('initial layout finishes framing when settled and manual camera changes stop tracking', t => {
     const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture()));
     const seedCamera = camera(ui.svg);
     for (let index = 0; index < 120 && camera(ui.svg) === seedCamera; index++) ui.run(1);
@@ -427,54 +430,45 @@ test('initial layout is framed once while continuous physics leaves the camera a
     const centered = screenCenter(ui);
     assert.ok(Math.abs(centered[0] - 320) < 12 && Math.abs(centered[1] - 150) < 12,
         'the initial graph is framed near the center before manual camera control');
-    const initialCamera = camera(ui.svg); ui.run(420); assert.equal(camera(ui.svg), initialCamera);
+    ui.run(420); const initialCamera = camera(ui.svg); ui.run(420); assert.equal(camera(ui.svg), initialCamera);
     const positions = ui.controller.getNodePositions(); ui.controller.relayout(); ui.run(2); ui.controller.zoom(0.7);
     const manualCamera = camera(ui.svg); ui.run(420); assert.equal(camera(ui.svg), manualCamera);
     assert.notDeepEqual(ui.controller.getNodePositions(), positions, 'Physics continues after canceling camera tracking');
 });
 
-test('no-Time entities and Chunks keep physical motion after warmup, removal of Time and view restore', t => {
+test('no-Time entities and Chunks settle after removing Time and resume for real interactions', t => {
     const ui = setup(t, { observeVisibility: true });
     ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(100);
     ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(600);
     assert.equal(ui.svg.querySelectorAll('.ordered-node').length, 0);
-    const state = ui.controller.getViewState(), positions = () => ui.controller.getNodePositions();
-    const source = ui.svg.querySelector('.source-flow'), path = source.getAttribute('d');
-    ui.run(120);
-    for (const id of ['root', 'chunk', 'parent']) {
-        const before = state.positions.find(node => node.id === id), after = positions().find(node => node.id === id);
-        assert.ok(Math.hypot(after.x - before.x, after.y - before.y) > 0.1, `${id} must change real physical coordinates without Time`);
-    }
-    assert.notEqual(source.getAttribute('d'), path);
-    assert.equal(ui.svg.dataset.physicsState, 'running'); assert.equal(ui.frames.size, 1);
-    for (const toggle of [value => ui.controller.setPhysics(value), value => ui.setVisible(value), value => ui.setReducedMotion(!value)]) {
-        ui.controller.setPhysics(null);
-        toggle(false); ui.run(2); const paused = positions(); ui.run(120);
-        assert.deepEqual(positions(), paused); assert.equal(ui.frames.size, 0);
-        toggle(true); ui.run(120); assert.notDeepEqual(positions(), paused); assert.equal(ui.frames.size, 1);
-    }
-    ui.controller.restoreViewState(state);
-    assert.deepEqual(positions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
-    ui.run(120); assert.notDeepEqual(positions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
-    assert.equal(ui.svg.dataset.physicsState, 'running');
+    const state = ui.controller.getViewState(), positions = () => ui.controller.getNodePositions(),
+        at = id => positions().find(node => node.id === id), source = ui.svg.querySelector('.source-flow'), path = source.getAttribute('d');
+    const settled = positions(); ui.run(600);
+    assert.deepEqual(positions(), settled); assert.equal(source.getAttribute('d'), path);
+    assert.equal(ui.svg.dataset.physicsState, 'settled'); assert.equal(ui.frames.size, 0);
+    ui.setVisible(false); ui.setVisible(true); ui.run(600);
+    assert.deepEqual(positions(), settled, 'visibility alone does not wake a settled graph');
+    const [cx, cy, scale] = cameraValues(ui.svg), x = cx + at('root').x * scale, y = cy + at('root').y * scale;
+    point(ui.dom, ui.svg.querySelector('[data-node-id="root"]'), 'pointerdown', x, y);
+    point(ui.dom, ui.dom.window, 'pointermove', x + 150, y + 60); ui.run(30);
+    for (const id of ['chunk', 'parent', 'other']) assert.notDeepEqual(at(id), settled.find(node => node.id === id), `${id} still responds to physical links`);
+    point(ui.dom, ui.dom.window, 'pointerup', x + 150, y + 60); ui.run(600);
+    assert.equal(ui.frames.size, 0);
+    ui.controller.restoreViewState(state); ui.run(600);
+    assert.deepEqual(positions(), settled, 'restoring a no-Time view preserves its exact physical layout');
 });
 
-test('explicit chat animation overrides reduced motion while automatic mode and manual pause follow their own choices', t => {
+test('chat animation defaults on and repeat preference updates never wake a settled layout', t => {
     const changes = [], ui = setup(t, { reducedMotion: true, onPhysicsChange: value => changes.push(value) });
-    ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(120);
-    const positions = () => ui.controller.getNodePositions(), initial = positions();
-    assert.equal(changes.at(-1), false); assert.equal(ui.svg.dataset.physicsState, 'paused');
-    assert.equal(ui.svg.dataset.motionPreference, 'system'); assert.equal(ui.frames.size, 0);
-    ui.controller.setPhysics(true); ui.run(600); const warmed = positions(); ui.run(120);
-    assert.notDeepEqual(positions(), warmed); assert.notDeepEqual(positions(), initial);
-    assert.equal(changes.at(-1), true); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
-    ui.setReducedMotion(false); ui.setReducedMotion(true); ui.run(120);
-    assert.equal(ui.svg.dataset.physicsState, 'running');
-    ui.controller.setPhysics(false); const paused = positions(); ui.setReducedMotion(false); ui.run(120);
-    assert.deepEqual(positions(), paused); assert.equal(changes.at(-1), false);
-    ui.controller.setPhysics(null); ui.run(120); assert.notDeepEqual(positions(), paused);
-    ui.setReducedMotion(true); const reduced = positions(); ui.run(120);
-    assert.deepEqual(positions(), reduced); assert.equal(changes.at(-1), false);
+    ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(20);
+    assert.equal(changes.at(-1), true); assert.equal(ui.svg.dataset.physicsState, 'running');
+    ui.run(600); const positions = () => ui.controller.getNodePositions(), settled = positions();
+    ui.setReducedMotion(false); ui.setReducedMotion(true); ui.controller.setPhysics(true); ui.run(600);
+    assert.deepEqual(positions(), settled); assert.equal(ui.frames.size, 0);
+    ui.controller.setPhysics(false); ui.setReducedMotion(false); ui.run(120);
+    assert.deepEqual(positions(), settled); assert.equal(changes.at(-1), false);
+    ui.controller.setPhysics(null); ui.run(20); assert.notDeepEqual(positions(), settled);
+    assert.equal(changes.at(-1), true, 'resetting preference uses the default-on setting');
 });
 
 test('single-node focus stays at viewport center while neighbors animate and keyboard focus uses the same behavior', t => {
@@ -667,7 +661,7 @@ test('model focus arriving before the streamed nodes is retained until every req
     assert.ok(points.every(node => node.y === 0));
 });
 
-test('reduced motion, pause, hide and destroy stop work; captions remain plain text', t => {
+test('manual pause and destroy stop work; captions remain plain text', t => {
     const ui = setup(t, { reducedMotion: true }), data = fixture(); data.nodes[0].name = '<img src=x onerror=bad()>正文';
     ui.controller.setData(knowledgeGraphPresentation(data)); ui.controller.setPhysics(false); ui.run(2);
     assert.equal(ui.ready(), 1, 'pausing before the first frame must still finish initial rendering');
@@ -676,8 +670,8 @@ test('reduced motion, pause, hide and destroy stop work; captions remain plain t
     ui.controller.setPhysics(true); ui.run(120);
     assert.equal(ui.frames.size, 1, 'an explicit request enables physics despite the system default');
     ui.controller.setPhysics(null); ui.run(2);
-    assert.equal(ui.frames.size, 0, 'automatic mode follows reduced motion');
-    ui.setReducedMotion(false); assert.ok(ui.frames.size > 0, 'turning reduced motion off can resume ordinary force layout');
+    assert.equal(ui.frames.size, 1, 'the default setting enables physics');
+    ui.setReducedMotion(false); assert.ok(ui.frames.size > 0, 'system preference changes do not interrupt an active force layout');
     ui.controller.setPhysics(false); assert.equal(ui.frames.size, 0);
     const next = fixture(); next.nodes = next.nodes.filter(node => node.id !== 'chunk');
     ui.controller.setData(knowledgeGraphPresentation(next));

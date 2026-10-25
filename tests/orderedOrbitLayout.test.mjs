@@ -70,6 +70,14 @@ test('ordinary satellites move through physical coordinates, stay near their own
     simulation.stop();
 });
 
+test('ordinary nodes receive no ambient impulses from the shared layout', () => {
+    const graph = { nodes: [{ id: 'event', label: 'Event', x: 20, y: 40, vx: 0, vy: 0 },
+        { id: 'source', label: 'Chunk', x: -40, y: 20, vx: 0, vy: 0 }], relationships: [] };
+    const orbit = createOrderedOrbitLayout(); orbit.rebuild(graph.nodes, []);
+    for (let frame = 0; frame < 600; frame++) orbit.tick(0.06);
+    for (const node of graph.nodes) assert.deepEqual({ vx: node.vx, vy: node.vy }, { vx: 0, vy: 0 });
+});
+
 test('a cooled ordinary graph appears stationary until disturbed', () => {
     const graph = { nodes: [{ id: 'first', label: 'Event', x: -100, y: 0 },
         { id: 'second', label: 'Event', x: 100, y: 0 }], relationships: [] };
@@ -236,7 +244,6 @@ test('manual Event offsets survive rebuild and restore without reassigning their
 test('owned knowledge has dynamic physical coordinates while Time stays fixed', () => {
     const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
     const originalTime = { x: time.x, y: time.y }, initial = { x: event.x, y: event.y };
-    assert.equal(orbit.hasDynamicMotion(), true);
     const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
     simulation.tick(8);
     assert.ok(Math.hypot(event.x - initial.x, event.y - initial.y) > 4,
@@ -245,9 +252,7 @@ test('owned knowledge has dynamic physical coordinates while Time stays fixed', 
     assert.deepEqual({ x: time.x, y: time.y }, originalTime);
     assert.ok(Math.hypot(event.x - time.x, event.y - time.y) < 190);
     simulation.stop();
-    assert.equal(createOrderedOrbitLayout().hasDynamicMotion(), false);
     orbit.rebuild(graph.nodes.filter(node => node.ordered), []);
-    assert.equal(orbit.hasDynamicMotion(), false);
 });
 
 test('Chunk provenance becomes a physical link without making the Chunk a rigid ordered satellite', () => {
@@ -289,7 +294,7 @@ test('an isolated Chunk participates in physics while retaining ordinary centeri
         'an untouched source should appear stationary after its initial layout');
 });
 
-for (const withTime of [false, true]) test(`unowned Entity and Chunk physics continues with Time=${withTime}`, () => {
+for (const withTime of [false, true]) test(`unowned Entity and Chunk remain bounded and react to displacement with Time=${withTime}`, () => {
     const graph = withTime ? orderedTimeForks() : { nodes: [], relationships: [] };
     graph.nodes.push({ id: 'unrelated-event', label: 'Event', x: 420, y: 240, vx: 0, vy: 0 },
         { id: 'unrelated-chunk', label: 'Chunk', x: 450, y: 260, vx: 0, vy: 0 });
@@ -299,7 +304,6 @@ for (const withTime of [false, true]) test(`unowned Entity and Chunk physics con
     assert.equal(orbit.sourceAnchored(at('unrelated-chunk')), false);
     assert.equal(orbit.sourceAnchored(at('fork-event')), false);
     const event = at('unrelated-event'), chunk = at('unrelated-chunk');
-    assert.equal(orbit.hasDynamicMotion(), true);
     assert.equal(orbit.physicalLink(event, chunk), true);
     const skeleton = graph.nodes.filter(node => node.ordered).map(({ x, y }) => ({ x, y }));
     const strength = node => node.ordered || node.orderedOrbit ? 0 : 0.035;
@@ -310,14 +314,14 @@ for (const withTime of [false, true]) test(`unowned Entity and Chunk physics con
     simulation.force('local', null).force('local', alpha => orbit.tick(alpha));
     simulation.tick(900);
     const warmed = [event, chunk].map(({ x, y }) => ({ x, y }));
-    simulation.tick(120); simulation.stop();
-    for (const [index, node] of [event, chunk].entries()) {
-        assert.ok(Math.hypot(node.x - warmed[index].x, node.y - warmed[index].y) > 0.1,
-            'both ordinary entities and source Chunks keep changing their real physical positions');
+    simulation.stop();
+    for (const node of [event, chunk]) {
         assert.ok(Math.hypot(node.x, node.y) < 500, 'unowned components retain centering gravity');
         assert.equal(node.orderedOrbit, undefined);
     }
     assert.ok(Math.hypot(event.x - chunk.x, event.y - chunk.y) < 140, 'the source spring still connects the moving nodes');
+    event.x += 100; simulation.alpha(0.35).tick(12);
+    assert.ok(Math.hypot(chunk.x - warmed[1].x, chunk.y - warmed[1].y) > 1, 'displacing an Event still pulls its source Chunk');
     assert.deepEqual(graph.nodes.filter(node => node.ordered).map(({ x, y }) => ({ x, y })), skeleton);
 });
 
@@ -371,7 +375,6 @@ test('both renderers use the identical ownership, physical links and rigid skele
     const graph = orderedTimeForks(), other = structuredClone(graph);
     const chat = layout(graph), management = layout(other, context.window.CWMOrderedGraphLayout.createOrderedOrbitLayout);
     assert.deepEqual(JSON.parse(JSON.stringify(other.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))), JSON.parse(JSON.stringify(graph.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))));
-    assert.equal(chat.orbit.hasDynamicMotion(), management.orbit.hasDynamicMotion());
     for (const [left, right] of [['fork-event', 'fork-afternoon'], ['fork-event', 'fork-november'], ['fork-day11', 'fork-day15']])
         assert.equal(chat.orbit.physicalLink(chat.at(left), chat.at(right)),
             management.orbit.physicalLink(management.at(left), management.at(right)));

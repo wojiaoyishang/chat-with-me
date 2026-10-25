@@ -6,7 +6,7 @@ import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
-import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY as key } from '../src/features/knowledge/graphSettings.js';
+import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY as key, KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY as physicsKey } from '../src/features/knowledge/graphSettings.js';
 import {
     WORKFLOW_EDGE_ANIMATION_SETTING_KEY as workflowKey,
     DEFAULT_WORKFLOW_EDGE_ANIMATION,
@@ -28,7 +28,7 @@ await build({
         builder.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path: name }) => {
             let contents = 'export default ()=>null;';
             if (name === 'graph-renderer') contents = `export function createChatKnowledgeGraph(_svg,options){
-                const graph={options,preferences:[],setData(){},setPhysics(){},setEdgeAnimation(value){this.preferences.push(value)},destroy(){this.destroyed=true}};
+                const graph={options,preferences:[],physicsPreferences:[],setData(){},setPhysics(value){this.physicsPreferences.push(value);this.options.onPhysicsChange?.(value)},setEdgeAnimation(value){this.preferences.push(value)},destroy(){this.destroyed=true}};
                 globalThis.graphPreferencesTest.instances.push(graph);options.onReady();return graph;}`;
             else if (name === '@/context/LazyVisibility.jsx') contents = 'export default ({children})=>children;';
             else if (name === '@/lib/apiClient.js' || name === '@/lib/apiClient') contents = 'export default {get:async()=>[]};export const isAuthRedirectError=()=>false;';
@@ -80,11 +80,11 @@ test('default-on interface toggle persists and updates an existing chat graph an
     await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
     const toggle=document.querySelector('[role="switch"][aria-label="知识图谱关系动画"]');assert.equal(toggle.getAttribute('aria-checked'),'true');
     await act(async()=>ui.frame.dispatchEvent(new ui.dom.window.Event('load')));
-    assert.deepEqual(ui.sent.at(-1),{data:{type:'cwm.graph-preferences',edgeAnimation:true},origin:'http://localhost'});
+    assert.deepEqual(ui.sent.at(-1),{data:{type:'cwm.graph-preferences',edgeAnimation:true,physicsAnimation:true},origin:'http://localhost'});
     await act(async()=>toggle.click());
     assert.equal(getLocalSetting(key),false);assert.equal(toggle.getAttribute('aria-checked'),'false');
     assert.equal(ui.instances.length,1);assert.equal(instance.preferences.at(-1),false);assert.equal(document.querySelector('iframe'),ui.frame);
-    assert.deepEqual(ui.sent.at(-1),{data:{type:'cwm.graph-preferences',edgeAnimation:false},origin:'http://localhost'});
+    assert.deepEqual(ui.sent.at(-1),{data:{type:'cwm.graph-preferences',edgeAnimation:false,physicsAnimation:true},origin:'http://localhost'});
     await act(async()=>toggle.click());assert.equal(getLocalSetting(key),true);assert.equal(instance.preferences.at(-1),true);assert.equal(ui.instances.length,1);
 });
 
@@ -102,7 +102,7 @@ test('cross-tab preference changes update chat and knowledge controls without re
     const ui=await workspace(t),instance=ui.instances[0];
     await act(async()=>{localStorage.setItem('LocalSetting',JSON.stringify({[key]:'false'}));window.dispatchEvent(new ui.dom.window.StorageEvent('storage',{key:'LocalSetting',newValue:localStorage.getItem('LocalSetting')}));});
     assert.equal(instance.preferences.at(-1),false);assert.equal(ui.instances.length,1);assert.equal(document.querySelector('iframe'),ui.frame);
-    assert.deepEqual(ui.sent.at(-1).data,{type:'cwm.graph-preferences',edgeAnimation:false});
+    assert.deepEqual(ui.sent.at(-1).data,{type:'cwm.graph-preferences',edgeAnimation:false,physicsAnimation:true});
 });
 
 test('workflow connection animation is enabled by default and its interface toggle persists',async t=>{
@@ -118,4 +118,25 @@ test('workflow connection animation is enabled by default and its interface togg
     await ui.render();
     await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
     assert.equal(document.querySelector('[role="switch"][aria-label="工作流连线动画"]').getAttribute('aria-checked'),'false');
+});
+
+
+test('node physics uses tools local settings across chat, trusted iframe messages and reloads', async t => {
+    const ui = await workspace(t), instance = ui.instances[0];
+    assert.equal(instance.physicsPreferences.at(-1), true);
+    const notify = (enabled, source = ui.frame.contentWindow, origin = 'http://localhost') => window.dispatchEvent(new ui.dom.window.MessageEvent('message', {
+        source, origin, data: {type:'cwm.graph-physics-change', enabled},
+    }));
+    await act(async()=>{ notify(false, window); notify(false, ui.frame.contentWindow, 'https://untrusted.invalid'); });
+    assert.equal(getLocalSetting(physicsKey, true), true, 'untrusted events cannot alter persisted preferences');
+    await act(async()=>notify(false));
+    assert.equal(getLocalSetting(physicsKey), false); assert.equal(instance.physicsPreferences.at(-1), false);
+    assert.equal(ui.sent.at(-1).data.physicsAnimation, false); assert.equal(ui.instances.length, 1);
+    await ui.render(false); await ui.render();
+    assert.equal(ui.instances.at(-1).physicsPreferences.at(-1), false, 'remount uses the persisted choice');
+    const currentFrame = document.querySelector('iframe'); currentFrame.contentWindow.postMessage = (data, origin) => ui.sent.push({data, origin});
+    await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='启用动画').click());
+    assert.equal(getLocalSetting(physicsKey), true); assert.equal(ui.sent.at(-1).data.physicsAnimation, true);
+    await act(async()=>{ localStorage.setItem('LocalSetting', JSON.stringify({[physicsKey]:'false'})); window.dispatchEvent(new ui.dom.window.StorageEvent('storage',{key:'LocalSetting'})); });
+    assert.equal(ui.instances.at(-1).physicsPreferences.at(-1), false); assert.equal(ui.sent.at(-1).data.physicsAnimation, false);
 });
