@@ -19,7 +19,7 @@ const fixture = () => ({ nodes: [
     { id: 'semantic', from: 'root', to: 'other', type: '关联' },
 ] });
 
-function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
+function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, onPhysicsChange, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
     const dom = new JSDOM(`<section><svg><g data-graph-camera><g data-graph-edges></g><g data-graph-nodes></g></g></svg>${controlsHeight ? '<div data-graph-controls></div>' : ''}</section>`, { pretendToBeVisual: true });
     const { window } = dom, svg = window.document.querySelector('svg'), frames = new Map();
     let sequence = 0, time = 0, ready = 0;
@@ -37,7 +37,7 @@ function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, getOrde
     svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, width: dimensions.width, height: dimensions.height });
     const controls = window.document.querySelector('[data-graph-controls]');
     if (controls) controls.getBoundingClientRect = () => ({ top: dimensions.height - dimensions.controlsHeight - 10, height: dimensions.controlsHeight });
-    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, edgeAnimation });
+    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, onPhysicsChange, edgeAnimation });
     t.after(() => { controller.destroy(); dom.window.close(); });
     return { dom, svg, controller, frames, ready: () => ready,
         setVisible(value) { visibility?.([{ isIntersecting: value }]); },
@@ -103,6 +103,7 @@ test('owned floating pauses, respects reduced motion and resumes after viewport 
     ui.controller.setPhysics(false); const paused = transform(); ui.run(120);
     assert.equal(transform(), paused); assert.equal(ui.frames.size, 0); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
     ui.controller.setPhysics(true); ui.run(600);
+    ui.controller.setPhysics(null);
     ui.setReducedMotion(true); ui.run(2); const reduced = transform(); ui.run(120);
     assert.equal(transform(), reduced); assert.equal(ui.frames.size, 0); assert.equal(ui.svg.dataset.nodeAnimationActive, 'false');
     ui.setReducedMotion(false); ui.run(60); assert.notEqual(transform(), reduced);
@@ -447,6 +448,7 @@ test('no-Time entities and Chunks keep physical motion after warmup, removal of 
     assert.notEqual(source.getAttribute('d'), path);
     assert.equal(ui.svg.dataset.physicsState, 'running'); assert.equal(ui.frames.size, 1);
     for (const toggle of [value => ui.controller.setPhysics(value), value => ui.setVisible(value), value => ui.setReducedMotion(!value)]) {
+        ui.controller.setPhysics(null);
         toggle(false); ui.run(2); const paused = positions(); ui.run(120);
         assert.deepEqual(positions(), paused); assert.equal(ui.frames.size, 0);
         toggle(true); ui.run(120); assert.notDeepEqual(positions(), paused); assert.equal(ui.frames.size, 1);
@@ -455,6 +457,24 @@ test('no-Time entities and Chunks keep physical motion after warmup, removal of 
     assert.deepEqual(positions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
     ui.run(120); assert.notDeepEqual(positions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
     assert.equal(ui.svg.dataset.physicsState, 'running');
+});
+
+test('explicit chat animation overrides reduced motion while automatic mode and manual pause follow their own choices', t => {
+    const changes = [], ui = setup(t, { reducedMotion: true, onPhysicsChange: value => changes.push(value) });
+    ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(120);
+    const positions = () => ui.controller.getNodePositions(), initial = positions();
+    assert.equal(changes.at(-1), false); assert.equal(ui.svg.dataset.physicsState, 'paused');
+    assert.equal(ui.svg.dataset.motionPreference, 'system'); assert.equal(ui.frames.size, 0);
+    ui.controller.setPhysics(true); ui.run(600); const warmed = positions(); ui.run(120);
+    assert.notDeepEqual(positions(), warmed); assert.notDeepEqual(positions(), initial);
+    assert.equal(changes.at(-1), true); assert.equal(ui.svg.dataset.nodeAnimationActive, 'true');
+    ui.setReducedMotion(false); ui.setReducedMotion(true); ui.run(120);
+    assert.equal(ui.svg.dataset.physicsState, 'running');
+    ui.controller.setPhysics(false); const paused = positions(); ui.setReducedMotion(false); ui.run(120);
+    assert.deepEqual(positions(), paused); assert.equal(changes.at(-1), false);
+    ui.controller.setPhysics(null); ui.run(120); assert.notDeepEqual(positions(), paused);
+    ui.setReducedMotion(true); const reduced = positions(); ui.run(120);
+    assert.deepEqual(positions(), reduced); assert.equal(changes.at(-1), false);
 });
 
 test('single-node focus stays at viewport center while neighbors animate and keyboard focus uses the same behavior', t => {
@@ -653,8 +673,10 @@ test('reduced motion, pause, hide and destroy stop work; captions remain plain t
     assert.equal(ui.ready(), 1, 'pausing before the first frame must still finish initial rendering');
     assert.equal(ui.frames.size, 0); assert.equal(ui.svg.querySelectorAll('img').length, 0);
     assert.match(ui.svg.querySelector('[data-node-id="root"] title').textContent, /<img/);
-    ui.controller.setPhysics(true); ui.run(2);
-    assert.equal(ui.frames.size, 0, 'reduced motion prevents an automatic animation even after resuming physics');
+    ui.controller.setPhysics(true); ui.run(120);
+    assert.equal(ui.frames.size, 1, 'an explicit request enables physics despite the system default');
+    ui.controller.setPhysics(null); ui.run(2);
+    assert.equal(ui.frames.size, 0, 'automatic mode follows reduced motion');
     ui.setReducedMotion(false); assert.ok(ui.frames.size > 0, 'turning reduced motion off can resume ordinary force layout');
     ui.controller.setPhysics(false); assert.equal(ui.frames.size, 0);
     const next = fixture(); next.nodes = next.nodes.filter(node => node.id !== 'chunk');

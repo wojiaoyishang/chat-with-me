@@ -486,7 +486,7 @@ test('standalone time expansion arriving during a drag preserves the captured si
   ui.runFrames(420); await settle(80);
 });
 
-test('strict time skeleton and single-owner orbits resist dense cross-branch links and preserve manual offsets through undo and cache reload', async t => {
+test('dense time skeleton and single-owner slots preserve manual offsets through paused drag, undo and cache reload', async t => {
   const full = orderedTimeForks(), local = { id: 'orbit-local', label: 'Event', name: '本地事件' },
     nearby = { id: 'orbit-nearby', label: 'Thing', name: '本地实体' }, shared = { id: 'orbit-shared', label: 'Thing', name: '共享实体' },
     source = { id: 'orbit-source', label: 'Chunk', name: '来源片段' }, sourceOnly = { id: 'orbit-source-only', label: 'Thing', name: '仅来源相连' };
@@ -535,7 +535,6 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   assert.ok(distance(at(local.id), at('fork-noon')) < 180);
   assert.equal(document.querySelectorAll('.knowledge-edge').length, full.relationships.length);
   assert.ok(document.querySelector('[data-edge-id="orbit-shared-second"]'), 'the non-owning business relation stays visible');
-  document.querySelector('#graph-physics').click();
   const dragBefore = positions();
   pointer(dom, document.querySelector('[data-node-id="fork-noon"]'), 'pointerdown', 400, 270);
   pointer(dom, dom.window, 'pointermove', 425, 290); ui.runFrames(1);
@@ -628,7 +627,8 @@ test('live physics keeps Time fixed while an Event and its source Chunk respond 
   assert.notEqual(event.getAttribute('transform'), outside);
   ui.setReducedMotion(true); ui.runFrames(2);
   const reduced = event.getAttribute('transform'); ui.runFrames(100);
-  assert.equal(event.getAttribute('transform'), reduced); assert.equal(ui.pendingFrames(), 0);
+  assert.notEqual(event.getAttribute('transform'), reduced, 'explicit enabling takes precedence over the system animation default');
+  assert.equal(ui.pendingFrames(), 1);
   ui.setReducedMotion(false); ui.runFrames(100);
   assert.notEqual(event.getAttribute('transform'), reduced);
   Object.defineProperty(document, 'hidden', { configurable: true, value: true }); document.dispatchEvent(new dom.window.Event('visibilitychange'));
@@ -1977,7 +1977,7 @@ test("physical animation can pause without a position jump and resume from the s
   const beforePause = positionsOf(document);
   control.click();
   assert.equal(control.getAttribute("aria-pressed"), "false");
-  assert.match(control.textContent, /恢复动画/);
+  assert.match(control.textContent, /启用动画/);
   runFrames(120);
   assert.deepEqual(positionsOf(document), beforePause);
   control.click();
@@ -2028,25 +2028,47 @@ test("cancelled pointer drags release the node, keep physics running, and never 
   }
 });
 
-test("reduced motion suspends automatic physics while retaining the graph animation control", async (t) => {
-  const { dom, document, runFrames, pendingFrames } = await page(undefined, {
+test("reduced motion sets an honest default and explicit enabling starts real physics", async (t) => {
+  const { dom, document, runFrames, pendingFrames, setReducedMotion, setCanvasVisible, dumpStorage } = await page(undefined, {
     controlledAnimation: true,
     fullGraph: true,
     reducedMotion: true,
+    observeVisibility: true,
   });
   t.after(() => dom.window.close());
   const control = document.querySelector("#graph-physics"),
     original = positionsOf(document);
-  assert.equal(control.getAttribute("aria-pressed"), "true");
+  assert.equal(control.getAttribute("aria-pressed"), "false");
+  assert.equal(control.textContent, '启用动画');
+  assert.match(control.title, /减少动画/);
   runFrames(20);
   assert.deepEqual(positionsOf(document), original);
   assert.equal(pendingFrames(), 0);
   control.click();
-  assert.equal(control.getAttribute("aria-pressed"), "false");
+  assert.equal(control.getAttribute("aria-pressed"), "true");
+  assert.equal(control.textContent, '暂停动画');
+  runFrames(600);
+  const warmed = positionsOf(document); runFrames(120);
+  assert.notDeepEqual(positionsOf(document), warmed, 'user-enabled motion continues through real D3 coordinates after warmup');
+  assert.equal(pendingFrames(), 1);
+  setReducedMotion(false); setReducedMotion(true); runFrames(120);
+  assert.equal(control.getAttribute('aria-pressed'), 'true', 'system changes preserve an explicit user choice');
+  await settle(180);
+  const reloaded = await page(undefined, { controlledAnimation: true, reducedMotion: true, seedStorage: dumpStorage() });
+  t.after(() => reloaded.dom.window.close());
+  assert.equal(reloaded.document.querySelector('#graph-physics').getAttribute('aria-pressed'), 'true', 'refresh retains the explicit animation choice');
+  reloaded.runFrames(600); const restored = positionsOf(reloaded.document); reloaded.runFrames(120);
+  assert.notDeepEqual(positionsOf(reloaded.document), restored);
+  setCanvasVisible(false); const offscreen = positionsOf(document); runFrames(120);
+  assert.deepEqual(positionsOf(document), offscreen); assert.equal(pendingFrames(), 0);
+  setCanvasVisible(true); runFrames(120); assert.notDeepEqual(positionsOf(document), offscreen);
+  control.click();
   const paused = positionsOf(document);
   runFrames(120);
   assert.deepEqual(positionsOf(document), paused);
   assert.equal(pendingFrames(), 0);
+  setReducedMotion(false); runFrames(120);
+  assert.deepEqual(positionsOf(document), paused, 'a system change cannot undo a manual pause');
 });
 
 test("a graph without Time keeps physical motion across refresh and new neighbors", async (t) => {
@@ -2742,7 +2764,8 @@ test("a real page reload restores authorized nodes, hidden IDs, dragged layout a
     null,
   );
   restored.runFrames(120);
-  assert.notDeepEqual(positionsOf(restored.document), layout, 'reload restores positions and resumes enabled physics');
+  assert.deepEqual(positionsOf(restored.document), layout, 'reload retains the explicit manual pause');
+  assert.equal(restored.document.querySelector('#graph-physics').getAttribute('aria-pressed'), 'false');
   assert.deepEqual(cameraOf(restored.document), camera);
 });
 

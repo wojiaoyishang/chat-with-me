@@ -27,7 +27,8 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, getOrder
     const recordCallback = useRef(onRecord);
     useEffect(() => { recordCallback.current = onRecord; }, [onRecord]);
     const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
-    const [physics, setPhysics] = useState(viewStates.current.get(scope)?.physics ?? true);
+    const [physics, setPhysics] = useState(viewStates.current.get(scope)?.physics ?? null);
+    const [physicsEnabled, setPhysicsEnabled] = useState(() => physics ?? !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
     const physicsRef = useRef(physics);
     physicsRef.current = physics;
     const [edgeAnimation] = useLocalSetting(KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION);
@@ -48,6 +49,7 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, getOrder
                 markerId,
                 edgeAnimation: edgeAnimationRef.current,
                 onReady: () => setReady(true),
+                onPhysicsChange: setPhysicsEnabled,
                 onError: cause => setError(cause.message || '图谱暂时无法显示'),
                 onExpand: (id, mode) => expandCallback.current?.(id, controller.current, mode),
                 onOrderedNeighbors: id => expandCallback.current?.(id, controller.current, 'ordered'),
@@ -114,7 +116,7 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, getOrder
             <button type="button" title="放大" aria-label="放大" onClick={() => controller.current?.zoom(1.25)}><Plus size={13} /></button>
             <button type="button" title="缩小" aria-label="缩小" onClick={() => controller.current?.zoom(0.8)}><Minus size={13} /></button>
             <button type="button" onClick={() => controller.current?.fit()}>适应画布</button>
-            <button type="button" aria-pressed={physics} onClick={() => setPhysics(value => !value)}>{physics ? '暂停动画' : '恢复动画'}</button>
+            <button type="button" aria-pressed={physicsEnabled} onClick={() => setPhysics(!physicsEnabled)}>{physicsEnabled ? '暂停动画' : '启用动画'}</button>
             <button type="button" onClick={() => { if (controller.current) { onRecord(controller.current, '重新排布'); controller.current.relayout(); } }}>重新排布</button>
             </div>
         </div>
