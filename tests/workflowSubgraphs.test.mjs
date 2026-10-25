@@ -291,6 +291,87 @@ test("quick run discovers nested sources and rejects duplicate keys across branc
   );
 });
 
+test("quick run materializes public source defaults and overrides without changing the designer graph", () => {
+  const catalogs = [
+    ...definitions,
+    {
+      kind: "number",
+      version: 1,
+      source: {
+        configField: "value",
+        required: true,
+        valueSchema: { type: "integer" },
+      },
+      configSchema: {
+        type: "object",
+        properties: { value: { type: "integer", default: 1 } },
+      },
+      inputs: [],
+      outputs: [{ name: "value", type: "int" }],
+    },
+  ];
+  const source = {
+    ...leaf("number", "number"),
+    inputKey: "amount",
+    config: { value: 2 },
+  };
+  const wrapped = wrapWorkflowSubgraph(
+    normalizeGraph({ nodes: [source], edges: [] }),
+    ["number"],
+    catalogs,
+  );
+  wrapped.node.subgraph.interface.parameters = [
+    {
+      name: "initial",
+      default: 3,
+      targets: [{ nodeId: "number", field: "value" }],
+    },
+  ];
+  const original = clone(wrapped.graph);
+  assert.equal(workflowInputFields(wrapped.graph, catalogs)[0].default, 3);
+  assert.deepEqual(wrapped.graph, original);
+  wrapped.node.config.initial = 8;
+  const configured = clone(wrapped.graph);
+  assert.equal(workflowInputFields(wrapped.graph, catalogs)[0].default, 8);
+  assert.deepEqual(wrapped.graph, configured);
+  assert.equal(source.config.value, 2);
+});
+
+test("nested public parameter values flow through wrapper defaults into quick-run source fields", () => {
+  const graph = fixture();
+  graph.nodes[0].inputKey = "diary";
+  graph.nodes[0].config.value = "child";
+  const inner = wrapWorkflowSubgraph(graph, ["a"], definitions);
+  inner.node.subgraph.interface.parameters = [
+    {
+      name: "initial",
+      default: "inner-default",
+      targets: [{ nodeId: "a", field: "value" }],
+    },
+  ];
+  const outer = wrapWorkflowSubgraph(inner.graph, [inner.node.id], definitions);
+  outer.node.subgraph.interface.parameters = [
+    {
+      name: "start",
+      default: "outer-default",
+      targets: [{ nodeId: inner.node.id, field: "initial" }],
+    },
+  ];
+  const original = clone(outer.graph);
+  assert.equal(
+    workflowInputFields(outer.graph, definitions)[0].default,
+    "outer-default",
+  );
+  assert.deepEqual(outer.graph, original);
+  outer.node.config.start = "explicit-outer";
+  const configured = clone(outer.graph);
+  assert.equal(
+    workflowInputFields(outer.graph, definitions)[0].default,
+    "explicit-outer",
+  );
+  assert.deepEqual(outer.graph, configured);
+});
+
 test("public parameter schema is derived from the internal field, including nested parameters", () => {
   const result = wrapWorkflowSubgraph(fixture(), ["b"], definitions);
   result.node.subgraph.interface.parameters = [

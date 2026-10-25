@@ -285,13 +285,31 @@ export function workflowInputFields(graph, definitions = [], path = []) {
     });
   for (const node of graph.nodes.filter(
     (node) => node.kind === "subgraph" && node.subgraph?.graph,
-  ))
+  )) {
+    // Quick Run must expose the compiler's effective source values. Public
+    // parameters may target either source configuration or nested parameters;
+    // materialize them on a private graph before recursively reading sources.
+    const childGraph = clone(node.subgraph.graph);
+    for (const parameter of node.subgraph.interface?.parameters || []) {
+      const configured =
+        Object.hasOwn(node.config || {}, parameter.name) &&
+        node.config[parameter.name] !== undefined;
+      if (!configured && !Object.hasOwn(parameter, "default")) continue;
+      const value = configured
+        ? node.config[parameter.name]
+        : parameter.default;
+      for (const target of parameter.targets || []) {
+        const child = childGraph.nodes.find(
+          (entry) => entry.id === target.nodeId,
+        );
+        if (child)
+          child.config = { ...child.config, [target.field]: clone(value) };
+      }
+    }
     fields.push(
-      ...workflowInputFields(node.subgraph.graph, definitions, [
-        ...path,
-        node.id,
-      ]),
+      ...workflowInputFields(childGraph, definitions, [...path, node.id]),
     );
+  }
   const keys = new Set();
   for (const field of fields) {
     if (keys.has(field.key))
