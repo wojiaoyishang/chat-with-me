@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
+import WorkflowSubgraphSetup from "./WorkflowSubgraphSetup.jsx";
 import { workflowStatusLabels } from "./workflowStatus.js";
 
 export default function WorkflowNode({ data, selected }) {
@@ -70,28 +71,51 @@ export default function WorkflowNode({ data, selected }) {
       {definition?.display?.subtitle && (
         <p className="workflow-node-id">{definition.display.subtitle}</p>
       )}
-      {subgraph && (
-        <div className="workflow-subgraph-summary">
-          <span>
-            {subgraph.execution?.mode === "serial" ? "串行" : "并行"} ·{" "}
-            {subgraph.graph?.nodes?.length || 0} 个节点
-            {subgraph.execution?.mode !== "serial" &&
-              ` · 上限 ${subgraph.execution?.maxConcurrency || 4}`}
-          </span>
-          {runtime.activeCount > 0 && (
-            <span>正在运行 {runtime.activeCount} 个节点</span>
-          )}
-          <button
-            className="nodrag"
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              data.onEnter?.(node.id);
-            }}
-          >
-            展开子图
-          </button>
-        </div>
+      {subgraph?.initialized === false && !data.monitor ? (
+        <WorkflowSubgraphSetup
+          nodeId={node.id}
+          templates={data.subgraphTemplates}
+          disabled={readOnly}
+          onConfirm={data.onInitializeSubgraph}
+        />
+      ) : (
+        subgraph && (
+          <div className="workflow-subgraph-summary">
+            <span>
+              {subgraph.execution?.mode === "serial" ? "串行" : "并行"} ·{" "}
+              {subgraph.graph?.nodes?.length || 0} 个节点
+              {subgraph.execution?.mode !== "serial" &&
+                ` · 上限 ${subgraph.execution?.maxConcurrency || 4}`}
+            </span>
+            {runtime.activeCount > 0 && (
+              <span>正在运行 {runtime.activeCount} 个节点</span>
+            )}
+            <button
+              className="nodrag"
+              type="button"
+              disabled={data.interactionDisabled}
+              onClick={(event) => {
+                event.stopPropagation();
+                data.onEnter?.(node.id);
+              }}
+            >
+              {data.monitor ? "展开子图" : "进入子图"}
+            </button>
+            {!data.monitor && (
+              <button
+                className="nodrag"
+                type="button"
+                disabled={data.interactionDisabled}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  data.onSaveSubgraphTemplate?.(node.id);
+                }}
+              >
+                保存模板
+              </button>
+            )}
+          </div>
+        )
       )}
       {definition?.source && (
         <div

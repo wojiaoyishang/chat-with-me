@@ -392,6 +392,7 @@ export function createWorkflowNode(definition, graph, position) {
     ...(definition.kind === "subgraph"
       ? {
           subgraph: {
+            initialized: false,
             graph: normalizeGraph(),
             interface: { inputs: [], outputs: [], parameters: [] },
             execution: { mode: "parallel", maxConcurrency: 4 },
@@ -596,6 +597,62 @@ export function pasteWorkflowSelection(
       edges: [...graph.edges, ...edges],
     },
     ids: nodes.map((node) => node.id),
+  };
+}
+
+/** Confirm a placeholder in place; template sources are copied and globally rekeyed. */
+export function initializeWorkflowSubgraph(
+  graph,
+  nodeId,
+  saved,
+  definitions,
+  inputKeys = workflowSourceKeys(graph),
+) {
+  const target = graph.nodes.find((node) => node.id === nodeId);
+  if (target?.kind !== "subgraph" || target.subgraph?.initialized !== false)
+    throw new Error("该子图已完成配置或已被删除，请重新选择。");
+  let replacement;
+  if (saved) {
+    const source = initializeGraph(saved.graph, definitions);
+    if (!source.nodes.length) throw new Error("所选模板没有可复制的节点。");
+    const wrapper =
+      source.nodes.length === 1 && source.nodes[0].kind === "subgraph"
+        ? clone(source.nodes[0])
+        : wrapWorkflowSubgraph(
+            source,
+            source.nodes.map((node) => node.id),
+            definitions,
+            saved.title,
+          ).node;
+    if (wrapper.subgraph.initialized === false)
+      throw new Error("所选子图模板尚未确认创建，请先完成模板配置。");
+    const pasted = pasteWorkflowSelection(
+      { ...graph, nodes: graph.nodes.filter((node) => node.id !== nodeId) },
+      { nodes: [wrapper], edges: [] },
+      target.position,
+      { inputKeys },
+    );
+    replacement = pasted.graph.nodes.at(-1);
+    replacement.id = target.id;
+    replacement.position = clone(target.position);
+    replacement.name = target.name || saved.title || wrapper.name;
+    replacement.subgraph = {
+      ...replacement.subgraph,
+      initialized: true,
+      origin: { templateId: saved.id, revision: saved.revision || 1 },
+    };
+  } else {
+    replacement = {
+      ...target,
+      subgraph: { ...target.subgraph, initialized: true },
+    };
+  }
+  return {
+    ...graph,
+    version: 3,
+    nodes: graph.nodes.map((node) =>
+      node.id === target.id ? replacement : node,
+    ),
   };
 }
 

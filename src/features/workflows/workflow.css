@@ -650,6 +650,29 @@
   text-underline-offset: 2px;
   cursor: pointer;
 }
+.workflow-subgraph-setup {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.4rem 1rem 0.8rem;
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+}
+.workflow-subgraph-setup label {
+  display: grid;
+  gap: 0.2rem;
+}
+.workflow-subgraph-setup button {
+  justify-self: start;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  color: var(--primary);
+  cursor: pointer;
+}
+.workflow-subgraph-setup button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 .workflow-breadcrumbs {
   position: absolute;
   z-index: 6;

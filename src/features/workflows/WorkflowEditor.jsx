@@ -67,6 +67,7 @@ import {
   createWorkflowNode,
   effectiveWorkflowDefinition,
   initializeGraph,
+  initializeWorkflowSubgraph,
   isWorkflowCanvasBlankTarget,
   isWorkflowTextEditing,
   normalizeGraph,
@@ -553,7 +554,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const enterSubgraph = useCallback(
     (id) => {
       if (busy || pendingPlacement) return;
-      if (graph.nodes.find((node) => node.id === id)?.kind === "subgraph")
+      const node = graph.nodes.find((node) => node.id === id);
+      if (node?.kind === "subgraph" && node.subgraph.initialized !== false)
         navigateGraph([...graphPath, id]);
     },
     [graph.nodes, graphPath, navigateGraph, busy, pendingPlacement],
@@ -610,6 +612,115 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     (event, nodeId, port) => openMenu(event, { nodeId, port }),
     [openMenu],
   );
+  const initializeSubgraph = useCallback(
+    async (nodeId, templateId) => {
+      if (busy || pendingPlacement || readOnly) return;
+      const path = [...graphPath];
+      setBusy("initialize-subgraph");
+      setError("");
+      try {
+        const saved = templateId
+          ? catalog.builtinTemplates?.find((item) => item.id === templateId) ||
+            (await workflowApi.template(templateId)).template
+          : null;
+        if (!alive.current) return;
+        if (templateId && !saved) throw new Error("无法加载所选模板，请重试。");
+        const root = draftRef.current.graph;
+        const inner = workflowGraphAtPath(root, path);
+        if (!inner) throw new Error("目标子图位置已改变，请重新选择。");
+        const next = initializeWorkflowSubgraph(
+          inner,
+          nodeId,
+          saved,
+          catalog.nodes,
+          workflowSourceKeys(root),
+        );
+        changeDraft((current) => ({
+          ...current,
+          graph: updateWorkflowGraphAtPath(current.graph, path, next),
+        }));
+        setNotice(
+          saved
+            ? `已复制模板：${saved.title}。可进入子图继续编辑。`
+            : "子图已创建，可进入编辑或保存模板。",
+        );
+      } catch (cause) {
+        if (alive.current) setError(cause.message);
+      } finally {
+        if (alive.current) setBusy("");
+      }
+    },
+    [busy, pendingPlacement, readOnly, graphPath, catalog, changeDraft],
+  );
+  const saveSubgraphTemplate = useCallback(
+    async (
+      target = graph.nodes.find((node) => node.id === selected),
+      targetPath = graphPath,
+    ) => {
+      if (!target?.subgraph || target.subgraph.initialized === false || busy)
+        return;
+      setBusy("save-subgraph");
+      setError("");
+      try {
+        const wrapper = { ...clone(target), position: { x: 80, y: 80 } };
+        delete wrapper.subgraph.origin;
+        const source = normalizeGraph({
+          version: 3,
+          nodes: [wrapper],
+          edges: [],
+          settings: rootGraph.settings,
+        });
+        await workflowApi.validate({ graph: source });
+        const { template: saved } = await workflowApi.saveTemplate({
+          title: target.name || "可复用子图",
+          description: target.subgraph.description || "",
+          graph: source,
+          sharingMembers: [],
+        });
+        if (!alive.current) return;
+        setTemplates((items) => [...items, saved]);
+        changeDraft((current) => ({
+          ...current,
+          graph: updateWorkflowGraphAtPath(
+            current.graph,
+            targetPath,
+            (inner) => ({
+              ...inner,
+              nodes: inner.nodes.map((node) =>
+                node.id === target.id
+                  ? {
+                      ...node,
+                      subgraph: {
+                        ...node.subgraph,
+                        origin: {
+                          templateId: saved.id,
+                          revision: saved.revision,
+                        },
+                      },
+                    }
+                  : node,
+              ),
+            }),
+          ),
+        }));
+        setNotice(`子图模板已保存 · 第 ${saved.revision} 版。`);
+        onChanged?.({ templateId: saved.id });
+      } catch (cause) {
+        if (alive.current) setError(cause.message);
+      } finally {
+        if (alive.current) setBusy("");
+      }
+    },
+    [
+      graph.nodes,
+      selected,
+      graphPath,
+      busy,
+      rootGraph.settings,
+      changeDraft,
+      onChanged,
+    ],
+  );
   const nodes = useMemo(
     () => [
       ...graph.nodes.map((node) => ({
@@ -630,11 +741,25 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             runtimeStages.find((stage) => stage.key === node.id)?.status,
           runtime: runtimeNodes[node.id] || {},
           readOnly: readOnly || Boolean(busy || pendingPlacement),
+          monitor: readOnly,
+          interactionDisabled: Boolean(busy || pendingPlacement),
           onValue,
           onBinding,
           onBusy,
           onPortMenu,
           onEnter: enterSubgraph,
+          onInitializeSubgraph: initializeSubgraph,
+          onSaveSubgraphTemplate: (id) =>
+            void saveSubgraphTemplate(
+              graph.nodes.find((item) => item.id === id),
+            ),
+          subgraphTemplates: [
+            ...templates,
+            ...(catalog.builtinTemplates || []).map((item) => ({
+              ...item,
+              builtin: true,
+            })),
+          ],
         },
       })),
       ...interfaceProjection.nodes.map((node) => ({
@@ -658,6 +783,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       onBusy,
       onPortMenu,
       enterSubgraph,
+      initializeSubgraph,
+      saveSubgraphTemplate,
+      templates,
+      catalog.builtinTemplates,
       interfaceProjection.nodes,
     ],
   );
@@ -838,94 +967,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       setError("");
     } catch (cause) {
       setError(cause.message);
-    }
-  };
-  const insertSubgraphTemplate = async (id) => {
-    if (!id || busy) return;
-    setBusy("insert-subgraph");
-    setError("");
-    try {
-      const builtin = catalog.builtinTemplates?.find((item) => item.id === id);
-      const saved = builtin || (await workflowApi.template(id)).template;
-      if (!alive.current) return;
-      const source = initializeGraph(saved.graph, catalog.nodes);
-      let wrapper;
-      if (source.nodes.length === 1 && source.nodes[0].kind === "subgraph")
-        wrapper = clone(source.nodes[0]);
-      else
-        wrapper = wrapWorkflowSubgraph(
-          source,
-          source.nodes.map((node) => node.id),
-          catalog.nodes,
-          saved.title,
-        ).node;
-      wrapper.subgraph.origin = {
-        templateId: saved.id,
-        revision: saved.revision || 1,
-      };
-      paste({ nodes: [wrapper], edges: [] });
-      setNotice(`已插入子图：${saved.title}。修改不会影响原模板。`);
-    } catch (cause) {
-      if (alive.current) setError(cause.message);
-    } finally {
-      if (alive.current) setBusy("");
-    }
-  };
-  const saveSubgraphTemplate = async (
-    target = selectedNode,
-    targetPath = graphPath,
-  ) => {
-    if (!target?.subgraph || busy) return;
-    setBusy("save-subgraph");
-    setError("");
-    try {
-      const wrapper = { ...clone(target), position: { x: 80, y: 80 } };
-      delete wrapper.subgraph.origin;
-      const source = normalizeGraph({
-        version: 3,
-        nodes: [wrapper],
-        edges: [],
-        settings: rootGraph.settings,
-      });
-      await workflowApi.validate({ graph: source });
-      const { template: saved } = await workflowApi.saveTemplate({
-        title: target.name || "可复用子图",
-        description: target.subgraph.description || "",
-        graph: source,
-        sharingMembers: [],
-      });
-      if (!alive.current) return;
-      setTemplates((items) => [...items, saved]);
-      changeDraft((current) => ({
-        ...current,
-        graph: updateWorkflowGraphAtPath(
-          current.graph,
-          targetPath,
-          (inner) => ({
-            ...inner,
-            nodes: inner.nodes.map((node) =>
-              node.id === target.id
-                ? {
-                    ...node,
-                    subgraph: {
-                      ...node.subgraph,
-                      origin: {
-                        templateId: saved.id,
-                        revision: saved.revision,
-                      },
-                    },
-                  }
-                : node,
-            ),
-          }),
-        ),
-      }));
-      setNotice(`子图模板已保存 · 第 ${saved.revision} 版。`);
-      onChanged?.({ templateId: saved.id });
-    } catch (cause) {
-      if (alive.current) setError(cause.message);
-    } finally {
-      if (alive.current) setBusy("");
     }
   };
   const updateSubgraphTemplate = async () => {
@@ -1143,6 +1184,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     const node = createWorkflowNode(definition, current, position);
     changeGraph({ ...current, nodes: [...current.nodes, node] });
     select([node.id]);
+    if (node.kind === "subgraph") setFocusRequest({ id: node.id });
     setPanel("node");
     setMobilePane("canvas");
   };
@@ -1728,26 +1770,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         )}
                       </div>
                     )}
-                    <div className="mt-3 space-y-2">
-                      <label className="workflow-label">插入可复用子图</label>
-                      <WorkflowSelect
-                        label="插入子图模板"
-                        value=""
-                        disabled={Boolean(busy || pendingPlacement)}
-                        onChange={(id) => void insertSubgraphTemplate(id)}
-                        options={[
-                          { value: "", label: "选择模板并作为子图插入" },
-                          ...templates.map((item) => ({
-                            value: item.id,
-                            label: `${item.title} · v${item.revision}`,
-                          })),
-                          ...(catalog.builtinTemplates || []).map((item) => ({
-                            value: item.id,
-                            label: `${item.title} · 内置`,
-                          })),
-                        ]}
-                      />
-                    </div>
                     <div className="mt-3 flex gap-2">
                       <input
                         ref={importFileRef}
@@ -2162,18 +2184,19 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     >
                       <Group className="size-4" />
                     </Button>
-                    {selectedNode?.kind === "subgraph" && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label="进入选中子图"
-                        title="进入子图"
-                        disabled={Boolean(busy || pendingPlacement)}
-                        onClick={() => enterSubgraph(selectedNode.id)}
-                      >
-                        <FolderOpen className="size-4" />
-                      </Button>
-                    )}
+                    {selectedNode?.kind === "subgraph" &&
+                      selectedNode.subgraph.initialized !== false && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          aria-label="进入选中子图"
+                          title="进入子图"
+                          disabled={Boolean(busy || pendingPlacement)}
+                          onClick={() => enterSubgraph(selectedNode.id)}
+                        >
+                          <FolderOpen className="size-4" />
+                        </Button>
+                      )}
                     <Button
                       variant="outline"
                       size="icon"
@@ -2237,10 +2260,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     enterSubgraph(menu.nodeId);
                     setMenu(null);
                   }}
-                  isSubgraph={
-                    graph.nodes.find((node) => node.id === menu?.nodeId)
-                      ?.kind === "subgraph"
-                  }
+                  isSubgraph={graph.nodes.some(
+                    (node) =>
+                      node.id === menu?.nodeId &&
+                      node.kind === "subgraph" &&
+                      node.subgraph.initialized !== false,
+                  )}
                   onAdd={() => openPicker({ x: menu.x, y: menu.y })}
                   onPortMode={(mode) => {
                     if (menu?.port)

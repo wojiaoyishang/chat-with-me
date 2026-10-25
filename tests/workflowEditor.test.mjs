@@ -301,11 +301,17 @@ async function environment(request = {}, options = {}) {
               ]
             : [],
         };
-      if (url === `/tasks/workflows/templates/${options.template?.id}`)
+      if (url === `/tasks/workflows/templates/${options.template?.id}`) {
+        if (options.templateLoadError) throw new Error("模板加载失败，请重试");
+        if (options.templateDeferred)
+          await new Promise((resolve) => {
+            options.templateDeferred.resolve = resolve;
+          });
         return {
           template: structuredClone(options.template),
           inputFields: structuredClone(options.template.inputFields),
         };
+      }
       if (url === "/chat/models") return [{ id: "model-1", name: "测试模型" }];
       if (url === "/schemas/templates")
         return {
@@ -475,7 +481,7 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=({data,...rest})=>{const Component=data.direction?props.nodeTypes.workflowInterface:props.nodeTypes.workflow;return <Component data={data} {...rest}/>};return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=>{const Component=props.nodeTypes[node.type];return <div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Component data={node.data} selected={node.selected}/></div>})}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested === "task-events")
                 contents =
                   "export const onEvent=({event})=>({then:callback=>{const listeners=globalThis.workflowUITest.taskEventListeners;listeners.set(event,callback);return ()=>listeners.delete(event)}});";
@@ -792,6 +798,51 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
       (node) => node.data.kind === "subgraph",
     );
     assert.ok(group);
+    await act(() => new Promise((resolve) => setTimeout(resolve, 60)));
+    assert.ok(
+      globalThis.workflowUITest.fitViewCalls.some(
+        (request) => request.nodes?.[0]?.id === group.id,
+      ),
+      "a new subgraph focuses its mandatory on-card setup controls",
+    );
+    assert.equal(group.data.node.subgraph.initialized, false);
+    assert.equal(button("进入子图"), undefined);
+    assert.equal(button("保存模板"), undefined);
+    assert.equal(document.querySelector('[aria-label="进入选中子图"]'), null);
+    assert.ok(!document.body.textContent.includes("插入可复用子图"));
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodeDoubleClick({}, group),
+    );
+    assert.equal(globalThis.workflowUITest.flow.nodes[0].id, group.id);
+    await input(
+      document.querySelector('[aria-label="子图创建方式"]'),
+      "new",
+      app.dom,
+      "change",
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes[0].data.node.subgraph.initialized,
+      false,
+    );
+    await click(button("确认新建"), app.dom);
+    assert.equal(globalThis.workflowUITest.flow.nodes[0].id, group.id);
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes[0].data.node.subgraph.initialized,
+      true,
+    );
+    assert.ok(button("保存模板"));
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes[0].data.node.subgraph.initialized,
+      false,
+    );
+    await click(
+      document.querySelector('[aria-label="重做工作流修改"]'),
+      app.dom,
+    );
     await click(button("进入子图"), app.dom);
     assert.ok(paletteButton("输入参数"));
     await click(paletteButton("知识提取"), app.dom);
@@ -862,6 +913,130 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
     assert.equal(group.data.definition.inputs[0].display.title, "待处理资料");
     assert.equal(group.data.definition.outputs[0].type, "extracted");
     assert.equal(paletteButton("输入参数"), undefined);
+  } finally {
+    await app.close();
+  }
+});
+
+test("copying a saved template initializes the same subgraph only after confirmation", async () => {
+  const reusable = {
+    id: "reusable",
+    title: "已保存处理流程",
+    revision: 2,
+    graph: catalog.standardGraph,
+  };
+  const app = await environment({}, { template: reusable });
+  try {
+    const palette = [
+      ...document.querySelectorAll(".workflow-palette-node"),
+    ].find((node) => node.querySelector("strong")?.textContent === "子图");
+    await click(palette, app.dom);
+    let group = globalThis.workflowUITest.flow.nodes.find(
+      (node) => node.data.kind === "subgraph",
+    );
+    const id = group.id,
+      position = group.position;
+    await input(
+      document.querySelector('[aria-label="子图创建方式"]'),
+      "template",
+      app.dom,
+      "change",
+    );
+    assert.equal(button("确认复制").disabled, true);
+    await input(
+      document.querySelector('[aria-label="子图来源模板"]'),
+      "reusable",
+      app.dom,
+      "change",
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === id).data
+        .node.subgraph.graph.nodes.length,
+      0,
+    );
+    assert.equal(
+      app.calls.filter((call) => call.url.endsWith("/templates/reusable"))
+        .length,
+      0,
+    );
+    await click(button("确认复制"), app.dom);
+    group = globalThis.workflowUITest.flow.nodes.find((node) => node.id === id);
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.length,
+      3,
+      "does not add another outer node",
+    );
+    assert.deepEqual(group.position, position);
+    assert.equal(group.data.node.subgraph.initialized, true);
+    assert.equal(group.data.node.subgraph.graph.nodes.length, 2);
+    assert.deepEqual(group.data.node.subgraph.origin, {
+      templateId: "reusable",
+      revision: 2,
+    });
+    assert.ok(button("进入子图"));
+    await click(button("保存模板"), app.dom);
+    assert.equal(
+      app.calls.findLast((call) => call.url === "/tasks/workflows/templates")
+        .payload.graph.nodes[0].id,
+      id,
+    );
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) => node.id === id).data
+        .node.subgraph.initialized,
+      false,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("failed subgraph template loading keeps the pending node available for retry", async () => {
+  const reusable = {
+    id: "reusable",
+    title: "模板",
+    revision: 1,
+    graph: catalog.standardGraph,
+  };
+  const app = await environment(
+    {},
+    { template: reusable, templateLoadError: true },
+  );
+  try {
+    await click(
+      [...document.querySelectorAll(".workflow-palette-node")].find(
+        (node) => node.querySelector("strong")?.textContent === "子图",
+      ),
+      app.dom,
+    );
+    const pending = globalThis.workflowUITest.flow.nodes.at(-1).data.node;
+    await input(
+      document.querySelector('[aria-label="子图创建方式"]'),
+      "template",
+      app.dom,
+      "change",
+    );
+    await input(
+      document.querySelector('[aria-label="子图来源模板"]'),
+      "reusable",
+      app.dom,
+      "change",
+    );
+    await click(button("确认复制"), app.dom);
+    assert.match(document.body.textContent, /模板加载失败/);
+    assert.deepEqual(
+      globalThis.workflowUITest.flow.nodes.at(-1).data.node,
+      pending,
+    );
+    assert.equal(button("进入子图"), undefined);
+    assert.equal(button("确认复制").disabled, false);
   } finally {
     await app.close();
   }
@@ -1162,7 +1337,7 @@ test("renaming a nested public port rewires its containing subgraph interface", 
   };
   const app = await environment({}, { graph });
   try {
-    await click(button("展开子图"), app.dom);
+    await click(button("进入子图"), app.dom);
     await click(document.querySelector('[data-node="inner"]'), app.dom);
     await input(
       document.querySelector('[aria-label="输入 1 标识"]'),

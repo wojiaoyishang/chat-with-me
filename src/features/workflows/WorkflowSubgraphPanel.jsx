@@ -304,6 +304,16 @@ export default function WorkflowSubgraphPanel({
       </section>
     );
   };
+  if (subgraph.initialized === false)
+    return (
+      <div className="space-y-3">
+        <h3 className="font-semibold">子图待配置</h3>
+        <p className="text-sm text-muted-foreground">
+          请在画布中的子图节点选择“新建子图”或“复制模板”，并手动确认。
+          确认后即可进入子图编辑内部节点，或保存为模板。
+        </p>
+      </div>
+    );
   return (
     <div className="space-y-5">
       <section className="space-y-3">

@@ -4,6 +4,8 @@ import {
   catalogNode,
   clone,
   connectWorkflow,
+  createWorkflowNode,
+  initializeWorkflowSubgraph,
   normalizeGraph,
   pasteWorkflowSelection,
   updateWorkflowGraphAtPath,
@@ -14,6 +16,7 @@ import {
   workflowRuntimeForGraph,
   workflowSourceKeys,
   wrapWorkflowSubgraph,
+  SUBGRAPH_CANVAS_DEFINITION,
 } from "../src/features/workflows/workflowModel.js";
 
 const definitions = [
@@ -74,6 +77,71 @@ const leaf = (id, kind = "process", x = 0) => ({
   config: {},
   inputs: {},
   position: { x, y: 20 },
+});
+test("subgraph confirmation preserves its canvas identity and copies sources without key collisions", () => {
+  const source = { ...leaf("source", "source"), inputKey: "shared" };
+  const existing = wrapWorkflowSubgraph(
+    normalizeGraph({ nodes: [source], edges: [] }),
+    ["source"],
+    definitions,
+  ).node;
+  existing.id = "existing";
+  const base = normalizeGraph({
+    version: 3,
+    nodes: [
+      { ...source, id: "root-source", inputKey: "shared-root" },
+      existing,
+    ],
+    edges: [],
+  });
+  const pending = createWorkflowNode(SUBGRAPH_CANVAS_DEFINITION, base, {
+    x: 870,
+    y: 120,
+  });
+  const graph = { ...base, nodes: [...base.nodes, pending] };
+  assert.equal(pending.subgraph.initialized, false);
+  const saved = {
+    id: "saved",
+    title: "来源模板",
+    revision: 3,
+    graph: normalizeGraph({ nodes: [source], edges: [] }),
+  };
+  const next = initializeWorkflowSubgraph(
+    graph,
+    pending.id,
+    saved,
+    definitions,
+    workflowSourceKeys(graph),
+  );
+  const copied = next.nodes.at(-1);
+  assert.equal(copied.id, pending.id);
+  assert.deepEqual(copied.position, pending.position);
+  assert.equal(copied.name, pending.name);
+  assert.equal(copied.subgraph.initialized, true);
+  assert.deepEqual(copied.subgraph.origin, {
+    templateId: "saved",
+    revision: 3,
+  });
+  assert.equal(copied.subgraph.graph.nodes[0].id, "source");
+  assert.equal(
+    new Set(workflowSourceKeys(next)).size,
+    workflowSourceKeys(next).length,
+  );
+  assert.equal(
+    graph.nodes.at(-1).subgraph.initialized,
+    false,
+    "source graph remains a pending draft",
+  );
+  assert.equal(
+    initializeWorkflowSubgraph(graph, pending.id, null, definitions).nodes.at(
+      -1,
+    ).subgraph.initialized,
+    true,
+  );
+  assert.throws(
+    () => initializeWorkflowSubgraph(next, pending.id, null, definitions),
+    /已完成配置/,
+  );
 });
 const link = (
   id,
