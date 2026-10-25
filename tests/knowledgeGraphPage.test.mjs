@@ -3139,6 +3139,31 @@ test("node name is always editable and modal scrolling never reaches the graph",
   assert.equal(document.documentElement.classList.contains('cwm-modal-open'), false);
 });
 
+test('ordered node editing keeps axis metadata and sort inputs out of editable payloads', async (t) => {
+  const ordered = { ...nodes[0], labels: ['Knowledge', 'Time', 'OrderedNode'], label: 'Time', properties: {
+    name: '发生时间', value: '2026-10', precision: 'month', description: '旧说明', ordered_axis: 'axis-id', ordered_kind: 'time', ordered_key: '1790812800000000',
+    ordered_rank: 1790812800000000, ordered_field: 'value', ordered_value: '2026-10', ordered_missing: false,
+  } };
+  let saved;
+  const ui = await page((url, options) => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [ordered], relationships: [] };
+    if (url.pathname.endsWith('/node-1/edit-data')) return { node: { ...ordered, canWrite: true, canManage: true, canManagePolicy: true } };
+    if (url.pathname.endsWith('/nodes/node-1') && options.method === 'PUT') { saved = JSON.parse(options.body); return { ...ordered, properties: { ...ordered.properties, ...saved.properties } }; }
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  openNodeMenu(dom, document, 'node-1'); await settle(); document.querySelector('[data-action="node-edit"]').click(); await settle();
+  const editor = document.querySelector('[name="properties"]')._jsonEditor;
+  assert.deepEqual(JSON.parse(JSON.stringify(editor.getValue())), { description: '旧说明' });
+  assert.match(document.querySelector('#create-fields').textContent, /排序信息（只读）/);
+  assert.match(document.querySelector('#create-fields').textContent, /2026-10/);
+  assert.equal(document.querySelector('[name="policyId"]'), null);
+  editor.setDraft(JSON.stringify({ description: '新说明' }));
+  document.querySelector('#create-form').dispatchEvent(new dom.window.Event('submit', { cancelable: true })); await settle();
+  assert.deepEqual(saved, { properties: { description: '新说明', name: '发生时间' } });
+  assert.equal(document.querySelector('#create-dialog').open, false);
+});
+
 test("individual relationship menus rename and delete the exact ID while retaining parallel edges", async (t) => {
   let edge = { id: 'r-1', source: 'node-1', target: 'node-2', type: '连接', properties: { note: '原属性' } };
   const ui = await page((url, options) => {
