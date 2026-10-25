@@ -73,7 +73,8 @@ export function graphEdgeGeometry(edge, start, end) {
     const x1 = start.x + (cx - start.x) / sd * (start.radius + 3), y1 = start.y + (cy - start.y) / sd * (start.radius + 3);
     const x2 = end.x - (end.x - cx) / ed * (end.radius + (edge.sourceLink || edge.business ? 3 : 6)), y2 = end.y - (end.y - cy) / ed * (end.radius + (edge.sourceLink || edge.business ? 3 : 6));
     if (edge.hierarchy || (edge.skeleton && Math.abs(dy) > 1)) {
-        return { path: `M ${x1} ${y1} C ${x1} ${(y1 + y2) / 2} ${x2} ${(y1 + y2) / 2} ${x2} ${y2}`, x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
+        const bend = Math.max(32, Math.abs(x2 - x1) * 0.45);
+        return { path: `M ${x1} ${y1} C ${x1 + bend} ${y1} ${x2 - bend} ${y2} ${x2} ${y2}`, x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
     }
     return {
         path: length > start.radius + end.radius + 6 ? `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}` : '',

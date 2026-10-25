@@ -48,8 +48,8 @@ export function orderedEdgeStyle(type, start, end) {
     const source = node => node?.label === 'Chunk' || node?.labels?.includes('Chunk');
     return {
         hierarchy: type === 'ORDERED_CONTAINS' && Boolean(a?.hierarchy && b?.hierarchy),
-        skeleton: structural && Boolean(a?.hierarchy && b?.hierarchy),
-        business: !structural && ((a?.kind === 'time' && !b) || (b?.kind === 'time' && !a)) && !source(start) && !source(end),
+        skeleton: structural && Boolean(a && b),
+        business: !structural && Boolean((a && !b) || (b && !a)) && !source(start) && !source(end),
     };
 }
 
@@ -66,17 +66,44 @@ function clockEnd(info) {
     return width ? String(BigInt(info.key) + width) : null;
 }
 
+// These are drawing slots within an already known day, never database ranks.
+// Only exact familiar day-stage phrases are eligible: "饭后" and "稍早" carry
+// no such ordering. Meals share the corresponding phase slot, so e.g. dinner
+// and night stay parallel rather than acquiring an invented before/after fact.
+function dayStage(info) {
+    if (info.lane === 'phase' && /^[0-5]$/.test(info.key)) return Number(info.key);
+    if (info.lane !== 'relative') return null;
+    const phrase = info.phase || info.value.match(/@relative:(.*)$/)?.[1] || info.shortLabel;
+    return ({ 早饭: 1, 早餐: 1, 午饭: 2, 午餐: 2, 晚饭: 5, 晚餐: 5, 睡前: 6 })[phrase] ?? null;
+}
+
+const compareTrackNodes = (a, b) => {
+    const first = dayStage(a.ordered), second = dayStage(b.ordered);
+    return first != null && second != null ? first - second || compareNodes(a, b) : compareNodes(a, b);
+};
+const trackPrecedes = (a, b, lane) => lane.startsWith('phase')
+    ? dayStage(a.ordered) < dayStage(b.ordered)
+    : compareOrderedKeys(a.ordered.key, b.ordered.key, 'time') < 0;
+
 // Tracks express comparability, not precision. Overlapping clock intervals
 // occupy parallel tracks; a minute containing a second never precedes it.
 function childTracks(children) {
-    const tracks = new Map(), clocks = [];
+    const tracks = new Map(), clocks = [], phases = [];
     for (const node of [...children].sort(compareNodes)) {
         const info = node.ordered;
         if (info.lane === 'clock') { clocks.push(node); continue; }
-        const key = info.lane === 'relative' ? `relative:${node.id}` : info.lane;
+        if (dayStage(info) != null) { phases.push(node); continue; }
+        const key = ['relative', 'phase'].includes(info.lane) ? `relative:${node.id}` : info.lane;
         if (!tracks.has(key)) tracks.set(key, []);
         tracks.get(key).push(node);
     }
+    const phaseTracks = [];
+    for (const node of phases.sort(compareTrackNodes)) {
+        let track = phaseTracks.find(value => dayStage(value.at(-1).ordered) < dayStage(node.ordered));
+        if (!track) { track = []; phaseTracks.push(track); }
+        track.push(node);
+    }
+    phaseTracks.forEach((track, index) => tracks.set(index ? `phase:${index}` : 'phase', track));
     const clockTracks = [];
     for (const node of clocks) {
         const end = clockEnd(node.ordered);
@@ -85,7 +112,9 @@ function childTracks(children) {
         track.nodes.push(node); track.end = end;
     }
     clockTracks.forEach((track, index) => tracks.set(`clock:${index}`, track.nodes));
-    return tracks;
+    const priority = lane => lane === 'calendar' ? 0 : lane.startsWith('phase') ? 1
+        : lane === 'monthperiod' ? 2 : lane.startsWith('clock:') ? 3 : 4;
+    return new Map([...tracks].sort(([a], [b]) => priority(a) - priority(b) || a.localeCompare(b)));
 }
 
 function clockColumns(tracks) {
@@ -166,7 +195,7 @@ export function orderedViewEdges(values, relationships = [], completeParentIds =
         for (const [lane, track] of page.tracks) {
             add(parent, track[0].id, 'entry', parent, lane, page.complete);
             if (!lane.startsWith('relative:')) for (let index = 1; index < track.length; index++) {
-                if (compareOrderedKeys(track[index - 1].ordered.key, track[index].ordered.key, 'time') < 0)
+                if (trackPrecedes(track[index - 1], track[index], lane))
                     add(track[index - 1].id, track[index].id, lane.startsWith('clock:') ? 'clock-sequence' : 'sequence', parent, lane, page.complete);
                 else add(parent, track[index].id, 'entry', parent, lane, page.complete);
             }
@@ -216,7 +245,7 @@ export function compareOrderedKeys(left, right, kind) {
 
 export function createOrderedGraphLayout() {
     let groups = new Map(), axisRows = new Map(), projection = { routes: [], suppressedRelationshipIds: [], suppressedContains: [], suppressedNext: [] };
-    const spacing = 112, interval = 260, rowHeight = 150, branchHeight = 120;
+    const spacing = 112, interval = 220, rowHeight = 150, branchHeight = 120;
     function pin(group) {
         for (const node of group.nodes) {
             node.x = node.fx = node.previousX = group.x + node.orderedOffset;
@@ -245,13 +274,16 @@ export function createOrderedGraphLayout() {
             placed.add(node.id);
             node.orderedOffset = left; node.orderedOffsetY = y;
             const tracks = childTracks(children.get(node.id) || []), contentWidth = measure(node) - interval, clock = clockColumns(tracks);
-            let relativeIndex = 0, otherIndex = 0;
+            const lanes = [...tracks.keys()], centered = lanes.includes('calendar');
+            let branchIndex = 0;
             for (const [lane, track] of tracks) {
-                const offset = lane === 'calendar' ? 0 : lane === 'phase' ? -branchHeight : lane === 'monthperiod' ? -2 * branchHeight
-                    : lane.startsWith('clock:') ? (1 + Number(lane.split(':')[1])) * branchHeight
-                        : lane.startsWith('relative:') ? -(3 + relativeIndex++) * branchHeight : (4 + otherIndex++) * branchHeight;
+                // Use only occupied rows, centered around the parent. Calendar
+                // children keep the spine; other lanes alternate above/below it.
+                const offset = centered ? lane === 'calendar' ? 0
+                    : (++branchIndex % 2 ? -1 : 1) * Math.ceil(branchIndex / 2) * branchHeight
+                    : (branchIndex++ - (lanes.length - 1) / 2) * branchHeight;
                 const total = track.reduce((sum, child) => sum + measure(child), 0), gap = track.length > 1 ? (contentWidth - total) / (track.length - 1) : 0;
-                let cursor = left + interval;
+                let cursor = left + interval + (track.length === 1 && !lane.startsWith('clock:') && lane !== 'calendar' ? (contentWidth - measure(track[0])) / 2 : 0);
                 for (const child of track) {
                     const position = lane.startsWith('clock:') ? left + interval + clock.slots.get(child.id) * (clock.count > 1 ? (contentWidth - interval) / (clock.count - 1) : 0) : cursor;
                     place(child, position, y + offset); cursor += measure(child) + gap;
@@ -338,16 +370,19 @@ export function createOrderedGraphLayout() {
 // A semantic node has one visual owner. Other real relationships remain visible,
 // but never introduce competing springs or gravity across ordered branches.
 export function createOrderedOrbitLayout() {
-    let nodes = new Map(), groups = new Map(), anchorPositions = new Map();
+    let nodes = new Map(), groups = new Map(), anchorPositions = new Map(), motion = new Map();
     const sourceNode = node => node?.label === 'Chunk' || node?.labels?.includes('Chunk') || isInternalOrderAxis(node);
     const ignored = new Set(['NEXT_ORDERED', 'ORDERED_CONTAINS', 'HAS_ORDERED_NODE', 'EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'CHILD_OF', 'ILLUSTRATES']);
     const finitePoint = value => value && Number.isFinite(value.x) && Number.isFinite(value.y);
     const anchorCompare = (a, b) => orderedNodeRadius(a.ordered) - orderedNodeRadius(b.ordered) || a.id.localeCompare(b.id);
+    const slotOffset = slot => {
+        const ring = Math.floor(slot / 8), radius = 112 + ring * 76;
+        const angle = (slot % 8) / 8 * Math.PI * 2 - Math.PI / 2 + (ring % 2) * Math.PI / 8;
+        return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+    };
     const offsetFor = node => {
         if (finitePoint(node.orderedOrbit?.offset)) return node.orderedOrbit.offset;
-        const slot = node.orderedOrbit.slot, ring = Math.floor(slot / 10), radius = 94 + ring * 58;
-        const angle = (slot % 10) / 10 * Math.PI * 2 - Math.PI / 2 + (ring % 2) * Math.PI / 10;
-        return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+        return slotOffset(node.orderedOrbit.slot);
     };
     function lockSkeleton() {
         for (const node of nodes.values()) if (node.ordered?.hierarchy && Number.isFinite(node.orderedTargetX) && Number.isFinite(node.orderedTargetY)) {
@@ -393,6 +428,7 @@ export function createOrderedOrbitLayout() {
                 }
             }
             groups = new Map();
+            const previousMotion = motion; motion = new Map();
             for (const node of nodes.values()) {
                 if (node.ordered || !owners.has(node.id)) { delete node.orderedOrbit; continue; }
                 const previous = !reset && node.orderedOrbit, candidates = owners.get(node.id);
@@ -401,29 +437,57 @@ export function createOrderedOrbitLayout() {
                 const valid = previous?.anchorId === anchorId && Number.isInteger(previous.slot) && previous.slot >= 0 && previous.slot < 1000;
                 node.orderedOrbit = { anchorId, slot: valid ? previous.slot : null, ...(valid && finitePoint(previous.offset) ? { offset: { ...previous.offset } } : {}) };
                 node.orderedOrbitNew = !valid || reset || restore && !valid;
+                motion.set(node.id, !restore && valid && previousMotion.get(node.id) || { vx: 0, vy: 0 });
                 if (!groups.has(anchorId)) groups.set(anchorId, []);
                 groups.get(anchorId).push(node);
             }
             lockSkeleton();
+            // Avoid static skeleton circles and their full captions when choosing
+            // a slot. This is initial placement, never another anchor's gravity.
+            const obstacles = anchors.filter(finitePoint).map(node => ({
+                x: node.x, top: node.y - orderedNodeRadius(node.ordered) - 10,
+                bottom: node.y + orderedNodeRadius(node.ordered) + 54,
+            }));
+            const reservedOrbits = [];
+            const reserveOrbit = node => {
+                const anchor = nodes.get(node.orderedOrbit.anchorId), offset = offsetFor(node);
+                reservedOrbits.push({ owner: anchor.id, x: anchor.x + offset.x, y: anchor.y + offset.y });
+            };
+            for (const members of groups.values()) for (const node of members) if (!node.orderedOrbitNew) reserveOrbit(node);
+            const freeSlot = (node, slot, anchor) => {
+                const offset = slotOffset(slot), radius = node.radius || 22;
+                return [0.82, 1].every(scale => {
+                    const x = anchor.x + offset.x * scale, y = anchor.y + offset.y * scale;
+                    return !obstacles.some(box => Math.abs(x - box.x) < 140 && y + radius + 34 > box.top && y - radius - 8 < box.bottom)
+                        && !reservedOrbits.some(point => point.owner !== anchor.id && Math.hypot(x - point.x, y - point.y) < 76);
+                });
+            };
             for (const [id, members] of groups) {
-                const occupied = new Set(), reserved = new Set();
+                const occupied = new Set(), reserved = new Set(), anchor = nodes.get(id);
                 members.sort((a, b) => (distances.get(a.id) - distances.get(b.id)) || a.id.localeCompare(b.id));
                 for (const node of members) {
+                    // Existing slots are part of the saved/undoable layout.
+                    // Avoidance chooses new slots only; it must not rearrange a
+                    // different owner's group when one skeleton point is dragged.
                     if (node.orderedOrbit.slot != null && !reserved.has(node.orderedOrbit.slot)) reserved.add(node.orderedOrbit.slot);
-                    else node.orderedOrbit.slot = null;
+                    else { node.orderedOrbit.slot = null; node.orderedOrbitNew = true; motion.set(node.id, { vx: 0, vy: 0 }); }
                 }
                 for (const node of members) {
                     if (node.orderedOrbit.slot == null) {
-                        let slot = 0; while (occupied.has(slot) || reserved.has(slot)) slot++;
+                        let slot = 0;
+                        while (slot < 1000 && (occupied.has(slot) || reserved.has(slot) || !freeSlot(node, slot, anchor))) slot++;
+                        if (slot === 1000) { slot = 0; while (occupied.has(slot) || reserved.has(slot)) slot++; }
                         node.orderedOrbit.slot = slot;
+                        reserveOrbit(node);
                     }
                     occupied.add(node.orderedOrbit.slot);
                 }
-                const anchor = nodes.get(id);
                 for (const node of members) node.fx = node.fy = null;
                 for (const node of members) if (node.orderedOrbitNew) {
                     const offset = offsetFor(node);
-                    node.x = node.previousX = anchor.x + offset.x; node.y = node.previousY = anchor.y + offset.y;
+                    // Start near the owner, then ease into the orbit. Starting
+                    // exactly at equilibrium made a newly expanded node frozen.
+                    node.x = node.previousX = anchor.x + offset.x * 0.82; node.y = node.previousY = anchor.y + offset.y * 0.82;
                     node.vx = node.vy = 0; node.fx = node.fy = null;
                 }
             }
@@ -435,11 +499,28 @@ export function createOrderedOrbitLayout() {
             for (const [id, members] of groups) {
                 const anchor = nodes.get(id);
                 for (const node of members) {
-                    if (node.fx != null) { node.vx = node.vy = 0; continue; }
+                    const velocity = motion.get(node.id);
+                    if (node.fx != null) { node.vx = node.vy = velocity.vx = velocity.vy = 0; continue; }
                     const offset = offsetFor(node);
-                    // Overwrite, rather than add to, the unrelated global forces.
-                    node.vx = (anchor.x + offset.x - node.x) * alpha * 0.5;
-                    node.vy = (anchor.y + offset.y - node.y) * alpha * 0.5;
+                    // Preserve local inertia, never the velocities altered by
+                    // global springs, collisions or a different owner's nodes.
+                    node.vx = velocity.vx + (anchor.x + offset.x - node.x) * alpha * 0.12;
+                    node.vy = velocity.vy + (anchor.y + offset.y - node.y) * alpha * 0.12;
+                }
+                // Collision avoidance stays inside this owner's orbit. Shared
+                // knowledge links remain visible without competing attraction.
+                for (let index = 0; index < members.length; index++) for (let other = index + 1; other < members.length; other++) {
+                    const a = members[index], b = members[other], dx = b.x - a.x, dy = b.y - a.y, distance = Math.hypot(dx, dy);
+                    const gap = Math.max(68, (a.radius || 16) + (b.radius || 16) + 28);
+                    if (distance >= gap) continue;
+                    const push = (gap - distance) * alpha * 0.2, x = distance > 0.01 ? dx / distance : 1, y = distance > 0.01 ? dy / distance : 0;
+                    if (a.fx == null) { a.vx -= x * push; a.vy -= y * push; }
+                    if (b.fx == null) { b.vx += x * push; b.vy += y * push; }
+                }
+                for (const node of members) {
+                    // Both renderers use D3 velocityDecay(.32). Keep only the
+                    // velocity our local force will own on the next tick.
+                    motion.set(node.id, { vx: node.vx * 0.68, vy: node.vy * 0.68 });
                 }
             }
         },
@@ -448,6 +529,7 @@ export function createOrderedOrbitLayout() {
             const anchor = nodes.get(node?.orderedOrbit?.anchorId);
             if (!anchor) return false;
             node.orderedOrbit.offset = { x: x - anchor.x, y: y - anchor.y };
+            motion.set(node.id, { vx: 0, vy: 0 });
             node.x = x; node.y = y; return true;
         },
     };

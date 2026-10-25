@@ -136,7 +136,7 @@ test('captured partial-date region preserves missing year and combines clock tra
     assert.equal(at('day').ordered.value, '--09-12', 'a partial date never acquires an invented year');
     assert.deepEqual(graph.nodes.map(node => node.properties), original.map(node => node.properties));
     const joins = orderedConvergences(graph.nodes, graph.relationships, graph.completeParentIds);
-    assert.deepEqual(joins.map(route => route.from).sort(), ['backend-afternoon', 'backend-bedtime', 'backend-dinner', 'backend-next-minute', 'backend-second']);
+    assert.deepEqual(joins.map(route => route.from).sort(), ['backend-bedtime', 'backend-next-minute', 'backend-second']);
     assert.ok(joins.every(route => route.to === graph.nextId && route.layoutOnly && !Object.hasOwn(route, 'id')));
 });
 
@@ -222,7 +222,7 @@ test('first v2 layout replaces finite force seeds and releases obsolete rigid pi
     assert.deepEqual(ordered.map(node => [node.x, node.y]), positions);
 });
 
-test('number and text v2 axes retain flat rigid layout and directed business edges', () => {
+test('number and text v2 axes retain flat rigid layout and share quiet ordinary association styling', () => {
     for (const kind of ['number', 'text']) {
         const nodes = [ordered('a', '2', { ordered_kind: kind, ordered_version: 2 }), ordered('b', '10', { ordered_kind: kind, ordered_version: 2 })];
         const layout = createOrderedGraphLayout(); layout.rebuild(nodes);
@@ -231,7 +231,8 @@ test('number and text v2 axes retain flat rigid layout and directed business edg
         layout.move(nodes[0], 80, 90);
         assert.equal(nodes[1].x, 80 + delta); assert.equal(nodes[1].y, 90);
         assert.equal(nodes[0].fx, 80); assert.equal(nodes[0].fy, 90);
-        assert.equal(orderedEdgeStyle('MEASURES', nodes[0], { label: 'Event' }).business, false);
+        assert.equal(orderedEdgeStyle('MEASURES', nodes[0], { label: 'Event' }).business, true);
+        assert.equal(orderedEdgeStyle('NEXT_ORDERED', nodes[0], nodes[1]).skeleton, true);
     }
 });
 
@@ -292,13 +293,15 @@ test('join requires a real parent NEXT with matching axis, scope and precision',
     }
 });
 
-test('projection rejects cross-scope containment and never orders relative phrases', () => {
+test('projection rejects cross-scope containment and leaves unknown relative phrases unordered', () => {
     const graph = orderedTimeGraph(); graph.nodes.find(node => node.id === 'noon').properties.ordered_scope = 'different-source';
     const projected = view(graph);
     assert.equal(projected.routes.filter(route => route.kind === 'join').length, 0);
     assert.ok(!projected.routes.some(route => route.from === 'noon' || route.to === 'noon'));
     assert.ok(!projected.suppressedRelationshipIds.includes('parent-noon'));
-    assert.ok(!view(orderedTimeGraph()).routes.some(route => ['sequence', 'clock-sequence'].includes(route.kind) && (route.from === 'bedtime' || route.to === 'bedtime')));
+    const other = orderedTimeGraph(), relative = other.nodes.find(node => node.id === 'bedtime');
+    Object.assign(relative.properties, { ordered_value: '2026-09-12@relative:稍早', ordered_short_label: '稍早', ordered_phase: '稍早' });
+    assert.ok(!view(other).routes.some(route => ['sequence', 'clock-sequence'].includes(route.kind) && (route.from === 'bedtime' || route.to === 'bedtime')));
 });
 
 test('projection accepts resolved relationship endpoint objects without changing its result', () => {
@@ -323,9 +326,36 @@ test('comparable phase values can bridge a missing sibling NEXT using a display-
     assert.ok(!graph.relationships.some(edge => edge.source === 'morning' && edge.target === 'noon'));
     const at = byId(graph.nodes);
     for (const route of projected.routes.filter(route => ['sequence', 'clock-sequence'].includes(route.kind))) {
-        assert.equal(orderedNodeInfo(at.get(route.from)).lane, orderedNodeInfo(at.get(route.to)).lane);
+        if (!route.lane.startsWith('phase')) assert.equal(orderedNodeInfo(at.get(route.from)).lane, orderedNodeInfo(at.get(route.to)).lane);
         assert.equal(orderedNodeInfo(at.get(route.from)).parent, orderedNodeInfo(at.get(route.to)).parent);
     }
+});
+
+test('daily phase aliases form one compact display track without changing relative source facts', () => {
+    const graph = backendOrderedTimeRegion(), before = structuredClone(graph), layout = rebuild(graph), at = byId(graph.nodes);
+    const phases = ['morning', 'afternoon', 'dinner', 'bedtime'].map(id => at.get(`backend-${id}`));
+    assert.equal(new Set(phases.map(node => node.orderedTargetY)).size, 1);
+    assert.ok(phases.every((node, index) => !index || node.orderedTargetX > phases[index - 1].orderedTargetX));
+    assert.ok(phases.at(-1).orderedTargetX < at.get('backend-next-day').orderedTargetX);
+    assert.ok(Math.max(...graph.nodes.map(node => node.orderedTargetY)) - Math.min(...graph.nodes.map(node => node.orderedTargetY)) <= 240);
+    const projected = layout.getProjection();
+    assert.ok(projected.routes.some(route => route.from === 'backend-afternoon' && route.to === 'backend-dinner' && route.layoutOnly));
+    assert.ok(projected.routes.some(route => route.from === 'backend-dinner' && route.to === 'backend-bedtime' && route.layoutOnly));
+    assert.deepEqual(graph.nodes.map(node => node.properties), before.nodes.map(node => node.properties));
+    assert.deepEqual(graph.relationships, before.relationships);
+});
+
+test('equal daily stages remain parallel and vague relative phrases retain independent branches', () => {
+    const graph = backendOrderedTimeRegion();
+    graph.nodes.push(
+        timeNode('night', 'dayperiod', 'backend-day', 'phase', '5', '晚上', '--09-12@night', { ordered_axis: 'backend-time-axis', ordered_scope: 'source:timeScope:fixture-diary', ordered_phase: 'night' }),
+        timeNode('earlier', 'relative', 'backend-day', 'relative', null, '稍早', '--09-12@relative:稍早', { ordered_axis: 'backend-time-axis', ordered_scope: 'source:timeScope:fixture-diary', ordered_phase: '稍早' }),
+    );
+    graph.relationships.push(...['night', 'earlier'].map(id => ({ id: `parent-${id}`, source: 'backend-day', target: id, type: 'ORDERED_CONTAINS' })));
+    const projected = view(graph); rebuild(graph); const at = byId(graph.nodes);
+    assert.notEqual(at.get('night').orderedTargetY, at.get('backend-dinner').orderedTargetY, 'dinner does not acquire an order relative to night');
+    assert.ok(!projected.routes.some(route => ['sequence', 'clock-sequence'].includes(route.kind) && ['earlier'].some(id => route.from === id || route.to === id)));
+    assert.ok(!projected.routes.some(route => route.from === 'night' && route.to === 'backend-dinner' || route.from === 'backend-dinner' && route.to === 'night'));
 });
 
 test('a complete nested final child closes into a verified ancestor NEXT without inventing child NEXT', () => {

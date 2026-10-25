@@ -130,7 +130,9 @@ test('ordered chat nodes remain a small rigid sorted row across force, drag, foc
     assert.equal(ui.svg.querySelector('[data-node-id="late"] circle').getAttribute('r'), '8');
     assert.match(ui.svg.querySelector('[data-node-id="unknown"] text').textContent, /未定位/);
     ui.run(420); assert.equal(positions().get('late').x, before.get('late').x);
-    assert.deepEqual(positions().get('entity'), before.get('entity'), 'an anchored event stays in its local orbit instead of drifting toward other ordered nodes');
+    assert.ok(Math.abs(positions().get('entity').y - before.get('entity').y) > 5, 'an anchored event animates into its orbit instead of being frozen');
+    near(positions().get('entity').x, positions().get('late').x);
+    assert.ok(Math.hypot(positions().get('entity').x - positions().get('late').x, positions().get('entity').y - positions().get('late').y) < 120, 'its own anchor still bounds the animation');
     point(ui.dom, ui.svg.querySelector('[data-node-id="early"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 280, 170);
     const moved = positions(); assert.equal(moved.get('late').x - moved.get('early').x, delta); assert.equal(moved.get('late').y, moved.get('early').y);
@@ -241,14 +243,15 @@ test('dense ordered regions cannot attract another anchors satellites, and dragg
         graph.relationships.push({ id: `anchor-${index}`, source: id, target: 'fork-november', type: 'AT' }, { id: `cross-${index}`, source: id, target: 'fork-event', type: 'RELATED' });
     }
     ui.controller.setData(knowledgeGraphPresentation(graph)); ui.run(420);
-    assert.deepEqual(positions().get('fork-event'), before.get('fork-event'));
+    assert.ok(Math.hypot(positions().get('fork-event').x - before.get('fork-event').x, positions().get('fork-event').y - before.get('fork-event').y) < 0.5, 'only subpixel settling is allowed, independent of remote density');
+    const local = positions().get('fork-event');
     for (const node of graph.nodes.filter(node => node.labels?.includes('OrderedNode'))) assert.deepEqual(positions().get(node.id), before.get(node.id), `${node.id} stays on the flow skeleton`);
     assert.equal(ui.controller.getViewState().positions.find(node => node.id === 'fork-event').orderedOrbit.anchorId, 'fork-afternoon');
     ui.controller.setPhysics(false);
     point(ui.dom, ui.svg.querySelector('[data-node-id="fork-afternoon"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 225, 165); point(ui.dom, ui.dom.window, 'pointerup', 225, 165);
     const moved = positions(), dx = moved.get('fork-afternoon').x - before.get('fork-afternoon').x, dy = moved.get('fork-afternoon').y - before.get('fork-afternoon').y;
-    near(moved.get('fork-event').x - before.get('fork-event').x, dx); near(moved.get('fork-event').y - before.get('fork-event').y, dy);
+    near(moved.get('fork-event').x - local.x, dx); near(moved.get('fork-event').y - local.y, dy);
     assert.deepEqual(moved.get('fork-november'), before.get('fork-november'));
     const saved = ui.controller.getViewState(); ui.controller.relayout(); ui.controller.restoreViewState(saved);
     assert.deepEqual(positions(), moved);

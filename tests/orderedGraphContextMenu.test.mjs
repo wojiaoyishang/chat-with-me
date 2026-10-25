@@ -30,6 +30,19 @@ function setup(t, implementation, options = {}) {
 }
 
 for (const implementation of ['chat', 'management']) {
+    test(`${implementation}: chunk nodes can find an ordered anchor through the same dynamic type menu`, async t => {
+        const nearest = [];
+        const ui = setup(t, implementation, { getOrderedTypes: async () => types,
+            onNearestOrdered: (...args) => nearest.push(args), onExpand() {} });
+        ui.open({ id: 'source-chunk', label: 'Chunk', labels: ['Chunk'], isChunk: true });
+        assert.ok(ui.action('ordered-nearest'), 'a Chunk must expose nearest ordered discovery');
+        assert.equal(ui.action('ordered-neighbors'), null, 'a source Chunk is not itself an OrderedNode');
+        ui.action('ordered-nearest').click(); await settle();
+        ui.submenu().querySelector('[data-label="Chapter"]').click();
+        assert.deepEqual(nearest, [['source-chunk', 'Chapter']]);
+        assert.equal(ui.root(), null);
+    });
+
     test(`${implementation}: blank canvas and ordinary nodes select dynamic ordered types; ordered actions stay distinct`, async t => {
         const skeletons = [], nearest = [], related = [], neighbors = [];
         const ui = setup(t, implementation, { getOrderedTypes: async () => types,
