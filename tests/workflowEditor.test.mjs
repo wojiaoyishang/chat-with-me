@@ -475,7 +475,7 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=({data,...rest})=>{const Component=data.direction?props.nodeTypes.workflowInterface:props.nodeTypes.workflow;return <Component data={data} {...rest}/>};return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested === "task-events")
                 contents =
                   "export const onEvent=({event})=>({then:callback=>{const listeners=globalThis.workflowUITest.taskEventListeners;listeners.set(event,callback);return ()=>listeners.delete(event)}});";
@@ -765,6 +765,135 @@ test("subgraph grouping, breadcrumb editing, serial settings and undo keep one c
       globalThis.workflowUITest.flow.nodes[0].data.node.kind,
       "subgraph",
     );
+  } finally {
+    await app.close();
+  }
+});
+
+test("explicit subgraph nodes expose internal parameter pills, synchronize ports and save the current subgraph", async () => {
+  const app = await environment(
+    {},
+    {
+      graph: { version: 3, nodes: [], edges: [], settings: {}, variables: {} },
+    },
+  );
+  try {
+    const paletteButton = (title) =>
+      [...document.querySelectorAll(".workflow-palette-node")].find(
+        (node) => node.querySelector("strong")?.textContent === title,
+      );
+    assert.equal(
+      paletteButton("输入参数"),
+      undefined,
+      "root palette excludes interface constructors",
+    );
+    await click(paletteButton("子图"), app.dom);
+    let group = globalThis.workflowUITest.flow.nodes.find(
+      (node) => node.data.kind === "subgraph",
+    );
+    assert.ok(group);
+    await click(button("进入子图"), app.dom);
+    assert.ok(paletteButton("输入参数"));
+    await click(paletteButton("知识提取"), app.dom);
+    await click(paletteButton("输入参数"), app.dom);
+    await act(() =>
+      globalThis.workflowUITest.flow.onConnect({
+        source: "@interface:inputs:input_1",
+        sourceHandle: "value",
+        target: "extract-1",
+        targetHandle: "bundle",
+      }),
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes.find((node) =>
+        node.id.startsWith("@interface:"),
+      ).type,
+      "workflowInterface",
+    );
+    assert.equal(
+      document.querySelector(".workflow-interface-node small").textContent,
+      "input_1 · bundle",
+    );
+    await input(
+      document.querySelector('[aria-label="参数名称"]'),
+      "待处理资料",
+      app.dom,
+    );
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodeDragStop(
+        {},
+        { id: "@interface:inputs:input_1", position: { x: -150, y: 75 } },
+      ),
+    );
+    await click(paletteButton("输出参数"), app.dom);
+    await act(() =>
+      globalThis.workflowUITest.flow.onConnect({
+        source: "extract-1",
+        sourceHandle: "extracted",
+        target: "@interface:outputs:output_1",
+        targetHandle: "value",
+      }),
+    );
+    await click(button("保存当前子图模板"), app.dom);
+    const saved = app.calls.findLast(
+      (call) => call.url === "/tasks/workflows/templates",
+    ).payload.graph;
+    assert.equal(saved.nodes.length, 1);
+    assert.equal(
+      saved.nodes[0].subgraph.graph.nodes.length,
+      1,
+      "pills are not executable child nodes",
+    );
+    assert.deepEqual(saved.nodes[0].subgraph.interface.inputs[0].position, {
+      x: -150,
+      y: 75,
+    });
+    assert.equal(
+      saved.nodes[0].subgraph.interface.inputs[0].title,
+      "待处理资料",
+    );
+    await click(
+      [...document.querySelectorAll('[aria-label="子图路径"] button')][0],
+      app.dom,
+    );
+    group = globalThis.workflowUITest.flow.nodes.find(
+      (node) => node.data.kind === "subgraph",
+    );
+    assert.equal(group.data.definition.inputs[0].display.title, "待处理资料");
+    assert.equal(group.data.definition.outputs[0].type, "extracted");
+    assert.equal(paletteButton("输入参数"), undefined);
+  } finally {
+    await app.close();
+  }
+});
+
+test("default built-in template is displayed once in the three-preset selector", async () => {
+  const custom = structuredClone(catalog);
+  custom.standardTemplateId = "built-in:main";
+  custom.standardGraphTitle = "资料知识提取";
+  custom.builtinTemplates = [
+    { id: "built-in:main", title: "资料知识提取", graph: custom.standardGraph },
+    {
+      id: "built-in:export",
+      title: "知识图谱导出",
+      graph: custom.standardGraph,
+    },
+    {
+      id: "built-in:import",
+      title: "知识图谱导入",
+      graph: custom.standardGraph,
+    },
+  ];
+  const app = await environment({}, { catalog: custom });
+  try {
+    const select = document.querySelector(
+      '[data-select-label="选择工作流模板"]',
+    ).nextElementSibling;
+    assert.deepEqual(
+      [...select.options].map((option) => option.textContent),
+      ["资料知识提取", "知识图谱导出", "知识图谱导入"],
+    );
+    assert.equal(select.value, "built-in:main");
   } finally {
     await app.close();
   }

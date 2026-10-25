@@ -35,6 +35,7 @@ export default function WorkflowContextMenu({
   onUngroup,
   onEnter,
   isSubgraph,
+  isInterface,
 }) {
   if (!menu) return null;
   return (
@@ -75,10 +76,12 @@ export default function WorkflowContextMenu({
             )}
             {menu.nodeId && (
               <>
-                <DropdownMenuItem onSelect={onGroup}>
-                  <Group />
-                  组合为子图
-                </DropdownMenuItem>
+                {!isInterface && (
+                  <DropdownMenuItem onSelect={onGroup}>
+                    <Group />
+                    组合为子图
+                  </DropdownMenuItem>
+                )}
                 {isSubgraph && (
                   <>
                     <DropdownMenuItem onSelect={onEnter}>
@@ -95,14 +98,18 @@ export default function WorkflowContextMenu({
                   <Pencil />
                   重命名
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={onCopy}>
-                  <Copy />
-                  复制<DropdownMenuShortcut>Ctrl C</DropdownMenuShortcut>
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={onDuplicate}>
-                  <Copy />
-                  创建副本<DropdownMenuShortcut>Ctrl D</DropdownMenuShortcut>
-                </DropdownMenuItem>
+                {!isInterface && (
+                  <DropdownMenuItem onSelect={onCopy}>
+                    <Copy />
+                    复制<DropdownMenuShortcut>Ctrl C</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                )}
+                {!isInterface && (
+                  <DropdownMenuItem onSelect={onDuplicate}>
+                    <Copy />
+                    创建副本<DropdownMenuShortcut>Ctrl D</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                )}
               </>
             )}
             <DropdownMenuItem disabled={!hasClipboard} onSelect={onPaste}>

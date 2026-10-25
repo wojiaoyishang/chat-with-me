@@ -1,9 +1,18 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
 export const clone = (value) =>
   value === undefined ? undefined : JSON.parse(JSON.stringify(value));
-const SUBGRAPH_CANVAS_DEFINITION = Object.freeze({
+export const SUBGRAPH_CANVAS_DEFINITION = Object.freeze({
   kind: "subgraph",
   version: 1,
+  category: "control",
+  display: {
+    title: "子图",
+    subtitle: "Subgraph",
+    description:
+      "独立编辑内部流程，通过输入、输出参数连接外层，也可保存为模板复用。",
+  },
+  inputs: [],
+  outputs: [],
 });
 
 /** Catalog annotations may use Pydantic range names; forms use JSON Schema. */
@@ -112,6 +121,16 @@ export function updateWorkflowNodePositions(graph, moved = []) {
 
 export function initializeGraph(graph, definitions, settingsDefaults) {
   const next = normalizeGraph(graph, settingsDefaults);
+  if (
+    next.nodes.some(
+      (node) =>
+        ["interface_inputs", "interface_outputs"].includes(node.kind) ||
+        node.id?.startsWith("@interface:"),
+    )
+  )
+    throw new Error(
+      "参数节点属于子图接口，请使用 subgraph.interface 定义，不能作为执行节点导入。",
+    );
   next.nodes = next.nodes.map((node) => ({
     ...node,
     ...(node.kind === "subgraph" && node.subgraph?.graph
@@ -370,6 +389,15 @@ export function createWorkflowNode(definition, graph, position) {
     name: definition.display?.title || "",
     ...(definition.source ? { inputKey: `${definition.kind}-${index}` } : {}),
     version: definition.version,
+    ...(definition.kind === "subgraph"
+      ? {
+          subgraph: {
+            graph: normalizeGraph(),
+            interface: { inputs: [], outputs: [], parameters: [] },
+            execution: { mode: "parallel", maxConcurrency: 4 },
+          },
+        }
+      : {}),
     config,
     inputs,
     position: position || {
@@ -499,6 +527,7 @@ export function pasteWorkflowSelection(
   options = {},
 ) {
   if (!clipboard?.nodes?.length) return { graph, ids: [] };
+  initializeGraph({ nodes: clipboard.nodes, edges: [] }, []);
   const used = new Set(graph.nodes.map((node) => node.id));
   const usedKeys = new Set(options.inputKeys || workflowSourceKeys(graph));
   const mapping = new Map();
@@ -895,6 +924,18 @@ export function workflowSubgraphDefinition(
   const graph = subgraph.graph || { nodes: [], edges: [] };
   const endpointPort = (entry, direction) => {
     const endpoint = direction === "inputs" ? entry.target : entry.source;
+    if (!endpoint)
+      return {
+        name: entry.name,
+        type: "any",
+        schema: {},
+        display: {
+          title: entry.title || entry.name,
+          subtitle: `${entry.name} · 待连接`,
+          description:
+            entry.description || "进入子图连接内部端口后自动确定类型。",
+        },
+      };
     const internal = graph.nodes.find((item) => item.id === endpoint?.nodeId);
     if (!internal || depth > 8) return null;
     const definition = effectiveWorkflowDefinition(
@@ -1127,6 +1168,7 @@ export function unwrapWorkflowSubgraph(graph, id) {
     },
   }));
   for (const entry of contract.inputs || []) {
+    if (!entry.target) continue;
     const child = children.find(
       (node) => node.id === mapping.get(entry.target.nodeId),
     );
@@ -1156,7 +1198,7 @@ export function unwrapWorkflowSubgraph(graph, id) {
       const entry = contract.outputs?.find(
         (item) => item.name === edge.sourcePort,
       );
-      if (!entry || !mapping.has(entry.source.nodeId))
+      if (!entry?.source || !mapping.has(entry.source.nodeId))
         throw new Error("子图输出端口失效，请先修复公开端口。");
       next = {
         ...next,
@@ -1168,7 +1210,7 @@ export function unwrapWorkflowSubgraph(graph, id) {
       const entry = contract.inputs?.find(
         (item) => item.name === edge.targetPort,
       );
-      if (!entry || !mapping.has(entry.target.nodeId))
+      if (!entry?.target || !mapping.has(entry.target.nodeId))
         throw new Error("子图输入端口失效，请先修复公开端口。");
       next = {
         ...next,
@@ -1190,10 +1232,11 @@ export function unwrapWorkflowSubgraph(graph, id) {
   for (const direction of ["inputs", "outputs"]) {
     const key = direction === "inputs" ? "target" : "source";
     for (const entry of contract[direction] || [])
-      boundary[direction][`${id}\u0000${entry.name}`] = {
-        nodeId: mapping.get(entry[key].nodeId),
-        port: entry[key].port,
-      };
+      if (entry[key])
+        boundary[direction][`${id}\u0000${entry.name}`] = {
+          nodeId: mapping.get(entry[key].nodeId),
+          port: entry[key].port,
+        };
   }
   for (const parameter of contract.parameters || []) {
     boundary.parameters[`${id}\u0000${parameter.name}`] = (
