@@ -75,8 +75,15 @@ test('owned knowledge keeps floating after physics settles without moving the sk
     assert.notEqual(node('fork-event').getAttribute('transform'), before);
     assert.notEqual(edge.getAttribute('d'), path, 'relationship endpoints follow the visible node');
     assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
-    assert.deepEqual(ui.controller.getViewState(), state, 'visual breathing never changes saved coordinates or orbit offsets');
+    assert.deepEqual(ui.controller.getViewState(), state, 'visible motion never changes saved coordinates or orbit offsets');
     assert.equal(ui.svg.dataset.physicsState, 'settled', 'ongoing rendering must not reheat D3');
+    const scale = cameraValues(ui.svg)[2], renderPoint = () => node('fork-event').getAttribute('transform').match(/-?\d+(?:\.\d+)?/g).map(Number);
+    const sampled = [];
+    for (let index = 0; index < 12; index++) { ui.run(30); sampled.push(renderPoint()); }
+    const travel = Math.max(...sampled.flatMap(a => sampled.map(b => Math.hypot(a[0] - b[0], a[1] - b[1]) * scale)));
+    assert.ok(travel > 12, `owned knowledge should visibly move after settling (screen travel ${travel.toFixed(1)}px)`);
+    assert.deepEqual(ui.controller.getViewState(), state, 'continuous physical motion must not leak into saved layout');
+    assert.deepEqual([...ui.svg.querySelectorAll('.ordered-node')].map(element => element.getAttribute('transform')), skeleton);
     ui.controller.setEdgeAnimation(false); const noFlow = node('fork-event').getAttribute('transform'); ui.run(90);
     assert.notEqual(node('fork-event').getAttribute('transform'), noFlow, 'edge highlights and node movement are independent');
     ui.controller.restoreViewState(state);

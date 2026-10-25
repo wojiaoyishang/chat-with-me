@@ -30,8 +30,9 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         listeners.push(() => target.removeEventListener(type, callback, options));
     };
     const ambientRunning = () => !destroyed && enabled && inViewport && !doc.hidden && !reducedMotion?.matches && !drag && !pinch && !marquee && orbitLayout.hasAmbientMotion();
-    // D3 still cools completely. Only visible owned nodes need a lightweight
-    // render clock after settling; CSS handles relationship highlights itself.
+    // The ordered skeleton settles with D3. Owned knowledge keeps a separate
+    // local spring simulation running while visible, without reheating D3 or
+    // changing coordinates saved in graph history.
     function updateEdgeAnimation() {
         svg.dataset.edgeAnimation = String(edgeAnimationEnabled);
         svg.dataset.edgeAnimationActive = String(!destroyed && enabled && inViewport && !doc.hidden && !reducedMotion?.matches);
@@ -47,7 +48,10 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         updateEdgeAnimation();
     }) : null;
     visibilityObserver?.observe(svg);
-    if (reducedMotion?.addEventListener) listen(reducedMotion, 'change', updateEdgeAnimation);
+    if (reducedMotion?.addEventListener) listen(reducedMotion, 'change', () => {
+        if (reducedMotion.matches) orbitLayout.resetAmbient();
+        updateEdgeAnimation();
+    });
     updateEdgeAnimation();
     const element = (tag, attributes = {}) => {
         const result = doc.createElementNS('http://www.w3.org/2000/svg', tag);
@@ -174,7 +178,9 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             const simulating = enabled && simulation.alpha() > simulation.alphaMin(), floating = ambientRunning();
             if (!simulating && floating && ambientPaint != null && time - ambientPaint < 1000 / 30 - 0.1) { requestDraw(); return; }
             if (floating) {
-                ambientTime += ambientStamp == null ? 0 : Math.max(0, Math.min(64, time - ambientStamp));
+                const delta = ambientStamp == null ? 0 : Math.max(0, Math.min(64, time - ambientStamp));
+                ambientTime += delta;
+                orbitLayout.advanceAmbient(delta, { scale: camera.scale });
                 ambientStamp = time; ambientPaint = time;
             } else ambientStamp = null;
             svg.dataset.nodeAnimationActive = String(floating);
@@ -459,7 +465,11 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (!pointers.has(event.pointerId)) return;
         pointers.delete(event.pointerId);
         if (drag?.pointerId === event.pointerId) { if (drag.moved) movedAt = Date.now(); releaseDrag(); }
-        if (pointers.size < 2) pinch = null;
+        if (pointers.size < 2) {
+            pinch = null;
+            ambientStamp = null;
+            if (ambientRunning()) requestDraw();
+        }
         if (svg.hasPointerCapture?.(event.pointerId)) svg.releasePointerCapture(event.pointerId);
     };
     listen(win, 'pointerup', pointerEnd); listen(win, 'pointercancel', pointerEnd);

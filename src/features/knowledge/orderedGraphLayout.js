@@ -371,6 +371,9 @@ export function createOrderedGraphLayout() {
 // but never introduce competing springs or gravity across ordered branches.
 export function createOrderedOrbitLayout() {
     let nodes = new Map(), groups = new Map(), anchorPositions = new Map(), motion = new Map();
+    // Separate display physics keeps the ordered axis immovable and prevents
+    // ongoing motion from rewriting the user's saved canvas or undo history.
+    let ambient = new Map(), ambientTime = 0;
     const sourceNode = node => node?.label === 'Chunk' || node?.labels?.includes('Chunk') || isInternalOrderAxis(node);
     const ignored = new Set(['NEXT_ORDERED', 'ORDERED_CONTAINS', 'HAS_ORDERED_NODE', 'EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'CHILD_OF', 'ILLUSTRATES']);
     const finitePoint = value => value && Number.isFinite(value.x) && Number.isFinite(value.y);
@@ -389,6 +392,23 @@ export function createOrderedOrbitLayout() {
         if (finitePoint(node.orderedOrbit?.offset)) return node.orderedOrbit.offset;
         return slotOffset(node.orderedOrbit.slot);
     };
+    const skeletonRails = () => {
+        const rows = new Map(), rails = [];
+        for (const node of nodes.values()) if (node.ordered && finitePoint(node)) {
+            const key = JSON.stringify([node.orderedGroup || node.ordered.axis, Math.round(node.y / 4)]);
+            if (!rows.has(key)) rows.set(key, []);
+            rows.get(key).push(node);
+        }
+        for (const row of rows.values()) {
+            row.sort((a, b) => a.x - b.x);
+            for (let i = 1; i < row.length; i++) if (row[i].x - row[i - 1].x > 1)
+                rails.push({ x1: row[i - 1].x, x2: row[i].x, y: (row[i - 1].y + row[i].y) / 2 });
+        }
+        return rails;
+    };
+    const crossesRail = (rails, x, y, radius, travel = 0) => rails.some(rail =>
+        x >= rail.x1 - radius && x <= rail.x2 + radius &&
+        y > rail.y - radius - 16 - travel && y < rail.y + radius + 32 + travel);
     function lockSkeleton() {
         for (const node of nodes.values()) if (node.ordered?.hierarchy && Number.isFinite(node.orderedTargetX) && Number.isFinite(node.orderedTargetY)) {
             node.x = node.fx == null ? node.orderedTargetX : node.fx;
@@ -433,7 +453,8 @@ export function createOrderedOrbitLayout() {
                 }
             }
             groups = new Map();
-            const previousMotion = motion; motion = new Map();
+            const previousMotion = motion, previousAmbient = ambient;
+            motion = new Map(); ambient = new Map();
             for (const node of nodes.values()) {
                 if (node.ordered || !owners.has(node.id)) { delete node.orderedOrbit; continue; }
                 const previous = !reset && node.orderedOrbit, candidates = owners.get(node.id);
@@ -443,6 +464,9 @@ export function createOrderedOrbitLayout() {
                 node.orderedOrbit = { anchorId, slot: valid ? previous.slot : null, ...(valid && finitePoint(previous.offset) ? { offset: { ...previous.offset } } : {}) };
                 node.orderedOrbitNew = !valid || reset || restore && !valid;
                 motion.set(node.id, !restore && valid && previousMotion.get(node.id) || { vx: 0, vy: 0 });
+                const priorAmbient = previousAmbient.get(node.id);
+                if (!reset && valid && priorAmbient?.anchorId === anchorId && priorAmbient.slot === node.orderedOrbit.slot)
+                    ambient.set(node.id, priorAmbient);
                 if (!groups.has(anchorId)) groups.set(anchorId, []);
                 groups.get(anchorId).push(node);
             }
@@ -453,6 +477,7 @@ export function createOrderedOrbitLayout() {
                 x: node.x, top: node.y - orderedNodeRadius(node.ordered) - 10,
                 bottom: node.y + orderedNodeRadius(node.ordered) + 54,
             }));
+            const rails = skeletonRails();
             const reservedOrbits = [];
             const reserveOrbit = node => {
                 const anchor = nodes.get(node.orderedOrbit.anchorId), offset = offsetFor(node);
@@ -464,6 +489,7 @@ export function createOrderedOrbitLayout() {
                 return [0.82, 1].every(scale => {
                     const x = anchor.x + offset.x * scale, y = anchor.y + offset.y * scale;
                     return !obstacles.some(box => Math.abs(x - box.x) < 140 && y + radius + 34 > box.top && y - radius - 8 < box.bottom)
+                        && !crossesRail(rails, x, y, radius)
                         && !reservedOrbits.some(point => point.owner !== anchor.id && Math.hypot(x - point.x, y - point.y) < 76);
                 });
             };
@@ -475,7 +501,7 @@ export function createOrderedOrbitLayout() {
                     // Avoidance chooses new slots only; it must not rearrange a
                     // different owner's group when one skeleton point is dragged.
                     if (node.orderedOrbit.slot != null && !reserved.has(node.orderedOrbit.slot)) reserved.add(node.orderedOrbit.slot);
-                    else { node.orderedOrbit.slot = null; node.orderedOrbitNew = true; motion.set(node.id, { vx: 0, vy: 0 }); }
+                    else { node.orderedOrbit.slot = null; node.orderedOrbitNew = true; motion.set(node.id, { vx: 0, vy: 0 }); ambient.delete(node.id); }
                 }
                 for (const node of members) {
                     if (node.orderedOrbit.slot == null) {
@@ -500,18 +526,92 @@ export function createOrderedOrbitLayout() {
         },
         controlled(node) { return Boolean(node?.ordered || node?.orderedOrbit); },
         hasAmbientMotion() { return groups.size > 0; },
+        resetAmbient() { ambient.clear(); ambientTime = 0; },
+        advanceAmbient(deltaMs, { scale = 1 } = {}) {
+            const duration = Math.max(0, Math.min(64, Number(deltaMs) || 0));
+            if (!duration || !groups.size) return;
+            const zoom = Number.isFinite(scale) && scale > 0 ? scale : 1;
+            const radius = Math.min(160, Math.max(18, 30 / zoom));
+            const rails = skeletonRails();
+            // The owner supplies a soft home, while each member follows its own
+            // slowly changing target with inertia. Only members of one owner
+            // collide; no other Time branch attracts this node.
+            const steps = Math.max(1, Math.ceil(duration / (1000 / 60)));
+            for (let step = 0; step < steps; step++) {
+                const dt = duration / steps, frame = dt / (1000 / 60);
+                ambientTime += dt;
+                for (const members of groups.values()) for (const node of members) {
+                    if (!finitePoint(node) || node.fx != null) continue;
+                    let state = ambient.get(node.id);
+                    if (!state) {
+                        state = { x: 0, y: 0, vx: 0, vy: 0, seed: ambientSeed(node.id),
+                            anchorId: node.orderedOrbit.anchorId, slot: node.orderedOrbit.slot };
+                        ambient.set(node.id, state);
+                    }
+                    const seed = state.seed;
+                    const px = (seed % 6283) / 1000, py = ((seed >>> 8) % 6283) / 1000;
+                    const tx = radius * (0.68 * Math.sin(ambientTime * Math.PI * 2 / (4900 + seed % 2200) + px)
+                        + 0.22 * Math.sin(ambientTime * Math.PI * 2 / (7300 + (seed >>> 5) % 2300) + py));
+                    const ty = radius * (0.62 * Math.sin(ambientTime * Math.PI * 2 / (5400 + (seed >>> 9) % 2600) + py)
+                        + 0.20 * Math.cos(ambientTime * Math.PI * 2 / (8100 + (seed >>> 4) % 1900) + px));
+                    const drag = Math.pow(0.82, frame);
+                    state.vx = (state.vx + (tx - state.x) * 0.05 * frame) * drag;
+                    state.vy = (state.vy + (ty - state.y) * 0.05 * frame) * drag;
+                    state.x += state.vx * frame;
+                    state.y += state.vy * frame;
+                    const distance = Math.hypot(state.x, state.y), limit = radius * 1.15;
+                    if (distance > limit) { state.x *= limit / distance; state.y *= limit / distance; state.vx *= 0.5; state.vy *= 0.5; }
+                }
+                for (const [anchorId, members] of groups) {
+                    const anchor = nodes.get(anchorId);
+                    if (!finitePoint(anchor)) continue;
+                    const points = members.map(node => ({ node, state: ambient.get(node.id) }))
+                        .filter(point => point.state).sort((a, b) => a.node.x + a.state.x - b.node.x - b.state.x);
+                    const maxRadius = Math.max(18, ...points.map(point => point.node.radius || 18));
+                    const widestGap = maxRadius * 2 + 18;
+                    for (let i = 0; i < points.length; i++) {
+                        const a = points[i].node, pa = points[i].state;
+                        if (!pa) continue;
+                        const ax = a.x + pa.x, ay = a.y + pa.y;
+                        const adx = ax - anchor.x, ady = ay - anchor.y, ad = Math.hypot(adx, ady);
+                        const minAnchorGap = (a.radius || 18) + orderedNodeRadius(anchor.ordered) + 18;
+                        if (ad > 0.001 && ad < minAnchorGap) {
+                            const push = (minAnchorGap - ad) * 0.28 * frame;
+                            pa.vx += adx / ad * push; pa.vy += ady / ad * push;
+                        }
+                        for (const rail of rails) if (ax >= rail.x1 - (a.radius || 18) && ax <= rail.x2 + (a.radius || 18)) {
+                            const dy = a.y + pa.y - rail.y, clearance = (a.radius || 18) + (dy < 0 ? 16 : 32);
+                            if (Math.abs(dy) >= clearance) continue;
+                            const side = dy < -0.001 ? -1 : dy > 0.001 ? 1 : a.y < rail.y ? -1 : 1;
+                            pa.vy += side * (clearance - Math.abs(dy)) * 0.14 * frame;
+                            const correctedY = pa.y + side * (clearance + 3 - Math.abs(dy));
+                            if (Math.hypot(pa.x, correctedY) <= radius * 1.15) {
+                                pa.y = correctedY;
+                                if (pa.vy * side < 0) pa.vy = 0;
+                            }
+                        }
+                        for (let j = i + 1; j < points.length; j++) {
+                            const b = points[j].node, pb = points[j].state;
+                            const dx = b.x + pb.x - ax, dy = b.y + pb.y - ay, gap = Math.hypot(dx, dy);
+                            if (dx > widestGap) break;
+                            const minGap = (a.radius || 18) + (b.radius || 18) + 18;
+                            if (gap < 0.001 || gap >= minGap) continue;
+                            const push = (minGap - gap) * 0.20 * frame;
+                            pa.vx -= dx / gap * push; pa.vy -= dy / gap * push;
+                            pb.vx += dx / gap * push; pb.vy += dy / gap * push;
+                        }
+                    }
+                }
+            }
+        },
         renderPoint(node, timeMs, { active = true, scale = 1, held = false } = {}) {
             const point = { x: node?.x, y: node?.y }, member = nodes.get(String(node?.id));
-            if (!active || held || !finitePoint(point) || !member?.orderedOrbit || member.ordered || sourceNode(member)) return point;
-            // This is a bounded display-only breath, never a physical force or
-            // saved coordinate. ID-derived periods keep reloads and two views
-            // consistent while avoiding synchronised circling around anchors.
-            const seed = ambientSeed(member.id), time = Number.isFinite(timeMs) ? timeMs : 0;
-            const phase = (seed % 6283) / 1000, phaseY = ((seed >>> 8) % 6283) / 1000;
-            const periodX = 5200 + seed % 3400, periodY = 5700 + (seed >>> 5) % 3300;
-            const amplitude = Math.min(8, 4.6 / (Number.isFinite(scale) && scale > 0 ? scale : 1));
-            point.x += amplitude * 0.82 * Math.sin(time * Math.PI * 2 / periodX + phase);
-            point.y += amplitude * 0.57 * Math.sin(time * Math.PI * 2 / periodY + phaseY);
+            if (!active || held || !Number.isFinite(timeMs) || !finitePoint(point) || !member?.orderedOrbit || member.ordered || sourceNode(member)) return point;
+            const state = ambient.get(member.id), zoom = Number.isFinite(scale) && scale > 0 ? scale : 1;
+            if (!state) return point;
+            // Zoom bounds are enforced when advancing; this read never mutates
+            // physical nodes, relationship records or persisted orbit offsets.
+            if (zoom > 0) { point.x += state.x; point.y += state.y; }
             return point;
         },
         tick(alpha) {
@@ -550,6 +650,7 @@ export function createOrderedOrbitLayout() {
             if (!anchor) return false;
             node.orderedOrbit.offset = { x: x - anchor.x, y: y - anchor.y };
             motion.set(node.id, { vx: 0, vy: 0 });
+            ambient.delete(node.id);
             node.x = x; node.y = y; return true;
         },
     };

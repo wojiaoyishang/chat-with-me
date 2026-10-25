@@ -567,7 +567,7 @@ test('strict time skeleton and single-owner orbits resist dense cross-branch lin
   assert.deepEqual(full, original); await settle(80);
 });
 
-test('settled owned knowledge nodes keep subtle visual motion while skeleton, cached positions, and paused states remain stable', async t => {
+test('settled owned knowledge nodes move on a flexible tether while skeleton, cached positions, and paused states remain stable', async t => {
   const full = orderedTimeGraph(), responder = (url, options) => {
     if (url.pathname === '/api/knowledge/graph') return full;
     if (url.pathname === '/api/knowledge/canvas') {
@@ -582,15 +582,26 @@ test('settled owned knowledge nodes keep subtle visual motion while skeleton, ca
     edge = document.querySelector('[data-edge-id="event-time"]'),
     cache = () => JSON.parse(JSON.stringify(dom.window.CWMGraphWorkspace.read('/api|db-default|'))).nodes;
   ui.runFrames(800); await settle(180);
-  const fixed = skeleton(), before = positionOf(event), beforeEdge = edge.getAttribute('d'), saved = cache();
+  const fixed = skeleton(), before = positionOf(event), beforeEdge = edge.getAttribute('d'), saved = cache(),
+    owner = document.querySelector('[data-node-id="minute"]'), traveled = [before], edgeSamples = [beforeEdge];
   assert.equal(svg.dataset.physicsState, 'settled');
   assert.equal(svg.dataset.nodeAnimationActive, 'true');
   assert.equal(ui.pendingFrames(), 1, 'settling physics retains exactly one visual frame chain');
-  ui.runFrames(95); await settle(180);
-  assert.ok(distance(positionOf(event), before) > 0.1, 'ordinary knowledge still visibly floats after D3 settles');
-  assert.ok(distance(positionOf(event), before) < 10, 'the floating displacement stays local and subtle');
-  assert.notEqual(edge.getAttribute('d'), beforeEdge, 'association geometry follows the moving endpoint');
+  for (let sample = 0; sample < 8; sample += 1) {
+    ui.runFrames(60);
+    traveled.push(positionOf(event));
+    edgeSamples.push(edge.getAttribute('d'));
+  }
+  const traveledSpan = Math.max(...traveled.flatMap(a => traveled.map(b => distance(a, b))));
+  const xSpan = Math.max(...traveled.map(point => point[0])) - Math.min(...traveled.map(point => point[0]));
+  const ySpan = Math.max(...traveled.map(point => point[1])) - Math.min(...traveled.map(point => point[1]));
+  assert.ok(traveledSpan > 16, `ordinary knowledge should visibly travel around its owner after D3 settles; span=${traveledSpan}`);
+  assert.ok(xSpan > 8 && ySpan > 8, `the tether allows two-dimensional movement; x=${xSpan}, y=${ySpan}`);
+  const ownerDistance = traveled.map(point => distance(point, positionOf(owner)));
+  assert.ok(ownerDistance.every(value => value < 260), `the owner tether prevents free knowledge from drifting away; max=${Math.max(...ownerDistance)}`);
+  assert.ok(new Set(edgeSamples).size > 2, 'association geometry follows the freely moving endpoint');
   assert.deepEqual(skeleton(), fixed, 'the entire ordered skeleton stays exactly fixed');
+  assert.equal(svg.dataset.physicsState, 'settled', 'ordinary motion does not keep the global D3 solver hot');
   assert.deepEqual(cache(), saved, 'ambient drawing never writes transient offsets into cached coordinates');
   const control = document.querySelector('#graph-physics'), beforePause = event.getAttribute('transform'); control.click();
   assert.equal(event.getAttribute('transform'), beforePause, 'pause freezes the exact last painted sample without a phase jump');

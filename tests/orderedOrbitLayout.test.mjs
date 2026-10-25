@@ -76,6 +76,36 @@ test('new orbit slots avoid neighboring skeleton nodes and their caption band wi
     simulation.tick(340); clear(); simulation.stop();
 });
 
+test('a fresh satellite avoids the Time spine while a saved near-rail slot keeps its layout and moves visibly clear', () => {
+    const graphAtLowerAnchor = () => {
+        const graph = orderedTimeForks();
+        createOrderedGraphLayout().rebuild(graph.nodes, { relationships: graph.relationships, completeParentIds: graph.completeParentIds });
+        const anchor = graph.nodes.find(node => node.id === 'fork-afternoon');
+        anchor.y = anchor.previousY = anchor.orderedTargetY = 120;
+        return { graph, anchor, event: graph.nodes.find(node => node.id === 'fork-event') };
+    };
+    const fresh = graphAtLowerAnchor(), freshOrbit = createOrderedOrbitLayout();
+    freshOrbit.rebuild(fresh.graph.nodes, fresh.graph.relationships);
+    assert.notEqual(fresh.event.orderedOrbit.slot, 0, 'new Event must not occupy a slot intersecting the horizontal Time spine');
+    assert.ok(Math.abs(fresh.event.y) > 24, 'new Event circle starts clear of the Time spine');
+
+    const saved = graphAtLowerAnchor(), orbit = createOrderedOrbitLayout();
+    saved.event.x = saved.event.previousX = saved.anchor.x;
+    saved.event.y = saved.event.previousY = 8;
+    saved.event.orderedOrbit = { anchorId: saved.anchor.id, slot: 0 };
+    orbit.rebuild(saved.graph.nodes, saved.graph.relationships, { restore: true });
+    const baseline = structuredClone(saved.graph.nodes);
+    assert.equal(saved.event.orderedOrbit.slot, 0, 'an existing canvas retains its saved orbit choice');
+    for (let frame = 0; frame < 360; frame++) {
+        orbit.advanceAmbient(1000 / 60, { scale: 0.74 });
+        if (frame >= 60 && frame % 30 === 0) {
+            const point = orbit.renderPoint(saved.event, 0);
+            assert.ok(Math.abs(point.y) > 21, 'the visible Event circle stays clear of the Time spine after settling');
+        }
+    }
+    assert.deepEqual(saved.graph.nodes, baseline, 'rail avoidance remains display-only for saved canvas positions');
+});
+
 test('new slots also avoid already assigned foreign orbits without introducing cross-owner attraction', () => {
     const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), saved = structuredClone(event.orderedOrbit);
     for (let index = 0; index < 40; index++) {
@@ -135,39 +165,63 @@ test('dragging an anchor carries only its satellites and manual orbit offsets su
     assert.equal(event.orderedOrbit.offset, undefined); assert.notEqual(event.y, time.y + 60);
 });
 
-test('owned knowledge keeps a bounded ambient breath after physical settling without changing saved positions', () => {
-    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event');
+test('owned knowledge keeps moving physically after the graph settles while Time and saved coordinates stay fixed', () => {
+    const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
     const simulation = forceSimulation(graph.nodes).stop().velocityDecay(0.32).alphaDecay(0.018).force('local', alpha => orbit.tick(alpha));
     simulation.tick(600); simulation.stop();
     assert.equal(orbit.hasAmbientMotion(), true);
-    const saved = structuredClone(graph.nodes), rendered = [0, 1700, 3400, 5100].map(time => orbit.renderPoint(event, time));
-    assert.ok(rendered.some(point => Math.hypot(point.x - rendered[0].x, point.y - rendered[0].y) > 1), 'a settled node still visibly breathes');
-    for (const scale of [0.08, 0.6, 1, 4]) for (let time = 0; time < 60000; time += 173) {
-        const point = orbit.renderPoint(event, time, { scale }), displacement = Math.hypot(point.x - event.x, point.y - event.y);
-        assert.ok(displacement <= 8, 'ambient motion stays bounded in world coordinates');
-        assert.ok(displacement * scale <= 4.6 + 1e-9, 'screen movement stays subtle when zooming in');
+    const saved = structuredClone(graph.nodes), initial = orbit.renderPoint(event, 0), rendered = [initial];
+    for (let frame = 1; frame <= 360; frame++) {
+        orbit.advanceAmbient(1000 / 60, { scale: 1 });
+        if (frame % 30 === 0) {
+            const point = orbit.renderPoint(event, 0);
+            rendered.push(point);
+            assert.ok(Math.hypot(point.x - time.x, point.y - time.y) < 180, 'the free event remains near its own Time node');
+            assert.deepEqual(orbit.renderPoint(time, 0), { x: time.x, y: time.y }, 'Time never joins the ambient physics');
+        }
     }
-    assert.deepEqual(graph.nodes, saved, 'rendering never changes coordinates, velocities, pins or saved orbit offsets');
+    assert.ok(rendered.some(point => Math.hypot(point.x - initial.x, point.y - initial.y) > 12), 'a settled event must visibly move across the canvas, beyond a tiny decorative wobble');
+    assert.deepEqual(graph.nodes, saved, 'ongoing physical motion never changes persisted positions, velocities, pins or orbit offsets');
 });
 
-test('ambient motion is stable by ID, accepts interpolated points and honours pause and drag controls', () => {
+test('ambient physics accepts interpolated points and honours pause, reduced-motion and dragging', () => {
     const graph = orderedTimeForks(), { orbit, at } = layout(graph), event = at('fork-event'), time = at('fork-afternoon');
-    const point = orbit.renderPoint(event, 12345), source = { ...event, x: event.x + 30, y: event.y - 40 };
-    assert.deepEqual(orbit.renderPoint(source, 12345), { x: point.x + 30, y: point.y - 40 });
-    for (const options of [{ active: false }, { held: true }]) assert.deepEqual(orbit.renderPoint(event, 12345, options), { x: event.x, y: event.y });
-    assert.deepEqual(orbit.renderPoint(time, 12345), { x: time.x, y: time.y }, 'ordered skeleton never breathes');
-    assert.deepEqual(orbit.renderPoint({ id: 'missing', x: 1, y: 2 }, 12345), { x: 1, y: 2 });
+    for (let frame = 0; frame < 150; frame++) orbit.advanceAmbient(1000 / 60, { scale: 1 });
+    const point = orbit.renderPoint(event, 0), source = { ...event, x: event.x + 30, y: event.y - 40 };
+    assert.deepEqual(orbit.renderPoint(source, 0), { x: point.x + 30, y: point.y - 40 });
+    for (const options of [{ active: false }, { held: true }]) assert.deepEqual(orbit.renderPoint(event, 0, options), { x: event.x, y: event.y });
+    assert.deepEqual(orbit.renderPoint(time, 0), { x: time.x, y: time.y }, 'ordered skeleton never moves');
+    assert.deepEqual(orbit.renderPoint({ id: 'missing', x: 1, y: 2 }, 0), { x: 1, y: 2 });
+    assert.deepEqual(orbit.renderPoint(event, 0), point, 'without an animation step, pause keeps the event at its last visible position');
     graph.nodes.push({ id: 'source', label: 'Chunk', x: 5, y: 6 });
     graph.relationships.push({ source: 'source', target: event.id, type: 'EXTRACTED_FROM' });
     orbit.rebuild(graph.nodes, graph.relationships);
-    assert.deepEqual(orbit.renderPoint(at('source'), 12345), { x: 5, y: 6 });
-    const restore = createOrderedOrbitLayout(), restored = structuredClone(graph.nodes);
-    restore.rebuild(restored.reverse(), [...graph.relationships].reverse(), { restore: true });
-    const restoredEvent = restored.find(node => node.id === event.id);
-    assert.deepEqual(restore.renderPoint(restoredEvent, 12345), orbit.renderPoint(event, 12345), 'refresh and input ordering preserve the same phase');
+    assert.deepEqual(orbit.renderPoint(at('source'), 0), { x: 5, y: 6 });
     assert.equal(createOrderedOrbitLayout().hasAmbientMotion(), false);
     orbit.rebuild(graph.nodes.filter(node => node.ordered), []);
     assert.equal(orbit.hasAmbientMotion(), false);
+});
+
+test('ambient physics restarts reproducibly by node identity after restore, regardless of input order', () => {
+    const graph = orderedTimeForks(), other = structuredClone(graph);
+    const first = layout(graph), restored = layout(other), id = 'fork-event';
+    for (let frame = 0; frame < 180; frame++) first.orbit.advanceAmbient(1000 / 60, { scale: 1 });
+    const moving = first.orbit.renderPoint(first.at(id), 0);
+    assert.ok(Math.hypot(moving.x - first.at(id).x, moving.y - first.at(id).y) > 1, 'there is transient motion to clear');
+    first.orbit.rebuild(graph.nodes, graph.relationships, { restore: true });
+    assert.deepEqual(first.orbit.renderPoint(first.at(id), 0), moving, 'restoring an unchanged owner and slot within the session keeps its visible trajectory');
+    assert.deepEqual(restored.orbit.renderPoint(restored.at(id), 0), { x: restored.at(id).x, y: restored.at(id).y }, 'a fresh load begins at its saved base position');
+    first.orbit.resetAmbient();
+    restored.orbit.resetAmbient();
+    other.nodes.reverse(); other.relationships.reverse();
+    restored.orbit.rebuild(other.nodes, other.relationships, { restore: true });
+    first.orbit.rebuild(graph.nodes, graph.relationships, { restore: true });
+    for (let frame = 0; frame < 180; frame++) {
+        first.orbit.advanceAmbient(1000 / 60, { scale: 1 });
+        restored.orbit.advanceAmbient(1000 / 60, { scale: 1 });
+    }
+    assert.deepEqual(restored.orbit.renderPoint(restored.at(id), 0), first.orbit.renderPoint(first.at(id), 0));
+    assert.deepEqual(restored.orbit.renderPoint(restored.at('fork-afternoon'), 0), first.orbit.renderPoint(first.at('fork-afternoon'), 0));
 });
 
 test('both renderers use the identical ownership, orbit and rigid skeleton contract', async () => {
@@ -177,9 +231,13 @@ test('both renderers use the identical ownership, orbit and rigid skeleton contr
     const chat = layout(graph), management = layout(other, context.window.CWMOrderedGraphLayout.createOrderedOrbitLayout);
     assert.deepEqual(JSON.parse(JSON.stringify(other.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))), JSON.parse(JSON.stringify(graph.nodes.map(({ id, x, y, orderedOrbit }) => ({ id, x, y, orderedOrbit })))));
     assert.equal(chat.orbit.hasAmbientMotion(), management.orbit.hasAmbientMotion());
-    for (const time of [0, 750, 14000]) for (const scale of [0.3, 1, 2]) {
-        const rendered = management.orbit.renderPoint(management.at('fork-event'), time, { scale });
-        assert.deepEqual({ ...rendered }, chat.orbit.renderPoint(chat.at('fork-event'), time, { scale }));
+    for (const scale of [0.3, 1, 2]) {
+        for (let frame = 0; frame < 90; frame++) {
+            chat.orbit.advanceAmbient(1000 / 60, { scale });
+            management.orbit.advanceAmbient(1000 / 60, { scale });
+        }
+        const rendered = management.orbit.renderPoint(management.at('fork-event'), 0, { scale });
+        assert.deepEqual({ ...rendered }, chat.orbit.renderPoint(chat.at('fork-event'), 0, { scale }));
     }
 });
 
