@@ -288,7 +288,7 @@ test('knowledge edge animation obeys only trusted parent preferences and updates
     const svg = ui.document.getElementById('knowledge-canvas');
     assert.equal(svg.dataset.edgeAnimation, 'true');
     assert.equal(svg.dataset.edgeAnimationActive, 'true');
-    assert.equal(ui.pendingFrames(), 0);
+    assert.equal(ui.pendingFrames(), 1, 'ordinary physics keeps one frame chain independent of edge highlights');
     const flows = [...svg.querySelectorAll('.knowledge-edge-flow')];
     assert.equal(flows.length, 2);
     for (const flow of flows) assert.equal(flow.getAttribute('d'), flow.previousElementSibling.getAttribute('d'));
@@ -300,7 +300,7 @@ test('knowledge edge animation obeys only trusted parent preferences and updates
     assert.equal(svg.dataset.edgeAnimation, 'true');
     send(trustedParent, 'http://localhost', false); assert.equal(svg.dataset.edgeAnimation, 'false');
     send(trustedParent, 'http://localhost', true); assert.equal(svg.dataset.edgeAnimation, 'true');
-    assert.equal(ui.pendingFrames(), 0); assert.equal(ui.document.getElementById('graph-camera').getAttribute('transform'), camera);
+    assert.equal(ui.pendingFrames(), 1); assert.equal(ui.document.getElementById('graph-camera').getAttribute('transform'), camera);
     ui.document.getElementById('graph-physics').click(); assert.equal(svg.dataset.edgeAnimationActive, 'false');
   } finally { ui.dom.window.close(); }
 });
@@ -1512,6 +1512,7 @@ test("the workspace starts with one unselected seed and refresh preserves expand
   pointer(dom, svg, "pointermove", 270, 230, { button: -1, buttons: 4 });
   pointer(dom, svg, "pointerup", 270, 230, { button: 1 });
   runFrames(1);
+  document.querySelector('#graph-physics').click();
   const before = positionsOf(document),
     cameraBefore = cameraOf(document);
   document.querySelector("#refresh").click();
@@ -1994,7 +1995,7 @@ test("physical animation can pause without a position jump and resume from the s
   );
 });
 
-test("cancelled pointer drags release the node, settle again, and never refit the user's camera", async (t) => {
+test("cancelled pointer drags release the node, keep physics running, and never refit the user's camera", async (t) => {
   const { dom, document, runFrames, pendingFrames } = await page(undefined, {
     controlledAnimation: true,
     fullGraph: true,
@@ -2019,10 +2020,10 @@ test("cancelled pointer drags release the node, settle again, and never refit th
     assert.notEqual(
       node.getAttribute("transform"),
       heldPosition,
-      `${cancelEvent} must not leave a node fixed or a simulation reheated forever`,
+      `${cancelEvent} must not leave a node fixed`,
     );
     runFrames(500);
-    assert.equal(pendingFrames(), 0);
+    assert.equal(pendingFrames(), 1, 'free physics continues through a single frame chain');
     assert.equal(camera.getAttribute("transform"), cameraAtDrag);
   }
 });
@@ -2048,30 +2049,31 @@ test("reduced motion suspends automatic physics while retaining the graph animat
   assert.equal(pendingFrames(), 0);
 });
 
-test("a settled graph stays still across refresh but reheats when new neighbors are added", async (t) => {
+test("a graph without Time keeps physical motion across refresh and new neighbors", async (t) => {
   const { dom, document, runFrames, pendingFrames } = await page(undefined, {
     controlledAnimation: true,
     fullGraph: true,
   });
   t.after(() => dom.window.close());
   runFrames(500);
-  const settled = positionsOf(document);
+  const warmed = positionsOf(document), camera = document.querySelector('#graph-camera').getAttribute('transform');
   assert.equal(
     pendingFrames(),
-    0,
-    "a settled graph should stop consuming frames",
+    1,
+    "ordinary nodes must not lose physics after the initial layout cools",
   );
   runFrames(60);
-  assert.deepEqual(positionsOf(document), settled);
+  assert.ok(positionsOf(document).some((point, index) => distance(point, warmed[index]) > 0.1));
+  const beforeRefresh = positionsOf(document);
   document.querySelector("#refresh").click();
   await settle();
   runFrames(60);
-  assert.deepEqual(
-    positionsOf(document),
-    settled,
-    "refreshing unchanged data must not restart the layout",
+  assert.ok(
+    positionsOf(document).some((point, index) => distance(point, beforeRefresh[index]) > 0.1),
+    "refreshing unchanged data must preserve continuous physics",
   );
-  assert.equal(pendingFrames(), 0);
+  assert.equal(pendingFrames(), 1);
+  assert.equal(document.querySelector('#graph-camera').getAttribute('transform'), camera);
   document
     .querySelector('[data-node-id="node-2"]')
     .dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
@@ -2080,9 +2082,9 @@ test("a settled graph stays still across refresh but reheats when new neighbors 
   runFrames(40);
   assert.ok(
     positionsOf(document)
-      .slice(0, settled.length)
-      .some((point, index) => distance(point, settled[index]) > 0.1),
-    "adding a connected neighbor should bring the existing nodes back into motion",
+      .slice(0, warmed.length)
+      .some((point, index) => distance(point, warmed[index]) > 0.1),
+    "adding a connected neighbor preserves physical motion",
   );
 });
 
@@ -2276,7 +2278,7 @@ test("successful database deletion clears undo so locally hidden history cannot 
   assert.equal(document.querySelector('[data-node-id="node-2"]'), null);
 });
 
-test("relayout undo restores exact node positions without replaying the force simulation", async (t) => {
+test("relayout undo restores exact positions then resumes physics without resetting the layout", async (t) => {
   const ui = await page(undefined, { controlledAnimation: true, fullGraph: true });
   t.after(() => ui.dom.window.close());
   ui.runFrames(40);
@@ -2287,7 +2289,8 @@ test("relayout undo restores exact node positions without replaying the force si
   assert.deepEqual(positionsOf(ui.document), before);
   assert.deepEqual(cameraOf(ui.document), camera);
   ui.runFrames(20);
-  assert.deepEqual(positionsOf(ui.document), before);
+  assert.notDeepEqual(positionsOf(ui.document), before, 'restored ordinary nodes remain physically active');
+  assert.deepEqual(cameraOf(ui.document), camera);
 });
 
 test("drag undo restores the graph layout and camera as one gesture", async (t) => {
@@ -2692,10 +2695,11 @@ test("a real page reload restores authorized nodes, hidden IDs, dragged layout a
     ),
   );
   first.runFrames(120);
-  assert.deepEqual(positionsOf(first.document), [
+  assert.notDeepEqual(positionsOf(first.document), [
     [-135, 90],
     [145, -70],
-  ]);
+  ], 'a restored ordinary graph continues physical motion without needing a Time node');
+  assert.deepEqual(cameraOf(first.document), [385, 245, 1.6]);
   first.document.querySelector("#graph-physics").click();
   const svg = first.document.querySelector("#knowledge-canvas"),
     node = first.document.querySelector('[data-node-id="node-2"]'),
@@ -2738,7 +2742,7 @@ test("a real page reload restores authorized nodes, hidden IDs, dragged layout a
     null,
   );
   restored.runFrames(120);
-  assert.deepEqual(positionsOf(restored.document), layout);
+  assert.notDeepEqual(positionsOf(restored.document), layout, 'reload restores positions and resumes enabled physics');
   assert.deepEqual(cameraOf(restored.document), camera);
 });
 

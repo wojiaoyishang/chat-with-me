@@ -371,11 +371,11 @@ test('chat streaming during a held time drag repins just that point and restorin
     assert.deepEqual(at(), restored, 'a stale held pointer must not overwrite the restored point');
 });
 
-test('relationship highlights remain active after layout settles without extra frames and follow live geometry and streamed removal', t => {
+test('ordinary graph physics and relationship highlights stay active with one frame chain', t => {
     const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(420);
     assert.equal(ui.svg.dataset.edgeAnimation, 'true');
     assert.equal(ui.svg.dataset.edgeAnimationActive, 'true');
-    assert.equal(ui.frames.size, 0, 'CSS highlights must not keep D3 rendering');
+    assert.equal(ui.frames.size, 1, 'ordinary nodes keep a single physical simulation frame chain');
     const flows = [...ui.svg.querySelectorAll('.knowledge-edge-flow')];
     assert.equal(flows.length, 3);
     for (const flow of flows) {
@@ -385,7 +385,7 @@ test('relationship highlights remain active after layout settles without extra f
     assert.equal(flows.filter(flow => flow.classList.contains('source-flow')).length, 1);
     const cameraBefore = camera(ui.svg), before = flows[0].getAttribute('d');
     ui.controller.setEdgeAnimation(false); ui.controller.setEdgeAnimation(true);
-    assert.equal(camera(ui.svg), cameraBefore); assert.equal(ui.frames.size, 0);
+    assert.equal(camera(ui.svg), cameraBefore); assert.equal(ui.frames.size, 1);
     point(ui.dom, ui.svg.querySelector('[data-node-id="root"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 280, 160); ui.run(1);
     assert.notEqual(flows[0].getAttribute('d'), before);
@@ -417,15 +417,44 @@ test('relationship preference, visibility, reduced motion and graph pause gate a
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge-flow').length, 0);
 });
 
-test('initial layout remains centered until physics settles, while user zoom cancels automatic framing', t => {
-    const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(420);
-    assert.equal(ui.svg.dataset.physicsState, 'settled');
+test('initial layout is framed once while continuous physics leaves the camera alone', t => {
+    const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture()));
+    const seedCamera = camera(ui.svg);
+    for (let index = 0; index < 120 && camera(ui.svg) === seedCamera; index++) ui.run(1);
+    assert.notEqual(camera(ui.svg), seedCamera, 'the warmed layout is framed after its initial seed positions');
+    assert.equal(ui.svg.dataset.physicsState, 'running');
     const centered = screenCenter(ui);
     assert.ok(Math.abs(centered[0] - 320) < 12 && Math.abs(centered[1] - 150) < 12,
         'the initial graph is framed near the center before manual camera control');
+    const initialCamera = camera(ui.svg); ui.run(420); assert.equal(camera(ui.svg), initialCamera);
     const positions = ui.controller.getNodePositions(); ui.controller.relayout(); ui.run(2); ui.controller.zoom(0.7);
     const manualCamera = camera(ui.svg); ui.run(420); assert.equal(camera(ui.svg), manualCamera);
     assert.notDeepEqual(ui.controller.getNodePositions(), positions, 'Physics continues after canceling camera tracking');
+});
+
+test('no-Time entities and Chunks keep physical motion after warmup, removal of Time and view restore', t => {
+    const ui = setup(t, { observeVisibility: true });
+    ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(100);
+    ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(600);
+    assert.equal(ui.svg.querySelectorAll('.ordered-node').length, 0);
+    const state = ui.controller.getViewState(), positions = () => ui.controller.getNodePositions();
+    const source = ui.svg.querySelector('.source-flow'), path = source.getAttribute('d');
+    ui.run(120);
+    for (const id of ['root', 'chunk', 'parent']) {
+        const before = state.positions.find(node => node.id === id), after = positions().find(node => node.id === id);
+        assert.ok(Math.hypot(after.x - before.x, after.y - before.y) > 0.1, `${id} must change real physical coordinates without Time`);
+    }
+    assert.notEqual(source.getAttribute('d'), path);
+    assert.equal(ui.svg.dataset.physicsState, 'running'); assert.equal(ui.frames.size, 1);
+    for (const toggle of [value => ui.controller.setPhysics(value), value => ui.setVisible(value), value => ui.setReducedMotion(!value)]) {
+        toggle(false); ui.run(2); const paused = positions(); ui.run(120);
+        assert.deepEqual(positions(), paused); assert.equal(ui.frames.size, 0);
+        toggle(true); ui.run(120); assert.notDeepEqual(positions(), paused); assert.equal(ui.frames.size, 1);
+    }
+    ui.controller.restoreViewState(state);
+    assert.deepEqual(positions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
+    ui.run(120); assert.notDeepEqual(positions(), state.positions.map(({ id, x, y }) => ({ id, x, y })));
+    assert.equal(ui.svg.dataset.physicsState, 'running');
 });
 
 test('single-node focus stays at viewport center while neighbors animate and keyboard focus uses the same behavior', t => {

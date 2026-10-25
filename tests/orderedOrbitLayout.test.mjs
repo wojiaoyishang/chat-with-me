@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
-import { forceSimulation, forceLink, forceManyBody, forceCollide } from 'd3-force';
+import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY } from 'd3-force';
 import { JSDOM } from 'jsdom';
 import { createOrderedGraphLayout, createOrderedOrbitLayout, orderedNodeRadius } from '../src/features/knowledge/orderedGraphLayout.js';
 import { orderedTimeForks } from './fixtures/orderedTimeForks.mjs';
@@ -245,19 +245,24 @@ test('Chunk provenance becomes a physical link without making the Chunk a rigid 
     assert.ok(Math.hypot(source.x, source.y) > 300, 'a Chunk connected to distant Time content must not collapse to the world origin');
 });
 
-test('an isolated Chunk does not receive perpetual wind in an ordered graph', () => {
+test('an isolated Chunk participates in physics while retaining ordinary centering gravity', () => {
     const graph = orderedTimeForks();
     graph.nodes.push({ id: 'isolated-chunk', label: 'Chunk', x: 420, y: 260, vx: 0, vy: 0 });
     const { orbit, at } = layout(graph), chunk = at('isolated-chunk');
     const start = { x: chunk.x, y: chunk.y };
-    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
-    simulation.tick(120); simulation.stop();
-    assert.deepEqual({ x: chunk.x, y: chunk.y }, start,
-        'an unconnected source has no owner or provenance spring to drive its motion');
+    assert.equal(orbit.sourceAnchored(chunk), false);
+    const strength = node => node.ordered || node.orderedOrbit ? 0 : 0.035;
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 })
+        .force('x', forceX(0).strength(strength)).force('y', forceY(0).strength(strength));
+    simulation.tick(1200);
+    assert.ok(Math.hypot(chunk.x, chunk.y) < 120, 'unowned nodes remain bounded by normal centering forces');
+    assert.notDeepEqual({ x: chunk.x, y: chunk.y }, start);
+    const warmed = { x: chunk.x, y: chunk.y }; simulation.tick(120); simulation.stop();
+    assert.ok(Math.hypot(chunk.x - warmed.x, chunk.y - warmed.y) > 0.1);
 });
 
-test('an unrelated Chunk/Event source component does not inherit another Time branch motion', () => {
-    const graph = orderedTimeForks();
+for (const withTime of [false, true]) test(`unowned Entity and Chunk physics continues with Time=${withTime}`, () => {
+    const graph = withTime ? orderedTimeForks() : { nodes: [], relationships: [] };
     graph.nodes.push({ id: 'unrelated-event', label: 'Event', x: 420, y: 240, vx: 0, vy: 0 },
         { id: 'unrelated-chunk', label: 'Chunk', x: 450, y: 260, vx: 0, vy: 0 });
     graph.relationships.push({ id: 'unrelated-source', source: 'unrelated-chunk', target: 'unrelated-event', type: 'EXTRACTED_FROM' });
@@ -265,24 +270,27 @@ test('an unrelated Chunk/Event source component does not inherit another Time br
     assert.equal(orbit.sourceAnchored(at('unrelated-event')), false);
     assert.equal(orbit.sourceAnchored(at('unrelated-chunk')), false);
     assert.equal(orbit.sourceAnchored(at('fork-event')), false);
-    const start = { x: at('unrelated-event').x, y: at('unrelated-event').y };
-    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.08 });
+    const event = at('unrelated-event'), chunk = at('unrelated-chunk');
+    assert.equal(orbit.hasDynamicMotion(), true);
+    assert.equal(orbit.physicalLink(event, chunk), true);
+    const skeleton = graph.nodes.filter(node => node.ordered).map(({ x, y }) => ({ x, y }));
+    const strength = node => node.ordered || node.orderedOrbit ? 0 : 0.035;
+    const simulation = localSimulation(graph, orbit, { alphaTarget: 0.06 })
+        .force('link', forceLink([{ source: event, target: chunk }]).distance(135).strength(0.07))
+        .force('x', forceX(0).strength(strength)).force('y', forceY(0).strength(strength))
+        .force('collision', forceCollide(35));
+    simulation.force('local', null).force('local', alpha => orbit.tick(alpha));
+    simulation.tick(900);
+    const warmed = [event, chunk].map(({ x, y }) => ({ x, y }));
     simulation.tick(120); simulation.stop();
-    assert.deepEqual({ x: at('unrelated-event').x, y: at('unrelated-event').y }, start,
-        'continuous motion elsewhere must not add random wind to an unanchored Event');
-    assert.ok(Math.hypot(at('unrelated-chunk').x - start.x, at('unrelated-chunk').y - start.y) < 40,
-        'an unanchored Chunk still follows its local source, without drifting away');
-});
-
-test('a source-only view without Time keeps normal D3 links without continuous ordered motion', () => {
-    const graph = { nodes: [{ id: 'event', label: 'Event', x: 0, y: 0 },
-        { id: 'chunk', label: 'Chunk', x: 140, y: 0 }],
-    relationships: [{ id: 'source', source: 'chunk', target: 'event', type: 'EXTRACTED_FROM' }] };
-    const orbit = createOrderedOrbitLayout(); orbit.rebuild(graph.nodes, graph.relationships);
-    assert.equal(orbit.hasDynamicMotion(), false);
-    assert.equal(orbit.sourceAnchored(graph.nodes[0]), false);
-    assert.equal(orbit.sourceAnchored(graph.nodes[1]), false);
-    assert.equal(orbit.physicalLink(graph.nodes[0], graph.nodes[1]), true);
+    for (const [index, node] of [event, chunk].entries()) {
+        assert.ok(Math.hypot(node.x - warmed[index].x, node.y - warmed[index].y) > 0.1,
+            'both ordinary entities and source Chunks keep changing their real physical positions');
+        assert.ok(Math.hypot(node.x, node.y) < 500, 'unowned components retain centering gravity');
+        assert.equal(node.orderedOrbit, undefined);
+    }
+    assert.ok(Math.hypot(event.x - chunk.x, event.y - chunk.y) < 140, 'the source spring still connects the moving nodes');
+    assert.deepEqual(graph.nodes.filter(node => node.ordered).map(({ x, y }) => ({ x, y })), skeleton);
 });
 
 test('a multi-source Chunk stays in the local region of its moving source Events', () => {

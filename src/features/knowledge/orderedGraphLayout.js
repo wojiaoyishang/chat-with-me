@@ -478,9 +478,9 @@ export function createOrderedOrbitLayout() {
                 const previous = !reset && previousDynamics.get(node.id);
                 dynamics.set(node.id, previous || { seed: physicalSeed(node.id) || 1, windX: 0, windY: 0 });
             }
-            // Only source components that actually reach a visible ordered
-            // owner get continuous free motion without world-origin gravity.
-            // An unrelated Chunk/Event pair otherwise performs a random walk.
+            // Only source components reaching an ordered owner omit world-
+            // origin gravity. Other components retain normal centering forces;
+            // their physics lifecycle does not depend on a Time being present.
             const sourceQueue = [...sourceAdjacency.keys()].filter(id => nodes.get(id).ordered || nodes.get(id).orderedOrbit);
             anchoredSourceIds = new Set(sourceQueue);
             for (let index = 0; index < sourceQueue.length; index++)
@@ -541,7 +541,7 @@ export function createOrderedOrbitLayout() {
             }
         },
         controlled(node) { return Boolean(node?.ordered); },
-        hasDynamicMotion() { return hasOrdered && (groups.size > 0 || anchoredSourceIds.size > 0); },
+        hasDynamicMotion() { return nodes.size > 1 && dynamics.size > 0; },
         sourceAnchored(node) { return anchoredSourceIds.has(String(node?.id)); },
         physicalLink(a, b) {
             if (!a || !b || a === b || isInternalOrderAxis(a) || isInternalOrderAxis(b)) return false;
@@ -585,7 +585,6 @@ export function createOrderedOrbitLayout() {
                     }
                 }
             }
-            if (!hasOrdered) return;
             // The Time spine behaves as a collision boundary. This also moves
             // formerly saved near-spine satellites out of the rail in the real
             // simulation, without rewriting their saved slot assignment.
@@ -620,7 +619,7 @@ export function createOrderedOrbitLayout() {
                 // charge and collisions can change the resulting trajectory.
                 // This mild energy input keeps a visible free motion after the
                 // initial force layout cools, without dragging the fixed spine.
-                const state = node.orderedOrbit || anchoredSourceIds.has(node.id) ? dynamics.get(node.id) : null;
+                const state = dynamics.get(node.id);
                 if (!state) continue;
                 state.windX = state.windX * 0.88 + (random(state) - 0.5) * 2.4;
                 state.windY = state.windY * 0.88 + (random(state) - 0.5) * 2.4;
