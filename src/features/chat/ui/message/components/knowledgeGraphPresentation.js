@@ -1,4 +1,4 @@
-import { isInternalOrderAxis } from '../../../../knowledge/orderedGraphLayout.js';
+import { isInternalOrderAxis, orderedEdgeStyle, orderedConvergences } from '../../../../knowledge/orderedGraphLayout.js';
 
 const sourceTypes = new Set(['EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'ILLUSTRATES']);
 const colors = ['#6c87de', '#47aa91', '#b28aca', '#d59d57', '#62a7bb', '#dc8792', '#939d64', '#8397bd'];
@@ -57,20 +57,24 @@ export function knowledgeGraphPresentation(network) {
         ordinary.forEach((edge, index) => {
             const direction = edge.from < edge.to ? 1 : -1;
             const offset = index - (ordinary.length - 1) / 2;
-            edges.push({ ...edge, id: JSON.stringify(['relationship', edge.id]), sourceLink: false, members: [edge], offset: (sources.length ? offset + (offset < 0 ? -1 : 1) : offset) * direction });
+            edges.push({ ...edge, ...orderedEdgeStyle(edge.type, nodes.get(edge.from), nodes.get(edge.to)), id: JSON.stringify(['relationship', edge.id]), sourceLink: false, members: [edge], offset: (sources.length ? offset + (offset < 0 ? -1 : 1) : offset) * direction });
         });
     }
-    return { nodes: [...nodes.values()], relationships: [...relationships.values()], edges, links, aliases };
+    return { nodes: [...nodes.values()], relationships: [...relationships.values()], edges, links, aliases,
+        convergences: orderedConvergences(nodes.values(), relationships.values(), network?.completeParentIds || []) };
 }
 
 export function graphEdgeGeometry(edge, start, end) {
     const dx = end.x - start.x, dy = end.y - start.y, length = Math.max(1, Math.hypot(dx, dy));
     const nx = -dy / length, ny = dx / length;
-    const bend = edge.type === 'NEXT_ORDERED' ? 0 : edge.sourceLink ? -Math.min(26, Math.max(8, length * 0.1)) : (edge.offset || 0) * 22;
+    const bend = edge.type === 'NEXT_ORDERED' ? 0 : edge.sourceLink ? -Math.min(26, Math.max(8, length * 0.1)) : edge.business ? Math.min(24, length * 0.08) + (edge.offset || 0) * 22 : (edge.offset || 0) * 22;
     const cx = (start.x + end.x) / 2 + nx * bend, cy = (start.y + end.y) / 2 + ny * bend;
     const sd = Math.max(1, Math.hypot(cx - start.x, cy - start.y)), ed = Math.max(1, Math.hypot(end.x - cx, end.y - cy));
     const x1 = start.x + (cx - start.x) / sd * (start.radius + 3), y1 = start.y + (cy - start.y) / sd * (start.radius + 3);
-    const x2 = end.x - (end.x - cx) / ed * (end.radius + (edge.sourceLink ? 3 : 6)), y2 = end.y - (end.y - cy) / ed * (end.radius + (edge.sourceLink ? 3 : 6));
+    const x2 = end.x - (end.x - cx) / ed * (end.radius + (edge.sourceLink || edge.business ? 3 : 6)), y2 = end.y - (end.y - cy) / ed * (end.radius + (edge.sourceLink || edge.business ? 3 : 6));
+    if (edge.hierarchy || (edge.skeleton && Math.abs(dy) > 1)) {
+        return { path: `M ${x1} ${y1} C ${x1} ${(y1 + y2) / 2} ${x2} ${(y1 + y2) / 2} ${x2} ${y2}`, x: (x1 + x2) / 2, y: (y1 + y2) / 2 };
+    }
     return {
         path: length > start.radius + end.radius + 6 ? `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}` : '',
         x: (x1 + 2 * cx + x2) / 4,

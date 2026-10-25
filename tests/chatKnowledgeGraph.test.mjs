@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 import { knowledgeGraphPresentation, graphEdgeGeometry, graphNodeColor } from '../src/features/chat/ui/message/components/knowledgeGraphPresentation.js';
 import { createChatKnowledgeGraph } from '../src/features/chat/ui/message/components/chatKnowledgeGraphRenderer.js';
+import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
+import { backendOrderedTimeRegion } from './fixtures/orderedTimeV2BackendRegion.mjs';
 
 const fixture = () => ({ nodes: [
     { id: 'root', elementId: 'neo-root', name: '知识节点', label: 'Event' },
@@ -116,6 +118,56 @@ test('ordered chat nodes remain a small rigid sorted row across force, drag, foc
     ui.controller.setData(knowledgeGraphPresentation({ nodes: [network.nodes[0], ordered('later', '63745056000000004')], relationships: [] }));
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, 0, 'loading two nonadjacent values must not invent a NEXT_ORDERED segment');
     assert.ok(positions().get('late').x < positions().get('later').x); assert.equal(positions().get('late').y, positions().get('later').y);
+});
+
+test('chat v2 hierarchy draws real parent branches, contextual short labels and arrowless business links', t => {
+    const expanded = [], ui = setup(t, { onExpand: (id, mode) => expanded.push([id, mode]) }), network = orderedTimeGraph();
+    ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(420);
+    const node = id => ui.svg.querySelector(`[data-node-id="${id}"]`), radius = id => Number(node(id).querySelector('circle').getAttribute('r'));
+    assert.deepEqual(['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond'].map(radius), [18, 15, 12, 10, 8, 6, 4]);
+    const hitAreas = [...ui.svg.querySelectorAll('.ordered-node .knowledge-node-hit')];
+    assert.equal(hitAreas.length, network.nodes.filter(node => node.label === 'Time').length);
+    assert.ok(hitAreas.every(hit => Number(hit.getAttribute('r')) >= 12));
+    assert.equal(node('day').querySelector('text').textContent, '12日');
+    assert.equal(node('minute').querySelector('text').textContent, '14:00');
+    assert.match(node('minute').querySelector('title').textContent, /2026-09-12T14:00/);
+    assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, network.relationships.length, 'every visible line must have a real relationship');
+    assert.equal(ui.svg.querySelectorAll('path[data-layout-only]').length, 5);
+    assert.ok([...ui.svg.querySelectorAll('path[data-layout-only]')].every(path => !path.hasAttribute('data-edge-id') && !path.hasAttribute('marker-end')));
+    assert.match(ui.svg.querySelector('[data-edge-id="parent-minute"]').getAttribute('d'), / C /);
+    const business = ui.svg.querySelector('[data-edge-id="event-time"]');
+    assert.equal(business.classList.contains('ordered-business'), true); assert.equal(business.hasAttribute('marker-end'), false);
+    const raw = ui.controller.getRelationships().find(edge => edge.id === 'event-time');
+    assert.equal(raw.from, 'event'); assert.equal(raw.to, 'minute');
+    node('minute').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
+    node('event').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
+    assert.deepEqual(expanded, [['minute', 'region'], ['event', 'related']]);
+    ui.controller.setData(knowledgeGraphPresentation({ nodes: [network.nodes.find(node => node.id === 'minute')], relationships: [] }));
+    assert.match(node('minute').querySelector('text').textContent, /^2026-09-12T14/, 'a child without loaded parent must retain enough date context');
+    assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, 0);
+    assert.equal(ui.svg.querySelectorAll('path[data-layout-only]').length, 0, 'partial child pages never guess an unobserved lane end');
+});
+
+test('chat renders a captured backend partial-date region with real lanes, clickable small nodes and decorative convergence', t => {
+    const network = backendOrderedTimeRegion(), original = structuredClone(network), ui = setup(t);
+    ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(420);
+    const node = id => ui.svg.querySelector(`[data-node-id="backend-${id}"]`),
+        positions = new Map(ui.controller.getNodePositions().map(node => [node.id, node])), at = id => positions.get(`backend-${id}`);
+    assert.ok(at('month').y < at('day').y && at('day').y < at('minute').y && at('minute').y < at('second').y);
+    assert.equal(at('day').y, at('next-day').y); assert.ok(at('day').x < at('next-day').x);
+    assert.equal(at('morning').y, at('afternoon').y); assert.notEqual(at('morning').y, at('minute').y);
+    assert.deepEqual(['month', 'day', 'minute', 'second'].map(id => Number(node(id).querySelector('circle').getAttribute('r'))), [15, 12, 8, 6]);
+    const hits = [...ui.svg.querySelectorAll('.ordered-node .knowledge-node-hit')];
+    assert.equal(hits.length, network.nodes.length); assert.ok(hits.every(hit => Number(hit.getAttribute('r')) >= 12));
+    assert.equal(node('day').querySelector('text').textContent, '12日');
+    assert.equal(node('next-minute').querySelector('text').textContent, '14:00');
+    assert.match(node('next-minute').querySelector('title').textContent, /--09-12T14:00/);
+    assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, network.relationships.length);
+    const convergence = [...ui.svg.querySelectorAll('path[data-layout-only]')];
+    assert.equal(convergence.length, 3);
+    assert.ok(convergence.every(path => !path.hasAttribute('data-edge-id') && !path.hasAttribute('marker-end') && / C /.test(path.getAttribute('d'))));
+    assert.equal(ui.controller.getRelationships().length, network.relationships.length);
+    assert.deepEqual(network, original, 'presentation must preserve the backend lane properties and graph payload');
 });
 
 test('relationship highlights remain active after layout settles without extra frames and follow live geometry and streamed removal', t => {

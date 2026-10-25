@@ -13,7 +13,10 @@ import './KnowledgeGraphViewer.css';
 
 // Manual exploration supplements the current AI result; cached responses must
 // never overwrite a newer name or relationship returned by the AI.
-const canvasNetwork = (base, extra) => extra ? mergeNetworkData(extra, base || {}) : base;
+const canvasNetwork = (base, extra) => {
+    const result = extra ? mergeNetworkData(extra, base || {}) : base;
+    return result ? { ...result, completeParentIds: [...new Set([...(base?.completeParentIds || []), ...(extra?.completeParentIds || [])])] } : result;
+};
 
 const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord, onUndo, onRedo, canUndo, canRedo, databaseId, activeDatabaseId, canonicalDatabaseId, viewStates, visibleController, scope }) {
     const svgRef = useRef(null), controller = useRef(null), appliedFocus = useRef(null);
@@ -43,7 +46,7 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord
                 edgeAnimation: edgeAnimationRef.current,
                 onReady: () => setReady(true),
                 onError: cause => setError(cause.message || '图谱暂时无法显示'),
-                onExpand: id => expandCallback.current?.(id, controller.current),
+                onExpand: (id, mode) => expandCallback.current?.(id, controller.current, mode),
                 onOrderedNeighbors: id => expandCallback.current?.(id, controller.current, 'ordered'),
             });
             graph.databaseId = databaseId;
@@ -195,22 +198,25 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
     }, [scope, refreshHistory]);
     const expand = useCallback(async (id, graph, mode = 'related') => {
         if (requests.current.has(id)) return;
-        const ordered = mode === 'ordered';
-        const epoch = generation.current, request = {controller: new AbortController(), scope, graph, id, ordered};
+        const ordered = mode === 'ordered', region = mode === 'region', timeAction = ordered || region;
+        const epoch = generation.current, request = {controller: new AbortController(), scope, graph, id, ordered, region};
         requests.current.set(id, request); graph?.expanding(id, true);
         refreshHistory(scope);
-        setFeedback({ scope, message: ordered ? '正在读取前后顺序节点…' : '正在读取关联节点…', error: false });
+        setFeedback({ scope, message: ordered ? '正在读取前后顺序节点…' : region ? '正在读取局部时间骨架…' : '正在读取关联节点…', error: false });
         try {
-            const data = await apiClient.get(`/knowledge/nodes/${encodeURIComponent(id)}/${ordered ? 'ordered-neighbors' : 'graph'}`, {
+            const data = await apiClient.get(`/knowledge/nodes/${encodeURIComponent(id)}/${ordered ? 'ordered-neighbors' : region ? 'ordered-region' : 'graph'}`, {
                 signal: request.controller.signal, timeout: 20000,
                 params: ordered ? { databaseId, conversationId } : { databaseId, conversationId, depth: 1, limit: 80 },
             });
             if (request.controller.signal.aborted || generation.current !== epoch || !graph?.getNodes().some(node => node.id === id)) return;
-            if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships) || (ordered && String(data.centerId) !== id))
-                throw new Error(ordered ? '顺序查询未返回有效的图谱数据。' : '关联查询未返回有效的图谱数据。');
-            if (data.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error(`${ordered ? '顺序' : '关联'}查询返回了其他知识库的数据，请重试。`);
+            if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships) || (timeAction && String(data.centerId) !== id))
+                throw new Error(timeAction ? '顺序查询未返回有效的图谱数据。' : '关联查询未返回有效的图谱数据。');
+            if (data.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error(`${timeAction ? '顺序' : '关联'}查询返回了其他知识库的数据，请重试。`);
             const localView = mergeNetworkData(extrasRef.current[scope], { ...data, databaseId });
             delete localView.databaseViews;
+            if (region && Array.isArray(data.completeParentIds)) localView.completeParentIds = [...new Set([
+                ...(extrasRef.current[scope]?.completeParentIds || []).filter(parent => parent !== id), ...data.completeParentIds,
+            ])];
             const base = latestNetworks.current[databaseId];
             const current = knowledgeGraphPresentation(canvasNetwork(base, extrasRef.current[scope]));
             const next = knowledgeGraphPresentation(canvasNetwork(base, localView));
@@ -218,13 +224,14 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             const currentIds = new Set(current.nodes.map(node => node.id));
             const added = next.nodes.filter(node => !currentIds.has(node.id)).length;
             const addedEdges = next.relationships.length - current.relationships.length;
-            if (JSON.stringify([current.nodes, current.relationships]) !== JSON.stringify([next.nodes, next.relationships])) {
-                recordCanvas(graph, ordered ? '展示前后顺序节点' : '展开关联');
+            if (JSON.stringify([current.nodes, current.relationships, current.convergences]) !== JSON.stringify([next.nodes, next.relationships, next.convergences])) {
+                recordCanvas(graph, ordered ? '展示前后顺序节点' : region ? '展开时间骨架' : '展开关联');
                 writeExtra(scope, localView);
             }
             setFeedback({ scope, error: false, message: ordered
                 ? added || addedEdges ? `已展示前后顺序节点，新增 ${added} 个节点和 ${addedEdges} 条关系。`
                     : data.previousId || data.nextId ? '前后顺序节点已在画布中显示。' : '没有可展示的前后顺序节点。'
+                : region ? added || addedEdges ? `已展开局部时间骨架，新增 ${added} 个节点。${data.hasMore || data.truncated ? '当前显示部分骨架，可继续双击探索。' : ''}` : '当前局部时间骨架已在图谱中显示。'
                 : added ? `已展开 ${added} 个关联节点。${data.hasMore || data.truncated ? '当前显示部分关联。' : ''}` : '当前关联已在图谱中显示。' });
         } catch (cause) {
             if (!request.controller.signal.aborted && generation.current === epoch) setFeedback({ scope, message: cause.message || (ordered ? '无法读取前后顺序节点，请稍后重试。' : '无法读取关联节点，请稍后重试。'), error: true });
@@ -240,7 +247,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             const request = pending.at(-1);
             request.controller.abort(); requests.current.delete(request.id); request.graph?.expanding(request.id, false);
             refreshHistory(scope);
-            setFeedback({scope, error: false, message: request.ordered ? '已取消刚才的顺序节点请求。' : '已取消刚才的展开请求。'});
+            setFeedback({scope, error: false, message: request.ordered ? '已取消刚才的顺序节点请求。' : request.region ? '已取消刚才的时间骨架请求。' : '已取消刚才的展开请求。'});
             return true;
         }
         if (pending.length) return false;

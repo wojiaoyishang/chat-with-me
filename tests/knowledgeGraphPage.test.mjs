@@ -4,6 +4,8 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { JSDOM } from "jsdom";
+import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
+import { backendOrderedTimeRegion } from './fixtures/orderedTimeV2BackendRegion.mjs';
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -347,6 +349,70 @@ test('standalone ordered rows preserve exact order and rigid dragging without in
   assert.deepEqual(at('early'), dragged); assert.equal(ui.pendingFrames(), 0);
   document.getElementById('graph-layout').click(); ui.runFrames(420);
   assert.equal(at('early')[1], at('late')[1]); assert.equal(at('late')[0] - at('early')[0], delta);
+});
+
+test('standalone time region expansion draws hierarchical branches and keeps ordinary business directions in data', async (t) => {
+  const full = orderedTimeGraph(), day = full.nodes.find(node => node.id === 'day'), event = full.nodes.find(node => node.id === 'event');
+  const ui = await page((url) => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [day, event], relationships: [] };
+    if (url.pathname.endsWith('/ordered-region')) return { ...full, centerId: 'day', databaseId: 'db-default', hasMore: false };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  for (let attempt = 0; attempt < 20 && document.getElementById('knowledge-canvas').getAttribute('aria-busy') === 'true'; attempt++) await settle(15);
+  document.querySelector('[data-node-id="day"]').dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-region'));
+  assert.equal(request.parsed.searchParams.get('depth'), '1'); assert.equal(request.parsed.searchParams.get('limit'), '80');
+  const node = id => document.querySelector(`[data-node-id="${id}"]`), radius = id => Number(node(id).querySelector('circle').getAttribute('r'));
+  assert.deepEqual(['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond'].map(radius), [18, 15, 12, 10, 8, 6, 4]);
+  const hitAreas = [...document.querySelectorAll('.ordered-node .knowledge-node-hit')];
+  assert.equal(hitAreas.length, full.nodes.filter(node => node.label === 'Time').length);
+  assert.ok(hitAreas.every(hit => Number(hit.getAttribute('r')) >= 12));
+  assert.equal(node('day').querySelector('text').textContent, '12日'); assert.equal(node('minute').querySelector('text').textContent, '14:00');
+  assert.match(node('minute').querySelector('title').textContent, /2026-09-12T14:00/);
+  assert.match(document.querySelector('[data-edge-id="parent-minute"]').getAttribute('d'), / C /);
+  const business = document.querySelector('[data-edge-id="event-time"]');
+  assert.equal(business.hasAttribute('marker-end'), false); assert.equal(business.classList.contains('ordered-business'), true);
+  assert.match(business.querySelector('title').textContent, /普通事件 → HAPPENED_AT → 2026-09-12T14:00/);
+  assert.equal(document.querySelectorAll('.knowledge-edge').length, full.relationships.length);
+  assert.equal(document.querySelectorAll('path[data-layout-only]').length, 5);
+  assert.match(document.getElementById('graph-count').textContent, new RegExp(`${full.relationships.length} 条关系`));
+  assert.equal(document.getElementById('graph-undo').disabled, false);
+  assert.match(document.getElementById('graph-undo').title, /撤销展开时间骨架/);
+  document.getElementById('graph-undo').click(); await settle();
+  assert.equal(document.querySelectorAll('.knowledge-node').length, 2); assert.ok(node('event'));
+  assert.equal(document.querySelectorAll('path[data-layout-only]').length, 0);
+  assert.match(document.getElementById('notice').textContent, /已撤销展开时间骨架/);
+});
+
+test('standalone expansion consumes a captured backend region without flattening prefixed calendar and clock lanes', async t => {
+  const full = backendOrderedTimeRegion(), original = structuredClone(full), center = full.nodes.find(node => node.id === full.centerId);
+  const ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [center], relationships: [] };
+    if (url.pathname.endsWith('/ordered-region')) return { ...full, databaseId: 'db-default' };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui;
+  for (let attempt = 0; attempt < 20 && document.getElementById('knowledge-canvas').getAttribute('aria-busy') === 'true'; attempt++) await settle(15);
+  document.querySelector(`[data-node-id="${full.centerId}"]`).dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
+  assert.ok(ui.calls.some(call => call.parsed.pathname === `/api/knowledge/nodes/${full.centerId}/ordered-region`));
+  const node = id => document.querySelector(`[data-node-id="backend-${id}"]`),
+    at = id => node(id).getAttribute('transform').match(/-?\d+(?:\.\d+)?(?:e[-+]?\d+)?/gi).map(Number);
+  assert.ok(at('month')[1] < at('day')[1] && at('day')[1] < at('minute')[1] && at('minute')[1] < at('second')[1]);
+  assert.equal(at('day')[1], at('next-day')[1]); assert.ok(at('day')[0] < at('next-day')[0]);
+  assert.equal(at('morning')[1], at('afternoon')[1]); assert.notEqual(at('morning')[1], at('minute')[1]);
+  assert.deepEqual(['month', 'day', 'minute', 'second'].map(id => Number(node(id).querySelector('circle').getAttribute('r'))), [15, 12, 8, 6]);
+  const hits = [...document.querySelectorAll('.ordered-node .knowledge-node-hit')];
+  assert.equal(hits.length, full.nodes.length); assert.ok(hits.every(hit => Number(hit.getAttribute('r')) >= 12));
+  assert.equal(node('day').querySelector('text').textContent, '12日');
+  assert.equal(node('next-minute').querySelector('text').textContent, '14:00');
+  assert.match(node('next-minute').querySelector('title').textContent, /--09-12T14:00/);
+  assert.equal(document.querySelectorAll('.knowledge-edge').length, full.relationships.length);
+  const convergence = [...document.querySelectorAll('path[data-layout-only]')];
+  assert.equal(convergence.length, 3);
+  assert.ok(convergence.every(path => !path.hasAttribute('data-edge-id') && !path.hasAttribute('marker-end')));
+  assert.match(document.getElementById('graph-count').textContent, new RegExp(`${full.relationships.length} 条关系`));
+  assert.deepEqual(full, original);
 });
 
 const menuOrderedNode = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: {

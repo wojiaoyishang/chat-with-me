@@ -1,6 +1,6 @@
 import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY } from 'd3-force';
 import { graphEdgeGeometry, isSourceChunk } from './knowledgeGraphPresentation.js';
-import { createOrderedGraphLayout } from '../../../../knowledge/orderedGraphLayout.js';
+import { createOrderedGraphLayout, orderedNodeRadius, orderedNodeCaption, orderedConvergencePath } from '../../../../knowledge/orderedGraphLayout.js';
 
 export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, markerId, edgeAnimation = true } = {}) {
     const doc = svg.ownerDocument, win = doc.defaultView;
@@ -43,6 +43,9 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     };
     const marqueeRect = element('rect', { class: 'graph-marquee', hidden: '', 'aria-hidden': 'true' });
     svg.append(marqueeRect);
+    const convergenceLayer = element('g', { 'data-layout-only': 'true', 'aria-hidden': 'true' });
+    cameraLayer.insertBefore(convergenceLayer, edgeLayer);
+    let convergenceViews = [];
     function closeOrderedMenu(restoreFocus = false) {
         const node = nodes.get(orderedMenuNode);
         orderedMenu?.remove(); orderedMenu = null; orderedMenuNode = null;
@@ -114,6 +117,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             view.labelElement.setAttribute('y', geometry.y);
             view.labelElement.style.visibility = geometry.path ? '' : 'hidden';
         }
+        for (const view of convergenceViews) view.element.setAttribute('d', orderedConvergencePath(nodes.get(view.from), nodes.get(view.to)));
         applyCamera();
     }
     function cancelAutoFit() { initialFit = false; fittedView = null; }
@@ -189,10 +193,10 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     }
     function createNode(node) {
         const group = element('g', { class: 'knowledge-node', 'data-node-id': node.id, role: 'button', tabindex: 0 });
-        const circle = element('circle'), caption = element('text'), title = element('title');
-        group.append(circle, caption, title);
+        const circle = element('circle'), hit = element('circle', { class: 'knowledge-node-hit', 'aria-hidden': 'true', style: 'fill:transparent;stroke:none;filter:none;pointer-events:all' }), caption = element('text'), title = element('title');
+        group.append(circle, hit, caption, title);
         nodeLayer.append(group);
-        Object.assign(node, { element: group, labelElement: caption, circle, titleElement: title });
+        Object.assign(node, { element: group, labelElement: caption, circle, hitElement: hit, titleElement: title });
         group.addEventListener('pointerenter', () => { if (!drag) { hovered = node.id; focusStyles(); } });
         group.addEventListener('pointerleave', () => { hovered = null; focusStyles(); });
         group.addEventListener('focus', () => { hovered = node.id; focusStyles(); });
@@ -206,7 +210,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         group.addEventListener('dblclick', event => {
             event.preventDefault(); event.stopPropagation();
             if (Date.now() - movedAt < 220 || node.isChunk || event.ctrlKey || event.metaKey) return;
-            onExpand?.(node.id);
+            onExpand?.(node.id, node.ordered?.kind === 'time' ? 'region' : 'related');
         });
         group.addEventListener('contextmenu', event => {
             if (!node.ordered || !onOrderedNeighbors) return;
@@ -222,7 +226,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault(); event.stopPropagation();
                 if (event.ctrlKey || event.metaKey) { toggleNode(node.id); return; }
-                if (event.key === ' ' && !node.isChunk) { selectNodes([node.id]); onExpand?.(node.id); }
+                if (event.key === ' ' && !node.isChunk) { selectNodes([node.id]); onExpand?.(node.id, node.ordered?.kind === 'time' ? 'region' : 'related'); }
                 else focusNetwork([node.id]);
             }
         });
@@ -250,7 +254,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (orderedMenu && !nodes.get(orderedMenuNode)?.ordered) closeOrderedMenu();
         for (const raw of next.nodes) {
             const node = nodes.get(raw.id);
-            node.radius = node.ordered ? 8 : Math.min(25, 15 + Math.sqrt(node.degree) * 1.1);
+            node.radius = node.ordered ? orderedNodeRadius(node.ordered) : Math.min(25, 15 + Math.sqrt(node.degree) * 1.1);
             node.element.classList.toggle('ordered-node', Boolean(node.ordered));
             node.element.classList.toggle('ordered-missing', node.ordered?.missing === true);
             if (node.ordered) node.element.dataset.orderedAxis = node.ordered.axis;
@@ -258,11 +262,12 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             if (node.ordered && onOrderedNeighbors) { node.element.setAttribute('aria-haspopup', 'menu'); node.element.setAttribute('aria-expanded', String(orderedMenuNode === node.id)); }
             else { node.element.removeAttribute('aria-haspopup'); node.element.removeAttribute('aria-expanded'); }
             node.circle.setAttribute('r', node.radius); node.circle.setAttribute('fill', raw.color);
+            node.hitElement.setAttribute('r', Math.max(12, node.radius));
             node.labelElement.setAttribute('y', node.radius + 16);
-            const characters = Array.from(node.ordered?.missing ? `未定位 · ${node.ordered.value || node.name}` : node.ordered?.value || node.name);
+            const characters = Array.from(orderedNodeCaption(node, nodes));
             node.labelElement.textContent = characters.slice(0, 13).join('') + (characters.length > 13 ? '…' : '');
-            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · 拖动移动整条顺序轴` : ''}${node.isChunk ? '' : ' · 双击展开关联'}`;
-            node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : '，双击或空格展开关联'}${node.ordered && onOrderedNeighbors ? '，右键或菜单键展示前后顺序节点' : ''}。`);
+            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · 拖动移动整条顺序轴` : ''}${node.isChunk ? '' : node.ordered?.kind === 'time' ? ' · 双击展开时间骨架' : ' · 双击展开关联'}`;
+            node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : node.ordered?.kind === 'time' ? '，双击或空格展开时间骨架' : '，双击或空格展开关联'}${node.ordered && onOrderedNeighbors ? '，右键或菜单键展示前后顺序节点' : ''}。`);
         }
         const keepEdges = new Set(next.edges.map(edge => edge.id));
         for (const [id, view] of views) if (!keepEdges.has(id)) { view.element.remove(); view.flowElement.remove(); view.labelElement.remove(); views.delete(id); }
@@ -278,16 +283,24 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             Object.assign(view, raw);
             view.element.classList.toggle('source-link', view.sourceLink);
             view.element.classList.toggle('ordered-link', view.type === 'NEXT_ORDERED');
+            view.element.classList.toggle('ordered-hierarchy', view.hierarchy);
+            view.element.classList.toggle('ordered-business', view.business);
+            view.flowElement.classList.toggle('ordered-business', view.business);
             view.flowElement.classList.toggle('source-flow', view.sourceLink);
             view.labelElement.classList.toggle('source-label', view.sourceLink);
             view.element.setAttribute('data-edge-id', raw.members[0].id);
             view.element.setAttribute('data-edge-ids', JSON.stringify(raw.members.map(edge => edge.id)));
-            if (view.sourceLink) view.element.removeAttribute('marker-end');
+            if (view.sourceLink || view.business) view.element.removeAttribute('marker-end');
             else view.element.setAttribute('marker-end', `url(#${markerId})`);
             view.titleElement.textContent = raw.members.map(edge => `${nodes.get(edge.from).name} → ${edge.type} → ${nodes.get(edge.to).name}`).join('\n');
-            view.labelElement.textContent = raw.type.slice(0, 16);
+            view.labelElement.textContent = view.skeleton ? '' : raw.type.slice(0, 16);
         }
         model = next;
+        convergenceLayer.replaceChildren();
+        convergenceViews = (next.convergences || []).map(value => {
+            const path = element('path', { class: 'ordered-convergence', fill: 'none', 'data-layout-only': 'true', 'aria-hidden': 'true' });
+            convergenceLayer.append(path); return { ...value, element: path };
+        });
         link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.map(edge => ({ ...edge })));
         if (!before && nodes.size) {
             if (nodes.size === 1) { const only = nodes.values().next().value; if (!only.ordered) only.x = only.y = 0; }
@@ -460,6 +473,6 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
         setPhysics(value) { enabled = Boolean(value); updateEdgeAnimation(); if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
         relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true }); fit(); initialFit = true; animate(0.65); },
-        destroy() { if (destroyed) return; destroyed = true; closeOrderedMenu(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
+        destroy() { if (destroyed) return; destroyed = true; closeOrderedMenu(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };
 }

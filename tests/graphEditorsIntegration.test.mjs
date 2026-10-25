@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { mergeNetworkData } from '../src/features/chat/page/utils/networkMerge.js';
+import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
 
 await build({ entryPoints: ['src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx'], outfile: 'temp/graph-expansion-react-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', loader: { '.css': 'empty' }, plugins: [{ name: 'test-scene', setup(builder) {
     builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
@@ -77,8 +78,8 @@ test('chat ordered menu uses scoped immediate neighbors and one undo entry witho
     assert.equal(ui.container.querySelector('[data-node-id="next"]'), null); assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
     assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销展示前后顺序节点/);
     await act(async () => ui.container.querySelector('[aria-label="重做图谱操作"]').click()); assert.ok(ui.container.querySelector('[data-node-id="previous"]'));
-    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
-    assert.equal(calls.at(-1)[0], '/knowledge/nodes/root/graph'); assert.equal(calls.at(-1)[1].params.depth, 1);
+    await act(async () => ui.container.querySelector('[data-node-id="unrelated"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(calls.at(-1)[0], '/knowledge/nodes/unrelated/graph'); assert.equal(calls.at(-1)[1].params.depth, 1);
     assert.ok(ui.container.querySelector('[data-node-id="far-entity"]'));
 });
 
@@ -126,6 +127,26 @@ test('chat ordered menu supports keyboard closing and disappears when database s
     await act(async () => complete({ databaseId: 'library-a', centerId: 'root', nodes: [orderedChatNode('private', '30')], relationships: [] }));
     assert.equal(ui.container.querySelector('[data-node-id="private"]'), null); assert.ok(ui.container.querySelector('[data-node-id="b-root"]'));
     assert.equal(ui.container.querySelector('.chat-knowledge-feedback'), null);
+});
+
+test('time double-click expands a local hierarchical region with undo while ordinary nodes keep event expansion', async t => {
+    const full = orderedTimeGraph(), center = full.nodes.find(node => node.id === 'day'), calls = [];
+    const ui = await setup(t, async (url, options) => { calls.push([url, options]); return {
+        centerId: 'day', databaseId: options.params.databaseId, nodes: full.nodes.filter(node => node.id !== 'event'),
+        relationships: full.relationships.filter(edge => edge.id !== 'event-time'), completeParentIds: full.completeParentIds, hasMore: false,
+    }; });
+    ui.msg.network.nodes = [center, { id: 'event', label: 'Event', name: '已有事件' }];
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await act(async () => ui.container.querySelector('[data-node-id="day"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(calls[0][0], '/knowledge/nodes/day/ordered-region'); assert.equal(calls[0][1].params.depth, 1); assert.equal(calls[0][1].params.limit, 80);
+    assert.ok(ui.container.querySelector('[data-node-id="month"]')); assert.ok(ui.container.querySelector('[data-node-id="event"]'));
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /局部时间骨架/);
+    assert.equal(ui.container.querySelector('[data-node-id="day"] text').textContent, '12日');
+    assert.equal(ui.container.querySelectorAll('path[data-layout-only]').length, 5);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelector('[data-node-id="month"]'), null); assert.ok(ui.container.querySelector('[data-node-id="event"]'));
+    assert.equal(ui.container.querySelectorAll('path[data-layout-only]').length, 0);
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销展开时间骨架/);
 });
 
 test('a live graph publication opens a missing preview and follows later AI database scopes without reloading', async t => {
