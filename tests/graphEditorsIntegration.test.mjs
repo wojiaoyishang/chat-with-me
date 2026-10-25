@@ -7,6 +7,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { mergeNetworkData } from '../src/features/chat/page/utils/networkMerge.js';
 import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
+import { orderedTimeForks } from './fixtures/orderedTimeForks.mjs';
 
 await build({ entryPoints: ['src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx'], outfile: 'temp/graph-expansion-react-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', loader: { '.css': 'empty' }, plugins: [{ name: 'test-scene', setup(builder) {
     builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
@@ -141,12 +142,59 @@ test('time double-click expands a local hierarchical region with undo while ordi
     assert.equal(calls[0][0], '/knowledge/nodes/day/ordered-region'); assert.equal(calls[0][1].params.depth, 1); assert.equal(calls[0][1].params.limit, 80);
     assert.ok(ui.container.querySelector('[data-node-id="month"]')); assert.ok(ui.container.querySelector('[data-node-id="event"]'));
     assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /局部时间骨架/);
-    assert.equal(ui.container.querySelector('[data-node-id="day"] text').textContent, '12日');
-    assert.equal(ui.container.querySelectorAll('path[data-layout-only]').length, 5);
+    assert.equal(ui.container.querySelector('[data-node-id="day"] text').textContent, '2026年9月12日');
+    assert.ok(ui.container.querySelectorAll('path[data-layout-only]').length > 0);
     await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
     assert.equal(ui.container.querySelector('[data-node-id="month"]'), null); assert.ok(ui.container.querySelector('[data-node-id="event"]'));
     assert.equal(ui.container.querySelectorAll('path[data-layout-only]').length, 0);
     assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销展开时间骨架/);
+});
+
+test('chat paused single-time dragging records one undoable gesture and retains full fork captions', async t => {
+    const ui = await setup(t, async () => { throw new Error('dragging is local'); }), full = orderedTimeForks();
+    ui.msg.network = full;
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    const graph = ui.store.get('nvlInstance');
+    await act(async () => [...ui.container.querySelectorAll('button')].find(button => button.textContent === '暂停动画').click());
+    const before = graph.getNodePositions(), selected = ui.container.querySelector('[data-node-id="fork-noon"]');
+    const pointer = (target, type, x, y) => {
+        const event = new ui.dom.window.Event(type, { bubbles: true, cancelable: true });
+        Object.assign(event, { pointerId: 1, pointerType: 'mouse', button: 0, clientX: x, clientY: y }); target.dispatchEvent(event);
+    };
+    await act(async () => { pointer(selected, 'pointerdown', 200, 130); pointer(ui.dom.window, 'pointermove', 225, 165); });
+    const after = graph.getNodePositions();
+    assert.notDeepEqual(after.find(node => node.id === 'fork-noon'), before.find(node => node.id === 'fork-noon'));
+    for (const node of before) if (node.id !== 'fork-noon') assert.deepEqual(after.find(value => value.id === node.id), node);
+    assert.equal(ui.container.querySelector('[data-node-id="fork-afternoon"] text').textContent, '2026年10月11日14:00:00');
+    assert.match(ui.container.querySelector('.chat-knowledge-heading small').textContent, new RegExp(`${full.relationships.length} 条关系`));
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.deepEqual(graph.getNodePositions(), before);
+    await act(async () => { pointer(ui.dom.window, 'pointermove', 350, 220); pointer(ui.dom.window, 'pointerup', 350, 220); });
+    assert.deepEqual(graph.getNodePositions(), before, 'undo during a held drag cancels the old pointer gesture');
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    await act(async () => ui.container.querySelector('[aria-label="重做图谱操作"]').click());
+    assert.deepEqual(graph.getNodePositions(), after);
+});
+
+test('a completion-only time region response updates projection and creates exactly one reversible history entry', async t => {
+    const full = orderedTimeForks(), ui = await setup(t, async (_url, options) => ({
+        databaseId: options.params.databaseId, centerId: 'fork-day11', nodes: [], relationships: [], completeParentIds: ['fork-day11'],
+    }));
+    ui.msg.network = { ...full, completeParentIds: [] };
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    const before = ui.container.querySelectorAll('[data-route-kind="join"]').length;
+    const expand = async () => act(async () => ui.container.querySelector('[data-node-id="fork-day11"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    await expand();
+    const after = ui.container.querySelectorAll('[data-route-kind="join"]').length;
+    assert.ok(after > before, 'complete membership enables visual joining without adding graph objects');
+    assert.match(ui.container.querySelector('.chat-knowledge-heading small').textContent, new RegExp(`${full.nodes.length} 个节点 · ${full.relationships.length} 条关系`));
+    assert.equal(ui.container.querySelector('[data-edge-id="next-fork-day11"]').getAttribute('d'), '');
+    await expand();
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelectorAll('[data-route-kind="join"]').length, before);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    await act(async () => ui.container.querySelector('[aria-label="重做图谱操作"]').click());
+    assert.equal(ui.container.querySelectorAll('[data-route-kind="join"]').length, after);
 });
 
 test('a live graph publication opens a missing preview and follows later AI database scopes without reloading', async t => {

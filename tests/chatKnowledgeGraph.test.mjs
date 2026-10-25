@@ -5,6 +5,7 @@ import { knowledgeGraphPresentation, graphEdgeGeometry, graphNodeColor } from '.
 import { createChatKnowledgeGraph } from '../src/features/chat/ui/message/components/chatKnowledgeGraphRenderer.js';
 import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
 import { backendOrderedTimeRegion } from './fixtures/orderedTimeV2BackendRegion.mjs';
+import { orderedTimeForks } from './fixtures/orderedTimeForks.mjs';
 
 const fixture = () => ({ nodes: [
     { id: 'root', elementId: 'neo-root', name: '知识节点', label: 'Event' },
@@ -18,7 +19,7 @@ const fixture = () => ({ nodes: [
     { id: 'semantic', from: 'root', to: 'other', type: '关联' },
 ] });
 
-function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
+function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, onBeforeMove, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
     const dom = new JSDOM(`<section><svg><g data-graph-camera><g data-graph-edges></g><g data-graph-nodes></g></g></svg>${controlsHeight ? '<div data-graph-controls></div>' : ''}</section>`, { pretendToBeVisual: true });
     const { window } = dom, svg = window.document.querySelector('svg'), frames = new Map();
     let sequence = 0, time = 0, ready = 0;
@@ -36,7 +37,7 @@ function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, control
     svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, width: dimensions.width, height: dimensions.height });
     const controls = window.document.querySelector('[data-graph-controls]');
     if (controls) controls.getBoundingClientRect = () => ({ top: dimensions.height - dimensions.controlsHeight - 10, height: dimensions.controlsHeight });
-    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, edgeAnimation });
+    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, onBeforeMove, edgeAnimation });
     t.after(() => { controller.destroy(); dom.window.close(); });
     return { dom, svg, controller, frames, ready: () => ready,
         setVisible(value) { visibility?.([{ isIntersecting: value }]); },
@@ -120,7 +121,7 @@ test('ordered chat nodes remain a small rigid sorted row across force, drag, foc
     assert.ok(positions().get('late').x < positions().get('later').x); assert.equal(positions().get('late').y, positions().get('later').y);
 });
 
-test('chat v2 hierarchy draws real parent branches, contextual short labels and arrowless business links', t => {
+test('chat v2 hierarchy projects clean branches with full captions and keeps real relationship records', t => {
     const expanded = [], ui = setup(t, { onExpand: (id, mode) => expanded.push([id, mode]) }), network = orderedTimeGraph();
     ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(420);
     const node = id => ui.svg.querySelector(`[data-node-id="${id}"]`), radius = id => Number(node(id).querySelector('circle').getAttribute('r'));
@@ -128,13 +129,15 @@ test('chat v2 hierarchy draws real parent branches, contextual short labels and 
     const hitAreas = [...ui.svg.querySelectorAll('.ordered-node .knowledge-node-hit')];
     assert.equal(hitAreas.length, network.nodes.filter(node => node.label === 'Time').length);
     assert.ok(hitAreas.every(hit => Number(hit.getAttribute('r')) >= 12));
-    assert.equal(node('day').querySelector('text').textContent, '12日');
-    assert.equal(node('minute').querySelector('text').textContent, '14:00');
+    assert.equal(node('day').querySelector('text').textContent, '2026年9月12日');
+    assert.equal(node('minute').querySelector('text').textContent, '2026年9月12日14:00');
     assert.match(node('minute').querySelector('title').textContent, /2026-09-12T14:00/);
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, network.relationships.length, 'every visible line must have a real relationship');
-    assert.equal(ui.svg.querySelectorAll('path[data-layout-only]').length, 5);
+    assert.ok(ui.svg.querySelectorAll('path[data-layout-only]').length > 0);
     assert.ok([...ui.svg.querySelectorAll('path[data-layout-only]')].every(path => !path.hasAttribute('data-edge-id') && !path.hasAttribute('marker-end')));
-    assert.match(ui.svg.querySelector('[data-edge-id="parent-minute"]').getAttribute('d'), / C /);
+    assert.equal(ui.svg.querySelector('[data-edge-id="parent-minute"]').getAttribute('d'), '');
+    assert.ok(ui.svg.querySelector('[data-route-kind="entry"]'));
+    assert.ok([...ui.svg.querySelectorAll('.ordered-hierarchy,.ordered-link')].every(path => !path.hasAttribute('marker-end')));
     const business = ui.svg.querySelector('[data-edge-id="event-time"]');
     assert.equal(business.classList.contains('ordered-business'), true); assert.equal(business.hasAttribute('marker-end'), false);
     const raw = ui.controller.getRelationships().find(edge => edge.id === 'event-time');
@@ -143,7 +146,7 @@ test('chat v2 hierarchy draws real parent branches, contextual short labels and 
     node('event').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
     assert.deepEqual(expanded, [['minute', 'region'], ['event', 'related']]);
     ui.controller.setData(knowledgeGraphPresentation({ nodes: [network.nodes.find(node => node.id === 'minute')], relationships: [] }));
-    assert.match(node('minute').querySelector('text').textContent, /^2026-09-12T14/, 'a child without loaded parent must retain enough date context');
+    assert.equal(node('minute').querySelector('text').textContent, '2026年9月12日14:00', 'a child without loaded parent retains its full date');
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, 0);
     assert.equal(ui.svg.querySelectorAll('path[data-layout-only]').length, 0, 'partial child pages never guess an unobserved lane end');
 });
@@ -153,21 +156,74 @@ test('chat renders a captured backend partial-date region with real lanes, click
     ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(420);
     const node = id => ui.svg.querySelector(`[data-node-id="backend-${id}"]`),
         positions = new Map(ui.controller.getNodePositions().map(node => [node.id, node])), at = id => positions.get(`backend-${id}`);
-    assert.ok(at('month').y < at('day').y && at('day').y < at('minute').y && at('minute').y < at('second').y);
-    assert.equal(at('day').y, at('next-day').y); assert.ok(at('day').x < at('next-day').x);
-    assert.equal(at('morning').y, at('afternoon').y); assert.notEqual(at('morning').y, at('minute').y);
+    assert.ok(at('month').x < at('day').x && at('day').x < at('minute').x && at('minute').x < at('next-day').x);
+    assert.ok(Math.abs(at('day').y - at('next-day').y) < 1);
+    assert.ok(Math.abs(at('morning').y - at('afternoon').y) < 1); assert.notEqual(at('morning').y, at('minute').y);
     assert.deepEqual(['month', 'day', 'minute', 'second'].map(id => Number(node(id).querySelector('circle').getAttribute('r'))), [15, 12, 8, 6]);
     const hits = [...ui.svg.querySelectorAll('.ordered-node .knowledge-node-hit')];
     assert.equal(hits.length, network.nodes.length); assert.ok(hits.every(hit => Number(hit.getAttribute('r')) >= 12));
-    assert.equal(node('day').querySelector('text').textContent, '12日');
-    assert.equal(node('next-minute').querySelector('text').textContent, '14:00');
+    assert.equal(node('day').querySelector('text').textContent, '9月12日（年份未注明）');
+    assert.equal(node('next-minute').querySelector('text').textContent, '9月12日14:00（年份未注明）');
     assert.match(node('next-minute').querySelector('title').textContent, /--09-12T14:00/);
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, network.relationships.length);
     const convergence = [...ui.svg.querySelectorAll('path[data-layout-only]')];
-    assert.equal(convergence.length, 3);
+    assert.ok(convergence.length > 3);
     assert.ok(convergence.every(path => !path.hasAttribute('data-edge-id') && !path.hasAttribute('marker-end') && / C /.test(path.getAttribute('d'))));
     assert.equal(ui.controller.getRelationships().length, network.relationships.length);
     assert.deepEqual(network, original, 'presentation must preserve the backend lane properties and graph payload');
+});
+
+test('chat nested forks settle horizontally and support one-node paused drag, restore and old-pin migration', t => {
+    const moves = [], ui = setup(t, { onBeforeMove: label => moves.push(label) }), network = orderedTimeForks(), model = knowledgeGraphPresentation(network);
+    ui.controller.setData(model); ui.run(420);
+    const positions = () => new Map(ui.controller.getNodePositions().map(node => [node.id, node])), at = id => positions().get(id);
+    const order = ['fork-october', 'fork-day11', 'fork-noon', 'fork-noon10', 'fork-afternoon', 'fork-day15', 'fork-november'];
+    for (let index = 1; index < order.length; index++) assert.ok(at(order[index - 1]).x < at(order[index]).x, `${order[index - 1]} precedes ${order[index]} after physics settles`);
+    assert.ok(Math.abs(at('fork-noon').y - at('fork-afternoon').y) < 6, 'disjoint hour/minute/second intervals share the clock route under soft forces');
+    assert.equal(ui.controller.getRelationships().length, network.relationships.length);
+    assert.equal(ui.svg.querySelector('[data-edge-id="next-fork-october"]').getAttribute('d'), '');
+    assert.ok(ui.svg.querySelector('[data-route-kind="join"]'));
+    const caption = ui.svg.querySelector('[data-node-id="fork-afternoon"] text');
+    assert.equal(caption.textContent, '2026年10月11日14:00:00'); assert.ok(caption.querySelectorAll('tspan').length > 1);
+    assert.deepEqual([...caption.querySelectorAll('tspan')].map(span => span.textContent), ['2026年10月11日', '14:00:00']);
+    ui.controller.zoom(0.2); assert.equal(caption.style.fontSize, '12px');
+    ui.controller.setPhysics(false);
+    const before = positions(), target = ui.svg.querySelector('[data-node-id="fork-noon"]');
+    point(ui.dom, target, 'pointerdown', 200, 130); point(ui.dom, ui.dom.window, 'pointermove', 220, 165);
+    const moved = positions(); assert.notDeepEqual(moved.get('fork-noon'), before.get('fork-noon'));
+    for (const [id, position] of before) if (id !== 'fork-noon') assert.deepEqual(moved.get(id), position, `${id} must not be dragged as a group`);
+    point(ui.dom, ui.dom.window, 'pointerup', 220, 165); ui.run(12);
+    assert.deepEqual(at('fork-noon'), moved.get('fork-noon'), 'release while paused keeps the manual point without snapping');
+    assert.deepEqual(moves, ['移动节点']);
+    const saved = ui.controller.getViewState();
+    assert.equal(saved.positions.find(node => node.id === 'fork-noon').fx, null);
+    ui.controller.setData(knowledgeGraphPresentation({ ...network, nodes: [...network.nodes, { id: 'streamed', label: 'Event', name: '新展开' }] }));
+    assert.deepEqual(at('fork-noon'), moved.get('fork-noon'), 'expansion retains the existing manual point');
+    ui.controller.relayout(); ui.controller.restoreViewState(saved); ui.run(12);
+    assert.deepEqual(at('fork-noon'), moved.get('fork-noon'));
+    ui.controller.restoreViewState({ ...saved, positions: saved.positions.map(node => ({ ...node, fx: node.x, fy: node.y })) });
+    assert.ok(ui.controller.getViewState().positions.filter(node => node.id !== 'fork-event' && node.id !== 'streamed').every(node => node.fx == null && node.fy == null), 'old rigid v2 snapshots must not revive fixed pins');
+    ui.controller.relayout(); assert.notDeepEqual(at('fork-noon'), moved.get('fork-noon'), 'reset removes manual offsets');
+    ui.controller.setPhysics(true); ui.run(420);
+    for (let index = 1; index < order.length; index++) assert.ok(at(order[index - 1]).x < at(order[index]).x);
+});
+
+test('chat streaming during a held time drag repins just that point and restoring history cancels the gesture', t => {
+    let history;
+    const ui = setup(t, { onBeforeMove: () => { history = ui.controller.getViewState(); } }), network = orderedTimeForks();
+    const captures = new Set(); ui.svg.setPointerCapture = id => captures.add(id); ui.svg.hasPointerCapture = id => captures.has(id); ui.svg.releasePointerCapture = id => captures.delete(id);
+    ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(420);
+    const at = () => ui.controller.getNodePositions().find(node => node.id === 'fork-noon');
+    point(ui.dom, ui.svg.querySelector('[data-node-id="fork-noon"]'), 'pointerdown', 200, 130);
+    point(ui.dom, ui.dom.window, 'pointermove', 220, 160);
+    const held = at();
+    ui.controller.setData(knowledgeGraphPresentation({ ...network, nodes: [...network.nodes, { id: 'streamed', label: 'Event' }] })); ui.run(30);
+    assert.deepEqual(at(), held, 'a new model must preserve pointer capture despite helper rebuild releasing old pins');
+    ui.controller.restoreViewState(history);
+    const restored = at(); assert.deepEqual(restored, history.positions.find(node => node.id === 'fork-noon') && { id: 'fork-noon', x: history.positions.find(node => node.id === 'fork-noon').x, y: history.positions.find(node => node.id === 'fork-noon').y });
+    assert.equal(captures.size, 0); assert.equal(ui.svg.classList.contains('dragging'), false);
+    point(ui.dom, ui.dom.window, 'pointermove', 350, 220); point(ui.dom, ui.dom.window, 'pointerup', 350, 220); ui.run(30);
+    assert.deepEqual(at(), restored, 'a stale held pointer must not overwrite the restored point');
 });
 
 test('relationship highlights remain active after layout settles without extra frames and follow live geometry and streamed removal', t => {

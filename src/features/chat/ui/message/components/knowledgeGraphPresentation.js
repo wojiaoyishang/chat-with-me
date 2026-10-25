@@ -1,4 +1,4 @@
-import { isInternalOrderAxis, orderedEdgeStyle, orderedConvergences } from '../../../../knowledge/orderedGraphLayout.js';
+import { isInternalOrderAxis, orderedEdgeStyle, orderedViewEdges } from '../../../../knowledge/orderedGraphLayout.js';
 
 const sourceTypes = new Set(['EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'ILLUSTRATES']);
 const colors = ['#6c87de', '#47aa91', '#b28aca', '#d59d57', '#62a7bb', '#dc8792', '#939d64', '#8397bd'];
@@ -60,8 +60,8 @@ export function knowledgeGraphPresentation(network) {
             edges.push({ ...edge, ...orderedEdgeStyle(edge.type, nodes.get(edge.from), nodes.get(edge.to)), id: JSON.stringify(['relationship', edge.id]), sourceLink: false, members: [edge], offset: (sources.length ? offset + (offset < 0 ? -1 : 1) : offset) * direction });
         });
     }
-    return { nodes: [...nodes.values()], relationships: [...relationships.values()], edges, links, aliases,
-        convergences: orderedConvergences(nodes.values(), relationships.values(), network?.completeParentIds || []) };
+    const completeParentIds = [...new Set(Array.from(network?.completeParentIds || [], String))].sort(), orderedView = orderedViewEdges(nodes.values(), relationships.values(), completeParentIds);
+    return { nodes: [...nodes.values()], relationships: [...relationships.values()], edges, links, aliases, completeParentIds, orderedView };
 }
 
 export function graphEdgeGeometry(edge, start, end) {

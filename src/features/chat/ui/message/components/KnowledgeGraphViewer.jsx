@@ -23,6 +23,8 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord
     const restored = useRef(false);
     const expandCallback = useRef(onExpand);
     useEffect(() => { expandCallback.current = onExpand; }, [onExpand]);
+    const recordCallback = useRef(onRecord);
+    useEffect(() => { recordCallback.current = onRecord; }, [onRecord]);
     const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
     const [physics, setPhysics] = useState(viewStates.current.get(scope)?.physics ?? true);
     const physicsRef = useRef(physics);
@@ -48,6 +50,7 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord
                 onError: cause => setError(cause.message || '图谱暂时无法显示'),
                 onExpand: (id, mode) => expandCallback.current?.(id, controller.current, mode),
                 onOrderedNeighbors: id => expandCallback.current?.(id, controller.current, 'ordered'),
+                onBeforeMove: label => recordCallback.current?.(controller.current, label),
             });
             graph.databaseId = databaseId;
             controller.current = graph;
@@ -92,7 +95,7 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord
 
     return <div className="chat-knowledge-canvas-wrap">
         <svg ref={svgRef} className="chat-knowledge-canvas" role="application" tabIndex={0}
-            aria-label="知识图谱。Ctrl+Z 撤销，Ctrl+Shift+Z 重做。Ctrl 点击追加或取消选择，Ctrl 拖动框选，Esc 清除选择。拖动节点调整位置，中键移动画布，滚轮或双指缩放。" aria-busy={!ready}>
+            aria-label="知识图谱。Ctrl+Z 撤销，Ctrl+Shift+Z 重做。Ctrl 点击追加或取消选择，Ctrl 拖动框选，Esc 清除选择。拖动单个时间节点调整位置，暂停动画后仍可拖动。中键移动画布，滚轮或双指缩放。" aria-busy={!ready}>
             <defs><marker id={markerId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7" fill="#a3afc4" /></marker></defs>
             <g data-graph-camera=""><g data-graph-edges="" /><g data-graph-nodes="" /></g>
         </svg>
@@ -224,7 +227,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             const currentIds = new Set(current.nodes.map(node => node.id));
             const added = next.nodes.filter(node => !currentIds.has(node.id)).length;
             const addedEdges = next.relationships.length - current.relationships.length;
-            if (JSON.stringify([current.nodes, current.relationships, current.convergences]) !== JSON.stringify([next.nodes, next.relationships, next.convergences])) {
+            if (JSON.stringify([current.nodes, current.relationships, current.completeParentIds, current.orderedView]) !== JSON.stringify([next.nodes, next.relationships, next.completeParentIds, next.orderedView])) {
                 recordCanvas(graph, ordered ? '展示前后顺序节点' : region ? '展开时间骨架' : '展开关联');
                 writeExtra(scope, localView);
             }

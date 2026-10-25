@@ -6,6 +6,7 @@ import path from "node:path";
 import { JSDOM } from "jsdom";
 import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
 import { backendOrderedTimeRegion } from './fixtures/orderedTimeV2BackendRegion.mjs';
+import { orderedTimeForks } from './fixtures/orderedTimeForks.mjs';
 
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -368,14 +369,15 @@ test('standalone time region expansion draws hierarchical branches and keeps ord
   const hitAreas = [...document.querySelectorAll('.ordered-node .knowledge-node-hit')];
   assert.equal(hitAreas.length, full.nodes.filter(node => node.label === 'Time').length);
   assert.ok(hitAreas.every(hit => Number(hit.getAttribute('r')) >= 12));
-  assert.equal(node('day').querySelector('text').textContent, '12日'); assert.equal(node('minute').querySelector('text').textContent, '14:00');
+  assert.equal(node('day').querySelector('text').textContent, '2026年9月12日'); assert.equal(node('minute').querySelector('text').textContent, '2026年9月12日14:00');
   assert.match(node('minute').querySelector('title').textContent, /2026-09-12T14:00/);
-  assert.match(document.querySelector('[data-edge-id="parent-minute"]').getAttribute('d'), / C /);
+  assert.equal(document.querySelector('[data-edge-id="parent-minute"]').getAttribute('d'), '');
+  assert.ok(document.querySelector('[data-route-kind="entry"]'));
   const business = document.querySelector('[data-edge-id="event-time"]');
   assert.equal(business.hasAttribute('marker-end'), false); assert.equal(business.classList.contains('ordered-business'), true);
   assert.match(business.querySelector('title').textContent, /普通事件 → HAPPENED_AT → 2026-09-12T14:00/);
   assert.equal(document.querySelectorAll('.knowledge-edge').length, full.relationships.length);
-  assert.equal(document.querySelectorAll('path[data-layout-only]').length, 5);
+  assert.ok(document.querySelectorAll('path[data-layout-only]').length > 0);
   assert.match(document.getElementById('graph-count').textContent, new RegExp(`${full.relationships.length} 条关系`));
   assert.equal(document.getElementById('graph-undo').disabled, false);
   assert.match(document.getElementById('graph-undo').title, /撤销展开时间骨架/);
@@ -395,24 +397,81 @@ test('standalone expansion consumes a captured backend region without flattening
   const { dom, document } = ui;
   for (let attempt = 0; attempt < 20 && document.getElementById('knowledge-canvas').getAttribute('aria-busy') === 'true'; attempt++) await settle(15);
   document.querySelector(`[data-node-id="${full.centerId}"]`).dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
+  ui.runFrames(420);
   assert.ok(ui.calls.some(call => call.parsed.pathname === `/api/knowledge/nodes/${full.centerId}/ordered-region`));
   const node = id => document.querySelector(`[data-node-id="backend-${id}"]`),
     at = id => node(id).getAttribute('transform').match(/-?\d+(?:\.\d+)?(?:e[-+]?\d+)?/gi).map(Number);
-  assert.ok(at('month')[1] < at('day')[1] && at('day')[1] < at('minute')[1] && at('minute')[1] < at('second')[1]);
-  assert.equal(at('day')[1], at('next-day')[1]); assert.ok(at('day')[0] < at('next-day')[0]);
-  assert.equal(at('morning')[1], at('afternoon')[1]); assert.notEqual(at('morning')[1], at('minute')[1]);
+  assert.ok(at('month')[0] < at('day')[0] && at('day')[0] < at('minute')[0] && at('minute')[0] < at('next-day')[0]);
+  assert.ok(Math.abs(at('day')[1] - at('next-day')[1]) < 1); assert.ok(at('day')[0] < at('next-day')[0]);
+  assert.ok(Math.abs(at('morning')[1] - at('afternoon')[1]) < 1); assert.notEqual(at('morning')[1], at('minute')[1]);
   assert.deepEqual(['month', 'day', 'minute', 'second'].map(id => Number(node(id).querySelector('circle').getAttribute('r'))), [15, 12, 8, 6]);
   const hits = [...document.querySelectorAll('.ordered-node .knowledge-node-hit')];
   assert.equal(hits.length, full.nodes.length); assert.ok(hits.every(hit => Number(hit.getAttribute('r')) >= 12));
-  assert.equal(node('day').querySelector('text').textContent, '12日');
-  assert.equal(node('next-minute').querySelector('text').textContent, '14:00');
+  assert.equal(node('day').querySelector('text').textContent, '9月12日（年份未注明）');
+  assert.equal(node('next-minute').querySelector('text').textContent, '9月12日14:00（年份未注明）');
   assert.match(node('next-minute').querySelector('title').textContent, /--09-12T14:00/);
   assert.equal(document.querySelectorAll('.knowledge-edge').length, full.relationships.length);
   const convergence = [...document.querySelectorAll('path[data-layout-only]')];
-  assert.equal(convergence.length, 3);
+  assert.ok(convergence.length > 3);
   assert.ok(convergence.every(path => !path.hasAttribute('data-edge-id') && !path.hasAttribute('marker-end')));
   assert.match(document.getElementById('graph-count').textContent, new RegExp(`${full.relationships.length} 条关系`));
   assert.deepEqual(full, original);
+});
+
+test('standalone nested time forks settle, preserve real counts and allow paused single drag with undo and reset', async t => {
+  const full = orderedTimeForks(), original = structuredClone(full), ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return full;
+    if (url.pathname.endsWith('/ordered-region')) return { ...full, centerId: 'fork-day11', databaseId: 'db-default' };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui, node = id => document.querySelector(`[data-node-id="${id}"]`), at = id => positionOf(node(id));
+  node('fork-day11').dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
+  ui.runFrames(420);
+  const order = ['fork-october', 'fork-day11', 'fork-noon', 'fork-noon10', 'fork-afternoon', 'fork-day15', 'fork-november'];
+  for (let index = 1; index < order.length; index++) assert.ok(at(order[index - 1])[0] < at(order[index])[0], `${order[index - 1]} precedes ${order[index]} after physics settles`);
+  assert.ok(Math.abs(at('fork-noon')[1] - at('fork-afternoon')[1]) < 6);
+  assert.equal(document.querySelector('[data-edge-id="next-fork-october"]').getAttribute('d'), '');
+  assert.equal(document.querySelector('[data-edge-id="contains-fork-noon"]').getAttribute('d'), '');
+  assert.ok(document.querySelector('[data-route-kind="join"]'));
+  assert.ok([...document.querySelectorAll('.ordered-link,.ordered-hierarchy')].every(edge => !edge.hasAttribute('marker-end')));
+  assert.match(document.getElementById('graph-count').textContent, new RegExp(`${full.relationships.length} 条关系`));
+  const caption = node('fork-afternoon').querySelector('text');
+  assert.equal(caption.textContent, '2026年10月11日14:00:00'); assert.ok(caption.querySelectorAll('tspan').length > 1);
+  assert.deepEqual([...caption.querySelectorAll('tspan')].map(span => span.textContent), ['2026年10月11日', '14:00:00']);
+  document.getElementById('graph-zoom-out').click(); assert.equal(caption.style.fontSize, '12px');
+  document.getElementById('graph-physics').click();
+  const before = new Map(full.nodes.map(value => [value.id, at(value.id)]));
+  pointer(dom, node('fork-noon'), 'pointerdown', 400, 270); pointer(dom, dom.window, 'pointermove', 420, 305); ui.runFrames(1);
+  const dragged = at('fork-noon'); assert.notDeepEqual(dragged, before.get('fork-noon'));
+  for (const [id, position] of before) if (id !== 'fork-noon') assert.deepEqual(at(id), position, `${id} stays independent of the drag`);
+  pointer(dom, dom.window, 'pointerup', 420, 305); ui.runFrames(12);
+  assert.deepEqual(at('fork-noon'), dragged, 'paused release keeps the point without snapping');
+  assert.match(document.getElementById('graph-undo').title, /移动节点/);
+  document.getElementById('graph-undo').click();
+  for (const [id, position] of before) assert.deepEqual(at(id), position);
+  document.getElementById('graph-layout').click(); document.getElementById('graph-physics').click(); ui.runFrames(420);
+  for (let index = 1; index < order.length; index++) assert.ok(at(order[index - 1])[0] < at(order[index])[0]);
+  assert.deepEqual(full, original);
+  await settle(80);
+});
+
+test('standalone time expansion arriving during a drag preserves the captured single point', async t => {
+  const full = orderedTimeForks(); let respond;
+  const ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return full;
+    if (url.pathname.endsWith('/ordered-region')) return new Promise(resolve => { respond = resolve; });
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui, node = id => document.querySelector(`[data-node-id="${id}"]`);
+  ui.runFrames(420);
+  node('fork-day11').dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(10);
+  pointer(dom, node('fork-noon'), 'pointerdown', 400, 270); pointer(dom, dom.window, 'pointermove', 420, 300); ui.runFrames(1);
+  const held = positionOf(node('fork-noon'));
+  respond({ ...full, centerId: 'fork-day11', databaseId: 'db-default', nodes: [...full.nodes, { id: 'streamed', label: 'Event' }] }); await settle(70); ui.runFrames(30);
+  assert.ok(node('streamed')); assert.deepEqual(positionOf(node('fork-noon')), held);
+  pointer(dom, dom.window, 'pointerup', 420, 300); ui.runFrames(1);
+  assert.ok(distance(positionOf(node('fork-noon')), held) < 5, 'release uses a soft force instead of a rigid snap');
+  ui.runFrames(420); await settle(80);
 });
 
 const menuOrderedNode = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: {

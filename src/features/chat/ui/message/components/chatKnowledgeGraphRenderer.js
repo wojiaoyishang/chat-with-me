@@ -2,7 +2,7 @@ import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY
 import { graphEdgeGeometry, isSourceChunk } from './knowledgeGraphPresentation.js';
 import { createOrderedGraphLayout, orderedNodeRadius, orderedNodeCaption, orderedConvergencePath } from '../../../../knowledge/orderedGraphLayout.js';
 
-export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, markerId, edgeAnimation = true } = {}) {
+export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, onBeforeMove, markerId, edgeAnimation = true } = {}) {
     const doc = svg.ownerDocument, win = doc.defaultView;
     const cameraLayer = svg.querySelector('[data-graph-camera]'), nodeLayer = svg.querySelector('[data-graph-nodes]'), edgeLayer = svg.querySelector('[data-graph-edges]');
     const controlsLayer = svg.parentElement?.querySelector('[data-graph-controls]');
@@ -14,12 +14,19 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     let orderedMenu = null, orderedMenuNode = null;
     const step = 1000 / 60, listeners = [], pointers = new Map();
     const orderedLayout = createOrderedGraphLayout();
+    const flexibleTime = node => node?.ordered?.hierarchy === true;
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
-    const link = forceLink([]).id(node => node.id).distance(180).strength(edge => 0.18 / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
+    const link = forceLink([]).id(node => node.id).distance(180).strength(edge => (flexibleTime(edge.source) || flexibleTime(edge.target) ? 0.018 : 0.18) / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
     const simulation = forceSimulation([]).stop().alpha(0).alphaMin(0.003).alphaDecay(0.018).velocityDecay(0.32)
-        .force('link', link).force('charge', forceManyBody().strength(-120).distanceMin(35))
+        .force('link', link).force('charge', forceManyBody().strength(node => flexibleTime(node) ? -22 : -120).distanceMin(35))
         .force('collision', forceCollide(node => node.radius + 30).strength(0.8).iterations(2))
-        .force('x', forceX(0).strength(0.035)).force('y', forceY(0).strength(0.035));
+        .force('x', forceX(0).strength(node => flexibleTime(node) ? 0 : 0.035)).force('y', forceY(0).strength(node => flexibleTime(node) ? 0 : 0.035))
+        .force('ordered', alpha => {
+            for (const node of nodes.values()) if (flexibleTime(node) && node.fx == null && Number.isFinite(node.orderedTargetX) && Number.isFinite(node.orderedTargetY)) {
+                node.vx += (node.orderedTargetX - node.x) * alpha * 0.42;
+                node.vy += (node.orderedTargetY - node.y) * alpha * 0.42;
+            }
+        });
     const listen = (target, type, callback, options) => {
         target.addEventListener(type, callback, options);
         listeners.push(() => target.removeEventListener(type, callback, options));
@@ -41,6 +48,27 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         for (const [name, value] of Object.entries(attributes)) result.setAttribute(name, String(value));
         return result;
     };
+    function setCaption(node) {
+        const full = String(orderedNodeCaption(node, nodes)), characters = Array.from(full), label = node.labelElement;
+        label.replaceChildren();
+        if (!flexibleTime(node)) {
+            label.textContent = characters.slice(0, 13).join('') + (characters.length > 13 ? '…' : '');
+            return;
+        }
+        const date = characters.length > 16 && /^(.*?日)(.+)$/.exec(full), parts = date ? [date[1], date[2]] : [full], lines = [];
+        for (const part of parts) {
+            const zone = Array.from(part).length > 16 && /^(.+?)([+-]\d{2}:\d{2})$/.exec(part);
+            for (const token of zone ? [zone[1], zone[2]] : [part]) {
+                const points = Array.from(token);
+                for (let index = 0; index < points.length; index += 16) lines.push(points.slice(index, index + 16).join(''));
+            }
+        }
+        node.captionLines = Math.max(1, lines.length);
+        label.setAttribute('aria-label', full);
+        for (const [index, line] of lines.entries()) {
+            const span = element('tspan', { x: 0, dy: index ? '1.25em' : 0 }); span.textContent = line; label.append(span);
+        }
+    }
     const marqueeRect = element('rect', { class: 'graph-marquee', hidden: '', 'aria-hidden': 'true' });
     svg.append(marqueeRect);
     const convergenceLayer = element('g', { 'data-layout-only': 'true', 'aria-hidden': 'true' });
@@ -107,9 +135,13 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     function draw() {
         for (const node of nodes.values()) {
             node.element.setAttribute('transform', `translate(${node.x.toFixed(2)} ${node.y.toFixed(2)})`);
-            node.labelElement.style.fontSize = `${Math.max(10, 10 / camera.scale)}px`;
+            node.labelElement.style.fontSize = flexibleTime(node) ? '12px' : `${Math.max(10, 10 / camera.scale)}px`;
         }
         for (const view of views.values()) {
+            if (view.layoutSuppressed) {
+                view.element.setAttribute('d', ''); view.flowElement.setAttribute('d', ''); view.labelElement.style.visibility = 'hidden';
+                continue;
+            }
             const geometry = graphEdgeGeometry(view, nodes.get(view.from), nodes.get(view.to));
             view.element.setAttribute('d', geometry.path);
             view.flowElement.setAttribute('d', geometry.path);
@@ -117,7 +149,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             view.labelElement.setAttribute('y', geometry.y);
             view.labelElement.style.visibility = geometry.path ? '' : 'hidden';
         }
-        for (const view of convergenceViews) view.element.setAttribute('d', orderedConvergencePath(nodes.get(view.from), nodes.get(view.to)));
+        for (const view of convergenceViews) view.element.setAttribute('d', orderedConvergencePath(nodes.get(view.from), nodes.get(view.to), view));
         applyCamera();
     }
     function cancelAutoFit() { initialFit = false; fittedView = null; }
@@ -130,8 +162,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         const points = ids.map(id => nodes.get(String(id))).filter(Boolean);
         if (!points.length) return false;
         const viewport = availableViewport();
-        const left = Math.min(...points.map(node => node.x - node.radius - 24)), right = Math.max(...points.map(node => node.x + node.radius + 24));
-        const top = Math.min(...points.map(node => node.y - node.radius - 20)), bottom = Math.max(...points.map(node => node.y + node.radius + 36));
+        const left = Math.min(...points.map(node => node.x - (flexibleTime(node) ? 105 : node.radius + 24))), right = Math.max(...points.map(node => node.x + (flexibleTime(node) ? 105 : node.radius + 24)));
+        const top = Math.min(...points.map(node => node.y - node.radius - 20)), bottom = Math.max(...points.map(node => node.y + node.radius + 22 + (node.captionLines || 1) * 15));
         const centerX = (Math.min(...points.map(node => node.x - node.radius)) + Math.max(...points.map(node => node.x + node.radius))) / 2;
         const centerY = (Math.min(...points.map(node => node.y - node.radius)) + Math.max(...points.map(node => node.y + node.radius))) / 2;
         camera.scale = Math.max(0.12, Math.min(maxZoom, viewport.width / Math.max(100, right - left), viewport.height / Math.max(100, bottom - top)));
@@ -176,7 +208,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     function clearFocus() {
         cancelAutoFit();
         focused.clear(); multiSelected.clear(); selected = null; pendingFocus = null;
-        for (const node of nodes.values()) if (node !== drag?.node && !node.ordered) node.fx = node.fy = null;
+        for (const node of nodes.values()) if (node !== drag?.node && (!node.ordered || flexibleTime(node))) node.fx = node.fy = null;
         focusStyles();
     }
     function selectNodes(ids) {
@@ -236,7 +268,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         endMarquee(true);
         const before = nodes.size, keepNodes = new Set(next.nodes.map(node => node.id));
         for (const [id, node] of nodes) if (!keepNodes.has(id)) { node.element.remove(); nodes.delete(id); focused.delete(id); multiSelected.delete(id); }
-        if (drag?.node && !keepNodes.has(drag.node.id)) { releaseDrag(); pointers.clear(); pinch = null; }
+        if (drag?.node && !keepNodes.has(drag.node.id)) cancelGesture();
         if (!nodes.has(selected)) selected = multiSelected.values().next().value || focused.values().next().value || null;
         if (!nodes.has(hovered)) hovered = null;
         const degrees = new Map();
@@ -250,7 +282,10 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             }
             Object.assign(node, { name: raw.name, label: raw.label, labels: raw.labels, properties: raw.properties, isChunk: isSourceChunk(raw), degree: degrees.get(node.id) || 0 });
         }
-        orderedLayout.rebuild(nodes.values());
+        orderedLayout.rebuild(nodes.values(), { relationships: next.relationships, completeParentIds: next.completeParentIds });
+        if (drag?.node && drag.moved && nodes.has(drag.node.id)) {
+            drag.node = nodes.get(drag.node.id); drag.node.fx = drag.node.x; drag.node.fy = drag.node.y;
+        }
         if (orderedMenu && !nodes.get(orderedMenuNode)?.ordered) closeOrderedMenu();
         for (const raw of next.nodes) {
             const node = nodes.get(raw.id);
@@ -264,13 +299,13 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             node.circle.setAttribute('r', node.radius); node.circle.setAttribute('fill', raw.color);
             node.hitElement.setAttribute('r', Math.max(12, node.radius));
             node.labelElement.setAttribute('y', node.radius + 16);
-            const characters = Array.from(orderedNodeCaption(node, nodes));
-            node.labelElement.textContent = characters.slice(0, 13).join('') + (characters.length > 13 ? '…' : '');
-            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · 拖动移动整条顺序轴` : ''}${node.isChunk ? '' : node.ordered?.kind === 'time' ? ' · 双击展开时间骨架' : ' · 双击展开关联'}`;
+            setCaption(node);
+            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · ${flexibleTime(node) ? '拖动调整单个时间节点' : '拖动移动整条顺序轴'}` : ''}${node.isChunk ? '' : node.ordered?.kind === 'time' ? ' · 双击展开时间骨架' : ' · 双击展开关联'}`;
             node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : node.ordered?.kind === 'time' ? '，双击或空格展开时间骨架' : '，双击或空格展开关联'}${node.ordered && onOrderedNeighbors ? '，右键或菜单键展示前后顺序节点' : ''}。`);
         }
         const keepEdges = new Set(next.edges.map(edge => edge.id));
         for (const [id, view] of views) if (!keepEdges.has(id)) { view.element.remove(); view.flowElement.remove(); view.labelElement.remove(); views.delete(id); }
+        const suppressedIds = new Set(next.orderedView?.suppressedRelationshipIds || []);
         for (const raw of next.edges) {
             let view = views.get(raw.id);
             if (!view) {
@@ -281,27 +316,31 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
                 view = { element: path, flowElement: flow, labelElement: caption, titleElement: title }; views.set(raw.id, view);
             }
             Object.assign(view, raw);
+            view.layoutSuppressed = raw.members.every(edge => suppressedIds.has(edge.id));
+            view.element.classList.toggle('ordered-projected', view.layoutSuppressed);
+            view.flowElement.classList.toggle('ordered-projected', view.layoutSuppressed);
             view.element.classList.toggle('source-link', view.sourceLink);
             view.element.classList.toggle('ordered-link', view.type === 'NEXT_ORDERED');
             view.element.classList.toggle('ordered-hierarchy', view.hierarchy);
             view.element.classList.toggle('ordered-business', view.business);
             view.flowElement.classList.toggle('ordered-business', view.business);
+            view.flowElement.classList.toggle('ordered-skeleton', view.skeleton);
             view.flowElement.classList.toggle('source-flow', view.sourceLink);
             view.labelElement.classList.toggle('source-label', view.sourceLink);
             view.element.setAttribute('data-edge-id', raw.members[0].id);
             view.element.setAttribute('data-edge-ids', JSON.stringify(raw.members.map(edge => edge.id)));
-            if (view.sourceLink || view.business) view.element.removeAttribute('marker-end');
+            if (view.sourceLink || view.business || view.skeleton) view.element.removeAttribute('marker-end');
             else view.element.setAttribute('marker-end', `url(#${markerId})`);
             view.titleElement.textContent = raw.members.map(edge => `${nodes.get(edge.from).name} → ${edge.type} → ${nodes.get(edge.to).name}`).join('\n');
             view.labelElement.textContent = view.skeleton ? '' : raw.type.slice(0, 16);
         }
         model = next;
         convergenceLayer.replaceChildren();
-        convergenceViews = (next.convergences || []).map(value => {
-            const path = element('path', { class: 'ordered-convergence', fill: 'none', 'data-layout-only': 'true', 'aria-hidden': 'true' });
+        convergenceViews = (next.orderedView?.routes || []).map(value => {
+            const path = element('path', { class: `ordered-route ordered-route-${value.kind}`, fill: 'none', 'data-layout-only': 'true', 'data-route-kind': value.kind, 'aria-hidden': 'true' });
             convergenceLayer.append(path); return { ...value, element: path };
         });
-        link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.map(edge => ({ ...edge })));
+        link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.filter(edge => !(flexibleTime(nodes.get(edge.source)) && flexibleTime(nodes.get(edge.target)))).map(edge => ({ ...edge })));
         if (!before && nodes.size) {
             if (nodes.size === 1) { const only = nodes.values().next().value; if (!only.ordered) only.x = only.y = 0; }
             fit(); initialFit = nodes.size > 1;
@@ -329,7 +368,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             ordered.push(...ids.filter(id => !visited.has(id)));
             ordered.forEach((id, index) => { const node = nodes.get(id); if (node.ordered) return; node.x = node.fx = (index - (ids.length - 1) / 2) * 180; node.y = node.fy = 0; node.vx = node.vy = 0; });
         } else {
-            const node = nodes.get(ids[0]); node.fx = node.x; node.fy = node.y; node.vx = node.vy = 0;
+            const node = nodes.get(ids[0]); if (!flexibleTime(node)) { node.fx = node.x; node.fy = node.y; } node.vx = node.vy = 0;
         }
         focusStyles(); fit(ids, 1.8); animate(0.15); return true;
     }
@@ -342,8 +381,13 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         cancelAutoFit(); draw();
     }
     function releaseDrag() {
-        if (drag?.node && drag.moved) { if (!drag.node.ordered) drag.node.fx = drag.node.fy = null; simulation.alphaTarget(0); animate(0.25); }
+        if (drag?.node && drag.moved) { if (!drag.node.ordered || flexibleTime(drag.node)) drag.node.fx = drag.node.fy = null; simulation.alphaTarget(0); animate(0.25); }
         drag = null; svg.classList.remove('dragging');
+    }
+    function cancelGesture() {
+        const captured = new Set([...pointers.keys(), drag?.pointerId]);
+        endMarquee(true); releaseDrag(); pointers.clear(); pinch = null;
+        for (const id of captured) if (id != null && svg.hasPointerCapture?.(id)) svg.releasePointerCapture(id);
     }
     function endMarquee(cancelled = false) {
         if (!marquee) return;
@@ -403,11 +447,11 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         }
         if (!drag || drag.pointerId !== event.pointerId) return;
         if (!drag.moved && Math.hypot(current.x - drag.start.x, current.y - drag.start.y) < 6) return;
-        if (!drag.moved) { svg.setPointerCapture?.(event.pointerId); svg.classList.add('dragging'); }
+        if (!drag.moved) { onBeforeMove?.(drag.node ? '移动节点' : '移动画布'); svg.setPointerCapture?.(event.pointerId); svg.classList.add('dragging'); }
         drag.moved = true; cancelAutoFit();
         if (drag.node && nodes.has(drag.node.id)) {
             const x = (current.x - camera.x) / camera.scale - drag.offsetX, y = (current.y - camera.y) / camera.scale - drag.offsetY;
-            if (!orderedLayout.move(drag.node, x, y)) { drag.node.x = drag.node.fx = x; drag.node.y = drag.node.fy = y; }
+            if (!orderedLayout.move(drag.node, x, y) || flexibleTime(drag.node)) { drag.node.x = drag.node.fx = x; drag.node.y = drag.node.fy = y; }
             drag.node.vx = drag.node.vy = 0; simulation.alphaTarget(0.35); animate();
         } else { camera.x += current.x - drag.previous.x; camera.y += current.y - drag.previous.y; }
         drag.previous = current; draw(); event.preventDefault();
@@ -448,17 +492,19 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         setData, focusNetwork, fit, zoom,
         getViewState: () => ({
             camera: { ...camera }, width, height, physics: enabled,
-            positions: [...nodes.values()].map(({ id, x, y, fx, fy }) => ({ id, x, y, fx: fx ?? null, fy: fy ?? null })),
+            positions: [...nodes.values()].map(({ id, x, y, fx, fy, orderedManualOffset }) => ({ id, x, y, fx: fx ?? null, fy: fy ?? null, ...(orderedManualOffset ? { orderedManualOffset: { ...orderedManualOffset } } : {}) })),
             selected: [...pickedIds()],
         }),
         restoreViewState(state) {
             if (destroyed || !state || !state.camera) return false;
-            closeOrderedMenu();
+            closeOrderedMenu(); cancelGesture();
+            if (frame) win.cancelAnimationFrame(frame);
+            frame = 0; lastTime = null; elapsed = 0; simulation.alphaTarget(0).alpha(0);
             for (const point of state.positions || []) {
                 const node = nodes.get(String(point.id));
-                if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: point.fx ?? null, fy: point.fy ?? null, vx: 0, vy: 0 });
+                if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: flexibleTime(node) ? null : point.fx ?? null, fy: flexibleTime(node) ? null : point.fy ?? null, vx: 0, vy: 0, orderedManualOffset: point.orderedManualOffset ? { ...point.orderedManualOffset } : undefined });
             }
-            orderedLayout.rebuild(nodes.values(), { fromPositions: true });
+            orderedLayout.rebuild(nodes.values(), { fromPositions: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] });
             if (['x', 'y', 'scale'].every(key => Number.isFinite(state.camera[key])) && state.camera.scale > 0) {
                 camera = { ...state.camera, x: state.camera.x + (width - (state.width || width)) / 2, y: state.camera.y + (height - (state.height || height)) / 2 };
             }
@@ -472,7 +518,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         getRelationships: () => model?.relationships || [],
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
         setPhysics(value) { enabled = Boolean(value); updateEdgeAnimation(); if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
-        relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true }); fit(); initialFit = true; animate(0.65); },
+        relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] }); fit(); initialFit = true; animate(0.65); },
         destroy() { if (destroyed) return; destroyed = true; closeOrderedMenu(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };
 }
