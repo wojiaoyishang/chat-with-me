@@ -56,8 +56,136 @@ async function orderedMenu(ui, id = 'root', keyboard = false) {
 }
 async function showOrdered(ui, id = 'root') {
     const menu = await orderedMenu(ui, id); assert.ok(menu);
-    await act(async () => menu.querySelector('[role="menuitem"]').click());
+    await act(async () => menu.querySelector('[data-action="ordered-neighbors"]').click());
 }
+async function selectOrderedType(ui, label, id = null) {
+    if (id == null) await act(async () => ui.container.querySelector('.chat-knowledge-canvas').dispatchEvent(
+        new ui.dom.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 300, clientY: 160 })));
+    else await orderedMenu(ui, id);
+    const action = id == null ? 'ordered-skeleton' : 'ordered-nearest';
+    await act(async () => ui.container.querySelector(`[data-action="${action}"]`).click());
+    await ui.settle();
+    const entry = ui.container.querySelector(`.knowledge-compact-submenu [data-label="${label}"]`);
+    assert.ok(entry, `dynamic ordered type ${label} should be available`);
+    await act(async () => entry.click());
+}
+const numericOrdered = (id, value) => ({ id, label: 'Priority', name: `优先级 ${value}`, labels: ['Knowledge', 'Priority', 'OrderedNode'], properties: {
+    ordered_axis: 'priorities', ordered_kind: 'number', ordered_key: String(value), ordered_rank: value, ordered_value: value,
+} });
+
+test('blank chat canvas loads dynamic ordered types and bounded skeleton pages with reversible cursors', async t => {
+    const calls = [], first = numericOrdered('priority-1', 1), second = numericOrdered('priority-2', 2);
+    const ui = await setup(t, async (url, options) => {
+        calls.push([url, options]);
+        if (url === '/knowledge/ordered-types') return { databaseId: options.params.databaseId, orderedTypes: [{ label: 'Priority', displayName: '优先级', kind: 'number', count: 2 }] };
+        const later = options.params.offset === 80;
+        return { databaseId: options.params.databaseId, centerId: null, label: 'Priority', nodes: [later ? second : first],
+            relationships: later ? [{ id: 'priority-next', source: first.id, target: second.id, type: 'NEXT_ORDERED' }] : [],
+            completeParentIds: [], offset: options.params.offset, limit: 80, hasMore: !later, totalNodes: 2 };
+    });
+    const original = structuredClone(ui.msg.network);
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await selectOrderedType(ui, 'Priority');
+    assert.deepEqual(calls[0][1].params, { databaseId: 'default', conversationId: 'conv' });
+    assert.equal(calls[1][0], '/knowledge/ordered-graph');
+    assert.deepEqual(calls[1][1].params, { databaseId: 'default', conversationId: 'conv', label: 'Priority', depth: 1, limit: 80, offset: 0 });
+    assert.ok(ui.container.querySelector('[data-node-id="root"]')); assert.ok(ui.container.querySelector('[data-node-id="priority-1"]'));
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /还有更多/);
+    await selectOrderedType(ui, 'Priority'); assert.equal(calls.at(-1)[1].params.offset, 80);
+    assert.equal(ui.container.querySelectorAll('.ordered-link').length, 1);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelector('[data-node-id="priority-2"]'), null); assert.ok(ui.container.querySelector('[data-node-id="priority-1"]'));
+    await act(async () => ui.container.querySelector('[aria-label="重做图谱操作"]').click());
+    assert.ok(ui.container.querySelector('[data-node-id="priority-2"]'));
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    await selectOrderedType(ui, 'Priority'); assert.equal(calls.at(-1)[1].params.offset, 80, 'undo restores the next-page cursor');
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelector('[data-node-id="priority-1"]'), null);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    assert.deepEqual(ui.msg.network, original);
+});
+
+test('ordinary chat node finds nearest dynamic ordered type by its actual evidence path and one undo', async t => {
+    const calls = [], target = numericOrdered('priority-1', 1);
+    const ui = await setup(t, async (url, options) => {
+        calls.push([url, options]);
+        if (url === '/knowledge/ordered-types') return { orderedTypes: [{ label: 'Priority', displayName: '优先级', kind: 'number', count: 1 }] };
+        return { centerId: 'root', databaseId: options.params.databaseId, label: 'Priority', found: true, nearestHops: 2, hasMore: false,
+            nodes: [target, { id: 'evidence', label: 'Thing', name: '中间证据' }], relationships: [
+                { id: 'evidence-1', source: 'root', target: 'evidence', type: '依赖' },
+                { id: 'evidence-2', source: 'evidence', target: target.id, type: '优先级' },
+            ], anchors: [{ nodeId: target.id, hops: 2, nodeIds: ['root', 'evidence', target.id], relationshipIds: ['evidence-1', 'evidence-2'] }] };
+    });
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await selectOrderedType(ui, 'Priority', 'root');
+    assert.equal(calls.at(-1)[0], '/knowledge/nodes/root/nearest-ordered');
+    assert.deepEqual(calls.at(-1)[1].params, { databaseId: 'default', conversationId: 'conv', label: 'Priority', maxHops: 3, limit: 20 });
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 3);
+    assert.equal(ui.container.querySelectorAll('.knowledge-edge').length, 2);
+    assert.equal(ui.container.querySelectorAll('.ordered-link').length, 0, 'evidence expansion must not invent NEXT edges');
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /最近的有序节点（2 跳）/);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 1);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销找到最近的有序节点/);
+});
+
+test('chat nearest search reports an exhausted budget without claiming no match or changing the canvas', async t => {
+    let found = false;
+    const calls = [], ui = await setup(t, async (url, options) => {
+        if (url === '/knowledge/ordered-types') return { orderedTypes: [{ label: 'Priority', kind: 'number' }] };
+        calls.push([url, options]);
+        return { databaseId: options.params.databaseId, centerId: 'root', found, nearestHops: found ? 1 : null,
+            truncated: true, truncationReason: 'scan_limit', hasMore: true,
+            nodes: found ? [numericOrdered('partial-priority', 1)] : [],
+            relationships: found ? [{ id: 'partial-evidence', source: 'root', target: 'partial-priority', type: '优先级' }] : [] };
+    });
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await selectOrderedType(ui, 'Priority', 'root');
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /达到扫描预算.*缩小范围/);
+    assert.doesNotMatch(ui.container.querySelector('.chat-knowledge-feedback').textContent, /没有.*有序节点/);
+    assert.equal(ui.container.querySelectorAll('.knowledge-node').length, 1);
+    assert.equal(ui.container.querySelectorAll('.knowledge-edge').length, 0);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true);
+    assert.deepEqual(calls[0][1].params, { databaseId: 'default', conversationId: 'conv', label: 'Priority', maxHops: 3, limit: 20 });
+    found = true; await selectOrderedType(ui, 'Priority', 'root');
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /部分并列结果.*缩小范围/);
+    assert.ok(ui.container.querySelector('[data-node-id="partial-priority"]'));
+});
+
+test('all ordered kinds use generic local skeleton on double-click while the menu can expand business associations', async t => {
+    const calls = [], root = numericOrdered('root', 1), ui = await setup(t, async (url, options) => {
+        calls.push([url, options]); return { centerId: 'root', databaseId: options.params.databaseId, nodes: [root], relationships: [], hasMore: false };
+    });
+    ui.msg.network.nodes = [root];
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await act(async () => ui.container.querySelector('[data-node-id="root"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    assert.equal(calls[0][0], '/knowledge/ordered-graph'); assert.equal(calls[0][1].params.label, 'Priority'); assert.equal(calls[0][1].params.nodeId, 'root');
+    const menu = await orderedMenu(ui); await act(async () => menu.querySelector('[data-action="node-expand"]').click());
+    assert.equal(calls.at(-1)[0], '/knowledge/nodes/root/graph'); assert.equal(calls.at(-1)[1].params.depth, 1);
+    assert.equal(ui.container.querySelector('[aria-label="撤销图谱操作"]').disabled, true, 'repeated empty results do not create undo entries');
+});
+
+test('global chat skeleton requests deduplicate, cancel with undo, and ignore late responses across database scopes', async t => {
+    let complete, signal, queries = 0;
+    const ui = await setup(t, async (url, options) => {
+        if (url === '/knowledge/ordered-types') return { orderedTypes: [{ label: 'Priority', kind: 'number' }] };
+        signal = options.signal; queries++; return new Promise(resolve => { complete = resolve; });
+    });
+    ui.msg.network.databaseId = 'library-a';
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    await selectOrderedType(ui, 'Priority'); await selectOrderedType(ui, 'Priority'); assert.equal(queries, 1);
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
+    assert.equal(signal.aborted, true); assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /取消刚才的有序骨架请求/);
+    await act(async () => complete({ databaseId: 'library-a', nodes: [numericOrdered('late-cancelled', 3)], relationships: [] }));
+    assert.equal(ui.container.querySelector('[data-node-id="late-cancelled"]'), null);
+    await selectOrderedType(ui, 'Priority'); await switchDatabase(ui, 'library-b'); assert.equal(signal.aborted, true);
+    assert.ok(ui.container.querySelector('.chat-knowledge-canvas'), 'a database without AI results still exposes a blank canvas');
+    await act(async () => complete({ databaseId: 'library-a', nodes: [numericOrdered('late-other-db', 4)], relationships: [] }));
+    await switchDatabase(ui, 'library-a');
+    assert.equal(ui.container.querySelector('[data-node-id="late-other-db"]'), null);
+});
 
 test('chat ordered menu uses scoped immediate neighbors and one undo entry without changing double-click expansion', async t => {
     const root = orderedChatNode('root', '20'), previous = orderedChatNode('previous', '10'), next = orderedChatNode('next', '30'), calls = [];
@@ -139,15 +267,15 @@ test('time double-click expands a local hierarchical region with undo while ordi
     ui.msg.network.nodes = [center, { id: 'event', label: 'Event', name: '已有事件' }];
     await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
     await act(async () => ui.container.querySelector('[data-node-id="day"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
-    assert.equal(calls[0][0], '/knowledge/nodes/day/ordered-region'); assert.equal(calls[0][1].params.depth, 1); assert.equal(calls[0][1].params.limit, 80);
+    assert.equal(calls[0][0], '/knowledge/ordered-graph'); assert.equal(calls[0][1].params.nodeId, 'day'); assert.equal(calls[0][1].params.label, 'Time'); assert.equal(calls[0][1].params.depth, 1); assert.equal(calls[0][1].params.limit, 80);
     assert.ok(ui.container.querySelector('[data-node-id="month"]')); assert.ok(ui.container.querySelector('[data-node-id="event"]'));
-    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /局部时间骨架/);
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /有序骨架/);
     assert.equal(ui.container.querySelector('[data-node-id="day"] text').textContent, '2026年9月12日');
     assert.ok(ui.container.querySelectorAll('path[data-layout-only]').length > 0);
     await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click());
     assert.equal(ui.container.querySelector('[data-node-id="month"]'), null); assert.ok(ui.container.querySelector('[data-node-id="event"]'));
     assert.equal(ui.container.querySelectorAll('path[data-layout-only]').length, 0);
-    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销展开时间骨架/);
+    assert.match(ui.container.querySelector('.chat-knowledge-feedback').textContent, /已撤销展开有序骨架/);
 });
 
 test('chat paused single-time dragging records one undoable gesture and retains full fork captions', async t => {

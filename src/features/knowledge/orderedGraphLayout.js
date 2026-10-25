@@ -334,3 +334,121 @@ export function createOrderedGraphLayout() {
         getProjection() { return projection; },
     };
 }
+
+// A semantic node has one visual owner. Other real relationships remain visible,
+// but never introduce competing springs or gravity across ordered branches.
+export function createOrderedOrbitLayout() {
+    let nodes = new Map(), groups = new Map(), anchorPositions = new Map();
+    const sourceNode = node => node?.label === 'Chunk' || node?.labels?.includes('Chunk') || isInternalOrderAxis(node);
+    const ignored = new Set(['NEXT_ORDERED', 'ORDERED_CONTAINS', 'HAS_ORDERED_NODE', 'EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'CHILD_OF', 'ILLUSTRATES']);
+    const finitePoint = value => value && Number.isFinite(value.x) && Number.isFinite(value.y);
+    const anchorCompare = (a, b) => orderedNodeRadius(a.ordered) - orderedNodeRadius(b.ordered) || a.id.localeCompare(b.id);
+    const offsetFor = node => {
+        if (finitePoint(node.orderedOrbit?.offset)) return node.orderedOrbit.offset;
+        const slot = node.orderedOrbit.slot, ring = Math.floor(slot / 10), radius = 94 + ring * 58;
+        const angle = (slot % 10) / 10 * Math.PI * 2 - Math.PI / 2 + (ring % 2) * Math.PI / 10;
+        return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+    };
+    function lockSkeleton() {
+        for (const node of nodes.values()) if (node.ordered?.hierarchy && Number.isFinite(node.orderedTargetX) && Number.isFinite(node.orderedTargetY)) {
+            node.x = node.fx == null ? node.orderedTargetX : node.fx;
+            node.y = node.fy == null ? node.orderedTargetY : node.fy;
+            node.vx = node.vy = 0;
+        }
+    }
+    function syncAnchors() {
+        lockSkeleton();
+        for (const [id, members] of groups) {
+            const anchor = nodes.get(id), before = anchorPositions.get(id), dx = before ? anchor.x - before.x : 0, dy = before ? anchor.y - before.y : 0;
+            if (dx || dy) for (const node of members) if (node.fx == null) {
+                node.x += dx; node.y += dy;
+                if (Number.isFinite(node.previousX)) node.previousX += dx;
+                if (Number.isFinite(node.previousY)) node.previousY += dy;
+            }
+            anchorPositions.set(id, { x: anchor.x, y: anchor.y });
+        }
+    }
+    return {
+        rebuild(values, relationships = [], { reset = false, restore = false } = {}) {
+            nodes = new Map(Array.from(values, node => [String(node.id), node]));
+            for (const node of nodes.values()) node.ordered = orderedNodeInfo(node);
+            const anchors = [...nodes.values()].filter(node => node.ordered || orderedNodeInfo(node)).sort(anchorCompare);
+            const distances = new Map(), owners = new Map(), adjacent = new Map([...nodes.keys()].map(id => [id, new Set()])), queue = [];
+            for (const edge of relationships) {
+                const a = endpointId(edge.from ?? edge.source), b = endpointId(edge.to ?? edge.target);
+                if (a === b || !nodes.has(a) || !nodes.has(b) || ignored.has(edge.type) || sourceNode(nodes.get(a)) || sourceNode(nodes.get(b))) continue;
+                adjacent.get(a).add(b); adjacent.get(b).add(a);
+            }
+            for (const anchor of anchors) { distances.set(anchor.id, 0); owners.set(anchor.id, new Set([anchor.id])); queue.push([anchor.id, anchor.id, 0]); }
+            for (let index = 0; index < queue.length; index++) {
+                const [id, owner, distance] = queue[index];
+                if (distances.get(id) !== distance) continue;
+                for (const next of adjacent.get(id) || []) {
+                    if (nodes.get(next).ordered) continue;
+                    const d = distance + 1, known = distances.get(next);
+                    if (known !== undefined && known < d) continue;
+                    if (known === undefined || known > d) { distances.set(next, d); owners.set(next, new Set()); }
+                    if (owners.get(next).has(owner)) continue;
+                    owners.get(next).add(owner); queue.push([next, owner, d]);
+                }
+            }
+            groups = new Map();
+            for (const node of nodes.values()) {
+                if (node.ordered || !owners.has(node.id)) { delete node.orderedOrbit; continue; }
+                const previous = !reset && node.orderedOrbit, candidates = owners.get(node.id);
+                const anchorId = previous && candidates.has(previous.anchorId) ? previous.anchorId
+                    : [...candidates].map(id => nodes.get(id)).sort(anchorCompare)[0].id;
+                const valid = previous?.anchorId === anchorId && Number.isInteger(previous.slot) && previous.slot >= 0 && previous.slot < 1000;
+                node.orderedOrbit = { anchorId, slot: valid ? previous.slot : null, ...(valid && finitePoint(previous.offset) ? { offset: { ...previous.offset } } : {}) };
+                node.orderedOrbitNew = !valid || reset || restore && !valid;
+                if (!groups.has(anchorId)) groups.set(anchorId, []);
+                groups.get(anchorId).push(node);
+            }
+            lockSkeleton();
+            for (const [id, members] of groups) {
+                const occupied = new Set(), reserved = new Set();
+                members.sort((a, b) => (distances.get(a.id) - distances.get(b.id)) || a.id.localeCompare(b.id));
+                for (const node of members) {
+                    if (node.orderedOrbit.slot != null && !reserved.has(node.orderedOrbit.slot)) reserved.add(node.orderedOrbit.slot);
+                    else node.orderedOrbit.slot = null;
+                }
+                for (const node of members) {
+                    if (node.orderedOrbit.slot == null) {
+                        let slot = 0; while (occupied.has(slot) || reserved.has(slot)) slot++;
+                        node.orderedOrbit.slot = slot;
+                    }
+                    occupied.add(node.orderedOrbit.slot);
+                }
+                const anchor = nodes.get(id);
+                for (const node of members) node.fx = node.fy = null;
+                for (const node of members) if (node.orderedOrbitNew) {
+                    const offset = offsetFor(node);
+                    node.x = node.previousX = anchor.x + offset.x; node.y = node.previousY = anchor.y + offset.y;
+                    node.vx = node.vy = 0; node.fx = node.fy = null;
+                }
+            }
+            anchorPositions = new Map([...groups.keys()].map(id => [id, { x: nodes.get(id).x, y: nodes.get(id).y }]));
+        },
+        controlled(node) { return Boolean(node?.ordered || node?.orderedOrbit); },
+        tick(alpha) {
+            syncAnchors();
+            for (const [id, members] of groups) {
+                const anchor = nodes.get(id);
+                for (const node of members) {
+                    if (node.fx != null) { node.vx = node.vy = 0; continue; }
+                    const offset = offsetFor(node);
+                    // Overwrite, rather than add to, the unrelated global forces.
+                    node.vx = (anchor.x + offset.x - node.x) * alpha * 0.5;
+                    node.vy = (anchor.y + offset.y - node.y) * alpha * 0.5;
+                }
+            }
+        },
+        sync: syncAnchors,
+        move(node, x, y) {
+            const anchor = nodes.get(node?.orderedOrbit?.anchorId);
+            if (!anchor) return false;
+            node.orderedOrbit.offset = { x: x - anchor.x, y: y - anchor.y };
+            node.x = x; node.y = y; return true;
+        },
+    };
+}

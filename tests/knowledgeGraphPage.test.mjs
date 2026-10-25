@@ -71,6 +71,7 @@ async function page(
     pretendToBeVisual: true,
   });
   const calls = [];
+  dom.window.structuredClone = structuredClone;
   if (localSettings !== undefined) dom.window.localStorage.setItem('LocalSetting', JSON.stringify(localSettings));
   if (iframeParent) Object.defineProperty(dom.window, 'parent', { value: iframeParent });
   for (const [key, value] of Object.entries(seedStorage))
@@ -356,13 +357,13 @@ test('standalone time region expansion draws hierarchical branches and keeps ord
   const full = orderedTimeGraph(), day = full.nodes.find(node => node.id === 'day'), event = full.nodes.find(node => node.id === 'event');
   const ui = await page((url) => {
     if (url.pathname === '/api/knowledge/graph') return { nodes: [day, event], relationships: [] };
-    if (url.pathname.endsWith('/ordered-region')) return { ...full, centerId: 'day', databaseId: 'db-default', hasMore: false };
+    if (url.pathname === '/api/knowledge/ordered-graph') return { ...full, centerId: 'day', databaseId: 'db-default', hasMore: false };
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui;
   for (let attempt = 0; attempt < 20 && document.getElementById('knowledge-canvas').getAttribute('aria-busy') === 'true'; attempt++) await settle(15);
   document.querySelector('[data-node-id="day"]').dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
-  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/ordered-region'));
+  const request = ui.calls.find(call => call.parsed.pathname === '/api/knowledge/ordered-graph');
   assert.equal(request.parsed.searchParams.get('depth'), '1'); assert.equal(request.parsed.searchParams.get('limit'), '80');
   const node = id => document.querySelector(`[data-node-id="${id}"]`), radius = id => Number(node(id).querySelector('circle').getAttribute('r'));
   assert.deepEqual(['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond'].map(radius), [18, 15, 12, 10, 8, 6, 4]);
@@ -380,25 +381,25 @@ test('standalone time region expansion draws hierarchical branches and keeps ord
   assert.ok(document.querySelectorAll('path[data-layout-only]').length > 0);
   assert.match(document.getElementById('graph-count').textContent, new RegExp(`${full.relationships.length} 条关系`));
   assert.equal(document.getElementById('graph-undo').disabled, false);
-  assert.match(document.getElementById('graph-undo').title, /撤销展开时间骨架/);
+  assert.match(document.getElementById('graph-undo').title, /撤销展开有序骨架/);
   document.getElementById('graph-undo').click(); await settle();
   assert.equal(document.querySelectorAll('.knowledge-node').length, 2); assert.ok(node('event'));
   assert.equal(document.querySelectorAll('path[data-layout-only]').length, 0);
-  assert.match(document.getElementById('notice').textContent, /已撤销展开时间骨架/);
+  assert.match(document.getElementById('notice').textContent, /已撤销展开有序骨架/);
 });
 
 test('standalone expansion consumes a captured backend region without flattening prefixed calendar and clock lanes', async t => {
   const full = backendOrderedTimeRegion(), original = structuredClone(full), center = full.nodes.find(node => node.id === full.centerId);
   const ui = await page(url => {
     if (url.pathname === '/api/knowledge/graph') return { nodes: [center], relationships: [] };
-    if (url.pathname.endsWith('/ordered-region')) return { ...full, databaseId: 'db-default' };
+    if (url.pathname === '/api/knowledge/ordered-graph') return { ...full, databaseId: 'db-default' };
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui;
   for (let attempt = 0; attempt < 20 && document.getElementById('knowledge-canvas').getAttribute('aria-busy') === 'true'; attempt++) await settle(15);
   document.querySelector(`[data-node-id="${full.centerId}"]`).dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
   ui.runFrames(420);
-  assert.ok(ui.calls.some(call => call.parsed.pathname === `/api/knowledge/nodes/${full.centerId}/ordered-region`));
+  assert.ok(ui.calls.some(call => call.parsed.pathname === '/api/knowledge/ordered-graph' && call.parsed.searchParams.get('nodeId') === full.centerId));
   const node = id => document.querySelector(`[data-node-id="backend-${id}"]`),
     at = id => node(id).getAttribute('transform').match(/-?\d+(?:\.\d+)?(?:e[-+]?\d+)?/gi).map(Number);
   assert.ok(at('month')[0] < at('day')[0] && at('day')[0] < at('minute')[0] && at('minute')[0] < at('next-day')[0]);
@@ -421,7 +422,7 @@ test('standalone expansion consumes a captured backend region without flattening
 test('standalone nested time forks settle, preserve real counts and allow paused single drag with undo and reset', async t => {
   const full = orderedTimeForks(), original = structuredClone(full), ui = await page(url => {
     if (url.pathname === '/api/knowledge/graph') return full;
-    if (url.pathname.endsWith('/ordered-region')) return { ...full, centerId: 'fork-day11', databaseId: 'db-default' };
+    if (url.pathname === '/api/knowledge/ordered-graph') return { ...full, centerId: 'fork-day11', databaseId: 'db-default' };
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui, node = id => document.querySelector(`[data-node-id="${id}"]`), at = id => positionOf(node(id));
@@ -459,7 +460,7 @@ test('standalone time expansion arriving during a drag preserves the captured si
   const full = orderedTimeForks(); let respond;
   const ui = await page(url => {
     if (url.pathname === '/api/knowledge/graph') return full;
-    if (url.pathname.endsWith('/ordered-region')) return new Promise(resolve => { respond = resolve; });
+    if (url.pathname === '/api/knowledge/ordered-graph') return new Promise(resolve => { respond = resolve; });
   }, { controlledAnimation: true });
   t.after(() => ui.dom.window.close());
   const { dom, document } = ui, node = id => document.querySelector(`[data-node-id="${id}"]`);
@@ -474,9 +475,250 @@ test('standalone time expansion arriving during a drag preserves the captured si
   ui.runFrames(420); await settle(80);
 });
 
+test('strict time skeleton and single-owner orbits resist dense cross-branch links and preserve manual offsets through undo and cache reload', async t => {
+  const full = orderedTimeForks(), local = { id: 'orbit-local', label: 'Event', name: '本地事件' },
+    nearby = { id: 'orbit-nearby', label: 'Thing', name: '本地实体' }, shared = { id: 'orbit-shared', label: 'Thing', name: '共享实体' },
+    source = { id: 'orbit-source', label: 'Chunk', name: '来源片段' }, sourceOnly = { id: 'orbit-source-only', label: 'Thing', name: '仅来源相连' };
+  full.nodes.push(local, nearby, shared, source, sourceOnly);
+  full.relationships.push(
+    { id: 'orbit-local-time', source: local.id, target: 'fork-noon', type: 'HAPPENED_AT' },
+    { id: 'orbit-local-nearby', source: local.id, target: nearby.id, type: 'INVOLVES' },
+    { id: 'orbit-shared-first', source: shared.id, target: 'fork-noon', type: 'HAPPENED_AT' },
+    { id: 'orbit-shared-second', source: shared.id, target: 'fork-noon10', type: 'HAPPENED_AT' },
+    { id: 'orbit-source-edge', source: local.id, target: source.id, type: 'EXTRACTED_FROM' },
+    { id: 'orbit-source-only-edge', source: source.id, target: sourceOnly.id, type: 'CONTAINS_KNOWLEDGE' },
+  );
+  for (let index = 0; index < 36; index++) {
+    const id = `orbit-remote-${index}`;
+    full.nodes.push({ id, label: 'Event', name: `远端事件${index}` });
+    full.relationships.push(
+      { id: `orbit-remote-time-${index}`, source: id, target: 'fork-november', type: 'HAPPENED_AT' },
+      { id: `orbit-cross-${index}`, source: local.id, target: id, type: 'CROSS_BRANCH' },
+      { id: `orbit-dense-${index}`, source: id, target: `orbit-remote-${(index + 7) % 36}`, type: 'RELATED' },
+    );
+  }
+  const original = structuredClone(full), responder = (url, options) => {
+    if (url.pathname === '/api/knowledge/graph') return full;
+    if (url.pathname === '/api/knowledge/ordered-graph') return { ...full, centerId: 'fork-noon', databaseId: 'db-default' };
+    if (url.pathname === '/api/knowledge/canvas') {
+      const request = JSON.parse(options.body), ids = new Set(request.nodeIds), edgeIds = new Set(request.edgeIds);
+      return { ...full, nodes: full.nodes.filter(node => ids.has(node.id)), relationships: full.relationships.filter(edge => edgeIds.has(edge.id)) };
+    }
+  };
+  const ui = await page(responder, { controlledAnimation: true }); t.after(() => ui.dom.window.close());
+  const { dom, document } = ui, at = id => positionOf(document.querySelector(`[data-node-id="${id}"]`)),
+    timeIds = full.nodes.filter(node => node.labels?.includes('OrderedNode')).map(node => node.id),
+    positions = () => new Map(full.nodes.map(node => [node.id, at(node.id)])),
+    readCache = () => JSON.parse(JSON.stringify(dom.window.CWMGraphWorkspace.read('/api|db-default|'))),
+    closePoint = (actual, expected) => assert.ok(distance(actual, expected) < 0.03, `${actual} should remain near ${expected}`);
+  document.querySelector('[data-node-id="fork-noon"]').dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true })); await settle(70);
+  ui.runFrames(420); await settle(170);
+  const before = positions(), initialCache = readCache(), cachedNode = id => initialCache.nodes.find(node => node.id === id);
+  assert.equal(cachedNode(local.id).orderedOrbit.anchorId, 'fork-noon');
+  assert.equal(cachedNode(nearby.id).orderedOrbit.anchorId, 'fork-noon');
+  assert.equal(cachedNode(source.id).orderedOrbit, undefined); assert.equal(cachedNode(sourceOnly.id).orderedOrbit, undefined);
+  const sharedOwner = cachedNode(shared.id).orderedOrbit.anchorId;
+  assert.ok(['fork-noon', 'fork-noon10'].includes(sharedOwner));
+  assert.ok(distance(at(local.id), at('fork-noon')) < 180, 'dense remote links cannot pull the local event out of its orbit');
+  ui.runFrames(1200);
+  for (const id of timeIds) assert.deepEqual(at(id), before.get(id), `${id} must stay on its strict target`);
+  assert.ok(distance(at(local.id), at('fork-noon')) < 180);
+  assert.equal(document.querySelectorAll('.knowledge-edge').length, full.relationships.length);
+  assert.ok(document.querySelector('[data-edge-id="orbit-shared-second"]'), 'the non-owning business relation stays visible');
+  document.querySelector('#graph-physics').click();
+  const dragBefore = positions();
+  pointer(dom, document.querySelector('[data-node-id="fork-noon"]'), 'pointerdown', 400, 270);
+  pointer(dom, dom.window, 'pointermove', 425, 290); ui.runFrames(1);
+  pointer(dom, dom.window, 'pointerup', 425, 290); ui.runFrames(1);
+  const moved = positions(), delta = moved.get('fork-noon').map((value, index) => value - dragBefore.get('fork-noon')[index]);
+  for (const id of timeIds) if (id !== 'fork-noon') assert.deepEqual(at(id), dragBefore.get(id), 'a time drag never shifts a different skeleton anchor');
+  for (const id of [local.id, nearby.id]) closePoint(at(id), dragBefore.get(id).map((value, index) => value + delta[index]));
+  closePoint(at(shared.id), dragBefore.get(shared.id).map((value, index) => value + (sharedOwner === 'fork-noon' ? delta[index] : 0)));
+  assert.deepEqual(at('orbit-remote-0'), dragBefore.get('orbit-remote-0'));
+  document.querySelector('#graph-undo').click(); ui.runFrames(1);
+  for (const id of [...timeIds, local.id, nearby.id, shared.id, 'orbit-remote-0']) assert.deepEqual(at(id), dragBefore.get(id));
+  pointer(dom, document.querySelector(`[data-node-id="${local.id}"]`), 'pointerdown', 400, 270);
+  pointer(dom, dom.window, 'pointermove', 420, 245); ui.runFrames(1);
+  pointer(dom, dom.window, 'pointerup', 420, 245); ui.runFrames(1); await settle(170);
+  const draggedEvent = at(local.id), savedOrbit = readCache().nodes.find(node => node.id === local.id).orderedOrbit;
+  assert.ok(savedOrbit.offset && Number.isFinite(savedOrbit.offset.x) && Number.isFinite(savedOrbit.offset.y));
+  assert.deepEqual(at('fork-noon'), dragBefore.get('fork-noon'));
+  document.querySelector('#refresh').click(); await settle(180); ui.runFrames(420); await settle(170);
+  assert.deepEqual(at(local.id), draggedEvent, 'refresh preserves the ordinary orbit offset');
+  const saved = readCache(); assert.deepEqual(saved.nodes.find(node => node.id === local.id).orderedOrbit, savedOrbit);
+  const reloaded = await page(responder, { controlledAnimation: true, seedStorage: ui.dumpStorage() }); t.after(() => reloaded.dom.window.close());
+  const restoredAt = id => positionOf(reloaded.document.querySelector(`[data-node-id="${id}"]`));
+  assert.ok(reloaded.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'), 'cached identities are authorized again on reload');
+  assert.deepEqual(restoredAt(local.id), draggedEvent);
+  reloaded.document.querySelector('#graph-physics').click(); reloaded.document.querySelector('#graph-physics').click(); reloaded.runFrames(420);
+  assert.deepEqual(restoredAt(local.id), draggedEvent, 'restarting physics retains the cached orbit offset');
+  for (const id of timeIds) assert.deepEqual(restoredAt(id), dragBefore.get(id));
+  assert.deepEqual(full, original); await settle(80);
+});
+
 const menuOrderedNode = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: {
   ordered_axis: 'timeline', ordered_kind: 'time', ordered_key: key, ordered_value: id, ...extra,
 } });
+
+const genericOrderedTypes = { databaseId: 'db-default', orderedTypes: [
+  { label: 'Priority', displayName: '优先级', kind: 'number', kinds: ['number'], axes: 1, count: 2 },
+  { label: 'Chapter', displayName: '章节', kind: 'text', kinds: ['text'], axes: 1, count: 2 },
+] };
+const genericOrderedNode = (id, label, kind, key) => ({ id, name: id, label, labels: ['Knowledge', label, 'OrderedNode'], properties: {
+  ordered_axis: `${label}-axis`, ordered_kind: kind, ordered_key: key, ordered_value: key, ordered_missing: false,
+} });
+async function activateOrderedType(ui, action, label, nodeId = null) {
+  const { dom, document } = ui;
+  if (nodeId != null) openNodeMenu(dom, document, nodeId);
+  else document.querySelector('#knowledge-canvas').dispatchEvent(new dom.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, button: 2, clientX: 220, clientY: 180 }));
+  const trigger = document.querySelector(`.graph-context-menu [data-action="${action}"]`);
+  assert.ok(trigger, `${action} must be offered by the graph menu`);
+  trigger.click(); await settle();
+  const choice = document.querySelector(`.graph-context-submenu[data-kind="${action}"] [data-label="${label}"]`);
+  assert.ok(choice, `${label} must come from the dynamic ordered types response`);
+  choice.click();
+}
+
+test('generic global skeleton pages keep existing knowledge, report bounded results and restore the page cursor on undo', async t => {
+  const existing = { id: 'existing', label: 'Event', name: '保留已有知识' }, first = genericOrderedNode('priority-first', 'Priority', 'number', '1'), last = genericOrderedNode('priority-last', 'Priority', 'number', '2');
+  const edge = { id: 'priority-next', source: first.id, target: last.id, type: 'NEXT_ORDERED' };
+  const ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [existing], relationships: [] };
+    if (url.pathname === '/api/knowledge/ordered-types') return genericOrderedTypes;
+    if (url.pathname === '/api/knowledge/ordered-graph') {
+      const offset = Number(url.searchParams.get('offset'));
+      return { databaseId: 'db-default', label: 'Priority', offset, limit: 80, hasMore: offset === 0,
+        nodes: offset === 0 ? [first] : [first, last], relationships: offset === 0 ? [] : [edge] };
+    }
+  }, { controlledAnimation: true, conversationId: 'generic-pages' });
+  t.after(() => ui.dom.window.close());
+  const { document } = ui, loaded = () => [...document.querySelectorAll('.knowledge-node')].map(node => node.dataset.nodeId).sort();
+  const show = async () => { await activateOrderedType(ui, 'ordered-skeleton', 'Priority'); await settle(70); };
+  await show();
+  assert.deepEqual(loaded(), ['existing', 'priority-first']);
+  assert.match(document.querySelector('#notice').textContent, /还有更多.*再次选择此类型可继续加载/);
+  const typesRequest = ui.calls.find(call => call.parsed.pathname === '/api/knowledge/ordered-types');
+  assert.equal(typesRequest.parsed.searchParams.get('databaseId'), 'db-default');
+  assert.equal(typesRequest.parsed.searchParams.get('conversationId'), 'generic-pages');
+  await show();
+  assert.deepEqual(loaded(), ['existing', 'priority-first', 'priority-last']);
+  assert.equal(document.querySelectorAll('.knowledge-edge').length, 1);
+  assert.match(document.querySelector('#graph-undo').title, /撤销展开有序骨架/);
+  document.querySelector('#graph-undo').click(); await settle();
+  assert.deepEqual(loaded(), ['existing', 'priority-first']);
+  await show();
+  assert.deepEqual(loaded(), ['existing', 'priority-first', 'priority-last']);
+  document.querySelector('#graph-undo').click(); await settle();
+  document.querySelector('#graph-undo').click(); await settle();
+  assert.deepEqual(loaded(), ['existing']); assert.equal(document.querySelector('#graph-undo').disabled, true);
+  await show();
+  assert.deepEqual(loaded(), ['existing', 'priority-first']);
+  const pages = ui.calls.filter(call => call.parsed.pathname === '/api/knowledge/ordered-graph');
+  assert.deepEqual(pages.map(call => call.parsed.searchParams.get('offset')), ['0', '80', '80', '0']);
+  for (const call of pages) {
+    assert.equal(call.parsed.searchParams.get('label'), 'Priority'); assert.equal(call.parsed.searchParams.get('depth'), '1');
+    assert.equal(call.parsed.searchParams.get('limit'), '80'); assert.equal(call.parsed.searchParams.has('nodeId'), false);
+    assert.equal(call.parsed.searchParams.get('databaseId'), 'db-default'); assert.equal(call.parsed.searchParams.get('conversationId'), 'generic-pages');
+  }
+});
+
+test('generic nearest ordered action merges only returned evidence and a repeated result adds no extra undo entry', async t => {
+  const center = { id: 'ordinary-start', label: 'Event', name: '查找起点' }, existing = { id: 'existing', label: 'Person', name: '保留已有节点' }, bridge = { id: 'evidence-bridge', label: 'Event', name: '证据路径' }, target = genericOrderedNode('chapter-b', 'Chapter', 'text', 'B');
+  const initialEdge = { id: 'existing-link', source: center.id, target: existing.id, type: 'RELATED' }, evidence = [
+    { id: 'evidence-step1', source: center.id, target: bridge.id, type: 'RELATED' },
+    { id: 'evidence-step2', source: bridge.id, target: target.id, type: 'AT_CHAPTER' },
+  ];
+  const ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [center, existing], relationships: [initialEdge] };
+    if (url.pathname === '/api/knowledge/ordered-types') return genericOrderedTypes;
+    if (url.pathname === `/api/knowledge/nodes/${center.id}/nearest-ordered`) return { databaseId: 'db-default', centerId: center.id, label: 'Chapter', found: true, nearestHops: 2, hasMore: true,
+      nodes: [center, bridge, target], relationships: evidence };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { document } = ui;
+  const show = async () => { await activateOrderedType(ui, 'ordered-nearest', 'Chapter', center.id); await settle(70); };
+  await show(); await show();
+  assert.deepEqual([...document.querySelectorAll('.knowledge-node')].map(node => node.dataset.nodeId).sort(), ['chapter-b', 'evidence-bridge', 'existing', 'ordinary-start']);
+  assert.deepEqual([...document.querySelectorAll('.knowledge-edge')].map(edge => edge.dataset.edgeId).sort(), ['evidence-step1', 'evidence-step2', 'existing-link']);
+  assert.equal(document.querySelectorAll('.ordered-link').length, 0, 'a nearest result must not invent a skeleton or load a neighboring sequence');
+  assert.match(document.querySelector('#notice').textContent, /最近的有序节点（2 跳）.*部分并列结果/);
+  const requests = ui.calls.filter(call => call.parsed.pathname.endsWith('/nearest-ordered'));
+  assert.equal(requests.length, 2);
+  for (const call of requests) {
+    assert.equal(call.parsed.searchParams.get('label'), 'Chapter'); assert.equal(call.parsed.searchParams.get('maxHops'), '3'); assert.equal(call.parsed.searchParams.get('limit'), '20');
+    assert.equal(call.parsed.searchParams.get('databaseId'), 'db-default');
+  }
+  assert.equal(ui.calls.some(call => call.parsed.pathname === '/api/knowledge/ordered-graph'), false);
+  document.querySelector('#graph-undo').click(); await settle();
+  assert.deepEqual([...document.querySelectorAll('.knowledge-node')].map(node => node.dataset.nodeId).sort(), ['existing', 'ordinary-start']);
+  assert.deepEqual([...document.querySelectorAll('.knowledge-edge')].map(edge => edge.dataset.edgeId), ['existing-link']);
+  assert.equal(document.querySelector('#graph-undo').disabled, true);
+});
+
+test('generic nearest search reports an exhausted budget without claiming no match or creating undo history', async t => {
+  const center = { id: 'budget-start', label: 'Event', name: '受限查询起点' };
+  const ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [center], relationships: [] };
+    if (url.pathname === '/api/knowledge/ordered-types') return genericOrderedTypes;
+    if (url.pathname === `/api/knowledge/nodes/${center.id}/nearest-ordered`) return { databaseId: 'db-default', centerId: center.id,
+      found: false, nearestHops: null, truncated: true, truncationReason: 'visited_limit', hasMore: true, nodes: [], relationships: [] };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  await activateOrderedType(ui, 'ordered-nearest', 'Priority', center.id); await settle(70);
+  const { document } = ui;
+  assert.match(document.querySelector('#notice').textContent, /达到扫描预算.*缩小范围/);
+  assert.doesNotMatch(document.querySelector('#notice').textContent, /没有.*有序节点/);
+  assert.deepEqual([...document.querySelectorAll('.knowledge-node')].map(node => node.dataset.nodeId), [center.id]);
+  assert.equal(document.querySelectorAll('.knowledge-edge').length, 0);
+  assert.equal(document.querySelector('#graph-undo').disabled, true);
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/nearest-ordered'));
+  assert.equal(request.parsed.searchParams.get('maxHops'), '3'); assert.equal(request.parsed.searchParams.get('limit'), '20');
+});
+
+for (const [label, kind, key] of [['Priority', 'number', '1'], ['Chapter', 'text', 'A']]) {
+  test(`generic ${kind} ordered nodes use the skeleton API from their direct menu and double click`, async t => {
+    const center = genericOrderedNode(`${kind}-center`, label, kind, key), neighbor = genericOrderedNode(`${kind}-next`, label, kind, kind === 'number' ? '2' : 'B'), existing = { id: 'existing', label: 'Event' };
+    const ui = await page(url => {
+      if (url.pathname === '/api/knowledge/graph') return { nodes: [center, existing], relationships: [] };
+      if (url.pathname === '/api/knowledge/ordered-graph') return { databaseId: 'db-default', centerId: center.id, label, nodes: [center, neighbor], relationships: [{ id: `${kind}-next-edge`, source: center.id, target: neighbor.id, type: 'NEXT_ORDERED' }], hasMore: false };
+    }, { controlledAnimation: true });
+    t.after(() => ui.dom.window.close());
+    const { dom, document } = ui;
+    const action = openNodeMenu(dom, document, center.id).querySelector('[data-action="ordered-skeleton"]');
+    assert.equal(action.hasAttribute('aria-haspopup'), false, 'an ordered node already identifies its own type');
+    action.click(); await settle(70);
+    assert.ok(document.querySelector(`[data-node-id="${neighbor.id}"]`)); assert.ok(document.querySelector('[data-node-id="existing"]'));
+    document.querySelector('#graph-undo').click(); await settle();
+    document.querySelector(`[data-node-id="${center.id}"]`).dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true, button: 0 })); await settle(70);
+    const requests = ui.calls.filter(call => call.parsed.pathname === '/api/knowledge/ordered-graph');
+    assert.equal(requests.length, 2);
+    for (const call of requests) {
+      assert.equal(call.parsed.searchParams.get('label'), label); assert.equal(call.parsed.searchParams.get('nodeId'), center.id);
+      assert.equal(call.parsed.searchParams.get('depth'), '1'); assert.equal(call.parsed.searchParams.get('limit'), '80'); assert.equal(call.parsed.searchParams.get('offset'), '0');
+    }
+    assert.equal(ui.calls.some(call => call.parsed.pathname === `/api/knowledge/nodes/${center.id}/graph`), false);
+  });
+}
+
+test('generic nearest reads abort on scope changes and late evidence cannot enter the new canvas', async t => {
+  const center = { id: 'old-event', label: 'Event' }, current = { id: 'new-event', label: 'Event' }, target = genericOrderedNode('late-priority', 'Priority', 'number', '9');
+  let complete;
+  const ui = await page(url => {
+    if (url.pathname === '/api/knowledge/graph') return { nodes: [url.searchParams.get('conversationId') === 'new-generic' ? current : center], relationships: [] };
+    if (url.pathname === '/api/knowledge/ordered-types') return genericOrderedTypes;
+    if (url.pathname === '/api/knowledge/nodes/old-event/nearest-ordered') return new Promise(resolve => { complete = resolve; });
+  }, { controlledAnimation: true, conversationId: 'old-generic' });
+  t.after(() => ui.dom.window.close());
+  await activateOrderedType(ui, 'ordered-nearest', 'Priority', center.id); await settle();
+  const request = ui.calls.find(call => call.parsed.pathname.endsWith('/nearest-ordered'));
+  assert.equal(request.signal.aborted, false); assert.equal(request.parsed.searchParams.get('conversationId'), 'old-generic');
+  await switchScope(ui.dom, ui.document, 'new-generic');
+  assert.equal(request.signal.aborted, true);
+  complete({ databaseId: 'db-default', centerId: center.id, found: true, nearestHops: 1, nodes: [center, target], relationships: [{ id: 'late-evidence', source: center.id, target: target.id, type: 'RELATED' }] });
+  await settle(70);
+  assert.deepEqual([...ui.document.querySelectorAll('.knowledge-node')].map(node => node.dataset.nodeId), ['new-event']);
+  assert.equal(ui.document.querySelectorAll('.knowledge-edge').length, 0); assert.equal(ui.document.querySelector('#graph-undo').disabled, true);
+});
 
 test('ordered neighbor action is limited to genuine nodes, appends actual adjacency and creates one undo entry', async (t) => {
   const center = menuOrderedNode('center', '20'), previous = menuOrderedNode('previous', '10'), next = menuOrderedNode('next', '30'),

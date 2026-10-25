@@ -18,11 +18,13 @@ const canvasNetwork = (base, extra) => {
     return result ? { ...result, completeParentIds: [...new Set([...(base?.completeParentIds || []), ...(extra?.completeParentIds || [])])] } : result;
 };
 
-const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord, onUndo, onRedo, canUndo, canRedo, databaseId, activeDatabaseId, canonicalDatabaseId, viewStates, visibleController, scope }) {
+const GraphContent = memo(function GraphContent({ model, msg, onExpand, getOrderedTypes, onRecord, onUndo, onRedo, canUndo, canRedo, databaseId, activeDatabaseId, canonicalDatabaseId, viewStates, visibleController, scope }) {
     const svgRef = useRef(null), controller = useRef(null), appliedFocus = useRef(null);
     const restored = useRef(false);
     const expandCallback = useRef(onExpand);
     useEffect(() => { expandCallback.current = onExpand; }, [onExpand]);
+    const orderedTypesCallback = useRef(getOrderedTypes);
+    useEffect(() => { orderedTypesCallback.current = getOrderedTypes; }, [getOrderedTypes]);
     const recordCallback = useRef(onRecord);
     useEffect(() => { recordCallback.current = onRecord; }, [onRecord]);
     const [ready, setReady] = useState(false), [error, setError] = useState(''), [retry, setRetry] = useState(0);
@@ -50,6 +52,9 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord
                 onError: cause => setError(cause.message || '图谱暂时无法显示'),
                 onExpand: (id, mode) => expandCallback.current?.(id, controller.current, mode),
                 onOrderedNeighbors: id => expandCallback.current?.(id, controller.current, 'ordered'),
+                getOrderedTypes: options => orderedTypesCallback.current?.(options),
+                onOrderedSkeleton: (id, label) => expandCallback.current?.(id, controller.current, 'skeleton', { label }),
+                onNearestOrdered: (id, label) => expandCallback.current?.(id, controller.current, 'nearest', { label }),
                 onBeforeMove: label => recordCallback.current?.(controller.current, label),
             });
             graph.databaseId = databaseId;
@@ -95,11 +100,12 @@ const GraphContent = memo(function GraphContent({ model, msg, onExpand, onRecord
 
     return <div className="chat-knowledge-canvas-wrap">
         <svg ref={svgRef} className="chat-knowledge-canvas" role="application" tabIndex={0}
-            aria-label="知识图谱。Ctrl+Z 撤销，Ctrl+Shift+Z 重做。Ctrl 点击追加或取消选择，Ctrl 拖动框选，Esc 清除选择。拖动单个时间节点调整位置，暂停动画后仍可拖动。中键移动画布，滚轮或双指缩放。" aria-busy={!ready}>
+            aria-label="知识图谱。Ctrl+Z 撤销，Ctrl+Shift+Z 重做。右键展开有序骨架或查找最近有序节点。Ctrl 点击追加或取消选择，Ctrl 拖动框选，Esc 清除选择。拖动节点调整位置，暂停动画后仍可拖动。中键移动画布，滚轮或双指缩放。" aria-busy={!ready}>
             <defs><marker id={markerId} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L7,3.5 L0,7" fill="#a3afc4" /></marker></defs>
             <g data-graph-camera=""><g data-graph-edges="" /><g data-graph-nodes="" /></g>
         </svg>
-        {!ready && !error && <div className="chat-knowledge-loading" role="status">正在绘制图谱…</div>}
+        {!model.nodes.length && !error && <p className="chat-knowledge-empty-hint">当前知识库尚无本条消息的图谱结果；右键画布可展开有序骨架。</p>}
+        {!ready && !error && model.nodes.length > 0 && <div className="chat-knowledge-loading" role="status">正在绘制图谱…</div>}
         {error && <div className="chat-knowledge-loading" role="alert"><span>{error}</span><button type="button" onClick={() => { setError(''); setReady(false); appliedFocus.current = null; setRetry(value => value + 1); }}>重新加载</button></div>}
         <div className="chat-knowledge-controls-row" data-graph-controls="">
             <div className="chat-knowledge-legend" aria-label="图谱类型图例">{labels.map(([label, color]) => <span key={label}><i style={{ background: color }} />{label}</span>)}</div>
@@ -199,48 +205,71 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             activeRequests.clear();
         };
     }, [scope, refreshHistory]);
-    const expand = useCallback(async (id, graph, mode = 'related') => {
-        if (requests.current.has(id)) return;
-        const ordered = mode === 'ordered', region = mode === 'region', timeAction = ordered || region;
-        const epoch = generation.current, request = {controller: new AbortController(), scope, graph, id, ordered, region};
-        requests.current.set(id, request); graph?.expanding(id, true);
+    const getOrderedTypes = useCallback(async ({ signal } = {}) => {
+        const epoch = generation.current;
+        const data = await apiClient.get('/knowledge/ordered-types', { signal, timeout: 15000, params: { databaseId, conversationId } });
+        if (signal?.aborted || generation.current !== epoch) throw new DOMException('画布已切换', 'AbortError');
+        if (data?.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error('有序类型来自其他知识库，请重试。');
+        if (!Array.isArray(data?.orderedTypes)) throw new Error('有序类型数据无效，请重试。');
+        return data;
+    }, [databaseId, conversationId, canonicalDatabaseId]);
+    const expand = useCallback(async (id, graph, mode = 'related', options = {}) => {
+        const ordered = mode === 'ordered', skeleton = mode === 'skeleton' || mode === 'region', nearest = mode === 'nearest';
+        const label = options.label || (id ? graph?.getNodes().find(node => node.id === String(id))?.label : '');
+        const key = id == null ? `skeleton:${label}` : String(id);
+        if (requests.current.has(key) || (skeleton && !label)) return;
+        const page = skeleton && id == null ? extrasRef.current[scope]?.orderedPages?.[label] : null;
+        const offset = page?.hasMore ? page.nextOffset : 0;
+        const epoch = generation.current, request = {controller: new AbortController(), scope, graph, id, key, ordered, skeleton, nearest};
+        requests.current.set(key, request); if (id != null) graph?.expanding(id, true);
         refreshHistory(scope);
-        setFeedback({ scope, message: ordered ? '正在读取前后顺序节点…' : region ? '正在读取局部时间骨架…' : '正在读取关联节点…', error: false });
+        setFeedback({ scope, message: ordered ? '正在读取前后顺序节点…' : skeleton ? '正在读取有序骨架…' : nearest ? '正在查找最近的有序节点…' : '正在读取关联节点…', error: false });
         try {
-            const data = await apiClient.get(`/knowledge/nodes/${encodeURIComponent(id)}/${ordered ? 'ordered-neighbors' : region ? 'ordered-region' : 'graph'}`, {
+            const path = skeleton ? '/knowledge/ordered-graph' : `/knowledge/nodes/${encodeURIComponent(id)}/${ordered ? 'ordered-neighbors' : nearest ? 'nearest-ordered' : 'graph'}`;
+            const params = skeleton ? { databaseId, conversationId, label, ...(id != null ? { nodeId: id } : {}), depth: 1, limit: 80, offset }
+                : ordered ? { databaseId, conversationId } : nearest ? { databaseId, conversationId, label, maxHops: 3, limit: 20 } : { databaseId, conversationId, depth: 1, limit: 80 };
+            const data = await apiClient.get(path, {
                 signal: request.controller.signal, timeout: 20000,
-                params: ordered ? { databaseId, conversationId } : { databaseId, conversationId, depth: 1, limit: 80 },
+                params,
             });
-            if (request.controller.signal.aborted || generation.current !== epoch || !graph?.getNodes().some(node => node.id === id)) return;
-            if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships) || (timeAction && String(data.centerId) !== id))
-                throw new Error(timeAction ? '顺序查询未返回有效的图谱数据。' : '关联查询未返回有效的图谱数据。');
-            if (data.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error(`${timeAction ? '顺序' : '关联'}查询返回了其他知识库的数据，请重试。`);
+            if (request.controller.signal.aborted || generation.current !== epoch || (id != null && !graph?.getNodes().some(node => node.id === String(id)))) return;
+            if (!Array.isArray(data?.nodes) || !Array.isArray(data?.relationships) || ((ordered || skeleton || nearest) && id != null && String(data.centerId) !== String(id)))
+                throw new Error('查询未返回有效的图谱数据。');
+            if (data.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error('查询返回了其他知识库的数据，请重试。');
             const localView = mergeNetworkData(extrasRef.current[scope], { ...data, databaseId });
             delete localView.databaseViews;
-            if (region && Array.isArray(data.completeParentIds)) localView.completeParentIds = [...new Set([
+            if (skeleton && Array.isArray(data.completeParentIds)) localView.completeParentIds = [...new Set([
                 ...(extrasRef.current[scope]?.completeParentIds || []).filter(parent => parent !== id), ...data.completeParentIds,
             ])];
+            if (skeleton && id == null) localView.orderedPages = { ...(extrasRef.current[scope]?.orderedPages || {}), [label]: {
+                nextOffset: Number(data.offset ?? offset) + Number(data.limit || 80), hasMore: data.hasMore === true,
+            } };
             const base = latestNetworks.current[databaseId];
             const current = knowledgeGraphPresentation(canvasNetwork(base, extrasRef.current[scope]));
             const next = knowledgeGraphPresentation(canvasNetwork(base, localView));
             if (next.nodes.length > 400) throw new Error('画布最多显示 400 个节点，请在知识库中继续探索。');
+            if (next.relationships.length > 2000) throw new Error('画布最多显示 2000 条关系，请在知识库中继续探索。');
             const currentIds = new Set(current.nodes.map(node => node.id));
             const added = next.nodes.filter(node => !currentIds.has(node.id)).length;
             const addedEdges = next.relationships.length - current.relationships.length;
             if (JSON.stringify([current.nodes, current.relationships, current.completeParentIds, current.orderedView]) !== JSON.stringify([next.nodes, next.relationships, next.completeParentIds, next.orderedView])) {
-                recordCanvas(graph, ordered ? '展示前后顺序节点' : region ? '展开时间骨架' : '展开关联');
+                recordCanvas(graph, ordered ? '展示前后顺序节点' : skeleton ? '展开有序骨架' : nearest ? '找到最近的有序节点' : '展开关联');
+                writeExtra(scope, localView);
+            } else if (skeleton && id == null) {
                 writeExtra(scope, localView);
             }
             setFeedback({ scope, error: false, message: ordered
                 ? added || addedEdges ? `已展示前后顺序节点，新增 ${added} 个节点和 ${addedEdges} 条关系。`
                     : data.previousId || data.nextId ? '前后顺序节点已在画布中显示。' : '没有可展示的前后顺序节点。'
-                : region ? added || addedEdges ? `已展开局部时间骨架，新增 ${added} 个节点。${data.hasMore || data.truncated ? '当前显示部分骨架，可继续双击探索。' : ''}` : '当前局部时间骨架已在图谱中显示。'
+                : skeleton ? `已展示有序骨架，新增 ${added} 个节点。${data.hasMore ? id == null ? '还有更多，再次选择此类型可继续加载。' : '当前显示部分有序骨架，可继续展开其他有序节点。' : added || addedEdges ? '' : '当前结果已在画布中显示。'}`
+                : nearest ? data.found ? `已找到最近的有序节点（${data.nearestHops} 跳），新增 ${added} 个节点。${data.truncated || data.hasMore ? '当前仅显示部分并列结果，可缩小范围后重试。' : ''}`
+                    : data.truncated ? '查询达到扫描预算，尚未完成查找，请缩小范围后重试。' : '限定范围内没有可访问的有序节点。'
                 : added ? `已展开 ${added} 个关联节点。${data.hasMore || data.truncated ? '当前显示部分关联。' : ''}` : '当前关联已在图谱中显示。' });
         } catch (cause) {
             if (!request.controller.signal.aborted && generation.current === epoch) setFeedback({ scope, message: cause.message || (ordered ? '无法读取前后顺序节点，请稍后重试。' : '无法读取关联节点，请稍后重试。'), error: true });
         } finally {
-            if (requests.current.get(id) === request) { requests.current.delete(id); graph?.expanding(id, false); }
-            else if (!requests.current.has(id)) graph?.expanding(id, false);
+            if (requests.current.get(key) === request) { requests.current.delete(key); if (id != null) graph?.expanding(id, false); }
+            else if (!requests.current.has(key) && id != null) graph?.expanding(id, false);
             if (generation.current === epoch) refreshHistory(scope);
         }
     }, [databaseId, conversationId, scope, canonicalDatabaseId, recordCanvas, writeExtra, refreshHistory]);
@@ -248,9 +277,9 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
         const pending = [...requests.current.values()].filter(request => request.scope === scope);
         if (direction === 'undo' && pending.length) {
             const request = pending.at(-1);
-            request.controller.abort(); requests.current.delete(request.id); request.graph?.expanding(request.id, false);
+            request.controller.abort(); requests.current.delete(request.key ?? request.id); if (request.id != null) request.graph?.expanding(request.id, false);
             refreshHistory(scope);
-            setFeedback({scope, error: false, message: request.ordered ? '已取消刚才的顺序节点请求。' : request.region ? '已取消刚才的时间骨架请求。' : '已取消刚才的展开请求。'});
+            setFeedback({scope, error: false, message: request.ordered ? '已取消刚才的顺序节点请求。' : request.skeleton ? '已取消刚才的有序骨架请求。' : request.nearest ? '已取消刚才的查找请求。' : '已取消刚才的展开请求。'});
             return true;
         }
         if (pending.length) return false;
@@ -290,13 +319,13 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
                     <SelectContent>{choices.map(item => <SelectItem key={item.id} value={item.id}>{item.title || item.name || item.id}{item.enabled === false ? '（已停用）' : ''}</SelectItem>)}</SelectContent>
                 </Select>
             </div>
-            {model.nodes.length ? <LazyVisibility rootMargin="150px" className="chat-knowledge-lazy" fade={false} hideOnExit={false}
+            <LazyVisibility rootMargin="150px" className="chat-knowledge-lazy" fade={false} hideOnExit={false}
                 placeholder={<div className="chat-knowledge-loading" role="status">正在加载图谱…</div>}>
-                <GraphContent key={scope} model={model} msg={msg} onExpand={expand} onRecord={recordCanvas}
+                <GraphContent key={scope} model={model} msg={msg} onExpand={expand} getOrderedTypes={getOrderedTypes} onRecord={recordCanvas}
                     onUndo={() => moveHistory('undo')} onRedo={() => moveHistory('redo')}
                     canUndo={Boolean(historyStates[scope]?.undo)} canRedo={Boolean(historyStates[scope]?.redo)}
                     databaseId={databaseId} activeDatabaseId={activeDatabaseId} canonicalDatabaseId={canonicalDatabaseId} viewStates={viewStates} visibleController={visibleController} scope={scope} />
-            </LazyVisibility> : <div className="chat-knowledge-empty" role="status"><Database size={24} aria-hidden="true" /><span>当前知识库尚无本条消息的图谱结果</span><small>可在知识库页面浏览；切换视图不会改变 AI 查询。</small></div>}
+            </LazyVisibility>
         </div>
         {feedback?.scope === scope && <p className={`chat-knowledge-feedback${feedback.error ? ' error' : ''}`} role={feedback.error ? 'alert' : 'status'}>{feedback.message}</p>}
     </section>;

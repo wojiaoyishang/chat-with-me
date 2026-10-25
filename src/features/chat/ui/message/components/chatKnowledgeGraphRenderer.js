@@ -1,8 +1,9 @@
 import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY } from 'd3-force';
 import { graphEdgeGeometry, isSourceChunk } from './knowledgeGraphPresentation.js';
-import { createOrderedGraphLayout, orderedNodeRadius, orderedNodeCaption, orderedConvergencePath } from '../../../../knowledge/orderedGraphLayout.js';
+import { createOrderedGraphLayout, createOrderedOrbitLayout, orderedNodeRadius, orderedNodeCaption, orderedConvergencePath } from '../../../../knowledge/orderedGraphLayout.js';
+import { createKnowledgeGraphContextMenu } from './knowledgeGraphContextMenu.js';
 
-export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, onBeforeMove, markerId, edgeAnimation = true } = {}) {
+export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, markerId, edgeAnimation = true } = {}) {
     const doc = svg.ownerDocument, win = doc.defaultView;
     const cameraLayer = svg.querySelector('[data-graph-camera]'), nodeLayer = svg.querySelector('[data-graph-nodes]'), edgeLayer = svg.querySelector('[data-graph-edges]');
     const controlsLayer = svg.parentElement?.querySelector('[data-graph-controls]');
@@ -11,22 +12,18 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     let selected = null, hovered = null, focused = new Set(), multiSelected = new Set(), pendingFocus = null, drag = null, pinch = null, marquee = null;
     let frame = 0, lastTime = null, elapsed = 0, ready = false, destroyed = false, initialFit = false, fittedView = null, movedAt = 0;
     let enabled = true, edgeAnimationEnabled = edgeAnimation !== false, inViewport = true;
-    let orderedMenu = null, orderedMenuNode = null;
     const step = 1000 / 60, listeners = [], pointers = new Map();
     const orderedLayout = createOrderedGraphLayout();
+    const orbitLayout = createOrderedOrbitLayout();
+    const controlled = node => orbitLayout.controlled(node);
     const flexibleTime = node => node?.ordered?.hierarchy === true;
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
-    const link = forceLink([]).id(node => node.id).distance(180).strength(edge => (flexibleTime(edge.source) || flexibleTime(edge.target) ? 0.018 : 0.18) / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
+    const link = forceLink([]).id(node => node.id).distance(180).strength(edge => 0.18 / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
     const simulation = forceSimulation([]).stop().alpha(0).alphaMin(0.003).alphaDecay(0.018).velocityDecay(0.32)
-        .force('link', link).force('charge', forceManyBody().strength(node => flexibleTime(node) ? -22 : -120).distanceMin(35))
+        .force('link', link).force('charge', forceManyBody().strength(node => controlled(node) ? 0 : -120).distanceMin(35))
         .force('collision', forceCollide(node => node.radius + 30).strength(0.8).iterations(2))
-        .force('x', forceX(0).strength(node => flexibleTime(node) ? 0 : 0.035)).force('y', forceY(0).strength(node => flexibleTime(node) ? 0 : 0.035))
-        .force('ordered', alpha => {
-            for (const node of nodes.values()) if (flexibleTime(node) && node.fx == null && Number.isFinite(node.orderedTargetX) && Number.isFinite(node.orderedTargetY)) {
-                node.vx += (node.orderedTargetX - node.x) * alpha * 0.42;
-                node.vy += (node.orderedTargetY - node.y) * alpha * 0.42;
-            }
-        });
+        .force('x', forceX(0).strength(node => controlled(node) ? 0 : 0.035)).force('y', forceY(0).strength(node => controlled(node) ? 0 : 0.035))
+        .force('ordered', alpha => orbitLayout.tick(alpha));
     const listen = (target, type, callback, options) => {
         target.addEventListener(type, callback, options);
         listeners.push(() => target.removeEventListener(type, callback, options));
@@ -74,34 +71,13 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     const convergenceLayer = element('g', { 'data-layout-only': 'true', 'aria-hidden': 'true' });
     cameraLayer.insertBefore(convergenceLayer, edgeLayer);
     let convergenceViews = [];
-    function closeOrderedMenu(restoreFocus = false) {
-        const node = nodes.get(orderedMenuNode);
-        orderedMenu?.remove(); orderedMenu = null; orderedMenuNode = null;
-        node?.element.setAttribute('aria-expanded', 'false');
-        if (restoreFocus) node?.element.focus({ preventScroll: true });
+    const contextMenu = createKnowledgeGraphContextMenu({ host: svg.parentElement,
+        getBounds: () => { const rect = svg.parentElement.getBoundingClientRect(); return { ...rect, left: rect.left, top: rect.top, width: rect.width || width, height: rect.height || height }; },
+        getOrderedTypes, onExpand, onOrderedNeighbors, onOrderedSkeleton, onNearestOrdered });
+    const closeOrderedMenu = (restoreFocus = false) => contextMenu.close({ restoreFocus });
+    function openOrderedMenu(node, event) {
+        if (contextMenu.open(node, event) && node) selectNodes([node.id]);
     }
-    function openOrderedMenu(node, x, y) {
-        if (!node.ordered || !onOrderedNeighbors || !svg.parentElement) return;
-        closeOrderedMenu(); selectNodes([node.id]);
-        const host = svg.parentElement, rect = host.getBoundingClientRect(), menu = doc.createElement('div'), button = doc.createElement('button');
-        menu.className = 'chat-knowledge-ordered-menu'; menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', '顺序节点操作');
-        button.type = 'button'; button.setAttribute('role', 'menuitem'); button.textContent = '展示前后顺序节点';
-        button.addEventListener('click', () => { const id = node.id; closeOrderedMenu(true); onOrderedNeighbors(id); });
-        menu.addEventListener('keydown', event => {
-            if (event.key === 'Tab') closeOrderedMenu(true);
-            else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) { event.preventDefault(); button.focus(); }
-        });
-        menu.append(button); host.append(menu); orderedMenu = menu; orderedMenuNode = node.id;
-        const size = menu.getBoundingClientRect(), hostWidth = rect.width || width, hostHeight = rect.height || height;
-        menu.style.left = `${Math.max(8, Math.min(hostWidth - (size.width || 190) - 8, x - rect.left))}px`;
-        menu.style.top = `${Math.max(8, Math.min(hostHeight - (size.height || 40) - 8, y - rect.top))}px`;
-        node.element.setAttribute('aria-expanded', 'true'); button.focus({ preventScroll: true });
-    }
-    listen(doc, 'pointerdown', event => { if (orderedMenu && !orderedMenu.contains(event.target)) closeOrderedMenu(); }, true);
-    listen(doc, 'click', event => { if (orderedMenu && !orderedMenu.contains(event.target)) closeOrderedMenu(); }, true);
-    listen(doc, 'keydown', event => {
-        if (orderedMenu && event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeOrderedMenu(true); }
-    }, true);
     const pickedIds = () => marquee?.preview || new Set([...multiSelected, ...focused, ...(selected ? [selected] : [])]);
     const applyCamera = () => {
         cameraLayer.setAttribute('transform', `translate(${camera.x} ${camera.y}) scale(${camera.scale})`);
@@ -133,6 +109,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         }
     }
     function draw() {
+        orbitLayout.sync();
         for (const node of nodes.values()) {
             node.element.setAttribute('transform', `translate(${node.x.toFixed(2)} ${node.y.toFixed(2)})`);
             node.labelElement.style.fontSize = flexibleTime(node) ? '12px' : `${Math.max(10, 10 / camera.scale)}px`;
@@ -242,29 +219,29 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         group.addEventListener('dblclick', event => {
             event.preventDefault(); event.stopPropagation();
             if (Date.now() - movedAt < 220 || node.isChunk || event.ctrlKey || event.metaKey) return;
-            onExpand?.(node.id, node.ordered?.kind === 'time' ? 'region' : 'related');
+            onExpand?.(node.id, node.ordered ? 'skeleton' : 'related');
         });
         group.addEventListener('contextmenu', event => {
-            if (!node.ordered || !onOrderedNeighbors) return;
-            event.preventDefault(); event.stopPropagation(); openOrderedMenu(node, event.clientX, event.clientY);
+            openOrderedMenu(node, event);
         });
         group.addEventListener('keydown', event => {
-            if (node.ordered && onOrderedNeighbors && (event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey))) {
-                event.preventDefault(); event.stopPropagation();
+            if (event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey)) {
                 const rect = svg.getBoundingClientRect();
-                openOrderedMenu(node, rect.left + camera.x + node.x * camera.scale, rect.top + camera.y + node.y * camera.scale);
+                openOrderedMenu(node, { clientX: rect.left + camera.x + node.x * camera.scale, clientY: rect.top + camera.y + node.y * camera.scale,
+                    preventDefault: () => event.preventDefault(), stopPropagation: () => event.stopPropagation() });
                 return;
             }
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault(); event.stopPropagation();
                 if (event.ctrlKey || event.metaKey) { toggleNode(node.id); return; }
-                if (event.key === ' ' && !node.isChunk) { selectNodes([node.id]); onExpand?.(node.id, node.ordered?.kind === 'time' ? 'region' : 'related'); }
+                if (event.key === ' ' && !node.isChunk) { selectNodes([node.id]); onExpand?.(node.id, node.ordered ? 'skeleton' : 'related'); }
                 else focusNetwork([node.id]);
             }
         });
     }
     function setData(next) {
         if (destroyed) return;
+        closeOrderedMenu();
         endMarquee(true);
         const before = nodes.size, keepNodes = new Set(next.nodes.map(node => node.id));
         for (const [id, node] of nodes) if (!keepNodes.has(id)) { node.element.remove(); nodes.delete(id); focused.delete(id); multiSelected.delete(id); }
@@ -283,10 +260,10 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             Object.assign(node, { name: raw.name, label: raw.label, labels: raw.labels, properties: raw.properties, isChunk: isSourceChunk(raw), degree: degrees.get(node.id) || 0 });
         }
         orderedLayout.rebuild(nodes.values(), { relationships: next.relationships, completeParentIds: next.completeParentIds });
+        orbitLayout.rebuild(nodes.values(), next.relationships);
         if (drag?.node && drag.moved && nodes.has(drag.node.id)) {
             drag.node = nodes.get(drag.node.id); drag.node.fx = drag.node.x; drag.node.fy = drag.node.y;
         }
-        if (orderedMenu && !nodes.get(orderedMenuNode)?.ordered) closeOrderedMenu();
         for (const raw of next.nodes) {
             const node = nodes.get(raw.id);
             node.radius = node.ordered ? orderedNodeRadius(node.ordered) : Math.min(25, 15 + Math.sqrt(node.degree) * 1.1);
@@ -294,14 +271,14 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             node.element.classList.toggle('ordered-missing', node.ordered?.missing === true);
             if (node.ordered) node.element.dataset.orderedAxis = node.ordered.axis;
             else delete node.element.dataset.orderedAxis;
-            if (node.ordered && onOrderedNeighbors) { node.element.setAttribute('aria-haspopup', 'menu'); node.element.setAttribute('aria-expanded', String(orderedMenuNode === node.id)); }
+            if (onExpand || (node.ordered ? onOrderedNeighbors || onOrderedSkeleton : getOrderedTypes && onNearestOrdered)) { node.element.setAttribute('aria-haspopup', 'menu'); node.element.setAttribute('aria-expanded', 'false'); }
             else { node.element.removeAttribute('aria-haspopup'); node.element.removeAttribute('aria-expanded'); }
             node.circle.setAttribute('r', node.radius); node.circle.setAttribute('fill', raw.color);
             node.hitElement.setAttribute('r', Math.max(12, node.radius));
             node.labelElement.setAttribute('y', node.radius + 16);
             setCaption(node);
-            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · ${flexibleTime(node) ? '拖动调整单个时间节点' : '拖动移动整条顺序轴'}` : ''}${node.isChunk ? '' : node.ordered?.kind === 'time' ? ' · 双击展开时间骨架' : ' · 双击展开关联'}`;
-            node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : node.ordered?.kind === 'time' ? '，双击或空格展开时间骨架' : '，双击或空格展开关联'}${node.ordered && onOrderedNeighbors ? '，右键或菜单键展示前后顺序节点' : ''}。`);
+            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · ${flexibleTime(node) ? '拖动调整单个时间节点' : '拖动移动整条顺序轴'}` : ''}${node.isChunk ? '' : node.ordered ? ' · 双击展开有序骨架' : ' · 双击展开关联'}`;
+            node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : node.ordered ? '，双击或空格展开有序骨架' : '，双击或空格展开关联'}，右键或菜单键打开节点操作。`);
         }
         const keepEdges = new Set(next.edges.map(edge => edge.id));
         for (const [id, view] of views) if (!keepEdges.has(id)) { view.element.remove(); view.flowElement.remove(); view.labelElement.remove(); views.delete(id); }
@@ -340,7 +317,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             const path = element('path', { class: `ordered-route ordered-route-${value.kind}`, fill: 'none', 'data-layout-only': 'true', 'data-route-kind': value.kind, 'aria-hidden': 'true' });
             convergenceLayer.append(path); return { ...value, element: path };
         });
-        link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.filter(edge => !(flexibleTime(nodes.get(edge.source)) && flexibleTime(nodes.get(edge.target)))).map(edge => ({ ...edge })));
+        link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.filter(edge => !controlled(nodes.get(edge.source)) && !controlled(nodes.get(edge.target))).map(edge => ({ ...edge })));
         if (!before && nodes.size) {
             if (nodes.size === 1) { const only = nodes.values().next().value; if (!only.ordered) only.x = only.y = 0; }
             fit(); initialFit = nodes.size > 1;
@@ -366,9 +343,9 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
                 visited.add(id); ordered.push(id); pending.push(...[...adjacent.get(id)].reverse());
             }
             ordered.push(...ids.filter(id => !visited.has(id)));
-            ordered.forEach((id, index) => { const node = nodes.get(id); if (node.ordered) return; node.x = node.fx = (index - (ids.length - 1) / 2) * 180; node.y = node.fy = 0; node.vx = node.vy = 0; });
+            ordered.forEach((id, index) => { const node = nodes.get(id); if (controlled(node)) return; node.x = node.fx = (index - (ids.length - 1) / 2) * 180; node.y = node.fy = 0; node.vx = node.vy = 0; });
         } else {
-            const node = nodes.get(ids[0]); if (!flexibleTime(node)) { node.fx = node.x; node.fy = node.y; } node.vx = node.vy = 0;
+            const node = nodes.get(ids[0]); if (!controlled(node)) { node.fx = node.x; node.fy = node.y; } node.vx = node.vy = 0;
         }
         focusStyles(); fit(ids, 1.8); animate(0.15); return true;
     }
@@ -452,6 +429,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (drag.node && nodes.has(drag.node.id)) {
             const x = (current.x - camera.x) / camera.scale - drag.offsetX, y = (current.y - camera.y) / camera.scale - drag.offsetY;
             if (!orderedLayout.move(drag.node, x, y) || flexibleTime(drag.node)) { drag.node.x = drag.node.fx = x; drag.node.y = drag.node.fy = y; }
+            orbitLayout.move(drag.node, x, y);
             drag.node.vx = drag.node.vy = 0; simulation.alphaTarget(0.35); animate();
         } else { camera.x += current.x - drag.previous.x; camera.y += current.y - drag.previous.y; }
         drag.previous = current; draw(); event.preventDefault();
@@ -469,9 +447,15 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     listen(svg, 'wheel', event => { event.preventDefault(); const current = point(event); zoom(Math.exp(-Math.max(-100, Math.min(100, event.deltaY)) * 0.003), current.x, current.y); }, { passive: false });
     for (const type of ['mousedown', 'auxclick']) listen(svg, type, event => { if (event.button === 1) { event.preventDefault(); event.stopPropagation(); } });
     listen(svg, 'click', event => { if (!event.ctrlKey && !event.metaKey && !event.target.closest('[data-node-id]') && Date.now() - movedAt >= 220) clearFocus(); });
+    listen(svg, 'contextmenu', event => { if (!event.target.closest('[data-node-id]')) openOrderedMenu(null, event); });
     listen(svg, 'keydown', event => {
         if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (marquee) endMarquee(true); else clearFocus(); return; }
         if (event.target !== svg) return;
+        if (event.key === 'ContextMenu' || (event.key === 'F10' && event.shiftKey)) {
+            const rect = svg.getBoundingClientRect();
+            openOrderedMenu(null, { clientX: rect.left + width / 2, clientY: rect.top + height / 2, preventDefault: () => event.preventDefault(), stopPropagation: () => event.stopPropagation() });
+            return;
+        }
         if (['+', '=', '-', '0', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) event.preventDefault();
         if (event.key === '+' || event.key === '=') zoom(1.25);
         else if (event.key === '-') zoom(0.8);
@@ -489,10 +473,10 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     const observer = win.ResizeObserver ? new win.ResizeObserver(resize) : null;
     observer?.observe(svg); if (controlsLayer) observer?.observe(controlsLayer); listen(win, 'resize', resize); resize();
     return {
-        setData, focusNetwork, fit, zoom,
+        setData, focusNetwork, fit, zoom, closeContextMenu: closeOrderedMenu,
         getViewState: () => ({
             camera: { ...camera }, width, height, physics: enabled,
-            positions: [...nodes.values()].map(({ id, x, y, fx, fy, orderedManualOffset }) => ({ id, x, y, fx: fx ?? null, fy: fy ?? null, ...(orderedManualOffset ? { orderedManualOffset: { ...orderedManualOffset } } : {}) })),
+            positions: [...nodes.values()].map(({ id, x, y, fx, fy, orderedManualOffset, orderedOrbit }) => ({ id, x, y, fx: fx ?? null, fy: fy ?? null, ...(orderedManualOffset ? { orderedManualOffset: { ...orderedManualOffset } } : {}), ...(orderedOrbit ? { orderedOrbit: { ...orderedOrbit, ...(orderedOrbit.offset ? { offset: { ...orderedOrbit.offset } } : {}) } } : {}) })),
             selected: [...pickedIds()],
         }),
         restoreViewState(state) {
@@ -502,9 +486,10 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             frame = 0; lastTime = null; elapsed = 0; simulation.alphaTarget(0).alpha(0);
             for (const point of state.positions || []) {
                 const node = nodes.get(String(point.id));
-                if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: flexibleTime(node) ? null : point.fx ?? null, fy: flexibleTime(node) ? null : point.fy ?? null, vx: 0, vy: 0, orderedManualOffset: point.orderedManualOffset ? { ...point.orderedManualOffset } : undefined });
+                if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: controlled(node) ? null : point.fx ?? null, fy: controlled(node) ? null : point.fy ?? null, vx: 0, vy: 0, orderedManualOffset: point.orderedManualOffset ? { ...point.orderedManualOffset } : undefined, orderedOrbit: point.orderedOrbit ? { ...point.orderedOrbit, ...(point.orderedOrbit.offset ? { offset: { ...point.orderedOrbit.offset } } : {}) } : undefined });
             }
             orderedLayout.rebuild(nodes.values(), { fromPositions: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] });
+            orbitLayout.rebuild(nodes.values(), model?.relationships || [], { restore: true });
             if (['x', 'y', 'scale'].every(key => Number.isFinite(state.camera[key])) && state.camera.scale > 0) {
                 camera = { ...state.camera, x: state.camera.x + (width - (state.width || width)) / 2, y: state.camera.y + (height - (state.height || height)) / 2 };
             }
@@ -518,7 +503,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         getRelationships: () => model?.relationships || [],
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
         setPhysics(value) { enabled = Boolean(value); updateEdgeAnimation(); if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
-        relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] }); fit(); initialFit = true; animate(0.65); },
-        destroy() { if (destroyed) return; destroyed = true; closeOrderedMenu(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
+        relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] }); orbitLayout.rebuild(nodes.values(), model?.relationships || [], { reset: true }); fit(); initialFit = true; animate(0.65); },
+        destroy() { if (destroyed) return; destroyed = true; contextMenu.destroy(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };
 }

@@ -1,0 +1,7 @@
+.knowledge-compact-menu { position: absolute; z-index: 5; box-sizing: border-box; width: 216px; overflow: auto; padding: 4px; border: 1px solid #e3e9f2; border-radius: 9px; background: #fff; box-shadow: 0 6px 22px #24364d26; }
+.knowledge-compact-submenu { z-index: 6; }
+.knowledge-compact-menu button { display: flex; width: 100%; min-height: 32px; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 10px; border: 0; border-radius: 5px; background: transparent; color: #344158; font-size: 12px; line-height: 1.5; text-align: left; cursor: pointer; }
+.knowledge-compact-menu button > span:first-child { overflow-wrap: anywhere; }
+.knowledge-compact-menu button:hover, .knowledge-compact-menu button:focus-visible { background: #eef3ff; color: #274ba3; outline: none; }
+.knowledge-compact-menu small, .knowledge-compact-menu-arrow { flex-shrink: 0; color: #8794aa; }
+.knowledge-compact-menu-status { margin: 0; padding: 8px 10px; color: #8794aa; font-size: 12px; }

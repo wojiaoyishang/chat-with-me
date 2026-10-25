@@ -35,6 +35,20 @@ function page() {
 }
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
+test('ordered orbit metadata persists as bounded layout only, without source or business content', () => {
+  const { dom, workspace } = page(), input = snapshot();
+  input.nodes[0].orderedOrbit = { anchorId: 'node-2', slot: 3, offset: { x: 120, y: -80 }, content: 'secret' };
+  input.nodes[1].orderedManualOffset = { x: 50, y: 20 };
+  workspace.write(scope, input);
+  const saved = plain(workspace.read(scope));
+  assert.deepEqual(saved.nodes[0].orderedOrbit, { anchorId: 'node-2', slot: 3, offset: { x: 120, y: -80 } });
+  assert.deepEqual(saved.nodes[1].orderedManualOffset, { x: 50, y: 20 });
+  assert.doesNotMatch(dom.window.sessionStorage.getItem(key(scope)), /secret/);
+  input.nodes[0].orderedOrbit.slot = Infinity; workspace.write(scope, input);
+  assert.equal(workspace.read(scope).nodes[0].orderedOrbit, undefined);
+  dom.window.close();
+});
+
 test("canvas storage persists only identities and layout, isolated by scope", () => {
   const { dom, workspace } = page();
   const input = snapshot();

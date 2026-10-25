@@ -19,7 +19,7 @@ const fixture = () => ({ nodes: [
     { id: 'semantic', from: 'root', to: 'other', type: '关联' },
 ] });
 
-function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, onBeforeMove, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
+function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, controlsHeight = 0, edgeAnimation = true, observeVisibility = false } = {}) {
     const dom = new JSDOM(`<section><svg><g data-graph-camera><g data-graph-edges></g><g data-graph-nodes></g></g></svg>${controlsHeight ? '<div data-graph-controls></div>' : ''}</section>`, { pretendToBeVisual: true });
     const { window } = dom, svg = window.document.querySelector('svg'), frames = new Map();
     let sequence = 0, time = 0, ready = 0;
@@ -37,7 +37,7 @@ function setup(t, { reducedMotion = false, onExpand, onOrderedNeighbors, onBefor
     svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, width: dimensions.width, height: dimensions.height });
     const controls = window.document.querySelector('[data-graph-controls]');
     if (controls) controls.getBoundingClientRect = () => ({ top: dimensions.height - dimensions.controlsHeight - 10, height: dimensions.controlsHeight });
-    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, onBeforeMove, edgeAnimation });
+    const controller = createChatKnowledgeGraph(svg, { markerId: 'test-arrow', onReady: () => ready++, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, edgeAnimation });
     t.after(() => { controller.destroy(); dom.window.close(); });
     return { dom, svg, controller, frames, ready: () => ready,
         setVisible(value) { visibility?.([{ isIntersecting: value }]); },
@@ -73,7 +73,8 @@ test('ordered context menu supports pointer and keyboard, stays inside the canva
     const doc = ui.dom.window.document, node = ui.svg.querySelector('[data-node-id="time"]'), legacy = ui.svg.querySelector('[data-node-id="legacy"]'),
         positions = ui.controller.getNodePositions(), menu = () => doc.querySelector('[role="menu"]');
     const context = (target, x = 999, y = 999) => { const event = new ui.dom.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y }); target.dispatchEvent(event); return event; };
-    assert.equal(context(legacy).defaultPrevented, false); assert.equal(menu(), null);
+    assert.equal(context(legacy).defaultPrevented, true); assert.ok(menu());
+    assert.equal(menu().querySelector('[data-action="ordered-neighbors"]'), null);
     assert.equal(context(node).defaultPrevented, true); assert.ok(menu());
     assert.ok(Number.parseFloat(menu().style.left) <= 640 - 190 - 8); assert.ok(Number.parseFloat(menu().style.top) <= 300 - 40 - 8);
     assert.equal(doc.activeElement.getAttribute('role'), 'menuitem'); assert.equal(node.getAttribute('aria-expanded'), 'true');
@@ -81,7 +82,7 @@ test('ordered context menu supports pointer and keyboard, stays inside the canva
     assert.equal(menu(), null); assert.equal(doc.activeElement, node); assert.equal(node.getAttribute('aria-expanded'), 'false');
     const keyboard = new ui.dom.window.KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }); node.dispatchEvent(keyboard);
     assert.equal(keyboard.defaultPrevented, true); assert.ok(menu());
-    menu().querySelector('button').click(); assert.deepEqual(selected, ['time']); assert.equal(menu(), null);
+    menu().querySelector('[data-action="ordered-neighbors"]').click(); assert.deepEqual(selected, ['time']); assert.equal(menu(), null);
     node.dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: 'ContextMenu', bubbles: true })); assert.ok(menu());
     doc.body.click(); assert.equal(menu(), null);
     assert.deepEqual(ui.controller.getNodePositions(), positions);
@@ -89,6 +90,29 @@ test('ordered context menu supports pointer and keyboard, stays inside the canva
     context(node); ui.controller.destroy(); assert.equal(menu(), null);
     assert.deepEqual(ui.controller.getNodePositions(), []);
     assert.ok(positions.length === 2); assert.deepEqual(expanded, [], 'opening the menu must not invoke all-neighbor expansion');
+});
+
+test('custom number and text ordered types expand their skeleton and canvas keyboard menus abort on data updates', async t => {
+    const expanded = [], skeletons = [], reads = [], ui = setup(t, {
+        onExpand: (...args) => expanded.push(args), onOrderedSkeleton: (...args) => skeletons.push(args),
+        getOrderedTypes: ({ signal }) => new Promise(resolve => reads.push({ signal, resolve })),
+    });
+    const data = knowledgeGraphPresentation({ nodes: [
+        { id: 'rank', label: 'Priority', labels: ['Priority', 'OrderedNode'], properties: { ordered_axis: 'priority-axis', ordered_kind: 'number', ordered_key: '2' } },
+        { id: 'chapter', label: 'Chapter', labels: ['Chapter', 'OrderedNode'], properties: { ordered_axis: 'chapter-axis', ordered_kind: 'text', ordered_key: 'A' } },
+        { id: 'old', label: 'Time', name: 'legacy' },
+    ], relationships: [] });
+    ui.controller.setData(data); ui.run(2);
+    ui.svg.querySelector('[data-node-id="rank"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
+    ui.svg.querySelector('[data-node-id="chapter"]').dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+    ui.svg.querySelector('[data-node-id="old"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
+    assert.deepEqual(expanded, [['rank', 'skeleton'], ['chapter', 'skeleton'], ['old', 'related']]);
+    ui.svg.dispatchEvent(new ui.dom.window.KeyboardEvent('keydown', { key: 'F10', shiftKey: true, bubbles: true, cancelable: true }));
+    const doc = ui.dom.window.document, trigger = doc.querySelector('[data-action="ordered-skeleton"]');
+    assert.ok(trigger); trigger.click(); await Promise.resolve();
+    assert.equal(reads.length, 1); ui.controller.setData(data); assert.equal(reads[0].signal.aborted, true);
+    reads[0].resolve({ orderedTypes: [{ label: 'Priority', displayName: '优先级', count: 1 }] }); await Promise.resolve(); await Promise.resolve();
+    assert.equal(doc.querySelector('[role="menu"]'), null); assert.deepEqual(skeletons, []);
 });
 
 test('ordered chat nodes remain a small rigid sorted row across force, drag, focus, restore and partial queries', t => {
@@ -106,7 +130,7 @@ test('ordered chat nodes remain a small rigid sorted row across force, drag, foc
     assert.equal(ui.svg.querySelector('[data-node-id="late"] circle').getAttribute('r'), '8');
     assert.match(ui.svg.querySelector('[data-node-id="unknown"] text').textContent, /未定位/);
     ui.run(420); assert.equal(positions().get('late').x, before.get('late').x);
-    assert.notDeepEqual(positions().get('entity'), before.get('entity'));
+    assert.deepEqual(positions().get('entity'), before.get('entity'), 'an anchored event stays in its local orbit instead of drifting toward other ordered nodes');
     point(ui.dom, ui.svg.querySelector('[data-node-id="early"]'), 'pointerdown', 200, 130);
     point(ui.dom, ui.dom.window, 'pointermove', 280, 170);
     const moved = positions(); assert.equal(moved.get('late').x - moved.get('early').x, delta); assert.equal(moved.get('late').y, moved.get('early').y);
@@ -144,7 +168,7 @@ test('chat v2 hierarchy projects clean branches with full captions and keeps rea
     assert.equal(raw.from, 'event'); assert.equal(raw.to, 'minute');
     node('minute').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
     node('event').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true }));
-    assert.deepEqual(expanded, [['minute', 'region'], ['event', 'related']]);
+    assert.deepEqual(expanded, [['minute', 'skeleton'], ['event', 'related']]);
     ui.controller.setData(knowledgeGraphPresentation({ nodes: [network.nodes.find(node => node.id === 'minute')], relationships: [] }));
     assert.equal(node('minute').querySelector('text').textContent, '2026年9月12日14:00', 'a child without loaded parent retains its full date');
     assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, 0);
@@ -206,6 +230,35 @@ test('chat nested forks settle horizontally and support one-node paused drag, re
     ui.controller.relayout(); assert.notDeepEqual(at('fork-noon'), moved.get('fork-noon'), 'reset removes manual offsets');
     ui.controller.setPhysics(true); ui.run(420);
     for (let index = 1; index < order.length; index++) assert.ok(at(order[index - 1]).x < at(order[index]).x);
+});
+
+test('dense ordered regions cannot attract another anchors satellites, and dragging carries only its own group', t => {
+    const ui = setup(t), graph = orderedTimeForks(), positions = () => new Map(ui.controller.getNodePositions().map(node => [node.id, node]));
+    ui.controller.setData(knowledgeGraphPresentation(graph)); ui.run(420);
+    const before = positions();
+    for (let index = 0; index < 50; index++) {
+        const id = `remote-${index}`; graph.nodes.push({ id, label: 'Concept', name: id });
+        graph.relationships.push({ id: `anchor-${index}`, source: id, target: 'fork-november', type: 'AT' }, { id: `cross-${index}`, source: id, target: 'fork-event', type: 'RELATED' });
+    }
+    ui.controller.setData(knowledgeGraphPresentation(graph)); ui.run(420);
+    assert.deepEqual(positions().get('fork-event'), before.get('fork-event'));
+    for (const node of graph.nodes.filter(node => node.labels?.includes('OrderedNode'))) assert.deepEqual(positions().get(node.id), before.get(node.id), `${node.id} stays on the flow skeleton`);
+    assert.equal(ui.controller.getViewState().positions.find(node => node.id === 'fork-event').orderedOrbit.anchorId, 'fork-afternoon');
+    ui.controller.setPhysics(false);
+    point(ui.dom, ui.svg.querySelector('[data-node-id="fork-afternoon"]'), 'pointerdown', 200, 130);
+    point(ui.dom, ui.dom.window, 'pointermove', 225, 165); point(ui.dom, ui.dom.window, 'pointerup', 225, 165);
+    const moved = positions(), dx = moved.get('fork-afternoon').x - before.get('fork-afternoon').x, dy = moved.get('fork-afternoon').y - before.get('fork-afternoon').y;
+    near(moved.get('fork-event').x - before.get('fork-event').x, dx); near(moved.get('fork-event').y - before.get('fork-event').y, dy);
+    assert.deepEqual(moved.get('fork-november'), before.get('fork-november'));
+    const saved = ui.controller.getViewState(); ui.controller.relayout(); ui.controller.restoreViewState(saved);
+    assert.deepEqual(positions(), moved);
+    point(ui.dom, ui.svg.querySelector('[data-node-id="fork-event"]'), 'pointerdown', 220, 180);
+    point(ui.dom, ui.dom.window, 'pointermove', 250, 195); point(ui.dom, ui.dom.window, 'pointerup', 250, 195);
+    const manual = positions(), orbit = ui.controller.getViewState().positions.find(node => node.id === 'fork-event').orderedOrbit;
+    assert.ok(orbit.offset); assert.notDeepEqual(manual.get('fork-event'), moved.get('fork-event'));
+    ui.controller.setData(knowledgeGraphPresentation(graph)); ui.controller.setPhysics(true); ui.run(420);
+    near(positions().get('fork-event').x, manual.get('fork-event').x); near(positions().get('fork-event').y, manual.get('fork-event').y);
+    assert.equal(ui.controller.getRelationships().length, graph.relationships.length);
 });
 
 test('chat streaming during a held time drag repins just that point and restoring history cancels the gesture', t => {
