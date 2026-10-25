@@ -72,12 +72,56 @@ export const hasNetworkDatabaseConflict = (network, update) => Boolean(
     (update?.databaseId || update?.database?.databaseId || update?.database?.id) && networkDatabaseId(update) !== networkDatabaseId(network)
 );
 
+const parentOf = node => node?.properties?.ordered_parent == null ? null : String(node.properties.ordered_parent);
+const referenceId = value => value && typeof value === 'object' ? getNodeMergeKey(value) ?? String(value.elementId ?? '') : String(value ?? '');
+const networkItems = value => Array.isArray(value) ? value : [];
+
+// Completeness is positive evidence for one parent, not a full graph snapshot.
+// An unrelated short query cannot erase it, but a new child invalidates the
+// previous evidence until the backend verifies that parent again.
+const mergeCompleteParents = (old, incoming, merged) => {
+    if (!Array.isArray(old.completeParentIds) && !Array.isArray(incoming.completeParentIds)) return;
+    const complete = new Set(networkItems(old.completeParentIds).map(String));
+    const previous = new Map(networkItems(old.nodes).map(node => [getNodeMergeKey(node), node]));
+    const identities = new Map();
+    for (const node of networkItems(merged.nodes)) {
+        const key = getNodeMergeKey(node);
+        if (key) { identities.set(key, key); if (node.elementId) identities.set(String(node.elementId), key); }
+    }
+    for (const node of networkItems(incoming.nodes)) {
+        const before = previous.get(getNodeMergeKey(node)), parent = parentOf(node);
+        if (!before) {
+            // A completion-only response can supplement a base graph held by
+            // the viewer. Until its parent is loaded here, children are not
+            // evidence of a change since that proof.
+            if (previous.has(parent)) complete.delete(parent);
+        } else if (hasOwn(node?.properties, 'ordered_parent') && parentOf(before) !== parent) {
+            complete.delete(parentOf(before)); complete.delete(parent);
+        }
+    }
+    const previousEdges = new Set(networkItems(old.relationships).map(getRelationshipMergeKey));
+    for (const edge of networkItems(incoming.relationships)) if (edge?.type === 'ORDERED_CONTAINS' && !previousEdges.has(getRelationshipMergeKey(edge))) {
+        const id = referenceId(edge.from ?? edge.source), parent = identities.get(id) || id;
+        if (previous.has(parent)) complete.delete(parent);
+    }
+    const returned = new Set(networkItems(incoming.nodes).map(getNodeMergeKey));
+    for (const raw of networkItems(incoming.completeParentIds)) {
+        const id = String(raw);
+        // A retained older base snapshot must not revalidate a parent after a
+        // manual/newer result has added another child outside that snapshot.
+        if (returned.size && networkItems(merged.nodes).some(node => parentOf(node) === id && !returned.has(getNodeMergeKey(node)))) complete.delete(id);
+        else complete.add(id);
+    }
+    merged.completeParentIds = [...complete].filter(id => id && id.length <= 200).sort();
+};
+
 const mergeScope = (oldNetwork, incomingNetwork) => {
     const old = normalizeNetworkData(oldNetwork), incoming = normalizeNetworkData(incomingNetwork);
     const merged = { ...old, ...incoming };
     delete merged.databaseViews;
     if (hasOwn(incoming, 'nodes')) merged.nodes = upsertArrayByKey(old.nodes, incoming.nodes, getNodeMergeKey);
     if (hasOwn(incoming, 'relationships')) merged.relationships = upsertArrayByKey(old.relationships, incoming.relationships, getRelationshipMergeKey);
+    mergeCompleteParents(old, incoming, merged);
     return merged;
 };
 
@@ -124,10 +168,14 @@ export const removeNetworkData = (network, removal) => {
 
     const normalizedRemoval = normalizeNetworkData(removal);
     const result = {...network};
+    const invalidParents = new Set();
 
     if (normalizedRemoval.nodes !== undefined) {
         const keys = toDeleteKeySet(normalizedRemoval.nodes, getNodeMergeKey);
         if (Array.isArray(result.nodes) && keys.size > 0) {
+            for (const node of result.nodes) if (keys.has(getNodeMergeKey(node))) {
+                invalidParents.add(getNodeMergeKey(node)); invalidParents.add(parentOf(node));
+            }
             result.nodes = result.nodes.filter(node => !keys.has(getNodeMergeKey(node)));
         }
     }
@@ -135,8 +183,14 @@ export const removeNetworkData = (network, removal) => {
     if (normalizedRemoval.relationships !== undefined) {
         const keys = toDeleteKeySet(normalizedRemoval.relationships, getRelationshipMergeKey);
         if (Array.isArray(result.relationships) && keys.size > 0) {
+            for (const edge of result.relationships) if (keys.has(getRelationshipMergeKey(edge)) && edge.type === 'ORDERED_CONTAINS') invalidParents.add(referenceId(edge.from ?? edge.source));
             result.relationships = result.relationships.filter(rel => !keys.has(getRelationshipMergeKey(rel)));
         }
+    }
+
+    if (Array.isArray(result.completeParentIds)) {
+        const visible = new Set((result.nodes || []).map(getNodeMergeKey));
+        result.completeParentIds = result.completeParentIds.filter(id => visible.has(String(id)) && !invalidParents.has(String(id)));
     }
 
     if (network.databaseViews) {

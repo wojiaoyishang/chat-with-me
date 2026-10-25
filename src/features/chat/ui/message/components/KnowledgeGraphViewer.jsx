@@ -14,8 +14,7 @@ import './KnowledgeGraphViewer.css';
 // Manual exploration supplements the current AI result; cached responses must
 // never overwrite a newer name or relationship returned by the AI.
 const canvasNetwork = (base, extra) => {
-    const result = extra ? mergeNetworkData(extra, base || {}) : base;
-    return result ? { ...result, completeParentIds: [...new Set([...(base?.completeParentIds || []), ...(extra?.completeParentIds || [])])] } : result;
+    return extra ? mergeNetworkData(extra, base || {}) : base;
 };
 
 const GraphContent = memo(function GraphContent({ model, msg, onExpand, getOrderedTypes, onRecord, onUndo, onRedo, canUndo, canRedo, databaseId, activeDatabaseId, canonicalDatabaseId, viewStates, visibleController, scope }) {
@@ -238,9 +237,6 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
             if (data.databaseId && canonicalDatabaseId(data.databaseId) !== databaseId) throw new Error('查询返回了其他知识库的数据，请重试。');
             const localView = mergeNetworkData(extrasRef.current[scope], { ...data, databaseId });
             delete localView.databaseViews;
-            if (skeleton && Array.isArray(data.completeParentIds)) localView.completeParentIds = [...new Set([
-                ...(extrasRef.current[scope]?.completeParentIds || []).filter(parent => parent !== id), ...data.completeParentIds,
-            ])];
             if (skeleton && id == null) localView.orderedPages = { ...(extrasRef.current[scope]?.orderedPages || {}), [label]: {
                 nextOffset: Number(data.offset ?? offset) + Number(data.limit || 80), hasMore: data.hasMore === true,
             } };

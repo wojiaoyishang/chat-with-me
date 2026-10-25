@@ -4864,3 +4864,50 @@ test("an import containing edges without nodes still validates instead of openin
   assert.match(ui.document.querySelector("#notice").textContent, /节点不存在或当前无权访问/);
   assert.ok(messages.some(message => message.type === "cwm.knowledge-import-failed" && message.id === "edges-only"));
 });
+
+test('time branches reconnect from fresh canvas completeness after reload and never trust a cached declaration', async t => {
+  const full = orderedTimeGraph(); let complete = true;
+  const responder = url => {
+    if (url.pathname === '/api/knowledge/graph') return { ...full, completeParentIds: complete ? full.completeParentIds : [] };
+    if (url.pathname === '/api/knowledge/canvas') return { ...full, completeParentIds: complete ? full.completeParentIds : [] };
+  };
+  const first = await page(responder, { controlledAnimation: true }); t.after(() => first.dom.window.close());
+  const joins = ui => ui.document.querySelectorAll('[data-route-kind="join"]').length;
+  first.runFrames(420); await settle(180);
+  assert.ok(joins(first) >= 2, 'the complete bedtime/clock branches close to the following day');
+  const storage = first.dumpStorage(), cached = Object.entries(storage).filter(([key]) => key.startsWith('cwm.knowledge.canvas'));
+  assert.ok(cached.length); assert.ok(cached.every(([,value]) => !value.includes('completeParentIds')), 'layout cache holds no stale completeness claims');
+  const restored = await page(responder, { controlledAnimation: true, seedStorage: storage }); t.after(() => restored.dom.window.close());
+  assert.ok(restored.calls.some(call => call.parsed.pathname === '/api/knowledge/canvas'));
+  assert.ok(joins(restored) >= 2);
+  complete = false;
+  const partial = await page(responder, { controlledAnimation: true, seedStorage: storage }); t.after(() => partial.dom.window.close());
+  assert.equal(joins(partial), 0, 'an incomplete fresh response cannot inherit the previous canvas proof');
+  complete = true;
+  const verified = await page(responder, { controlledAnimation: true, seedStorage: storage }); t.after(() => verified.dom.window.close());
+  assert.ok(joins(verified) >= 2);
+  await settle(80);
+});
+
+test("Chunk and Time colors contrast in both management graph nodes and legend", async t => {
+  const ui = await page(url => {
+    if (url.pathname === "/api/knowledge/graph") return { nodes: [
+      { id: "chunk", label: "Chunk", name: "原文" },
+      { id: "time", label: "Time", name: "9月12日" },
+    ], relationships: [{ id: "source", source: "time", target: "chunk", type: "EXTRACTED_FROM" }], hasMore: false };
+  }, { controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  ui.runFrames(2);
+  const chunk = ui.document.querySelector('[data-node-id="chunk"]'), time = ui.document.querySelector('[data-node-id="time"]');
+  assert.equal(chunk.querySelector("circle").getAttribute("fill"), "#4f8bb8");
+  assert.equal(time.querySelector("circle").getAttribute("fill"), "#dc8792");
+  const legend = [...ui.document.querySelectorAll("#graph-legend span")];
+  assert.ok(legend.some(item => item.textContent === "Chunk" && item.querySelector("i")?.style.background === "rgb(79, 139, 184)"));
+  assert.ok(legend.some(item => item.textContent === "Time" && item.querySelector("i")?.style.background === "rgb(220, 135, 146)"));
+  chunk.dispatchEvent(new ui.dom.window.MouseEvent("mouseenter", { bubbles: true }));
+  chunk.dispatchEvent(new ui.dom.window.MouseEvent("click", { bubbles: true, ctrlKey: true }));
+  assert.ok(chunk.classList.contains("selected"));
+  assert.equal(chunk.querySelector("circle").getAttribute("fill"), "#4f8bb8");
+  assert.equal(time.querySelector("circle").getAttribute("fill"), "#dc8792");
+  await settle(120);
+});

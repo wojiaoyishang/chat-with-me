@@ -311,3 +311,21 @@ test("batch restoration keeps manually added Chunk source edges and never falls 
   assert.equal(result.nodes.some((node) => node.id === 'revoked'), false);
   assert.equal(result.positions.length, 2);
 });
+
+test('hydration forwards only fresh completeness proofs whose children and containment edges survive filtering', async t => {
+  const { dom, workspace } = page(); t.after(() => dom.window.close());
+  const data = { nodes: [{ id: 'node-1' },
+    { id: 'node-2', properties: { ordered_parent: 'node-1' } },
+    { id: 'node-3', properties: { ordered_parent: 'node-1' } }],
+    relationships: [{ id: 'edge-1', source: 'node-1', target: 'node-2', type: 'ORDERED_CONTAINS' },
+      { id: 'edge-2', source: 'node-1', target: 'node-3', type: 'ORDERED_CONTAINS' }], completeParentIds: ['node-1'] };
+  const full = snapshot(['node-1', 'node-2', 'node-3']);
+  full.edgeIds.push('edge-2'); full.edges.push({ id: 'edge-2', source: 'node-1', target: 'node-3' });
+  const hydrate = (saved, response = data) => workspace.hydrate(saved, async () => response, async () => response);
+  assert.deepEqual(plain((await hydrate(full)).completeParentIds), ['node-1']);
+  assert.deepEqual(plain((await hydrate(snapshot())).completeParentIds), [], 'a fallback result cannot certify a child filtered out of the saved view');
+  assert.deepEqual(plain((await hydrate({ ...full, edgeIds: ['edge-1'], edges: full.edges.filter(edge => edge.id === 'edge-1') })).completeParentIds), [], 'saved node identities alone do not prove membership');
+  full.completeParentIds = ['node-1']; workspace.write(scope, full);
+  assert.equal(workspace.read(scope).completeParentIds, undefined);
+  assert.deepEqual(plain((await hydrate(full, { ...data, completeParentIds: [] })).completeParentIds), [], 'cached declarations are never trusted');
+});

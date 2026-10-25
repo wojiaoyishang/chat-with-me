@@ -10,6 +10,9 @@ const identity = (value) => {
 export const isSourceChunk = node => node.label === 'Chunk' || node.labels?.includes('Chunk') === true;
 export const graphNodeLabel = node => (node.label !== 'OrderedNode' ? node.label : null) || node.labels?.find(label => !['Knowledge', 'Node', 'Entity', 'OrderedNode'].includes(label)) || node.labels?.[0] || '知识';
 export const graphNodeColor = label => {
+    // Keep built-in source chunks distinct from the time skeleton in every view.
+    if (label === 'Chunk') return '#4f8bb8';
+    if (label === 'Time') return '#dc8792';
     let hash = 0;
     for (const character of String(label)) hash = ((hash << 5) - hash + character.codePointAt(0)) | 0;
     return colors[Math.abs(hash) % colors.length];

@@ -325,6 +325,28 @@ test('a completion-only time region response updates projection and creates exac
     assert.equal(ui.container.querySelectorAll('[data-route-kind="join"]').length, after);
 });
 
+test('ordinary related queries close completed time branches and later short AI results preserve joins through undo', async t => {
+    const full = orderedTimeGraph(), calls = [];
+    const ui = await setup(t, async (url, options) => {
+        calls.push([url, options]); return { ...full, databaseId: options.params.databaseId };
+    });
+    ui.msg.network = { ...full, completeParentIds: [] };
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    const joins = () => ui.container.querySelectorAll('[data-route-kind="join"]').length;
+    assert.equal(joins(), 0, 'visible child nodes alone cannot prove completion');
+    await act(async () => ui.container.querySelector('[data-node-id="event"]').dispatchEvent(new ui.dom.window.MouseEvent('dblclick', { bubbles: true })));
+    await ui.settle();
+    assert.equal(calls[0][0], '/knowledge/nodes/event/graph'); assert.ok(joins() >= 2);
+    const completeCount = joins();
+    await act(async () => ui.container.querySelector('[aria-label="撤销图谱操作"]').click()); await ui.settle();
+    assert.equal(joins(), 0);
+    await act(async () => ui.container.querySelector('[aria-label="重做图谱操作"]').click()); await ui.settle();
+    assert.equal(joins(), completeCount);
+    ui.msg.network = mergeNetworkData(ui.msg.network, { nodes: [{ id: 'short-query', label: 'Event' }], relationships: [], completeParentIds: [] });
+    await ui.render(React.createElement(Graph, { msg: ui.msg, conversationId: 'conv' })); await ui.settle();
+    assert.equal(joins(), completeCount);
+});
+
 test('a live graph publication opens a missing preview and follows later AI database scopes without reloading', async t => {
     const ui = await setup(t, async () => { throw new Error('publishing a graph must not query node details'); });
     const initialMessage = { ...ui.msg };

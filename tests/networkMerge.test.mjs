@@ -7,6 +7,8 @@ import {
     removeNetworkData,
 } from '../src/features/chat/page/utils/networkMerge.js';
 import { mergeLiveMessageWithSnapshot } from '../src/features/chat/page/utils/liveMessageReconcile.js';
+import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
+import { orderedViewEdges } from '../src/features/knowledge/orderedGraphLayout.js';
 
 test('switching databases replaces the graph even when node and relationship IDs overlap', () => {
     const oldNetwork = {
@@ -132,4 +134,46 @@ test('database-scoped focus ignores another graph and accepts legacy node arrays
     assert.equal(hasNetworkDatabaseConflict(network, { databaseId: 'library-b', nodeIds: ['1'] }), true);
     assert.equal(hasNetworkDatabaseConflict(network, { databaseId: 'library-a', nodeIds: ['1'] }), false);
     assert.equal(hasNetworkDatabaseConflict(network, ['1']), false);
+});
+
+test('later short graph queries retain completed time branches and their next-day joins', () => {
+    const initial = { ...orderedTimeGraph(), databaseId: 'library-a' };
+    const pairs = graph => orderedViewEdges(graph.nodes, graph.relationships, graph.completeParentIds).routes.filter(route => route.kind === 'join').map(({ from, to }) => [from, to]);
+    const expected = pairs(initial); assert.ok(expected.some(([from, to]) => from === 'bedtime' && to === 'next-day'));
+    const merged = mergeNetworkData(initial, { nodes: [{ id: 'later-event', label: 'Event' }], relationships: [], completeParentIds: [] });
+    assert.deepEqual(merged.completeParentIds, initial.completeParentIds);
+    assert.deepEqual(pairs(merged), expected);
+    const roundTrip = networkDatabaseViews(JSON.parse(JSON.stringify(merged)));
+    assert.deepEqual(pairs(roundTrip['library-a']), expected);
+});
+
+test('parent completeness is merged independently within its database and never leaks to matching IDs', () => {
+    const first = { databaseId: 'a', nodes: [{ id: 'p' }, { id: 'q' }], relationships: [], completeParentIds: ['p'] };
+    const next = mergeNetworkData(first, { completeParentIds: ['q'] });
+    assert.deepEqual(next.completeParentIds, ['p', 'q']);
+    const other = mergeNetworkData(next, { databaseId: 'b', nodes: [{ id: 'p' }, { id: 'q' }], relationships: [], completeParentIds: [] });
+    assert.deepEqual(other.completeParentIds, []);
+    assert.deepEqual(other.databaseViews.a.completeParentIds, ['p', 'q']);
+});
+
+test('new time children invalidate the parent until reverified and an older base snapshot cannot restore stale evidence', () => {
+    const initial = orderedTimeGraph(), source = initial.nodes.find(node => node.id === 'second');
+    const child = { ...source, id: 'new-child', properties: { ...source.properties, ordered_parent: 'day' } };
+    const changed = mergeNetworkData(initial, { nodes: [child], relationships: [{ id: 'new-contains', source: 'day', target: child.id, type: 'ORDERED_CONTAINS' }], completeParentIds: [] });
+    assert.ok(!changed.completeParentIds.includes('day'));
+    assert.ok(!mergeNetworkData(changed, initial).completeParentIds.includes('day'));
+    const verified = mergeNetworkData(changed, { nodes: changed.nodes, relationships: changed.relationships, completeParentIds: ['day'] });
+    assert.deepEqual(verified.completeParentIds, ['day']);
+    const malformed = mergeNetworkData(verified, { nodes: [null], relationships: [null], completeParentIds: 'day' });
+    assert.deepEqual(malformed.completeParentIds, ['day']);
+});
+
+test('removing a child or containment edge invalidates its completed parent without inventing a new endpoint', () => {
+    const initial = orderedTimeGraph(), edge = initial.relationships.find(edge => edge.type === 'ORDERED_CONTAINS' && edge.target === 'bedtime');
+    assert.ok(edge);
+    for (const removal of [{ nodes: ['bedtime'] }, { relationships: [edge.id] }]) {
+        const removed = removeNetworkData(initial, removal);
+        assert.ok(!removed.completeParentIds.includes('day'));
+        assert.equal(orderedViewEdges(removed.nodes, removed.relationships, removed.completeParentIds).routes.some(route => route.kind === 'join'), false);
+    }
 });
