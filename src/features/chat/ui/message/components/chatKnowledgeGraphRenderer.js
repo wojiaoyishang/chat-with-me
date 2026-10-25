@@ -1,5 +1,6 @@
 import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY } from 'd3-force';
 import { graphEdgeGeometry, isSourceChunk } from './knowledgeGraphPresentation.js';
+import { createOrderedGraphLayout } from '../../../../knowledge/orderedGraphLayout.js';
 
 export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, markerId, edgeAnimation = true } = {}) {
     const doc = svg.ownerDocument, win = doc.defaultView;
@@ -11,6 +12,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     let frame = 0, lastTime = null, elapsed = 0, ready = false, destroyed = false, initialFit = false, fittedView = null, movedAt = 0;
     let enabled = true, edgeAnimationEnabled = edgeAnimation !== false, inViewport = true;
     const step = 1000 / 60, listeners = [], pointers = new Map();
+    const orderedLayout = createOrderedGraphLayout();
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
     const link = forceLink([]).id(node => node.id).distance(180).strength(edge => 0.18 / Math.sqrt(Math.max(1, Math.min(edge.source.degree, edge.target.degree))));
     const simulation = forceSimulation([]).stop().alpha(0).alphaMin(0.003).alphaDecay(0.018).velocityDecay(0.32)
@@ -141,7 +143,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
     function clearFocus() {
         cancelAutoFit();
         focused.clear(); multiSelected.clear(); selected = null; pendingFocus = null;
-        for (const node of nodes.values()) if (node !== drag?.node) node.fx = node.fy = null;
+        for (const node of nodes.values()) if (node !== drag?.node && !node.ordered) node.fx = node.fy = null;
         focusStyles();
     }
     function selectNodes(ids) {
@@ -203,13 +205,21 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
                 node = { id: raw.id, x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, vx: 0, vy: 0 };
                 nodes.set(node.id, node); createNode(node);
             }
-            Object.assign(node, { name: raw.name, label: raw.label, isChunk: isSourceChunk(raw), degree: degrees.get(node.id) || 0 });
-            node.radius = Math.min(25, 15 + Math.sqrt(node.degree) * 1.1);
+            Object.assign(node, { name: raw.name, label: raw.label, labels: raw.labels, properties: raw.properties, isChunk: isSourceChunk(raw), degree: degrees.get(node.id) || 0 });
+        }
+        orderedLayout.rebuild(nodes.values());
+        for (const raw of next.nodes) {
+            const node = nodes.get(raw.id);
+            node.radius = node.ordered ? 8 : Math.min(25, 15 + Math.sqrt(node.degree) * 1.1);
+            node.element.classList.toggle('ordered-node', Boolean(node.ordered));
+            node.element.classList.toggle('ordered-missing', node.ordered?.missing === true);
+            if (node.ordered) node.element.dataset.orderedAxis = node.ordered.axis;
+            else delete node.element.dataset.orderedAxis;
             node.circle.setAttribute('r', node.radius); node.circle.setAttribute('fill', raw.color);
             node.labelElement.setAttribute('y', node.radius + 16);
-            const characters = Array.from(node.name);
+            const characters = Array.from(node.ordered?.missing ? `未定位 · ${node.ordered.value || node.name}` : node.ordered?.value || node.name);
             node.labelElement.textContent = characters.slice(0, 13).join('') + (characters.length > 13 ? '…' : '');
-            node.titleElement.textContent = `${node.name}\n${node.label}${node.isChunk ? '' : ' · 双击展开关联'}`;
+            node.titleElement.textContent = `${node.name}\n${node.label}${node.ordered ? node.ordered.missing ? ' · 未定位（不参与顺序）' : ` · ${node.ordered.value} · 拖动移动整条顺序轴` : ''}${node.isChunk ? '' : ' · 双击展开关联'}`;
             node.element.setAttribute('aria-label', `${node.name}，${node.label}。按 Enter 定位${node.isChunk ? '' : '，双击或空格展开关联'}。`);
         }
         const keepEdges = new Set(next.edges.map(edge => edge.id));
@@ -225,6 +235,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
             }
             Object.assign(view, raw);
             view.element.classList.toggle('source-link', view.sourceLink);
+            view.element.classList.toggle('ordered-link', view.type === 'NEXT_ORDERED');
             view.flowElement.classList.toggle('source-flow', view.sourceLink);
             view.labelElement.classList.toggle('source-label', view.sourceLink);
             view.element.setAttribute('data-edge-id', raw.members[0].id);
@@ -237,7 +248,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         model = next;
         link.links([]); simulation.nodes([...nodes.values()]); link.links(next.links.map(edge => ({ ...edge })));
         if (!before && nodes.size) {
-            if (nodes.size === 1) { const only = nodes.values().next().value; only.x = only.y = 0; }
+            if (nodes.size === 1) { const only = nodes.values().next().value; if (!only.ordered) only.x = only.y = 0; }
             fit(); initialFit = nodes.size > 1;
         }
         focusStyles(); draw(); animate(nodes.size > 1 ? 0.35 : 0);
@@ -261,7 +272,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
                 visited.add(id); ordered.push(id); pending.push(...[...adjacent.get(id)].reverse());
             }
             ordered.push(...ids.filter(id => !visited.has(id)));
-            ordered.forEach((id, index) => { const node = nodes.get(id); node.x = node.fx = (index - (ids.length - 1) / 2) * 180; node.y = node.fy = 0; node.vx = node.vy = 0; });
+            ordered.forEach((id, index) => { const node = nodes.get(id); if (node.ordered) return; node.x = node.fx = (index - (ids.length - 1) / 2) * 180; node.y = node.fy = 0; node.vx = node.vy = 0; });
         } else {
             const node = nodes.get(ids[0]); node.fx = node.x; node.fy = node.y; node.vx = node.vy = 0;
         }
@@ -275,7 +286,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         cancelAutoFit(); draw();
     }
     function releaseDrag() {
-        if (drag?.node && drag.moved) { drag.node.fx = drag.node.fy = null; simulation.alphaTarget(0); animate(0.25); }
+        if (drag?.node && drag.moved) { if (!drag.node.ordered) drag.node.fx = drag.node.fy = null; simulation.alphaTarget(0); animate(0.25); }
         drag = null; svg.classList.remove('dragging');
     }
     function endMarquee(cancelled = false) {
@@ -338,8 +349,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         if (!drag.moved) { svg.setPointerCapture?.(event.pointerId); svg.classList.add('dragging'); }
         drag.moved = true; cancelAutoFit();
         if (drag.node && nodes.has(drag.node.id)) {
-            drag.node.x = drag.node.fx = (current.x - camera.x) / camera.scale - drag.offsetX;
-            drag.node.y = drag.node.fy = (current.y - camera.y) / camera.scale - drag.offsetY;
+            const x = (current.x - camera.x) / camera.scale - drag.offsetX, y = (current.y - camera.y) / camera.scale - drag.offsetY;
+            if (!orderedLayout.move(drag.node, x, y)) { drag.node.x = drag.node.fx = x; drag.node.y = drag.node.fy = y; }
             drag.node.vx = drag.node.vy = 0; simulation.alphaTarget(0.35); animate();
         } else { camera.x += current.x - drag.previous.x; camera.y += current.y - drag.previous.y; }
         drag.previous = current; draw(); event.preventDefault();
@@ -388,6 +399,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
                 const node = nodes.get(String(point.id));
                 if (node && Number.isFinite(point.x) && Number.isFinite(point.y)) Object.assign(node, { x: point.x, y: point.y, fx: point.fx ?? null, fy: point.fy ?? null, vx: 0, vy: 0 });
             }
+            orderedLayout.rebuild(nodes.values(), { fromPositions: true });
             if (['x', 'y', 'scale'].every(key => Number.isFinite(state.camera[key])) && state.camera.scale > 0) {
                 camera = { ...state.camera, x: state.camera.x + (width - (state.width || width)) / 2, y: state.camera.y + (height - (state.height || height)) / 2 };
             }
@@ -401,7 +413,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, mark
         getRelationships: () => model?.relationships || [],
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
         setPhysics(value) { enabled = Boolean(value); updateEdgeAnimation(); if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
-        relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } fit(); initialFit = true; animate(0.65); },
+        relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true }); fit(); initialFit = true; animate(0.65); },
         destroy() { if (destroyed) return; destroyed = true; updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };
 }

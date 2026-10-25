@@ -318,6 +318,37 @@ const graphFixture = (fixtureNodes, fixtureRelationships) => (url) => {
     };
 };
 
+test('standalone ordered rows preserve exact order and rigid dragging without inventing missing adjacency', async (t) => {
+  const ordered = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: { ordered_axis: 'timeline', ordered_kind: 'time', ordered_key: key, ordered_value: id, ...extra } });
+  const fixtureNodes = [ordered('late', '63745056000000004'), ordered('early', '63745056000000001'), ordered('middle', '63745056000000002'), ordered('unknown', null, { ordered_missing: true }), { id: 'axis', label: 'OrderAxis' }, { id: 'ordinary', name: '普通事件', label: 'Event' }];
+  const ui = await page(graphFixture(fixtureNodes, [
+    { id: 'actual-next', source: 'early', target: 'middle', type: 'NEXT_ORDERED' },
+    { id: 'internal', source: 'axis', target: 'late', type: 'HAS_ORDERED_NODE' },
+    { id: 'semantic', source: 'ordinary', target: 'middle', type: 'HAPPENS_AT' },
+  ]), { controlledAnimation: true, fullGraph: true });
+  t.after(() => ui.dom.window.close());
+  const { dom, document } = ui, svg = document.getElementById('knowledge-canvas');
+  const node = id => document.querySelector(`[data-node-id="${id}"]`), at = id => positionOf(node(id));
+  ui.runFrames(420);
+  assert.equal(node('axis'), null); assert.equal(svg.querySelectorAll('.ordered-node').length, 4);
+  assert.equal(svg.querySelectorAll('.ordered-link').length, 1, 'a gap in the loaded subset has no synthesized edge');
+  assert.equal(node('late').querySelector('circle').getAttribute('r'), '8');
+  assert.ok(at('early')[0] < at('middle')[0] && at('middle')[0] < at('late')[0]);
+  assert.equal(at('early')[1], at('late')[1]); assert.notEqual(at('unknown')[1], at('late')[1]);
+  assert.match(node('unknown').textContent, /未定位/);
+  const before = at('early'), delta = at('late')[0] - before[0], missing = at('unknown');
+  const [cx, cy, scale] = cameraOf(document), x = cx + before[0] * scale, y = cy + before[1] * scale;
+  pointer(dom, node('early'), 'pointerdown', x, y);
+  pointer(dom, dom.window, 'pointermove', x + 70, y + 45); ui.runFrames(1);
+  const dragged = at('early');
+  assert.ok(Math.abs(dragged[0] - before[0] - 70 / scale) < 0.02);
+  assert.equal(at('late')[0] - dragged[0], delta); assert.equal(at('late')[1], dragged[1]); assert.deepEqual(at('unknown'), missing);
+  pointer(dom, dom.window, 'pointerup', x + 70, y + 45); ui.runFrames(420);
+  assert.deepEqual(at('early'), dragged); assert.equal(ui.pendingFrames(), 0);
+  document.getElementById('graph-layout').click(); ui.runFrames(420);
+  assert.equal(at('early')[1], at('late')[1]); assert.equal(at('late')[0] - at('early')[0], delta);
+});
+
 const canvasKey = (conversationId = "", databaseId = "db-default") =>
   `cwm.knowledge.canvas.v1:${encodeURIComponent(`/api|${databaseId}|${conversationId}`)}`;
 const visibleContextMenu = (document) => {

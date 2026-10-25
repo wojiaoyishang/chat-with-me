@@ -61,6 +61,36 @@ function screenCenter(ui, ids = ui.controller.getNodes().map(node => node.id)) {
 }
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.001, `${actual} should be near ${expected}`);
 
+test('ordered chat nodes remain a small rigid sorted row across force, drag, focus, restore and partial queries', t => {
+    const ordered = (id, key, extra = {}) => ({ id, name: id, label: 'Time', labels: ['Knowledge', 'Time', 'OrderedNode'], properties: { ordered_axis: 'timeline', ordered_kind: 'time', ordered_key: key, ordered_value: id, ...extra } });
+    const network = { nodes: [ordered('late', '63745056000000002'), ordered('early', '63745056000000001'), ordered('unknown', null, { ordered_missing: true }), { id: 'entity', label: 'Event', name: 'event' }, { id: 'axis', label: 'OrderAxis' }], relationships: [
+        { id: 'next', source: 'early', target: 'late', type: 'NEXT_ORDERED' },
+        { id: 'internal', source: 'axis', target: 'late', type: 'HAS_ORDERED_NODE' },
+        { id: 'semantic', source: 'entity', target: 'late', type: 'HAPPENS_AT' },
+    ] };
+    const ui = setup(t), positions = () => new Map(ui.controller.getNodePositions().map(node => [node.id, node]));
+    ui.controller.setData(knowledgeGraphPresentation(network));
+    const before = positions(), delta = before.get('late').x - before.get('early').x;
+    assert.ok(delta > 0); assert.equal(before.get('early').y, before.get('late').y); assert.notEqual(before.get('unknown').y, before.get('late').y);
+    assert.equal(ui.svg.querySelector('[data-node-id="axis"]'), null); assert.equal(ui.svg.querySelectorAll('.ordered-node').length, 3);
+    assert.equal(ui.svg.querySelector('[data-node-id="late"] circle').getAttribute('r'), '8');
+    assert.match(ui.svg.querySelector('[data-node-id="unknown"] text').textContent, /未定位/);
+    ui.run(420); assert.equal(positions().get('late').x, before.get('late').x);
+    assert.notDeepEqual(positions().get('entity'), before.get('entity'));
+    point(ui.dom, ui.svg.querySelector('[data-node-id="early"]'), 'pointerdown', 200, 130);
+    point(ui.dom, ui.dom.window, 'pointermove', 280, 170);
+    const moved = positions(); assert.equal(moved.get('late').x - moved.get('early').x, delta); assert.equal(moved.get('late').y, moved.get('early').y);
+    assert.notEqual(moved.get('late').x, before.get('late').x); assert.equal(moved.get('unknown').y, before.get('unknown').y);
+    point(ui.dom, ui.dom.window, 'pointerup', 280, 170); ui.run(420);
+    ui.controller.focusNetwork(['late', 'early']); ui.run(420);
+    assert.equal(positions().get('late').x - positions().get('early').x, delta);
+    const saved = ui.controller.getViewState(); ui.controller.relayout(); ui.controller.restoreViewState(saved); ui.run(420);
+    near(positions().get('early').x, moved.get('early').x);
+    ui.controller.setData(knowledgeGraphPresentation({ nodes: [network.nodes[0], ordered('later', '63745056000000004')], relationships: [] }));
+    assert.equal(ui.svg.querySelectorAll('.knowledge-edge').length, 0, 'loading two nonadjacent values must not invent a NEXT_ORDERED segment');
+    assert.ok(positions().get('late').x < positions().get('later').x); assert.equal(positions().get('late').y, positions().get('later').y);
+});
+
 test('relationship highlights remain active after layout settles without extra frames and follow live geometry and streamed removal', t => {
     const ui = setup(t); ui.controller.setData(knowledgeGraphPresentation(fixture())); ui.run(420);
     assert.equal(ui.svg.dataset.edgeAnimation, 'true');

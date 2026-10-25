@@ -1,3 +1,5 @@
+import { isInternalOrderAxis } from '../../../../knowledge/orderedGraphLayout.js';
+
 const sourceTypes = new Set(['EXTRACTED_FROM', 'CONTAINS_KNOWLEDGE', 'ILLUSTRATES']);
 const colors = ['#6c87de', '#47aa91', '#b28aca', '#d59d57', '#62a7bb', '#dc8792', '#939d64', '#8397bd'];
 const identity = (value) => {
@@ -6,7 +8,7 @@ const identity = (value) => {
 };
 
 export const isSourceChunk = node => node.label === 'Chunk' || node.labels?.includes('Chunk') === true;
-export const graphNodeLabel = node => node.label || node.labels?.find(label => !['Knowledge', 'Node', 'Entity'].includes(label)) || node.labels?.[0] || '知识';
+export const graphNodeLabel = node => (node.label !== 'OrderedNode' ? node.label : null) || node.labels?.find(label => !['Knowledge', 'Node', 'Entity', 'OrderedNode'].includes(label)) || node.labels?.[0] || '知识';
 export const graphNodeColor = label => {
     let hash = 0;
     for (const character of String(label)) hash = ((hash << 5) - hash + character.codePointAt(0)) | 0;
@@ -17,7 +19,7 @@ export const graphNodeColor = label => {
 export function knowledgeGraphPresentation(network) {
     const nodes = new Map(), aliases = new Map(), relationships = new Map();
     for (const raw of Array.isArray(network?.nodes) ? network.nodes : []) {
-        if (!raw || typeof raw !== 'object') continue;
+        if (!raw || typeof raw !== 'object' || isInternalOrderAxis(raw)) continue;
         const id = identity(raw.id ?? raw.elementId ?? raw.name);
         if (!id) continue;
         const label = graphNodeLabel(raw), name = String(raw.name || raw.properties?.name || raw.title || id);
@@ -31,7 +33,7 @@ export function knowledgeGraphPresentation(network) {
         const from = aliases.get(identity(raw.from ?? raw.source ?? raw.startNode ?? raw.start)),
             to = aliases.get(identity(raw.to ?? raw.target ?? raw.endNode ?? raw.end)),
             type = String(raw.type ?? raw.label ?? '关联');
-        if (!from || !to || from === to) continue;
+        if (!from || !to || from === to || type === 'HAS_ORDERED_NODE') continue;
         const id = identity(raw.id) ?? JSON.stringify([from, type, to]);
         relationships.set(id, { ...raw, id, from, to, type });
     }
@@ -64,7 +66,7 @@ export function knowledgeGraphPresentation(network) {
 export function graphEdgeGeometry(edge, start, end) {
     const dx = end.x - start.x, dy = end.y - start.y, length = Math.max(1, Math.hypot(dx, dy));
     const nx = -dy / length, ny = dx / length;
-    const bend = edge.sourceLink ? -Math.min(26, Math.max(8, length * 0.1)) : (edge.offset || 0) * 22;
+    const bend = edge.type === 'NEXT_ORDERED' ? 0 : edge.sourceLink ? -Math.min(26, Math.max(8, length * 0.1)) : (edge.offset || 0) * 22;
     const cx = (start.x + end.x) / 2 + nx * bend, cy = (start.y + end.y) / 2 + ny * bend;
     const sd = Math.max(1, Math.hypot(cx - start.x, cy - start.y)), ed = Math.max(1, Math.hypot(end.x - cx, end.y - cy));
     const x1 = start.x + (cx - start.x) / sd * (start.radius + 3), y1 = start.y + (cy - start.y) / sd * (start.radius + 3);
