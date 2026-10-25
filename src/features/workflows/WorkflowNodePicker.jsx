@@ -14,6 +14,7 @@ export default function WorkflowNodePicker({
   picker,
   definitions,
   graph,
+  context,
   onClose,
   onChoose,
 }) {
@@ -22,8 +23,15 @@ export default function WorkflowNodePicker({
   const searchRef = useRef(null);
   const listRef = useRef(null);
   const candidates = useMemo(
-    () => workflowAddCandidates(definitions, graph, picker?.connection, search),
-    [definitions, graph, picker?.connection, search],
+    () =>
+      workflowAddCandidates(
+        definitions,
+        graph,
+        picker?.connection,
+        search,
+        context,
+      ),
+    [definitions, graph, picker?.connection, search, context],
   );
   useEffect(() => {
     setSearch("");

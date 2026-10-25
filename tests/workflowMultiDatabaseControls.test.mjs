@@ -19,8 +19,8 @@ await build({
       if(path.includes("apiClient")) contents="export default {get:(...args)=>globalThis.controlTest.api.get(...args)};";
       else if(path === "renderer") contents="export const createChatKnowledgeGraph=(svg,options)=>{globalThis.controlTest.graphOptions=options;return {setData(model){this.nodes=model.nodes;},setPhysics(){},setEdgeAnimation(){},destroy(){},getNodes(){return this.nodes||[]},expanding(){},focusNetwork(){return false}}};";
       else if(path.includes("LazyVisibility")) contents="export default ({children})=>children;";
-      else if(path.includes("graphSettings")) contents="export const KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY='animation';export const DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION=true;";
-      else if(path.includes("tools.jsx")) contents="export const useLocalSetting=()=>[true];";
+      else if(path.includes("graphSettings")) contents="export const KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY='animation';export const DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION=true;export const KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY='physics';export const DEFAULT_KNOWLEDGE_GRAPH_PHYSICS_ANIMATION=true;";
+      else if(path.includes("tools.jsx")) contents="export const useLocalSetting=()=>[true,()=>{}];";
       else if(path.endsWith("/button")) contents="export const Button=({variant,size,asChild,...props})=><button {...props}/>;";
       else if(path.endsWith("/input")) contents="export const Input=({onChange,...props})=><input {...props} onChange={onChange} onInput={onChange}/>;";
       else if(path.endsWith("/checkbox")) contents="export const Checkbox=({checked,onCheckedChange,...props})=><input type='checkbox' {...props} checked={checked} onChange={event=>onCheckedChange(event.target.checked)}/>;";

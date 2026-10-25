@@ -6,6 +6,9 @@ import {
   Unplug,
   Plug,
   Plus,
+  Group,
+  Ungroup,
+  FolderOpen,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -28,6 +31,10 @@ export default function WorkflowContextMenu({
   onAdd,
   onPortMode,
   hasClipboard,
+  onGroup,
+  onUngroup,
+  onEnter,
+  isSubgraph,
 }) {
   if (!menu) return null;
   return (
@@ -68,6 +75,22 @@ export default function WorkflowContextMenu({
             )}
             {menu.nodeId && (
               <>
+                <DropdownMenuItem onSelect={onGroup}>
+                  <Group />
+                  组合为子图
+                </DropdownMenuItem>
+                {isSubgraph && (
+                  <>
+                    <DropdownMenuItem onSelect={onEnter}>
+                      <FolderOpen />
+                      进入子图
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={onUngroup}>
+                      <Ungroup />
+                      解除子图组合
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuItem onSelect={onRename}>
                   <Pencil />
                   重命名

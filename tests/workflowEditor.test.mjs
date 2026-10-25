@@ -477,7 +477,8 @@ async function environment(request = {}, options = {}) {
               if (requested === "flow")
                 contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;const Node=props.nodeTypes.workflow;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=><div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Node data={node.data} selected={node.selected}/></div>)}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested === "task-events")
-                contents = "export const onEvent=({event})=>({then:callback=>{const listeners=globalThis.workflowUITest.taskEventListeners;listeners.set(event,callback);return ()=>listeners.delete(event)}});";
+                contents =
+                  "export const onEvent=({event})=>({then:callback=>{const listeners=globalThis.workflowUITest.taskEventListeners;listeners.set(event,callback);return ()=>listeners.delete(event)}});";
               else if (requested.startsWith("@/lib/apiClient"))
                 contents = "export default globalThis.workflowUITest.api;";
               else if (requested.endsWith("/button"))
@@ -675,6 +676,385 @@ async function click(node, dom) {
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
 }
+
+test("subgraph grouping, breadcrumb editing, serial settings and undo keep one complete root graph", async () => {
+  const app = await environment();
+  try {
+    const selected = globalThis.workflowUITest.flow.nodes;
+    await act(() =>
+      globalThis.workflowUITest.flow.onSelectionChange({
+        nodes: selected,
+        edges: [],
+      }),
+    );
+    await click(
+      document.querySelector('[aria-label="将选中节点组合为子图"]'),
+      app.dom,
+    );
+    let group = globalThis.workflowUITest.flow.nodes[0];
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 1);
+    assert.equal(group.data.node.kind, "subgraph");
+    assert.equal(
+      document.querySelector(".workflow-node-state"),
+      null,
+      "designer does not fabricate runtime waiting/progress",
+    );
+    assert.match(
+      document.querySelector(".workflow-subgraph-summary").textContent,
+      /并行/,
+    );
+    await input(
+      document.querySelector('[aria-label="子图执行方式"]'),
+      "serial",
+      app.dom,
+      "change",
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes[0].data.node.subgraph.execution.mode,
+      "serial",
+    );
+    await click(button("进入子图"), app.dom);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    assert.match(
+      document.querySelector('[aria-label="子图路径"]').textContent,
+      /知识处理子图/,
+    );
+    await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    await input(
+      document.querySelector('[aria-label="节点名称"]'),
+      "子图中的提取",
+      app.dom,
+    );
+    await click(button("校验"), app.dom);
+    const root = app.calls.findLast((call) => call.url.endsWith("/validate"))
+      .payload.graph;
+    assert.equal(root.nodes.length, 1);
+    assert.equal(
+      root.nodes[0].subgraph.graph.nodes.find((node) => node.id === "extract-1")
+        .name,
+      "子图中的提取",
+    );
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.notEqual(
+      globalThis.workflowUITest.flow.nodes.find(
+        (node) => node.id === "extract-1",
+      ).data.node.name,
+      "子图中的提取",
+    );
+    await click(
+      [...document.querySelectorAll('[aria-label="子图路径"] button')][0],
+      app.dom,
+    );
+    group = globalThis.workflowUITest.flow.nodes[0];
+    await act(() =>
+      globalThis.workflowUITest.flow.onNodeContextMenu(
+        { preventDefault() {}, clientX: 10, clientY: 10 },
+        group,
+      ),
+    );
+    await click(button("解除子图组合"), app.dom);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await click(
+      document.querySelector('[aria-label="撤销工作流修改"]'),
+      app.dom,
+    );
+    assert.equal(
+      globalThis.workflowUITest.flow.nodes[0].data.node.kind,
+      "subgraph",
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("monitor summarizes active subgraph leaves and reads outputs using the compiled leaf ID", async () => {
+  const graph = {
+    version: 3,
+    nodes: [
+      {
+        id: "group",
+        kind: "subgraph",
+        version: 1,
+        name: "并行增强",
+        config: {},
+        inputs: {},
+        position: { x: 0, y: 0 },
+        subgraph: {
+          graph: structuredClone(catalog.standardGraph),
+          interface: { inputs: [], outputs: [], parameters: [] },
+          execution: { mode: "parallel", maxConcurrency: 2 },
+        },
+      },
+    ],
+    edges: [],
+  };
+  const app = await environment(
+    { taskId: "existing-task" },
+    {
+      taskDetails: {
+        taskId: "existing-task",
+        status: "completed",
+        parameters: { graph },
+        workflowNodes: {
+          sg_input: {
+            status: "completed",
+            nodePath: ["group", "input-1"],
+            namePath: ["并行增强", "来源"],
+          },
+          sg_extract: {
+            status: "running",
+            nodePath: ["group", "extract-1"],
+            namePath: ["并行增强", "知识提取"],
+            progressMessage: "正在处理：九月十二日的日记",
+          },
+        },
+      },
+    },
+  );
+  try {
+    assert.match(
+      document.querySelector(".workflow-subgraph-summary").textContent,
+      /正在运行 1 个节点/,
+    );
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /九月十二日/,
+    );
+    assert.equal(
+      button("查看节点完整输出"),
+      undefined,
+      "group has no fabricated leaf output endpoint",
+    );
+    await click(button("展开子图"), app.dom);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    await click(button("查看节点完整输出"), app.dom);
+    assert.ok(
+      app.calls.some((call) => call.url.includes("/nodes/sg_extract/output?")),
+    );
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /并行增强 › 知识提取/,
+    );
+  } finally {
+    await app.close();
+  }
+});
+
+test("IF nodes edit declarative comparisons without exposing Python code", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push({
+    kind: "condition",
+    version: 1,
+    category: "process",
+    display: { title: "条件判断", subtitle: "IF" },
+    configSchema: { type: "object", properties: {} },
+    inputs: [{ name: "value", type: "any", acceptsAny: true }],
+    outputs: [
+      { name: "true", type: "any" },
+      { name: "false", type: "any" },
+    ],
+  });
+  const graph = {
+    version: 3,
+    nodes: [
+      {
+        id: "if",
+        kind: "condition",
+        version: 1,
+        name: "是否处理",
+        config: { match: "all", rules: [] },
+        inputs: {},
+        position: { x: 0, y: 0 },
+      },
+    ],
+    edges: [],
+  };
+  const app = await environment({}, { catalog: custom, graph });
+  try {
+    await click(document.querySelector('[data-node="if"]'), app.dom);
+    await click(button("添加判断规则"), app.dom);
+    await input(
+      document.querySelector('[aria-label="规则 1 字段路径"]'),
+      "metadata.0.enabled",
+      app.dom,
+    );
+    await input(
+      document.querySelector('[aria-label="规则组合方式"]'),
+      "any",
+      app.dom,
+      "change",
+    );
+    const node = globalThis.workflowUITest.flow.nodes[0].data.node;
+    assert.deepEqual(node.config.rules, [
+      { path: ["metadata", 0, "enabled"], operator: "exists" },
+    ]);
+    assert.equal(node.config.match, "any");
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /不执行代码/,
+    );
+    assert.equal(document.querySelector('[aria-label="节点初始化参数"]'), null);
+  } finally {
+    await app.close();
+  }
+});
+
+test("public parameters choose distinct targets and preserve typed defaults", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push({
+    kind: "parameter-test",
+    version: 1,
+    category: "process",
+    display: { title: "处理", subtitle: "ParameterTest" },
+    configSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "integer", default: 3 },
+        language: { type: "string", default: "中文" },
+      },
+    },
+    inputs: [],
+    outputs: [],
+  });
+  const inner = {
+    version: 3,
+    nodes: [
+      {
+        id: "process",
+        kind: "parameter-test",
+        version: 1,
+        config: { limit: 3, language: "中文" },
+        inputs: {},
+        position: { x: 0, y: 0 },
+      },
+    ],
+    edges: [],
+  };
+  const graph = {
+    version: 3,
+    nodes: [
+      {
+        id: "group",
+        kind: "subgraph",
+        version: 1,
+        name: "参数子图",
+        config: {},
+        inputs: {},
+        position: { x: 0, y: 0 },
+        subgraph: {
+          graph: inner,
+          interface: { inputs: [], outputs: [], parameters: [] },
+          execution: { mode: "parallel", maxConcurrency: 2 },
+        },
+      },
+    ],
+    edges: [],
+  };
+  const app = await environment({}, { catalog: custom, graph });
+  try {
+    await click(document.querySelector('[data-node="group"]'), app.dom);
+    await click(button("公开内部参数"), app.dom);
+    const select = document.querySelector('[aria-label="参数 1 目标 1"]');
+    await input(select, "process\u0000language", app.dom, "change");
+    let group = globalThis.workflowUITest.flow.nodes[0].data.node;
+    assert.equal(
+      group.subgraph.interface.parameters[0].targets[0].field,
+      "language",
+    );
+    assert.equal(group.subgraph.interface.parameters[0].default, "中文");
+    await click(button("公开内部参数"), app.dom);
+    group = globalThis.workflowUITest.flow.nodes[0].data.node;
+    assert.deepEqual(
+      group.subgraph.interface.parameters.map(
+        (parameter) => parameter.targets[0].field,
+      ),
+      ["language", "limit"],
+    );
+    assert.equal(button("公开内部参数").disabled, true);
+  } finally {
+    await app.close();
+  }
+});
+
+test("renaming a nested public port rewires its containing subgraph interface", async () => {
+  const leaf = structuredClone(catalog.standardGraph.nodes[1]);
+  const inner = {
+    id: "inner",
+    kind: "subgraph",
+    version: 1,
+    name: "内部",
+    config: {},
+    inputs: {},
+    position: { x: 0, y: 0 },
+    subgraph: {
+      graph: { version: 3, nodes: [leaf], edges: [] },
+      interface: {
+        inputs: [
+          { name: "content", target: { nodeId: leaf.id, port: "bundle" } },
+        ],
+        outputs: [],
+        parameters: [],
+      },
+      execution: { mode: "parallel", maxConcurrency: 2 },
+    },
+  };
+  const graph = {
+    version: 3,
+    nodes: [
+      {
+        id: "outer",
+        kind: "subgraph",
+        version: 1,
+        name: "外部",
+        config: {},
+        inputs: {},
+        position: { x: 0, y: 0 },
+        subgraph: {
+          graph: { version: 3, nodes: [inner], edges: [] },
+          interface: {
+            inputs: [
+              {
+                name: "root_content",
+                target: { nodeId: "inner", port: "content" },
+              },
+            ],
+            outputs: [],
+            parameters: [],
+          },
+          execution: { mode: "parallel", maxConcurrency: 2 },
+        },
+      },
+    ],
+    edges: [],
+  };
+  const app = await environment({}, { graph });
+  try {
+    await click(button("展开子图"), app.dom);
+    await click(document.querySelector('[data-node="inner"]'), app.dom);
+    await input(
+      document.querySelector('[aria-label="输入 1 标识"]'),
+      "renamed",
+      app.dom,
+    );
+    await click(button("校验"), app.dom);
+    const saved = app.calls.findLast((call) => call.url.endsWith("/validate"))
+      .payload.graph;
+    assert.equal(
+      saved.nodes[0].subgraph.interface.inputs[0].target.port,
+      "renamed",
+    );
+    assert.equal(
+      saved.nodes[0].subgraph.graph.nodes[0].subgraph.interface.inputs[0].name,
+      "renamed",
+    );
+  } finally {
+    await app.close();
+  }
+});
 async function waitForFocusedNode(id) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     if (
@@ -1352,7 +1732,9 @@ test("uploaded files initialize resource URIs using the returned artifact ID", a
       [...node.options].some((option) => option.value === "file"),
     );
     await input(typeSelect, "file", app.dom, "change");
-    const upload = document.querySelector('input[type="file"]');
+    const upload = document.querySelector(
+      '.workflow-source input[type="file"]',
+    );
     Object.defineProperty(upload, "files", {
       configurable: true,
       value: [
@@ -1460,8 +1842,9 @@ test("monitor follows the running node by default and tracks runtime changes", a
     });
     await waitForFocusedNode("extract-1");
     assert.equal(
-      globalThis.workflowUITest.flow.nodes.find((node) => node.id === "extract-1")
-        ?.selected,
+      globalThis.workflowUITest.flow.nodes.find(
+        (node) => node.id === "extract-1",
+      )?.selected,
       true,
     );
   } finally {

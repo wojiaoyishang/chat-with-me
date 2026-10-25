@@ -15,6 +15,7 @@ import WorkflowDataField from "./WorkflowDataField.jsx";
 import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
 import { workflowModelQueueSummary } from "./workflowFieldModel.js";
 import WorkflowOrderedInputs from "./WorkflowOrderedInputs.jsx";
+import WorkflowConditionRules from "./WorkflowConditionRules.jsx";
 
 function objectSchema(schema, names) {
   return {
@@ -33,14 +34,19 @@ export default function WorkflowNodePanel({
   node,
   graph,
   definitions,
+  context,
   models,
   onGraphChange,
   onValidity,
   disabled,
 }) {
   const definition = useMemo(
-    () => effectiveWorkflowDefinition(node, catalogNode(definitions, node)),
-    [definitions, node],
+    () =>
+      effectiveWorkflowDefinition(
+        node,
+        catalogNode(definitions, node, graph, new Set(), context),
+      ),
+    [definitions, node, graph, context],
   );
   const connectedConstructorInput = (input) =>
     graph.edges.some(
@@ -143,20 +149,55 @@ export default function WorkflowNodePanel({
           disabled={disabled}
           onChange={(event) => update({ name: event.target.value })}
         />
-        {node.inputKey && (
-          <p className="text-xs text-muted-foreground">
-            模板输入标识：{node.inputKey} · 改名不影响参数绑定
-          </p>
+        {definition.source && (
+          <div className="space-y-1">
+            <label className="workflow-label">模板输入标识</label>
+            <Input
+              aria-label="模板输入标识"
+              value={node.inputKey ?? node.id}
+              disabled={disabled}
+              onChange={(event) => update({ inputKey: event.target.value })}
+            />
+            <p className="text-xs text-muted-foreground">
+              整个工作流（包括所有子图）必须唯一。修改此标识会改变快速运行和 AI
+              传参的字段名称。
+            </p>
+          </div>
         )}
         <p className="text-sm text-muted-foreground">
           {definition.display?.description}
         </p>
       </section>
-      {definition.source ? (
+      {node.kind === "condition" ? (
+        <WorkflowConditionRules
+          config={node.config}
+          onChange={updateConfig}
+          disabled={disabled}
+        />
+      ) : definition.source ? (
         <div className="space-y-3">
           <p className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
             输入值在画布节点内配置。快速创建任务时会根据这些输入节点生成填写表单。
           </p>
+          {node.kind === "attachments" && schema.properties?.optional && (
+            <section className="space-y-2 rounded-lg border p-3">
+              <WorkflowDataField
+                label={
+                  schema.properties.optional.display?.title || "允许不提供附件"
+                }
+                schema={schema.properties.optional}
+                rootSchema={schema}
+                value={node.config?.optional ?? false}
+                disabled={disabled}
+                onChange={(value) =>
+                  updateConfig({ ...node.config, optional: value })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                开启后可仅输入正文；未选择附件时输出空内容，相关分支明确跳过。
+              </p>
+            </section>
+          )}
           {definition.source.configField === "resources" &&
             schema.properties?.preserveSelectionOrder && (
               <section className="space-y-2 rounded-lg border p-3">
@@ -387,13 +428,16 @@ export default function WorkflowNodePanel({
       )}
       <section className="space-y-3 border-t pt-4">
         <h4 className="text-sm font-semibold">节点信息</h4>
-        {definition.documentation && (
+        {(definition.documentation || definition.pythonDocs) && (
           <MultilineEditor
             label="类与方法说明"
             value={
-              typeof definition.documentation === "string"
-                ? definition.documentation
-                : Object.entries(definition.documentation)
+              typeof (definition.documentation || definition.pythonDocs) ===
+              "string"
+                ? definition.documentation || definition.pythonDocs
+                : Object.entries(
+                    definition.documentation || definition.pythonDocs,
+                  )
                     .map(([name, text]) => `${name}\n${text}`)
                     .join("\n\n")
             }

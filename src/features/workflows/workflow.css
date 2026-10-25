@@ -621,3 +621,67 @@
 .workflow-selected-attachment-name { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .workflow-selected-attachment-name small { display: block; margin-top: 2px; color: var(--muted-foreground); font-size: 10px; }
 .workflow-selected-attachment-status { display: flex; align-items: center; gap: 5px; margin: 6px 0 0; font-size: 10px; color: var(--muted-foreground); }
+
+.workflow-native-select {
+  display: block;
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--background);
+  font-size: 0.75rem;
+}
+.workflow-node.is-subgraph {
+  border: 1.5px solid color-mix(in srgb, var(--primary) 55%, var(--border));
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--primary) 9%, var(--background));
+}
+.workflow-subgraph-summary {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.3rem 1rem 0.7rem;
+  color: var(--muted-foreground);
+  font-size: 0.65rem;
+}
+.workflow-subgraph-summary button {
+  justify-self: start;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.workflow-breadcrumbs {
+  position: absolute;
+  z-index: 6;
+  top: 0.65rem;
+  left: 0.65rem;
+  right: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  pointer-events: none;
+}
+.workflow-breadcrumbs > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.workflow-breadcrumbs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  pointer-events: auto;
+  max-width: 12rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  background: var(--background);
+  font-size: 0.7rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px #00000008;
+}
+.workflow-breadcrumbs button[aria-current="page"] {
+  color: var(--primary);
+  border-color: var(--primary);
+}

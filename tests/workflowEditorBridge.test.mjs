@@ -47,10 +47,11 @@ test("task editor authenticates iframe messages and refreshes task data without 
             else if (path === "@/config.js")
               contents = 'export const BASE_BACKEND_URL="/api";';
             else if (path === "@/lib/tools.jsx")
-              contents = "export const useLocalSetting=(_key,value)=>[value];";
+              contents =
+                "export const useLocalSetting=(_key,value)=>[value,()=>{}];export const setLocalSetting=()=>{};";
             else if (path.endsWith("graphSettings.js"))
               contents =
-                'export const KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY="animation";export const DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION=true;';
+                'export const KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY="animation";export const DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION=true;export const KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY="physics";export const DEFAULT_KNOWLEDGE_GRAPH_PHYSICS_ANIMATION=true;';
             else if (path.endsWith("WorkflowEditor.jsx"))
               contents =
                 'export default function Editor(props){globalThis.workflowBridgeTest.editor=props;return <div data-workflow-editor><button onClick={()=>props.onChanged({taskId:"created-task"})}>运行完成</button></div>;}';

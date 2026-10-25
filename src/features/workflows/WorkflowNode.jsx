@@ -23,12 +23,16 @@ import { workflowStatusLabels } from "./workflowStatus.js";
 export default function WorkflowNode({ data, selected }) {
   const { node, definition, runtime = {}, readOnly } = data;
   const status = data.status;
+  const subgraph = node.kind === "subgraph" ? node.subgraph : null;
   const category = nodeCategory(definition);
   const refresh = useUpdateNodeInternals();
   const inlineSignature = Object.keys(node.inputs || {})
     .filter((key) => node.inputs[key]?.type === "literal")
     .join("|");
-  const portSignature = (definition?.inputs || [])
+  const portSignature = [
+    ...(definition?.inputs || []),
+    ...(definition?.outputs || []),
+  ]
     .map((port) => `${port.name}:${port.display?.title}`)
     .join("|");
   useEffect(() => {
@@ -50,7 +54,7 @@ export default function WorkflowNode({ data, selected }) {
     }[definition?.presentation?.icon] || GitBranch;
   return (
     <div
-      className={`workflow-node category-${category} ${selected ? "is-selected" : ""} ${status ? `status-${status}` : ""}`}
+      className={`workflow-node category-${category} ${subgraph ? "is-subgraph" : ""} ${selected ? "is-selected" : ""} ${status ? `status-${status}` : ""}`}
     >
       <div className="workflow-node-title">
         <Icon className="size-4 text-primary" />
@@ -65,6 +69,29 @@ export default function WorkflowNode({ data, selected }) {
       </div>
       {definition?.display?.subtitle && (
         <p className="workflow-node-id">{definition.display.subtitle}</p>
+      )}
+      {subgraph && (
+        <div className="workflow-subgraph-summary">
+          <span>
+            {subgraph.execution?.mode === "serial" ? "串行" : "并行"} ·{" "}
+            {subgraph.graph?.nodes?.length || 0} 个节点
+            {subgraph.execution?.mode !== "serial" &&
+              ` · 上限 ${subgraph.execution?.maxConcurrency || 4}`}
+          </span>
+          {runtime.activeCount > 0 && (
+            <span>正在运行 {runtime.activeCount} 个节点</span>
+          )}
+          <button
+            className="nodrag"
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              data.onEnter?.(node.id);
+            }}
+          >
+            展开子图
+          </button>
+        </div>
       )}
       {definition?.source && (
         <div
@@ -165,17 +192,26 @@ export default function WorkflowNode({ data, selected }) {
           )}
           {runtime.nodeProgress?.total > 0 &&
             Number.isFinite(runtime.nodeProgress.percent) && (
-            <progress
-              max="100"
-              value={runtime.nodeProgress.percent}
-              aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
-            />
-          )}
+              <progress
+                max="100"
+                value={runtime.nodeProgress.percent}
+                aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
+              />
+            )}
         </div>
       )}
       {runtime.outputPreview?.summary && (
         <p className="workflow-output-summary">
           {runtime.outputPreview.summary}
+        </p>
+      )}
+      {(runtime.nodeProgress?.currentItem?.preview ||
+        runtime.progressMessage ||
+        runtime.nodeProgress?.message) && (
+        <p className="workflow-output-summary" role="status">
+          {runtime.nodeProgress?.currentItem?.preview ||
+            runtime.progressMessage ||
+            runtime.nodeProgress?.message}
         </p>
       )}
     </div>

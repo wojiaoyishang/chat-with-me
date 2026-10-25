@@ -19,6 +19,8 @@ import {
   Copy,
   Download,
   GitBranch,
+  FolderOpen,
+  Group,
   Loader2,
   Maximize2,
   Pencil,
@@ -73,7 +75,15 @@ import {
   setWorkflowPortMode,
   sourceValueConfig,
   updateWorkflowNodePositions,
+  workflowGraphAtPath,
+  workflowGraphContext,
+  updateWorkflowGraphAtPath,
+  workflowRuntimeForGraph,
+  wrapWorkflowSubgraph,
+  unwrapWorkflowSubgraph,
+  workflowSourceKeys,
 } from "./workflowModel.js";
+import WorkflowSubgraphPanel from "./WorkflowSubgraphPanel.jsx";
 import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
 import WorkflowCanvas from "./WorkflowCanvas.jsx";
 import WorkflowEdge from "./WorkflowEdge.jsx";
@@ -152,7 +162,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     readOnly ? initialTask : null,
   );
   const task = readOnly ? refreshedTask || initialTask : null;
-  const graph = useMemo(
+  const [graphPath, setGraphPath] = useState([]);
+  const rootGraph = useMemo(
     () =>
       readOnly && task?.parameters?.graph
         ? initializeGraph(
@@ -169,6 +180,15 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       catalog.settingsDefaults,
     ],
   );
+  const graph = workflowGraphAtPath(rootGraph, graphPath) || rootGraph;
+  const graphPathKey = graphPath.join("/");
+  const graphContext = useMemo(
+    () => workflowGraphContext(rootGraph, graphPath),
+    [rootGraph, graphPath],
+  );
+  const currentEditableGraph = () =>
+    workflowGraphAtPath(draftRef.current.graph, graphPath) ||
+    draftRef.current.graph;
   const [selected, setSelected] = useState("");
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectedEdges, setSelectedEdges] = useState([]);
@@ -197,6 +217,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const dialogRef = useRef(null);
   const canvasRef = useRef(null);
   const pendingNodeRef = useRef(null);
+  const importFileRef = useRef(null);
   const pointer = useRef(null);
   const pickerOpen = Boolean(picker);
   const placingNode = Boolean(pendingPlacement);
@@ -243,6 +264,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   }, [request.taskId]);
 
   const installDraft = useCallback((next) => {
+    setGraphPath([]);
     draftRef.current = next;
     setDraft(next);
     setBaseline(snapshot(next));
@@ -346,13 +368,17 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     setNotice("");
   }, []);
   const changeGraph = useCallback(
-    (update) =>
+    (update, boundary) =>
       changeDraft((current) => {
-        const next =
-          typeof update === "function" ? update(current.graph) : update;
+        const next = updateWorkflowGraphAtPath(
+          current.graph,
+          graphPath,
+          update,
+          boundary,
+        );
         return next === current.graph ? current : { ...current, graph: next };
       }),
-    [changeDraft],
+    [changeDraft, graphPath],
   );
   const commitPositions = useCallback(
     (moved) => {
@@ -410,7 +436,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     },
     [],
   );
-  const runtimeNodes = useMemo(
+  const allRuntimeNodes = useMemo(
     () =>
       task?.workflowNodes ||
       task?.runtime?.checkpoint?.data?.workflowNodes ||
@@ -418,6 +444,54 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       task?.result?.workflowNodes ||
       {},
     [task],
+  );
+  const runtimePaths = useMemo(
+    () =>
+      task?.workflowPaths ||
+      task?.runtime?.checkpoint?.data?.workflowPaths ||
+      task?.runtime?.checkpoint?.workflowPaths ||
+      {},
+    [task],
+  );
+  const runtimeNodes = useMemo(
+    () =>
+      readOnly
+        ? workflowRuntimeForGraph(
+            graph,
+            allRuntimeNodes,
+            graphPath,
+            runtimePaths,
+          )
+        : {},
+    [readOnly, graph, allRuntimeNodes, graphPath, runtimePaths],
+  );
+  useEffect(() => {
+    if (!workflowGraphAtPath(rootGraph, graphPath)) {
+      setGraphPath([]);
+      select([]);
+    }
+  }, [rootGraph, graphPath, select]);
+  const navigateGraph = useCallback(
+    (path) => {
+      setGraphPath(path);
+      select([]);
+      setMenu(null);
+      setPicker(null);
+      setPendingPlacement(null);
+      setFitRequest((value) => value + 1);
+      setMonitorPositions({});
+      setFocusRequest(null);
+      setMobilePane("canvas");
+    },
+    [select],
+  );
+  const enterSubgraph = useCallback(
+    (id) => {
+      if (busy || pendingPlacement) return;
+      if (graph.nodes.find((node) => node.id === id)?.kind === "subgraph")
+        navigateGraph([...graphPath, id]);
+    },
+    [graph.nodes, graphPath, navigateGraph, busy, pendingPlacement],
   );
   const runtimeStages = useMemo(() => {
     const stages = task?.stages || task?.runtime?.stages || {};
@@ -484,7 +558,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           node,
           definition: effectiveWorkflowDefinition(
             node,
-            catalogNode(catalog.nodes, node),
+            catalogNode(catalog.nodes, node, graph, new Set(), graphContext),
           ),
           status:
             runtimeNodes[node.id]?.status ||
@@ -495,10 +569,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           onBinding,
           onBusy,
           onPortMenu,
+          onEnter: enterSubgraph,
         },
       })),
     [
-      graph.nodes,
+      graph,
+      graphContext,
       monitorPositions,
       catalog.nodes,
       runtimeNodes,
@@ -510,6 +586,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       onBinding,
       onBusy,
       onPortMenu,
+      enterSubgraph,
     ],
   );
   const edges = useMemo(
@@ -580,7 +657,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           : [];
   const copy = () => {
     applicationClipboard = copyWorkflowSelection(
-      draftRef.current.graph,
+      currentEditableGraph(),
       chosenIds(),
     );
     setHasClipboard(Boolean(applicationClipboard.nodes.length));
@@ -588,7 +665,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   };
   const paste = (clipboard = applicationClipboard, location) => {
     const pasted = pasteWorkflowSelection(
-      draftRef.current.graph,
+      currentEditableGraph(),
       clipboard,
       location ||
         (menu
@@ -596,6 +673,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           : pointer.current
             ? flow.screenToFlowPosition(pointer.current)
             : undefined),
+      { inputKeys: workflowSourceKeys(draftRef.current.graph) },
     );
     if (pasted.ids.length) {
       changeGraph(pasted.graph);
@@ -605,9 +683,250 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   };
   const duplicate = () =>
     paste(
-      copyWorkflowSelection(draftRef.current.graph, chosenIds()),
+      copyWorkflowSelection(currentEditableGraph(), chosenIds()),
       undefined,
     );
+  const groupSelection = () => {
+    try {
+      const parent = graphPath.length
+        ? workflowGraphAtPath(rootGraph, graphPath.slice(0, -1))?.nodes.find(
+            (node) => node.id === graphPath.at(-1),
+          )
+        : null;
+      const result = wrapWorkflowSubgraph(
+        currentEditableGraph(),
+        chosenIds(),
+        catalog.nodes,
+        "知识处理子图",
+        parent?.subgraph?.interface,
+      );
+      changeGraph(result.graph, result.boundary);
+      select([result.node.id]);
+      setPanel("node");
+      setMenu(null);
+      setError("");
+    } catch (cause) {
+      setError(cause.message);
+    }
+  };
+  const ungroupSelection = () => {
+    try {
+      const result = unwrapWorkflowSubgraph(
+        currentEditableGraph(),
+        menu?.nodeId || selected,
+      );
+      changeGraph(result.graph, result.boundary);
+      select(result.ids);
+      setMenu(null);
+      setError("");
+    } catch (cause) {
+      setError(cause.message);
+    }
+  };
+  const insertSubgraphTemplate = async (id) => {
+    if (!id || busy) return;
+    setBusy("insert-subgraph");
+    setError("");
+    try {
+      const builtin = catalog.builtinTemplates?.find((item) => item.id === id);
+      const saved = builtin || (await workflowApi.template(id)).template;
+      if (!alive.current) return;
+      const source = initializeGraph(saved.graph, catalog.nodes);
+      let wrapper;
+      if (source.nodes.length === 1 && source.nodes[0].kind === "subgraph")
+        wrapper = clone(source.nodes[0]);
+      else
+        wrapper = wrapWorkflowSubgraph(
+          source,
+          source.nodes.map((node) => node.id),
+          catalog.nodes,
+          saved.title,
+        ).node;
+      wrapper.subgraph.origin = {
+        templateId: saved.id,
+        revision: saved.revision || 1,
+      };
+      paste({ nodes: [wrapper], edges: [] });
+      setNotice(`已插入子图：${saved.title}。修改不会影响原模板。`);
+    } catch (cause) {
+      if (alive.current) setError(cause.message);
+    } finally {
+      if (alive.current) setBusy("");
+    }
+  };
+  const saveSubgraphTemplate = async () => {
+    if (!selectedNode?.subgraph || busy) return;
+    setBusy("save-subgraph");
+    setError("");
+    try {
+      const wrapper = { ...clone(selectedNode), position: { x: 80, y: 80 } };
+      delete wrapper.subgraph.origin;
+      const source = normalizeGraph({
+        version: 3,
+        nodes: [wrapper],
+        edges: [],
+        settings: rootGraph.settings,
+      });
+      await workflowApi.validate({ graph: source });
+      const { template: saved } = await workflowApi.saveTemplate({
+        title: selectedNode.name || "可复用子图",
+        description: selectedNode.subgraph.description || "",
+        graph: source,
+        sharingMembers: [],
+      });
+      if (!alive.current) return;
+      setTemplates((items) => [...items, saved]);
+      changeGraph((current) => ({
+        ...current,
+        nodes: current.nodes.map((node) =>
+          node.id === selectedNode.id
+            ? {
+                ...node,
+                subgraph: {
+                  ...node.subgraph,
+                  origin: { templateId: saved.id, revision: saved.revision },
+                },
+              }
+            : node,
+        ),
+      }));
+      setNotice(`子图模板已保存 · 第 ${saved.revision} 版。`);
+      onChanged?.({ templateId: saved.id });
+    } catch (cause) {
+      if (alive.current) setError(cause.message);
+    } finally {
+      if (alive.current) setBusy("");
+    }
+  };
+  const updateSubgraphTemplate = async () => {
+    const origin = selectedNode?.subgraph?.origin;
+    if (!origin || busy) return;
+    setBusy("update-subgraph");
+    setError("");
+    try {
+      const saved =
+        catalog.builtinTemplates?.find(
+          (item) => item.id === origin.templateId,
+        ) || (await workflowApi.template(origin.templateId)).template;
+      if (!alive.current) return;
+      if (saved.revision === origin.revision) {
+        setNotice("当前引用已经是最新版本。");
+        return;
+      }
+      const source = initializeGraph(saved.graph, catalog.nodes);
+      const wrapper =
+        source.nodes.length === 1 && source.nodes[0].kind === "subgraph"
+          ? clone(source.nodes[0])
+          : wrapWorkflowSubgraph(
+              source,
+              source.nodes.map((node) => node.id),
+              catalog.nodes,
+              saved.title,
+            ).node;
+      wrapper.id = selectedNode.id;
+      wrapper.name = selectedNode.name;
+      wrapper.position = selectedNode.position;
+      const inputNames = new Set(
+        (wrapper.subgraph.interface?.inputs || []).map((port) => port.name),
+      );
+      const parameterNames = new Set(
+        (wrapper.subgraph.interface?.parameters || []).map(
+          (parameter) => parameter.name,
+        ),
+      );
+      wrapper.inputs = Object.fromEntries(
+        Object.entries(selectedNode.inputs || {}).filter(([name]) =>
+          inputNames.has(name),
+        ),
+      );
+      wrapper.config = Object.fromEntries(
+        Object.entries({ ...wrapper.config, ...selectedNode.config }).filter(
+          ([name]) => parameterNames.has(name),
+        ),
+      );
+      wrapper.subgraph.origin = {
+        templateId: saved.id,
+        revision: saved.revision || 1,
+      };
+      const next = {
+        ...graph,
+        nodes: graph.nodes.map((node) =>
+          node.id === selectedNode.id ? wrapper : node,
+        ),
+      };
+      await workflowApi.validate({
+        graph: updateWorkflowGraphAtPath(
+          draftRef.current.graph,
+          graphPath,
+          next,
+        ),
+      });
+      if (!alive.current) return;
+      changeGraph(next);
+      setNotice(
+        `子图引用已更新到第 ${saved.revision || 1} 版，可撤销；正在执行的任务不受影响。`,
+      );
+    } catch (cause) {
+      if (alive.current) setError(cause.message);
+    } finally {
+      if (alive.current) setBusy("");
+    }
+  };
+  const exportWorkflow = () => {
+    const value = { title, description, graph: rootGraph };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(value, null, 2)], {
+        type: "application/json;charset=utf-8",
+      }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${[...(title || "工作流")]
+      .filter((character) => character.codePointAt(0) >= 32)
+      .join("")
+      .replace(/[<>:"/\\|?*]/g, "_")}.json`;
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const importWorkflow = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || busy) return;
+    setBusy("import");
+    setError("");
+    try {
+      if (file.size > 10 * 1024 * 1024)
+        throw new Error("工作流 JSON 不能超过 10 MB。");
+      const value = JSON.parse(await file.text());
+      const source = value.graph || value;
+      if (!Array.isArray(source.nodes) || !Array.isArray(source.edges))
+        throw new Error("文件中缺少工作流节点或连线。");
+      const next = initializeGraph(
+        source,
+        catalog.nodes,
+        catalog.settingsDefaults,
+      );
+      await workflowApi.validate({ graph: next });
+      if (!alive.current) return;
+      changeDraft((current) => ({
+        ...current,
+        graph: next,
+        title: typeof value.title === "string" ? value.title : current.title,
+        description:
+          typeof value.description === "string"
+            ? value.description
+            : current.description,
+      }));
+      navigateGraph([]);
+      setNotice(
+        "已导入工作流与全部嵌套子图，可撤销此操作。请核对模型、附件和数据库配置。",
+      );
+    } catch (cause) {
+      if (alive.current) setError(cause.message);
+    } finally {
+      if (alive.current) setBusy("");
+    }
+  };
   const deleteSelected = () => {
     const ids = menu?.edgeId ? [] : chosenIds();
     changeGraph((current) => ({
@@ -624,7 +943,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   };
   const addNode = (definition, position) => {
     if (pendingPlacement) return;
-    const current = draftRef.current.graph;
+    const current = currentEditableGraph();
     const node = createWorkflowNode(definition, current, position);
     changeGraph({ ...current, nodes: [...current.nodes, node] });
     select([node.id]);
@@ -665,12 +984,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     }
     try {
       const result = addWorkflowNodeWithConnection(
-        draftRef.current.graph,
+        currentEditableGraph(),
         definition,
         picker.position,
         picker.connection,
         port,
         catalog.nodes,
+        graphContext,
       );
       changeGraph(result.graph);
       select([result.node.id]);
@@ -687,7 +1007,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     try {
       const cursor = flow.screenToFlowPosition(point);
       const result = addWorkflowNodeWithConnection(
-        draftRef.current.graph,
+        currentEditableGraph(),
         pendingPlacement.definition,
         {
           x: cursor.x - PENDING_NODE_ANCHOR.x,
@@ -696,6 +1016,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         pendingPlacement.connection,
         pendingPlacement.port,
         catalog.nodes,
+        graphContext,
       );
       changeGraph(result.graph);
       select([result.node.id]);
@@ -835,6 +1156,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           parameters: { ...running.parameters, graph: clone(current.graph) },
         });
         setViewMode("monitor");
+        setGraphPath([]);
         setFollowTask(true);
         setFitRequest((current) => current + 1);
         setFocusRequest(null);
@@ -1147,7 +1469,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       disabled={Boolean(busy || pendingPlacement)}
                       onChange={(id) => void loadTemplate(id)}
                       options={[
-                        { value: "", label: "标准提取流程" },
+                        {
+                          value: "",
+                          label: catalog.standardGraphTitle || "标准提取流程",
+                        },
                         ...(catalog.builtinTemplates || []).map((item) => ({
                           value: item.id,
                           label: item.title,
@@ -1183,6 +1508,52 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         )}
                       </div>
                     )}
+                    <div className="mt-3 space-y-2">
+                      <label className="workflow-label">插入可复用子图</label>
+                      <WorkflowSelect
+                        label="插入子图模板"
+                        value=""
+                        disabled={Boolean(busy || pendingPlacement)}
+                        onChange={(id) => void insertSubgraphTemplate(id)}
+                        options={[
+                          { value: "", label: "选择模板并作为子图插入" },
+                          ...templates.map((item) => ({
+                            value: item.id,
+                            label: `${item.title} · v${item.revision}`,
+                          })),
+                          ...(catalog.builtinTemplates || []).map((item) => ({
+                            value: item.id,
+                            label: `${item.title} · 内置`,
+                          })),
+                        ]}
+                      />
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <input
+                        ref={importFileRef}
+                        type="file"
+                        accept="application/json,.json"
+                        className="hidden"
+                        aria-label="导入工作流 JSON 文件"
+                        onChange={(event) => void importWorkflow(event)}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={Boolean(busy || pendingPlacement)}
+                        onClick={() => importFileRef.current?.click()}
+                      >
+                        导入 JSON
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={Boolean(busy || pendingPlacement)}
+                        onClick={exportWorkflow}
+                      >
+                        导出 JSON
+                      </Button>
+                    </div>
                     <div className="my-4 space-y-2">
                       <label className="workflow-label">模板 / 任务名称</label>
                       <Input
@@ -1246,7 +1617,46 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 }
               }}
             >
+              <nav
+                className="workflow-breadcrumbs nodrag nowheel"
+                aria-label="子图路径"
+                onPointerMove={(event) => event.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  disabled={Boolean(busy || pendingPlacement)}
+                  onClick={() => navigateGraph([])}
+                >
+                  <GitBranch className="size-3" />
+                  主工作流
+                </button>
+                {graphPath.map((id, index) => {
+                  const parent = workflowGraphAtPath(
+                    rootGraph,
+                    graphPath.slice(0, index),
+                  );
+                  return (
+                    <span key={graphPath.slice(0, index + 1).join("/")}>
+                      <span aria-hidden="true">›</span>
+                      <button
+                        type="button"
+                        aria-current={
+                          index === graphPath.length - 1 ? "page" : undefined
+                        }
+                        disabled={Boolean(busy || pendingPlacement)}
+                        onClick={() =>
+                          navigateGraph(graphPath.slice(0, index + 1))
+                        }
+                      >
+                        {parent?.nodes.find((node) => node.id === id)?.name ||
+                          id}
+                      </button>
+                    </span>
+                  );
+                })}
+              </nav>
               <WorkflowCanvas
+                key={graphPathKey}
                 nodes={nodes}
                 selectionRequest={selectionRequest}
                 fitRequest={fitRequest}
@@ -1276,6 +1686,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   if (readOnly) setMonitorView("overview");
                 }}
                 onNodeDoubleClick={(_event, node) => {
+                  if (node.data.node.kind === "subgraph") {
+                    enterSubgraph(node.id);
+                    return;
+                  }
                   setSelected(node.id);
                   setPanel("node");
                   if (readOnly) setMonitorView("overview");
@@ -1323,7 +1737,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     connectionStart.current.connected = true;
                   try {
                     changeGraph((current) =>
-                      connectWorkflow(current, connection, catalog.nodes),
+                      connectWorkflow(
+                        current,
+                        connection,
+                        catalog.nodes,
+                        graphContext,
+                      ),
                     );
                     setError("");
                   } catch (cause) {
@@ -1481,6 +1900,30 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     <Button
                       variant="outline"
                       size="icon"
+                      aria-label="将选中节点组合为子图"
+                      title="组合为子图"
+                      disabled={
+                        Boolean(busy || pendingPlacement) || !selectedIds.length
+                      }
+                      onClick={groupSelection}
+                    >
+                      <Group className="size-4" />
+                    </Button>
+                    {selectedNode?.kind === "subgraph" && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label="进入选中子图"
+                        title="进入子图"
+                        disabled={Boolean(busy || pendingPlacement)}
+                        onClick={() => enterSubgraph(selectedNode.id)}
+                      >
+                        <FolderOpen className="size-4" />
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="icon"
                       title="撤销 · Ctrl Z"
                       aria-label="撤销工作流修改"
                       disabled={
@@ -1534,6 +1977,16 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   onDuplicate={duplicate}
                   onDelete={deleteSelected}
                   onRename={rename}
+                  onGroup={groupSelection}
+                  onUngroup={ungroupSelection}
+                  onEnter={() => {
+                    enterSubgraph(menu.nodeId);
+                    setMenu(null);
+                  }}
+                  isSubgraph={
+                    graph.nodes.find((node) => node.id === menu?.nodeId)
+                      ?.kind === "subgraph"
+                  }
                   onAdd={() => openPicker({ x: menu.x, y: menu.y })}
                   onPortMode={(mode) => {
                     if (menu?.port)
@@ -1563,6 +2016,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                   picker={picker}
                   definitions={catalog.nodes}
                   graph={graph}
+                  context={graphContext}
                   onClose={closePicker}
                   onChoose={chooseNode}
                 />
@@ -1577,10 +2031,17 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     selectedNode &&
                     effectiveWorkflowDefinition(
                       selectedNode,
-                      catalogNode(catalog.nodes, selectedNode),
+                      catalogNode(
+                        catalog.nodes,
+                        selectedNode,
+                        graph,
+                        new Set(),
+                        graphContext,
+                      ),
                     )
                   }
                   runtime={runtimeNodes[selected] || {}}
+                  onEnterSubgraph={() => enterSubgraph(selected)}
                   stages={runtimeStages}
                   onOpenLogs={() => setMonitorView("logs")}
                 />
@@ -1605,12 +2066,36 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     </button>
                   </div>
                   {panel === "node" ? (
-                    selectedNode ? (
+                    selectedNode?.kind === "subgraph" ? (
+                      <WorkflowSubgraphPanel
+                        key={`${graphPathKey}/${selectedNode.id}`}
+                        graph={graph}
+                        node={selectedNode}
+                        definitions={catalog.nodes}
+                        context={graphContext}
+                        onGraphChange={changeGraph}
+                        parentInterface={
+                          graphPath.length
+                            ? workflowGraphAtPath(
+                                rootGraph,
+                                graphPath.slice(0, -1),
+                              )?.nodes.find(
+                                (node) => node.id === graphPath.at(-1),
+                              )?.subgraph?.interface
+                            : undefined
+                        }
+                        onEnter={() => enterSubgraph(selectedNode.id)}
+                        onSaveTemplate={() => void saveSubgraphTemplate()}
+                        onUpdateTemplate={() => void updateSubgraphTemplate()}
+                        disabled={Boolean(busy || pendingPlacement)}
+                      />
+                    ) : selectedNode ? (
                       <WorkflowNodePanel
                         key={selectedNode.id}
                         graph={graph}
                         node={selectedNode}
                         definitions={catalog.nodes}
+                        context={graphContext}
                         models={models}
                         onGraphChange={changeGraph}
                         onValidity={validity}
@@ -1737,7 +2222,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               <Button
                 variant={followTask ? "secondary" : "outline"}
                 aria-pressed={followTask}
-                title={followTask ? "持续定位已开启，点击关闭" : "点击持续定位当前任务节点"}
+                title={
+                  followTask
+                    ? "持续定位已开启，点击关闭"
+                    : "点击持续定位当前任务节点"
+                }
                 onClick={locateTask}
               >
                 定位到任务
