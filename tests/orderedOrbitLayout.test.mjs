@@ -70,7 +70,7 @@ test('ordinary satellites move through physical coordinates, stay near their own
     simulation.stop();
 });
 
-test('a cooled ordinary graph moves gently without random impulses overpowering centering and collision', () => {
+test('a cooled ordinary graph appears stationary until disturbed', () => {
     const graph = { nodes: [{ id: 'first', label: 'Event', x: -100, y: 0 },
         { id: 'second', label: 'Event', x: 100, y: 0 }], relationships: [] };
     const orbit = createOrderedOrbitLayout(); orbit.rebuild(graph.nodes, graph.relationships);
@@ -91,8 +91,8 @@ test('a cooled ordinary graph moves gently without random impulses overpowering 
         }
     }
     simulation.stop();
-    assert.ok(maxStep < 1, `settled motion must not lurch between frames (${maxStep.toFixed(2)}px)`);
-    assert.ok(maxExcursion > 0.1 && maxExcursion < 30, `motion remains subtle and bounded (${maxExcursion.toFixed(2)}px)`);
+    assert.ok(maxStep < 0.02, `settled motion must be negligible between frames (${maxStep.toFixed(3)}px)`);
+    assert.ok(maxExcursion < 0.5, `untouched nodes must remain visually stationary (${maxExcursion.toFixed(3)}px)`);
 });
 
 test('new orbit slots avoid neighboring skeleton nodes and their caption band without adding another owner', () => {
@@ -285,7 +285,8 @@ test('an isolated Chunk participates in physics while retaining ordinary centeri
     assert.ok(Math.hypot(chunk.x, chunk.y) < 120, 'unowned nodes remain bounded by normal centering forces');
     assert.notDeepEqual({ x: chunk.x, y: chunk.y }, start);
     const warmed = { x: chunk.x, y: chunk.y }; simulation.tick(120); simulation.stop();
-    assert.ok(Math.hypot(chunk.x - warmed.x, chunk.y - warmed.y) > 0.1);
+    assert.ok(Math.hypot(chunk.x - warmed.x, chunk.y - warmed.y) < 0.1,
+        'an untouched source should appear stationary after its initial layout');
 });
 
 for (const withTime of [false, true]) test(`unowned Entity and Chunk physics continues with Time=${withTime}`, () => {

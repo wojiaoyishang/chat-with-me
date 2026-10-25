@@ -625,7 +625,9 @@ export function createOrderedOrbitLayout() {
                 state.windX = state.windX * 0.88 + (random(state) - 0.5) * 2.4;
                 state.windY = state.windY * 0.88 + (random(state) - 0.5) * 2.4;
                 const activity = Math.max(0, Math.min(0.08, alpha));
-                const wind = chunkNode(node) ? 0.22 : 0.9;
+                // At rest nodes should look stationary. Keep background noise
+                // negligible; dragging, links and collisions drive movement.
+                const wind = chunkNode(node) ? 0.0022 : 0.009;
                 node.vx += state.windX * wind * activity;
                 node.vy += state.windY * wind * activity;
             }
