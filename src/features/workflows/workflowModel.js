@@ -192,15 +192,45 @@ export function workflowNodeNumbers(graph) {
   return numbers;
 }
 
-export function workflowNodeGroups(categories = [], definitions = []) {
-  const groups = categories.map((category) => ({ ...category, nodes: [] }));
+/** Menu placement is a server-owned scene path, independent of execution role. */
+export function workflowNodeMenuTree(menus = [], definitions = []) {
+  const build = (items, path = [], depth = 0) =>
+    depth >= 8
+      ? []
+      : items.map((item) => ({
+          ...item,
+          path: [...path, item.id],
+          nodes: [],
+          children: build(item.children || [], [...path, item.id], depth + 1),
+        }));
+  const groups = build(menus);
+  const unassigned = [];
   for (const definition of definitions.filter((node) => !node.hidden)) {
-    const id = nodeCategory(definition) || "process";
-    let group = groups.find((item) => item.id === id);
-    if (!group) groups.push((group = { id, title: "其他节点", nodes: [] }));
-    group.nodes.push(definition);
+    let children = groups,
+      group;
+    for (const id of definition.menuPath || []) {
+      group = children.find((item) => item.id === id);
+      if (!group) break;
+      children = group.children;
+    }
+    (group && group.path.length === definition.menuPath?.length
+      ? group.nodes
+      : unassigned
+    ).push(definition);
   }
-  return groups.filter((group) => group.nodes.length);
+  if (unassigned.length)
+    groups.push({
+      id: "unassigned",
+      path: ["unassigned"],
+      title: "其他节点",
+      nodes: unassigned,
+      children: [],
+    });
+  const prune = (items) =>
+    items
+      .map((item) => ({ ...item, children: prune(item.children) }))
+      .filter((item) => item.nodes.length || item.children.length);
+  return prune(groups);
 }
 
 /** Repeated ports use stable item IDs; their order belongs to configuration. */

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 import { build } from "esbuild";
 import { JSDOM } from "jsdom";
 import React, { act } from "react";
@@ -8,10 +9,16 @@ import { createRoot } from "react-dom/client";
 
 const catalog = {
   defaultTitle: "知识提取工作流",
-  categories: [
-    { id: "source", title: "输入数据" },
-    { id: "process", title: "处理节点" },
-    { id: "sink", title: "输出节点" },
+  nodeMenus: [
+    { id: "input", title: "输入" },
+    { id: "materials", title: "资料与内容", children: [{id:"sources",title:"文档与附件"}] },
+    { id: "knowledge", title: "知识图谱" },
+    { id: "flow", title: "流程编排", children: [{id:"subgraphs",title:"子图",children:[{id:"parameters",title:"子图参数"}]}] },
+  ],
+  editorNodes: [
+    {kind:"subgraph",menuPath:["flow","subgraphs"]},
+    {kind:"interface_inputs",menuPath:["flow","subgraphs","parameters"]},
+    {kind:"interface_outputs",menuPath:["flow","subgraphs","parameters"]},
   ],
   settingsDefaults: { maxConcurrency: 4, commonConfig: { modelId: "" } },
   settingsSchema: {
@@ -49,6 +56,7 @@ const catalog = {
   nodes: [
     {
       kind: "input",
+      menuPath: ["materials", "sources"],
       version: 1,
       title: "输入来源",
       description: "初始化输入",
@@ -110,6 +118,7 @@ const catalog = {
     },
     {
       kind: "extract",
+      menuPath: ["knowledge"],
       version: 1,
       effects: ["knowledge.write"],
       title: "知识提取",
@@ -182,6 +191,7 @@ const catalog = {
     },
     {
       kind: "text",
+      menuPath: ["input"],
       version: 1,
       title: "文本数据",
       display: {
@@ -521,7 +531,7 @@ async function environment(request = {}, options = {}) {
                   "export const AlertDialog=({open,children})=>open?children:null;export const AlertDialogContent=({children,...props})=><section {...props}>{children}</section>;export const AlertDialogDescription=({children})=><p>{children}</p>;export const AlertDialogFooter=({children})=><footer>{children}</footer>;export const AlertDialogHeader=({children})=><header>{children}</header>;export const AlertDialogTitle=({children})=><h3>{children}</h3>;";
               else if (requested.endsWith("/dropdown-menu"))
                 contents =
-                  "export const DropdownMenu=({open,children})=>open?children:null;export const DropdownMenuTrigger=({children})=>children;export const DropdownMenuContent=({children})=><div>{children}</div>;export const DropdownMenuItem=({children,onSelect,...props})=><button onClick={onSelect} {...props}>{children}</button>;export const DropdownMenuLabel=({children})=><div>{children}</div>;export const DropdownMenuSeparator=()=>null;export const DropdownMenuShortcut=({children})=><small>{children}</small>;export const DropdownMenuSub=({children})=><div>{children}</div>;export const DropdownMenuSubTrigger=({children})=><button>{children}</button>;export const DropdownMenuSubContent=({children,...props})=><div {...props}>{children}</div>;export const DropdownMenuCheckboxItem=({children,checked,onCheckedChange})=><button role='menuitemcheckbox' aria-checked={checked} onClick={()=>onCheckedChange(!checked)}>{children}</button>;";
+                  "export const DropdownMenu=({open,children})=>open?children:null;export const DropdownMenuTrigger=({children})=>children;export const DropdownMenuContent=({children})=><div>{children}</div>;export const DropdownMenuItem=({children,onSelect,...props})=><button onClick={onSelect} {...props}>{children}</button>;export const DropdownMenuLabel=({children})=><div>{children}</div>;export const DropdownMenuSeparator=()=>null;export const DropdownMenuShortcut=({children})=><small>{children}</small>;export const DropdownMenuPortal=({children})=>children;export const DropdownMenuSub=({children})=><div>{children}</div>;export const DropdownMenuSubTrigger=({children})=><button>{children}</button>;export const DropdownMenuSubContent=({children,...props})=><div {...props}>{children}</div>;export const DropdownMenuCheckboxItem=({children,checked,onCheckedChange})=><button role='menuitemcheckbox' aria-checked={checked} onClick={()=>onCheckedChange(!checked)}>{children}</button>;";
               return { loader: "jsx", contents };
             },
           );
@@ -565,6 +575,12 @@ const button = (text) =>
 async function menuNode(app, title) {
   await act(() => globalThis.workflowUITest.flow.onPaneContextMenu(new app.dom.window.MouseEvent("contextmenu", { clientX: 350, clientY: 260 })));
   return [...document.querySelectorAll(".workflow-menu-node-label")].find((node) => node.firstElementChild.textContent === title)?.closest("button");
+}
+
+async function placeGhost(app, x = 500, y = 300) {
+  assert.ok(document.querySelector('[aria-label="待放置节点"]'));
+  await act(() => document.querySelector('[data-blank-canvas]').dispatchEvent(new app.dom.window.MouseEvent("click", {bubbles:true,button:0,clientX:x,clientY:y})));
+  assert.equal(document.querySelector('[aria-label="待放置节点"]'), null);
 }
 
 test("ordered content ports update the canvas, preserve links during reorder, and undo removal", async () => {
@@ -803,6 +819,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
       "root palette excludes interface constructors",
     );
     await click(await paletteButton("子图"), app.dom);
+    await placeGhost(app);
     let group = globalThis.workflowUITest.flow.nodes.find(
       (node) => node.data.kind === "subgraph",
     );
@@ -855,6 +872,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
     await click(button("进入子图"), app.dom);
     assert.ok(await paletteButton("输入参数"));
     await click(await paletteButton("知识提取"), app.dom);
+    await placeGhost(app);
     const childId = globalThis.workflowUITest.flow.nodes.find(
       (node) => node.data.kind === "extract",
     ).id;
@@ -863,6 +881,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
         (node) => node.data.direction === direction,
       ).id;
     await click(await paletteButton("输入参数"), app.dom);
+    await placeGhost(app);
     await act(() =>
       globalThis.workflowUITest.flow.onConnect({
         source: capsuleId("inputs"),
@@ -893,6 +912,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
       ),
     );
     await click(await paletteButton("输出参数"), app.dom);
+    await placeGhost(app);
     await act(() =>
       globalThis.workflowUITest.flow.onConnect({
         source: childId,
@@ -945,6 +965,7 @@ test("copying a saved template initializes the same subgraph only after confirma
   try {
     const palette = await menuNode(app, "子图");
     await click(palette, app.dom);
+    await placeGhost(app);
     let group = globalThis.workflowUITest.flow.nodes.find(
       (node) => node.data.kind === "subgraph",
     );
@@ -1028,6 +1049,7 @@ test("failed subgraph template loading keeps the pending node available for retr
       await menuNode(app, "子图"),
       app.dom,
     );
+    await placeGhost(app);
     const pending = globalThis.workflowUITest.flow.nodes.at(-1).data.node;
     await input(
       document.querySelector('[aria-label="子图创建方式"]'),
@@ -1983,7 +2005,7 @@ test("unknown workflow nodes and settings render from catalog metadata without k
   const custom = {
     ...structuredClone(catalog),
     defaultTitle: "后端定义流程",
-    categories: [{ id: "custom-inputs", title: "自定义输入" }],
+    nodeMenus: [{ id: "custom-inputs", title: "自定义输入" }],
     settingsDefaults: { parallelism: 9 },
     settingsSchema: {
       type: "object",
@@ -2004,6 +2026,7 @@ test("unknown workflow nodes and settings render from catalog metadata without k
           description: "后端声明的节点说明",
         },
         category: "custom-inputs",
+        menuPath: ["custom-inputs"],
         configSchema: {
           type: "object",
           properties: { timestamp: { type: "integer", default: 42 } },
@@ -3201,6 +3224,45 @@ test("deleting a right-clicked edge preserves an unrelated selected node", async
   }
 });
 
+test("scene context menus preview a following ghost before one atomic placement", async () => {
+  const app = await environment();
+  const blank = document.querySelector('[data-blank-canvas]');
+  try {
+    const styles = document.createElement("style");
+    styles.textContent = readFileSync("src/features/workflows/workflow.css", "utf8");
+    document.head.append(styles);
+    const choose = async () => {
+      const item = await menuNode(app, "文本数据");
+      const add = button("添加节点");
+      assert.ok(add.querySelector("svg"), "only the top-level add action has a decorative icon");
+      const submenu = document.querySelector('.workflow-add-submenu');
+      assert.equal(submenu.querySelector('svg'), null);
+      assert.doesNotMatch(submenu.textContent, /输入数据|处理节点|输出节点/);
+      await act(() => window.dispatchEvent(new app.dom.window.MouseEvent("pointermove", {clientX:620,clientY:350,bubbles:true})));
+      await click(item, app.dom);
+    };
+    await choose();
+    let ghost = document.querySelector('[aria-label="待放置节点"]');
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    assert.equal(window.getComputedStyle(ghost).position,"absolute", "generic node relative positioning must never hide the ghost below the canvas");
+    assert.equal(window.getComputedStyle(ghost).pointerEvents,"none");
+    assert.equal(ghost.style.left,"548px");
+    await act(() => blank.dispatchEvent(new app.dom.window.MouseEvent("pointermove", {clientX:680,clientY:390,bubbles:true})));
+    assert.equal(ghost.style.left,"608px");
+    assert.equal(globalThis.workflowUITest.flow.nodes.length,2);
+    await act(() => document.querySelector('.workflow-canvas').dispatchEvent(new app.dom.window.KeyboardEvent("keydown", {key:"Escape",bubbles:true})));
+    assert.equal(document.querySelector('[aria-label="待放置节点"]'),null);
+    assert.equal(document.querySelector('[aria-label="撤销工作流修改"]').disabled,true);
+    await choose();
+    await placeGhost(app,680,390);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length,3);
+    assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position,{x:608,y:366});
+    await click(document.querySelector('[aria-label="撤销工作流修改"]'),app.dom);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length,2);
+    assert.equal(globalThis.workflowUITest.flow.edges.length,0);
+  } finally { await app.close(); }
+});
+
 test("blank canvas context action and double click open pinned searchable node picker", async () => {
   const app = await environment();
   const blank = document.querySelector("[data-blank-canvas]");
@@ -3231,6 +3293,8 @@ test("blank canvas context action and double click open pinned searchable node p
       document.querySelector(".workflow-node-picker-option"),
       app.dom,
     );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await placeGhost(app, 422, 284);
     assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position, {
       x: 250,
       y: 210,
@@ -3259,6 +3323,8 @@ test("blank canvas context action and double click open pinned searchable node p
       document.querySelector(".workflow-node-picker-option"),
       app.dom,
     );
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
+    await placeGhost(app, 452, 324);
     assert.deepEqual(globalThis.workflowUITest.flow.nodes.at(-1).position, {
       x: 280,
       y: 250,

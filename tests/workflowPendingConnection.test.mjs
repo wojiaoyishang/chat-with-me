@@ -6,7 +6,7 @@ import { pendingWorkflowConnectionPath } from "../src/features/workflows/workflo
 function fixture(handleType) {
   const dom = new JSDOM(`
     <main id="canvas">
-      <span class="react-flow__handle react-flow__handle-${handleType}"
+      <span class="react-flow__handle react-flow__handle-right nodrag nopan ${handleType} connectable"
         data-nodeid="existing" data-handleid="content"></span>
       <div id="ghost"><span data-pending-handle></span></div>
     </main>

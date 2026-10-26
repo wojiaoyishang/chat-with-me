@@ -727,6 +727,9 @@
 
 /* Identity stays inside; floating actions appear on hover or keyboard focus. */
 .workflow-node { position: relative; }
+.workflow-node.workflow-pending-node { position: absolute; z-index: 25; pointer-events: none; opacity: .82; box-shadow: 0 6px 24px #00000018; border-style: dashed; }
+.workflow-pending-node.is-interface { border-radius: 999px; min-width: 200px; }
+.workflow-pending-node.is-interface > p:last-child { position: absolute; top: 100%; left: 12px; white-space: nowrap; }
 .workflow-node-header { display: flex; align-items: flex-start; gap: 10px; }
 .workflow-node-header > .workflow-node-title { flex: 1; min-width: 0; }
 .workflow-node-header > .workflow-node-title > svg { flex-shrink: 0; }

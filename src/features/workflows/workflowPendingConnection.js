@@ -6,7 +6,7 @@ export function pendingWorkflowConnectionPath(canvas, ghost, connection) {
     (element) =>
       element.dataset.nodeid === connection.nodeId &&
       element.dataset.handleid === connection.handleId &&
-      element.classList.contains(`react-flow__handle-${connection.handleType}`),
+      element.classList.contains(connection.handleType),
   );
   const ghostHandle = ghost.querySelector("[data-pending-handle]");
   if (!handle || !ghostHandle) return null;

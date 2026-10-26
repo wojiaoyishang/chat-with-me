@@ -9,12 +9,12 @@ import {
   Group,
   Ungroup,
   FolderOpen,
-  Search,
   PackageCheck,
 } from "lucide-react";
-import { workflowNodeGroups } from "./workflowModel.js";
+import { workflowNodeMenuTree } from "./workflowModel.js";
 import {
   DropdownMenu,
+  DropdownMenuPortal,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -26,6 +26,43 @@ import {
   DropdownMenuSubContent,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+
+function NodeMenuEntries({ groups = [], nodes = [], onChoose }) {
+  return (
+    <>
+      {nodes.map((definition) => (
+        <DropdownMenuItem
+          key={`node:${definition.kind}`}
+          onSelect={() => onChoose(definition)}
+          title={definition.display?.description}
+        >
+          <span className="workflow-menu-node-label">
+            <span>{definition.display?.title}</span>
+            {definition.display?.subtitle && (
+              <small>{definition.display.subtitle}</small>
+            )}
+          </span>
+        </DropdownMenuItem>
+      ))}
+      {groups.map((group) => (
+        <DropdownMenuSub key={`group:${group.id}`}>
+          <DropdownMenuSubTrigger data-menu-path={group.path.join("/")}>
+            {group.title}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent className="workflow-add-submenu">
+              <NodeMenuEntries
+                groups={group.children}
+                nodes={group.nodes}
+                onChoose={onChoose}
+              />
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
+      ))}
+    </>
+  );
+}
 
 export default function WorkflowContextMenu({
   menu,
@@ -43,7 +80,7 @@ export default function WorkflowContextMenu({
   onEnter,
   isSubgraph,
   isInterface,
-  categories,
+  nodeMenus,
   definitions,
   onAddNode,
   output,
@@ -65,9 +102,15 @@ export default function WorkflowContextMenu({
           style={{ left: menu.x, top: menu.y }}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" sideOffset={0} onEscapeKeyDown={(event) => {
-        event.preventDefault(); event.stopPropagation(); onClose();
-      }}>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={0}
+        onEscapeKeyDown={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }}
+      >
         {menu.port ? (
           <>
             <DropdownMenuLabel>{menu.port.display?.title}</DropdownMenuLabel>
@@ -84,33 +127,24 @@ export default function WorkflowContextMenu({
           <>
             {!menu.nodeId && !menu.edgeId && (
               <>
-                <DropdownMenuLabel>添加节点</DropdownMenuLabel>
-                {workflowNodeGroups(categories, definitions).map((group) => (
-                  <DropdownMenuSub key={group.id}>
-                    <DropdownMenuSubTrigger>
-                      <Plus />
-                      {group.title}
-                    </DropdownMenuSubTrigger>
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Plus />
+                    添加节点
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuPortal>
                     <DropdownMenuSubContent className="workflow-add-submenu">
-                      {group.nodes.map((definition) => (
-                        <DropdownMenuItem
-                          key={definition.kind}
-                          onSelect={() => onAddNode(definition)}
-                          title={definition.display?.description}
-                        >
-                          <span className="workflow-menu-node-label">
-                            <span>{definition.display?.title}</span>
-                            <small>{definition.display?.subtitle}</small>
-                          </span>
-                        </DropdownMenuItem>
-                      ))}
+                      <DropdownMenuItem onSelect={onAdd}>
+                        搜索节点…
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <NodeMenuEntries
+                        groups={workflowNodeMenuTree(nodeMenus, definitions)}
+                        onChoose={onAddNode}
+                      />
                     </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-                ))}
-                <DropdownMenuItem onSelect={onAdd}>
-                  <Search />
-                  搜索节点…
-                </DropdownMenuItem>
+                  </DropdownMenuPortal>
+                </DropdownMenuSub>
                 <DropdownMenuSeparator />
               </>
             )}

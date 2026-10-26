@@ -75,7 +75,6 @@ import {
   clone,
   connectWorkflow,
   copyWorkflowSelection,
-  createWorkflowNode,
   effectiveWorkflowDefinition,
   initializeGraph,
   initializeWorkflowSubgraph,
@@ -246,13 +245,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     ],
     [catalog.nodes, catalog.editorNodes, graphPath.length],
   );
-  const paletteCategories = useMemo(
-    () =>
-      (catalog.categories || []).some((category) => category.id === "control")
-        ? catalog.categories
-        : [...(catalog.categories || []), { id: "control", title: "流程控制" }],
-    [catalog.categories],
-  );
   const currentEditableGraph = () =>
     workflowGraphAtPath(draftRef.current.graph, graphPath) ||
     draftRef.current.graph;
@@ -287,9 +279,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const importFileRef = useRef(null);
   const pointer = useRef(null);
   const pickerOpen = Boolean(picker);
+  const menuOpen = Boolean(menu);
   const placingNode = Boolean(pendingPlacement);
   useEffect(() => {
-    if (!pickerOpen && !placingNode) return;
+    if (!pickerOpen && !placingNode && !menuOpen) return;
     const trackPointer = (event) => {
       pointer.current = { x: event.clientX, y: event.clientY };
       if (placingNode)
@@ -299,7 +292,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     };
     window.addEventListener("pointermove", trackPointer, { passive: true });
     return () => window.removeEventListener("pointermove", trackPointer);
-  }, [pickerOpen, placingNode]);
+  }, [pickerOpen, placingNode, menuOpen]);
   useLayoutEffect(() => {
     if (!pendingPlacement) {
       setPendingLink(null);
@@ -1266,10 +1259,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     select([]);
     setMenu(null);
   };
-  const addNode = (definition, position) => {
-    if (pendingPlacement) return;
-    if (definition.virtualInterface) {
-      try {
+  // The graph changes only at the final placement point (or an explicit drop).
+  const addNode = (definition, position, connection, port) => {
+    try {
+      if (definition.virtualInterface) {
+        if (connection) throw new Error("子图参数请放置后连接内部端口。");
         const result = addWorkflowInterface(
           draftRef.current.graph,
           graphPath,
@@ -1278,21 +1272,29 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         );
         changeDraft((current) => ({ ...current, graph: result.graph }));
         select([result.id]);
-        setPanel("node");
-        setMobilePane("canvas");
-        setError("");
-      } catch (cause) {
-        setError(cause.message);
+      } else {
+        const result = addWorkflowNodeWithConnection(
+          currentEditableGraph(),
+          definition,
+          position,
+          connection,
+          port,
+          catalog.nodes,
+          graphContext,
+        );
+        changeGraph(result.graph);
+        select([result.node.id]);
+        if (result.node.kind === "subgraph")
+          setFocusRequest({ id: result.node.id });
       }
-      return;
+      setPanel("node");
+      setMobilePane("canvas");
+      setError("");
+      return true;
+    } catch (cause) {
+      setError(cause.message);
+      return false;
     }
-    const current = currentEditableGraph();
-    const node = createWorkflowNode(definition, current, position);
-    changeGraph({ ...current, nodes: [...current.nodes, node] });
-    select([node.id]);
-    if (node.kind === "subgraph") setFocusRequest({ id: node.id });
-    setPanel("node");
-    setMobilePane("canvas");
   };
   const openPicker = (point, connection) => {
     if (readOnly || busy || pendingPlacement) return;
@@ -1309,54 +1311,28 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       dialogRef.current?.querySelector(".workflow-canvas")?.focus(),
     );
   };
+  const beginPlacement = (definition, point, connection, port) => {
+    if (readOnly || busy || pendingPlacement) return;
+    setPendingPlacement({ definition, port, connection, point });
+    setPicker(null);
+    setMenu(null);
+    setMobilePane("canvas");
+    setError("");
+    requestAnimationFrame(() => canvasRef.current?.focus());
+  };
   const chooseNode = ({ definition, port }, clickPoint) => {
-    if (readOnly || busy || !picker) return;
-    if (definition.virtualInterface) {
-      addNode(definition, picker.position);
-      closePicker();
-      return;
-    }
-    if (picker.connection) {
-      const point =
-        clickPoint?.x || clickPoint?.y
-          ? clickPoint
-          : pointer.current || { x: picker.x, y: picker.y };
-      setPendingPlacement({
-        definition,
-        port,
-        connection: picker.connection,
-        point,
-      });
-      setError("");
-      closePicker();
-      return;
-    }
-    try {
-      const result = addWorkflowNodeWithConnection(
-        currentEditableGraph(),
-        definition,
-        picker.position,
-        picker.connection,
-        port,
-        catalog.nodes,
-        graphContext,
-      );
-      changeGraph(result.graph);
-      select([result.node.id]);
-      setPanel("node");
-      setMobilePane("canvas");
-      setError("");
-      closePicker();
-    } catch (cause) {
-      setError(cause.message);
-    }
+    if (!picker) return;
+    const point =
+      clickPoint?.x || clickPoint?.y
+        ? clickPoint
+        : pointer.current || { x: picker.x, y: picker.y };
+    beginPlacement(definition, point, picker.connection, port);
   };
   const placePendingNode = (point) => {
     if (!pendingPlacement) return;
-    try {
-      const cursor = flow.screenToFlowPosition(point);
-      const result = addWorkflowNodeWithConnection(
-        currentEditableGraph(),
+    const cursor = flow.screenToFlowPosition(point);
+    if (
+      addNode(
         pendingPlacement.definition,
         {
           x: cursor.x - PENDING_NODE_ANCHOR.x,
@@ -1364,18 +1340,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         },
         pendingPlacement.connection,
         pendingPlacement.port,
-        catalog.nodes,
-        graphContext,
-      );
-      changeGraph(result.graph);
-      select([result.node.id]);
-      setPanel("node");
-      setMobilePane("canvas");
-      setError("");
+      )
+    )
       setPendingPlacement(null);
-    } catch (cause) {
-      setError(cause.message);
-    }
   };
   const finishConnection = (event, state) => {
     const start = connectionStart.current;
@@ -2187,7 +2154,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 <div
                   ref={pendingNodeRef}
                   aria-label="待放置节点"
-                  className="workflow-node pointer-events-none absolute z-20 opacity-80 shadow-lg"
+                  className={`workflow-node workflow-pending-node${pendingPlacement.definition.virtualInterface ? " is-interface" : ""}`}
                   style={{
                     left:
                       pendingPlacement.point.x -
@@ -2220,7 +2187,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         (port) => (
                           <div className="workflow-port" key={port.name}>
                             {port.display?.title}
-                            {pendingPlacement.connection.handleType ===
+                            {pendingPlacement.connection?.handleType ===
                               "source" &&
                               pendingPlacement.port?.name === port.name && (
                                 <span
@@ -2240,7 +2207,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                             key={port.name}
                           >
                             {port.display?.title}
-                            {pendingPlacement.connection.handleType ===
+                            {pendingPlacement.connection?.handleType ===
                               "target" &&
                               pendingPlacement.port?.name === port.name && (
                                 <span
@@ -2254,7 +2221,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     </div>
                   </div>
                   <p className="mt-2 text-[10px] text-muted-foreground">
-                    左键放置 · 右键取消
+                    左键放置 · 右键 / Esc 取消
                   </p>
                 </div>
               )}
@@ -2373,7 +2340,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               </div>
               {!nodes.length && (
                 <div className="workflow-canvas-empty">
-                  右键画布，添加输入、处理或输出节点。
+                  右键画布添加节点，按应用场景查找。
                 </div>
               )}
               {!readOnly && (
@@ -2399,14 +2366,13 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       node.kind === "subgraph" &&
                       node.subgraph.initialized !== false,
                   )}
-                  categories={paletteCategories}
+                  nodeMenus={catalog.nodeMenus}
                   definitions={paletteDefinitions}
                   onAddNode={(definition) => {
-                    addNode(
+                    beginPlacement(
                       definition,
-                      flow.screenToFlowPosition({ x: menu.x, y: menu.y }),
+                      pointer.current || { x: menu.x, y: menu.y },
                     );
-                    setMenu(null);
                   }}
                   output={{
                     available: Boolean(
