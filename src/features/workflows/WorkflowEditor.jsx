@@ -64,6 +64,11 @@ import {
 } from "./workflowSettings.js";
 import { analyzeWorkflowParallelism } from "./workflowParallelModel.js";
 import {
+  pruneDeletedWorkflowRegions,
+  workflowAncestorRegions,
+} from "./workflowRegions.js";
+import { WorkflowRegionList } from "./WorkflowRegionControl.jsx";
+import {
   addWorkflowNodeWithConnection,
   bindWorkflowInput,
   catalogNode,
@@ -91,6 +96,8 @@ import {
   unwrapWorkflowSubgraph,
   workflowUsesKnowledge,
   workflowNodeNumbers,
+  workflowSubgraphTemplateNode,
+  workflowId,
 } from "./workflowModel.js";
 import WorkflowSubgraphPanel from "./WorkflowSubgraphPanel.jsx";
 import WorkflowInterfaceNode from "./WorkflowInterfaceNode.jsx";
@@ -438,9 +445,32 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           update,
           boundary,
         );
-        return next === current.graph ? current : { ...current, graph: next };
+        return next === current.graph
+          ? current
+          : {
+              ...current,
+              graph: pruneDeletedWorkflowRegions(current.graph, next),
+            };
       }),
     [changeDraft, graphPath],
+  );
+  const changeRegion = useCallback(
+    (region, maximum) => {
+      if (readOnly || busy || pendingPlacement) return;
+      changeGraph((inner) => {
+        const regions = (inner.executionRegions || []).filter(
+          (item) => item.id !== region.id,
+        );
+        if (maximum !== null)
+          regions.push({
+            id: region.configured ? region.id : workflowId(),
+            nodeIds: [...region.nodeIds],
+            maxConcurrency: maximum,
+          });
+        return { ...inner, version: 3, executionRegions: regions };
+      });
+    },
+    [readOnly, busy, pendingPlacement, changeGraph],
   );
   const commitPositions = useCallback(
     (moved) => {
@@ -682,6 +712,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           nodes: [wrapper],
           edges: [],
           settings: rootGraph.settings,
+          executionRegions: copyWorkflowSelection(
+            workflowGraphAtPath(draftRef.current.graph, targetPath),
+            [target.id],
+            workflowAncestorRegions(draftRef.current.graph, targetPath),
+          ).executionRegions,
         });
         await workflowApi.validate({ graph: source });
         const { template: saved } = await workflowApi.saveTemplate({
@@ -976,6 +1011,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     applicationClipboard = copyWorkflowSelection(
       currentEditableGraph(),
       chosenIds(),
+      workflowAncestorRegions(rootGraph, graphPath),
     );
     setHasClipboard(Boolean(applicationClipboard.nodes.length));
     setMenu(null);
@@ -999,7 +1035,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   };
   const duplicate = () =>
     paste(
-      copyWorkflowSelection(currentEditableGraph(), chosenIds()),
+      copyWorkflowSelection(
+        currentEditableGraph(),
+        chosenIds(),
+        workflowAncestorRegions(rootGraph, graphPath),
+      ),
       undefined,
     );
   const groupSelection = () => {
@@ -1055,15 +1095,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         return;
       }
       const source = initializeGraph(saved.graph, catalog.nodes);
-      const wrapper =
-        source.nodes.length === 1 && source.nodes[0].kind === "subgraph"
-          ? clone(source.nodes[0])
-          : wrapWorkflowSubgraph(
-              source,
-              source.nodes.map((node) => node.id),
-              catalog.nodes,
-              saved.title,
-            ).node;
+      const wrapper = workflowSubgraphTemplateNode(
+        source,
+        catalog.nodes,
+        saved.title,
+      );
       wrapper.id = selectedNode.id;
       wrapper.name = selectedNode.name;
       wrapper.position = selectedNode.position;
@@ -1985,6 +2021,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                     ? parallelAnalysis.current.regions
                     : undefined
                 }
+                onRegionChange={changeRegion}
+                regionSettingsDisabled={Boolean(busy || pendingPlacement)}
                 edges={edges}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
@@ -2537,6 +2575,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         onChange={(settings) =>
                           changeGraph({ ...graph, settings })
                         }
+                      />
+                      <WorkflowRegionList
+                        regions={parallelAnalysis.current.regions}
+                        numbers={nodeNumbers}
+                        onChange={changeRegion}
+                        disabled={Boolean(busy || pendingPlacement)}
                       />
                       {usesKnowledge && (
                         <JsonConfigEditor

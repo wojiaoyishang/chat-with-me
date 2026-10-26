@@ -21,6 +21,8 @@ export default function WorkflowCanvas({
   focusRequest,
   autoFollow = false,
   parallelRegions = NO_REGIONS,
+  onRegionChange,
+  regionSettingsDisabled = false,
   onPositionsCommit,
   ...props
 }) {
@@ -142,7 +144,12 @@ export default function WorkflowCanvas({
       onSelectionDragStop={stopSelectionDrag}
     >
       {props.children}
-      <WorkflowParallelRegions regions={parallelRegions} nodes={canvasNodes} />
+      <WorkflowParallelRegions
+        regions={parallelRegions}
+        nodes={canvasNodes}
+        onRegionChange={onRegionChange}
+        disabled={regionSettingsDisabled}
+      />
     </ReactFlow>
   );
 }

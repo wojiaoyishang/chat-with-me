@@ -61,9 +61,12 @@ async function mount(nodes, initial = {}) {
             path: "flow",
             namespace: "mock",
           }));
-          builder.onLoad({ filter: /.*/, namespace: "mock" }, () => ({
+          // Overlay controls have separate editor coverage; fit tests isolate
+          // measurement and viewport scheduling from portals/UI dependencies.
+          builder.onResolve({ filter: /WorkflowParallelRegions\.jsx$/ }, () => ({ path: "region-overlay", namespace: "mock" }));
+          builder.onLoad({ filter: /.*/, namespace: "mock" }, ({path}) => ({
             loader: "jsx",
-            contents:
+            contents: path === "region-overlay" ? "export default()=>null;" :
               "export const applyNodeChanges=(_,nodes)=>nodes;export const useReactFlow=()=>globalThis.workflowCanvasFitTest.flow;export const useNodesInitialized=()=>globalThis.workflowCanvasFitTest.measured;export const ReactFlow=({nodes})=>{globalThis.workflowCanvasFitTest.nodes=nodes;return <section>{nodes.map(node=><span key={node.id}>{node.id}</span>)}</section>};",
           }));
         },

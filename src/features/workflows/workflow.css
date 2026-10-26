@@ -780,6 +780,13 @@
 .workflow-parallel-caption > b { font-size: 16px; }
 .workflow-parallel-caption > strong { font-weight: 600; }
 .workflow-parallel-caption > span { font-size: 10px; color: var(--muted-foreground); }
+.workflow-region-limit { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid #70ab9e70; border-radius: 6px; background: var(--background); color: #2f8171; font-size: 11px; line-height: 1.4; cursor: pointer; pointer-events: auto; white-space: nowrap; }
+.workflow-region-limit:hover, .workflow-region-limit[data-state="open"] { background: color-mix(in srgb, #42a693 10%, var(--background)); }
+.workflow-region-limit:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.workflow-region-limit:disabled { cursor: default; opacity: .5; }
+.workflow-region-serial { border-color: #a6a0bb; background: #8875aa04; }
+.workflow-region-serial .workflow-parallel-caption { color: #75648b; border-color: #a6a0bb60; }
+.workflow-region-popover { pointer-events: auto; }
 .workflow-canvas-tools button[aria-label="显示并行区域"][aria-pressed="true"] { color: #298373; background: color-mix(in srgb, #42a693 9%, var(--background)); border-color: #70ab9e; }
 @media (max-width: 760px) {
   .workflow-sidebar-drawer { width: calc(100% - 54px); max-width: none; }

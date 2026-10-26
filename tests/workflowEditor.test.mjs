@@ -1140,6 +1140,30 @@ test("parallel overlay follows live node geometry without adding workflow nodes 
   } finally { await app.close(); }
 });
 
+test("region cap is editable, undoable, saved by stable ID and reset to inheritance", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push({ kind: "step", category: "process", display: { title: "处理" }, configSchema: {type:"object",properties:{}}, inputs:[], outputs:[] });
+  const graph = { version:3, settings:{maxConcurrency:4}, nodes:["a","b"].map((id,index)=>({id,kind:"step",config:{},inputs:{},position:{x:index*360,y:0}})), edges:[] };
+  const app = await environment({}, {catalog:custom,graph});
+  try {
+    const control = () => document.querySelector(".workflow-parallel-region");
+    await input(control().querySelector('[aria-label="区域最大并发节点数"]'), "1", app.dom);
+    await click([...control().querySelectorAll("button")].find((node)=>node.textContent==="应用"), app.dom);
+    assert.match(control().textContent, /自定义 · 上限 1/);
+    const id = control().dataset.regionId;
+    await click(document.querySelector('[aria-label="撤销工作流修改"]'), app.dom);
+    assert.match(control().textContent, /继承 · 上限 4/);
+    await click(document.querySelector('[aria-label="重做工作流修改"]'), app.dom);
+    assert.equal(control().dataset.regionId,id);
+    await click(button("保存模板预设"), app.dom);
+    const saved = app.calls.findLast((call)=>call.url==="/tasks/workflows/templates").payload.graph;
+    assert.deepEqual(saved.executionRegions,[{id,nodeIds:["a","b"],maxConcurrency:1}]);
+    await click([...control().querySelectorAll("button")].find((node)=>node.textContent==="继承上级"), app.dom);
+    assert.match(control().textContent,/继承 · 上限 4/);
+    assert.equal(globalThis.workflowUITest.flow.nodes.length,2);
+  } finally { await app.close(); }
+});
+
 test("monitor summarizes active subgraph leaves and reads outputs using the compiled leaf ID", async () => {
   const graph = {
     version: 3,

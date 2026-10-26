@@ -1,9 +1,9 @@
-/** Structural parallelism is an editor projection, never a runtime node/group. */
+/** Structural frames are projections; executionRegions persist actual budgets. */
+import { workflowLeafIds } from "./workflowRegions.js";
 const concurrency = (value, fallback = 4) =>
   Number.isInteger(value) && value >= 1 ? value : fallback;
 
 function graphRegions(graph, limit, sourceKinds) {
-  if (limit <= 1) return [];
   const nodes = graph.nodes || [];
   const byId = new Map(nodes.map((node) => [node.id, node]));
   const outgoing = new Map(nodes.map((node) => [node.id, []]));
@@ -72,6 +72,7 @@ function graphRegions(graph, limit, sourceKinds) {
     candidates.push({
       ...metadata,
       nodeIds,
+      branches: actual,
       branchCount: actual.length,
       limit,
     });
@@ -178,11 +179,89 @@ export function analyzeWorkflowParallelism(
   );
   const levels = new Map(),
     subgraphs = {};
-  const visit = (graph, parentLimit, inheritedCap, key = null, depth = 0) => {
+  const visit = (
+    graph,
+    parentLimit,
+    inheritedCap,
+    key = null,
+    depth = 0,
+    inheritedRegions = [],
+  ) => {
     const cap = concurrency(graph.settings?.maxConcurrency, inheritedCap);
     const limit = Math.min(parentLimit, cap);
-    const regions = graphRegions(graph, limit, sourceKinds);
-    const level = { regions, limit, containsParallel: regions.length > 0 };
+    const saved = graph.executionRegions || [];
+    const budgets = [...inheritedRegions, ...saved];
+    const candidates = graphRegions(graph, limit, sourceKinds);
+    const sameMembers = (a, b) =>
+      a.length === b.length && a.every((id) => b.includes(id));
+    const effective = (ids) =>
+      Math.min(
+        limit,
+        ...budgets
+          .filter((region) => ids.every((id) => region.nodeIds.includes(id)))
+          .map((region) => region.maxConcurrency),
+      );
+    const possiblePair = (candidate) =>
+      limit > 1 &&
+      candidate.branches.some((branch, index) =>
+        candidate.branches
+          .slice(index + 1)
+          .some((other) =>
+            branch.some((a) =>
+              other.some(
+                (b) =>
+                  !budgets.some(
+                    (region) =>
+                      region.maxConcurrency === 1 &&
+                      region.nodeIds.includes(a) &&
+                      region.nodeIds.includes(b),
+                  ),
+              ),
+            ),
+          ),
+      );
+    const decorate = (region) => ({
+      ...region,
+      limit: effective(region.nodeIds),
+      inheritedLimit: Math.min(
+        limit,
+        ...inheritedRegions
+          .filter((budget) =>
+            region.nodeIds.every((id) => budget.nodeIds.includes(id)),
+          )
+          .map((budget) => budget.maxConcurrency),
+      ),
+      partialLimits: budgets.some(
+        (budget) =>
+          budget.id !== region.id &&
+          budget.nodeIds.some((id) => region.nodeIds.includes(id)) &&
+          !region.nodeIds.every((id) => budget.nodeIds.includes(id)),
+      ),
+    });
+    const regions = candidates.flatMap((candidate) => {
+      const configured = saved.find((region) =>
+        sameMembers(region.nodeIds, candidate.nodeIds),
+      );
+      if (!configured && !possiblePair(candidate)) return [];
+      return [
+        decorate({
+          ...candidate,
+          ...(configured || {}),
+          configured: Boolean(configured),
+          canParallel: possiblePair(candidate),
+        }),
+      ];
+    });
+    // Saved constraints stay visible/editable after changing cap to 1 or edges.
+    for (const region of saved) {
+      if (regions.some((item) => item.id === region.id)) continue;
+      regions.push(decorate({ ...region, configured: true, kind: "custom" }));
+    }
+    const level = {
+      regions,
+      limit,
+      containsParallel: candidates.some(possiblePair),
+    };
     levels.set(key, level);
     if (depth >= 8) return level;
     for (const node of graph.nodes || []) {
@@ -193,6 +272,13 @@ export function analyzeWorkflowParallelism(
         execution.mode === "serial"
           ? 1
           : concurrency(execution.maxConcurrency, cap),
+        ...budgets
+          .filter((region) =>
+            workflowLeafIds(node.subgraph.graph).every((id) =>
+              region.nodeIds.includes(id),
+            ),
+          )
+          .map((region) => region.maxConcurrency),
       );
       const child = visit(
         node.subgraph.graph,
@@ -200,6 +286,7 @@ export function analyzeWorkflowParallelism(
         cap,
         node.id,
         depth + 1,
+        budgets,
       );
       subgraphs[node.id] = {
         containsParallel: child.containsParallel,
@@ -220,7 +307,7 @@ export function workflowParallelBounds(regions, nodes) {
     const members = region.nodeIds
       .map((id) => byId.get(id))
       .filter((node) => node && !node.hidden);
-    if (members.length < 2) return [];
+    if (members.length < (region.configured ? 1 : 2)) return [];
     const x = Math.min(...members.map((node) => node.position.x));
     const y = Math.min(...members.map((node) => node.position.y));
     const right = Math.max(

@@ -1,5 +1,10 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
 import { aggregateWorkflowTelemetry } from "./workflowMetrics.js";
+import {
+  workflowLeafIds,
+  projectWorkflowRegions,
+  pruneDeletedWorkflowRegions,
+} from "./workflowRegions.js";
 export const workflowId = () => globalThis.crypto.randomUUID();
 export const clone = (value) =>
   value === undefined ? undefined : JSON.parse(JSON.stringify(value));
@@ -107,6 +112,9 @@ export function normalizeGraph(graph, settingsDefaults = {}) {
     },
     variables: clone(graph?.variables || {}),
     outputNodes: clone(graph?.outputNodes || []),
+    ...(graph?.version !== 2 || Object.hasOwn(graph || {}, "executionRegions")
+      ? { executionRegions: clone(graph?.executionRegions || []) }
+      : {}),
   };
 }
 
@@ -538,10 +546,15 @@ export function isWorkflowCanvasBlankTarget(target) {
   );
 }
 
-export function copyWorkflowSelection(graph, ids) {
+export function copyWorkflowSelection(graph, ids, inheritedRegions = []) {
   const selected = new Set(ids);
+  const nodes = graph.nodes.filter((node) => selected.has(node.id));
   return clone({
-    nodes: graph.nodes.filter((node) => selected.has(node.id)),
+    nodes,
+    executionRegions: projectWorkflowRegions(
+      [...(graph.executionRegions || []), ...inheritedRegions],
+      nodes,
+    ),
     edges: graph.edges.filter(
       (edge) => selected.has(edge.source) && selected.has(edge.target),
     ),
@@ -560,8 +573,10 @@ export function workflowNodeIds(graph) {
 export function instantiateWorkflowGraph(original) {
   initializeGraph(original, []);
   const graph = clone(original);
+  const allIds = new Map();
   const visit = (current) => {
     const ids = new Map(current.nodes.map((node) => [node.id, workflowId()]));
+    for (const [old, id] of ids) allIds.set(old, id);
     const ports = new Map();
     for (const node of current.nodes) {
       const oldId = node.id;
@@ -621,6 +636,15 @@ export function instantiateWorkflowGraph(original) {
     return { ids, ports };
   };
   visit(graph);
+  const remapRegions = (current) => {
+    for (const region of current.executionRegions || []) {
+      region.id = workflowId();
+      region.nodeIds = region.nodeIds.map((id) => allIds.get(id));
+    }
+    for (const node of current.nodes)
+      if (node.subgraph?.graph) remapRegions(node.subgraph.graph);
+  };
+  remapRegions(graph);
   return graph;
 }
 
@@ -641,12 +665,38 @@ export function pasteWorkflowSelection(graph, clipboard, position) {
   return {
     graph: {
       ...graph,
+      version: 3,
       nodes: [...graph.nodes, ...copied.nodes],
       edges: [...graph.edges, ...copied.edges],
       outputNodes: [...(graph.outputNodes || []), ...copied.outputNodes],
+      executionRegions: [
+        ...(graph.executionRegions || []),
+        ...(copied.executionRegions || []),
+      ],
     },
     ids: copied.nodes.map((node) => node.id),
   };
+}
+
+/** Root budgets of a standalone template travel with its reusable wrapper. */
+export function workflowSubgraphTemplateNode(source, definitions, title) {
+  const wrapper =
+    source.nodes.length === 1 && source.nodes[0].kind === "subgraph"
+      ? clone(source.nodes[0])
+      : wrapWorkflowSubgraph(
+          source,
+          source.nodes.map((node) => node.id),
+          definitions,
+          title,
+        ).node;
+  const existing = wrapper.subgraph.graph.executionRegions || [];
+  wrapper.subgraph.graph.executionRegions = [
+    ...existing,
+    ...projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter(
+      (region) => !existing.some((item) => item.id === region.id),
+    ),
+  ];
+  return wrapper;
 }
 
 /** Confirm a placeholder in place; template sources are copied and globally rekeyed. */
@@ -658,15 +708,11 @@ export function initializeWorkflowSubgraph(graph, nodeId, saved, definitions) {
   if (saved) {
     const source = initializeGraph(saved.graph, definitions);
     if (!source.nodes.length) throw new Error("所选模板没有可复制的节点。");
-    const wrapper =
-      source.nodes.length === 1 && source.nodes[0].kind === "subgraph"
-        ? clone(source.nodes[0])
-        : wrapWorkflowSubgraph(
-            source,
-            source.nodes.map((node) => node.id),
-            definitions,
-            saved.title,
-          ).node;
+    const wrapper = workflowSubgraphTemplateNode(
+      source,
+      definitions,
+      saved.title,
+    );
     if (wrapper.subgraph.initialized === false)
       throw new Error("所选子图模板尚未确认创建，请先完成模板配置。");
     const pasted = pasteWorkflowSelection(
@@ -806,14 +852,14 @@ export function bindWorkflowInput(graph, nodeId, port, binding) {
 
 export function removeWorkflowNodes(graph, ids) {
   const removed = new Set(ids);
-  return {
+  return pruneDeletedWorkflowRegions(graph, {
     ...graph,
     nodes: graph.nodes.filter((node) => !removed.has(node.id)),
     outputNodes: (graph.outputNodes || []).filter((id) => !removed.has(id)),
     edges: graph.edges.filter(
       (edge) => !removed.has(edge.source) && !removed.has(edge.target),
     ),
-  };
+  });
 }
 
 export function catalogNode(
@@ -1127,6 +1173,10 @@ export function wrapWorkflowSubgraph(
   const selected = new Set(ids);
   const children = graph.nodes.filter((node) => selected.has(node.id));
   if (!children.length) throw new Error("请先选择需要组合的节点。");
+  const selectedLeaves = new Set(workflowLeafIds({ nodes: children }));
+  const movedRegions = (graph.executionRegions || []).filter((region) =>
+    region.nodeIds.every((id) => selectedLeaves.has(id)),
+  );
   const id = workflowUniqueId(
     new Set(graph.nodes.map((node) => node.id)),
     "subgraph",
@@ -1200,6 +1250,7 @@ export function wrapWorkflowSubgraph(
           selected.has(key),
         ),
         variables: graph.variables,
+        executionRegions: movedRegions,
       }),
       interface: { inputs, outputs, parameters: [] },
       execution: { mode: "parallel", maxConcurrency: 4 },
@@ -1238,6 +1289,9 @@ export function wrapWorkflowSubgraph(
       ...graph,
       version: 3,
       nodes: [...graph.nodes.filter((item) => !selected.has(item.id)), node],
+      executionRegions: (graph.executionRegions || []).filter(
+        (region) => !movedRegions.includes(region),
+      ),
       outputNodes: (graph.outputNodes || []).filter(
         (key) => !selected.has(key),
       ),
@@ -1359,6 +1413,13 @@ export function unwrapWorkflowSubgraph(graph, id) {
       ...graph,
       version: 3,
       nodes: [...graph.nodes.filter((node) => node.id !== id), ...children],
+      executionRegions: [
+        ...(graph.executionRegions || []),
+        ...(inner.executionRegions || []),
+      ].map((region) => ({
+        ...region,
+        nodeIds: region.nodeIds.map((key) => mapping.get(key) || key),
+      })),
       outputNodes: [
         ...(graph.outputNodes || []).filter((key) => key !== id),
         ...(inner.outputNodes || []),
