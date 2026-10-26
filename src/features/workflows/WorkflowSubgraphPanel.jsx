@@ -337,7 +337,7 @@ export default function WorkflowSubgraphPanel({
         )}
       </section>
       <section className="space-y-3">
-        <h4 className="text-sm font-semibold">支路执行方式</h4>
+        <h4 className="text-sm font-semibold">内部节点调度</h4>
         <select
           aria-label="子图执行方式"
           className="workflow-native-select"
@@ -349,8 +349,8 @@ export default function WorkflowSubgraphPanel({
             })
           }
         >
-          <option value="parallel">并行：无依赖的支路同时执行</option>
-          <option value="serial">串行：按支路顺序执行</option>
+          <option value="parallel">并行：依赖就绪的节点可同时执行</option>
+          <option value="serial">串行：同一时刻只运行一个节点</option>
         </select>
         {execution.mode === "parallel" ? (
           <WorkflowDataField
@@ -366,6 +366,7 @@ export default function WorkflowSubgraphPanel({
           />
         ) : (
           <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">节点调度优先顺序（连线依赖优先）</p>
             {order.map((id, index) => (
               <div
                 className="flex items-center gap-1 rounded border p-2"

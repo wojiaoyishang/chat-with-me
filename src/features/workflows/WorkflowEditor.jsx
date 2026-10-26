@@ -23,6 +23,7 @@ import {
   FolderOpen,
   Group,
   Loader2,
+  Layers,
   Maximize2,
   Pencil,
   Play,
@@ -58,7 +59,10 @@ import { workflowApi } from "./workflowApi.js";
 import {
   DEFAULT_WORKFLOW_EDGE_ANIMATION,
   WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
+  DEFAULT_WORKFLOW_PARALLEL_REGIONS,
+  WORKFLOW_PARALLEL_REGIONS_SETTING_KEY,
 } from "./workflowSettings.js";
+import { analyzeWorkflowParallelism } from "./workflowParallelModel.js";
 import {
   addWorkflowNodeWithConnection,
   bindWorkflowInput,
@@ -147,6 +151,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [edgeAnimationEnabled] = useLocalSetting(
     WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
     DEFAULT_WORKFLOW_EDGE_ANIMATION,
+  );
+  const [parallelRegionsVisible, setParallelRegionsVisible] = useLocalSetting(
+    WORKFLOW_PARALLEL_REGIONS_SETTING_KEY,
+    DEFAULT_WORKFLOW_PARALLEL_REGIONS,
   );
   const [draft, setDraft] = useState(newDraft);
   const draftRef = useRef(draft);
@@ -730,6 +738,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     () => workflowNodeNumbers(rootGraph),
     [rootGraph],
   );
+  const parallelAnalysis = useMemo(
+    () => analyzeWorkflowParallelism(rootGraph, graphPath, catalog.nodes),
+    [rootGraph, graphPath, catalog.nodes],
+  );
   const toggleOutput = useCallback(
     (id, enabled) =>
       changeGraph((current) => ({
@@ -760,6 +772,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           kind: node.kind,
           node,
           number: nodeNumbers[node.id],
+          parallelInfo: parallelAnalysis.subgraphs[node.id],
           onMenu: nodeMenu,
           definition: effectiveWorkflowDefinition(
             node,
@@ -820,6 +833,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       catalog.builtinTemplates,
       interfaceProjection.nodes,
       nodeNumbers,
+      parallelAnalysis,
       nodeMenu,
       toggleOutput,
     ],
@@ -862,6 +876,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       definition={selectedDefinition}
       number={nodeNumbers[selectedNode.id]}
       isOutput={(graph.outputNodes || []).includes(selectedNode.id)}
+      parallelInfo={parallelAnalysis.subgraphs[selectedNode.id]}
       disabled={Boolean(busy || pendingPlacement)}
       readOnly={readOnly}
       onLocate={() => {
@@ -1965,6 +1980,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 fitRequest={fitRequest}
                 focusRequest={focusRequest}
                 autoFollow={readOnly && followTask}
+                parallelRegions={
+                  !readOnly && parallelRegionsVisible
+                    ? parallelAnalysis.current.regions
+                    : undefined
+                }
                 edges={edges}
                 nodeTypes={nodeTypes}
                 edgeTypes={edgeTypes}
@@ -2201,6 +2221,20 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 </div>
               )}
               <div className="workflow-canvas-tools">
+                {!readOnly && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="显示并行区域"
+                    aria-pressed={Boolean(parallelRegionsVisible)}
+                    title="显示可并行分支的虚线范围；实际执行仍受依赖及资源上限约束"
+                    onClick={() =>
+                      setParallelRegionsVisible((visible) => !visible)
+                    }
+                  >
+                    <Layers className="size-4" />
+                  </Button>
+                )}
                 {!readOnly && (
                   <Button
                     variant="outline"

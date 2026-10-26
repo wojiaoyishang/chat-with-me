@@ -487,7 +487,7 @@ async function environment(request = {}, options = {}) {
             ({ path: requested }) => {
               let contents = "";
               if (requested === "flow")
-                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=>{const Component=props.nodeTypes[node.type];return <div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Component data={node.data} selected={node.selected}/></div>})}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
+                contents = `export {applyNodeChanges} from 'test:flow-changes';export const ReactFlowProvider=({children})=>children;export const ViewportPortal=({children})=><div data-viewport-overlay>{children}</div>;export const useReactFlow=()=>({fitView:options=>{globalThis.workflowUITest.fitViewCalls.push(options);return Promise.resolve(true)},getViewport:()=>({zoom:1}),getNodes:()=>globalThis.workflowUITest.flow?.nodes||[],screenToFlowPosition:x=>globalThis.workflowUITest.screenToFlowPosition?.(x)||x});export const useViewport=()=>({zoom:globalThis.workflowUITest.zoom||1});export const useNodesInitialized=()=>true;export const useUpdateNodeInternals=()=>()=>{};export const MarkerType={ArrowClosed:'arrowclosed'};export const getBezierPath=()=>['M 0 0 C 40 0 60 100 100 100'];export const BaseEdge=({path})=><path className="react-flow__edge-path" d={path}/>;export const ReactFlow=props=>{globalThis.workflowUITest.flow=props;return <section className="react-flow" data-canvas><div className="react-flow__pane" data-blank-canvas/>{props.nodes.map(node=>{const Component=props.nodeTypes[node.type];return <div key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)}><Component data={node.data} selected={node.selected}/></div>})}<svg>{props.edges.map(edge=>{const Edge=props.edgeTypes?.[edge.type];return Edge?<g key={edge.id} className={edge.className}><Edge {...edge} sourceX={0} sourceY={0} targetX={100} targetY={100}/></g>:null})}</svg>{props.children}</section>};export const Handle=()=>null;export const Background=()=>null;export const Controls=()=>null;export const Position={Left:'left',Right:'right'};`;
               else if (requested === "task-events")
                 contents =
                   "export const onEvent=({event})=>({then:callback=>{const listeners=globalThis.workflowUITest.taskEventListeners;listeners.set(event,callback);return ()=>listeners.delete(event)}});";
@@ -718,8 +718,9 @@ test("subgraph grouping, breadcrumb editing, serial settings and undo keep one c
     );
     assert.match(
       document.querySelector(".workflow-subgraph-summary").textContent,
-      /并行/,
+      /按依赖执行/,
     );
+    assert.equal(document.querySelector(".workflow-subgraph-parallel-note"), null);
     await input(
       document.querySelector('[aria-label="子图执行方式"]'),
       "serial",
@@ -1109,6 +1110,33 @@ test("inspector shares node identity and product state with the canvas", async (
     assert.equal(globalThis.workflowUITest.flow.nodes.find((node) => node.id === "extract-1").data.isOutput, true);
     await click(inspector.querySelector('[aria-label="收集此节点产物"]'), app.dom);
     assert.ok(canvasNode.querySelector(".workflow-node-badge.role-process"));
+  } finally { await app.close(); }
+});
+
+test("parallel overlay follows live node geometry without adding workflow nodes or saving a drag", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push({ kind: "step", category: "process", display: { title: "处理", subtitle: "Step" }, configSchema: {type:"object",properties:{}}, inputs:[{name:"in",type:"any",display:{title:"输入"}}], outputs:[{name:"out",type:"any",display:{title:"输出"}}] });
+  const graph = { version:3, settings:{maxConcurrency:4}, nodes:[
+    {id:"a",kind:"step",config:{},inputs:{},position:{x:0,y:140}},
+    {id:"b",kind:"step",config:{},inputs:{},position:{x:320,y:0}},
+    {id:"c",kind:"step",config:{},inputs:{},position:{x:320,y:300}},
+    {id:"join",kind:"step",config:{},inputs:{},position:{x:640,y:140}},
+  ], edges:[["a","b"],["a","c"],["b","join"],["c","join"]].map(([source,target],index)=>({id:`e${index}`,source,target,sourcePort:"out",targetPort:"in"})) };
+  const app = await environment({}, { catalog:custom, graph });
+  try {
+    const box = document.querySelector(".workflow-parallel-region");
+    assert.ok(box);
+    assert.equal(box.dataset.nodeIds, "b c");
+    assert.equal(box.style.left, "288px");
+    assert.equal(box.style.width, "344px");
+    await act(() => globalThis.workflowUITest.flow.onNodesChange([{id:"c",type:"position",position:{x:700,y:400},dragging:true}]));
+    assert.equal(box.style.width, "724px");
+    assert.deepEqual(globalThis.workflowUITest.flow.nodes.find((node)=>node.id==="c").data.node.position,{x:320,y:300});
+    await act(() => globalThis.workflowUITest.flow.onNodesChange([{id:"c",type:"dimensions",dimensions:{width:400,height:260},setAttributes:true}]));
+    assert.equal(box.style.width, "844px");
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 4);
+    await click(document.querySelector('[aria-label="显示并行区域"]'), app.dom);
+    assert.equal(document.querySelector(".workflow-parallel-region"),null);
   } finally { await app.close(); }
 });
 

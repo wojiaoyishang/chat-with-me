@@ -9,6 +9,9 @@ import {
   reconcileCanvasNodes,
   selectCanvasNodes,
 } from "./workflowCanvasModel.js";
+import WorkflowParallelRegions from "./WorkflowParallelRegions.jsx";
+
+const NO_REGIONS = [];
 
 /** Dragging and measurement update only the canvas; a gesture saves once. */
 export default function WorkflowCanvas({
@@ -17,6 +20,7 @@ export default function WorkflowCanvas({
   fitRequest,
   focusRequest,
   autoFollow = false,
+  parallelRegions = NO_REGIONS,
   onPositionsCommit,
   ...props
 }) {
@@ -136,6 +140,9 @@ export default function WorkflowCanvas({
       onNodesChange={changeNodes}
       onNodeDragStop={stopNodeDrag}
       onSelectionDragStop={stopSelectionDrag}
-    />
+    >
+      {props.children}
+      <WorkflowParallelRegions regions={parallelRegions} nodes={canvasNodes} />
+    </ReactFlow>
   );
 }

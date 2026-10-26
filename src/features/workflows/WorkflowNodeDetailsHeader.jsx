@@ -15,6 +15,7 @@ export default function WorkflowNodeDetailsHeader({
   definition,
   number,
   isOutput,
+  parallelInfo,
   disabled,
   readOnly,
   onLocate,
@@ -35,6 +36,9 @@ export default function WorkflowNodeDetailsHeader({
         </div>
         <WorkflowNodeBadge {...{ node, definition, number, isOutput }} />
       </div>
+      {node.kind === "subgraph" && parallelInfo?.containsParallel && (
+        <span className="workflow-subgraph-parallel-note">∥ 内部包含并行</span>
+      )}
       <div className="workflow-node-stable-id">
         <code aria-label="节点 ID">{node.id}</code>
         <button

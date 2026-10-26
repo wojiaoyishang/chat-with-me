@@ -1085,7 +1085,6 @@ export function workflowSubgraphDefinition(
         : {}),
     };
   }
-  const mode = subgraph.execution?.mode === "serial" ? "串行" : "并行";
   return {
     kind: "subgraph",
     baseDefinition: SUBGRAPH_CANVAS_DEFINITION,
@@ -1094,7 +1093,7 @@ export function workflowSubgraphDefinition(
     presentation: { icon: "workflow" },
     display: {
       title: node.name || "子图",
-      subtitle: `${mode}子图 · ${graph.nodes.length} 个节点`,
+      subtitle: `子图 · ${graph.nodes.length} 个节点`,
       description:
         subgraph.description ||
         "端口类型继承内部节点。双击进入子图，内部日志、缓存与检查点仍属于当前任务。",

@@ -123,6 +123,14 @@ export default function WorkflowNode({ data, selected }) {
       {definition?.display?.subtitle && (
         <p className="workflow-node-id">{definition.display.subtitle}</p>
       )}
+      {subgraph && data.parallelInfo?.containsParallel && (
+        <span
+          className="workflow-subgraph-parallel-note"
+          title="子图内部包含可并行分支；进入子图查看具体范围。"
+        >
+          ∥ 内部包含并行
+        </span>
+      )}
       {subgraph?.initialized === false && !data.monitor ? (
         <WorkflowSubgraphSetup
           nodeId={node.id}
@@ -134,10 +142,10 @@ export default function WorkflowNode({ data, selected }) {
         subgraph && (
           <div className="workflow-subgraph-summary">
             <span>
-              {subgraph.execution?.mode === "serial" ? "串行" : "并行"} ·{" "}
-              {subgraph.graph?.nodes?.length || 0} 个节点
-              {subgraph.execution?.mode !== "serial" &&
-                ` · 上限 ${subgraph.execution?.maxConcurrency || 4}`}
+              {subgraph.execution?.mode === "serial"
+                ? "串行执行"
+                : "按依赖执行"}
+              {` · 并发上限 ${data.parallelInfo?.limit ?? subgraph.execution?.maxConcurrency ?? 4}`}
             </span>
             {runtime.activeCount > 0 && (
               <span>正在运行 {runtime.activeCount} 个节点</span>
