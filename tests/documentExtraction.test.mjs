@@ -93,7 +93,7 @@ async function bundled(entry, outfile) {
                                                     : path ===
                                                         "@/components/ui/button"
                                                       ? "export const Button=({variant,size,...props})=><button {...props}/>;"
-                                                      : "export const UnifiedErrorScreen=()=>null; export const UnifiedLoadingScreen=()=>null; export const useLocalSetting=(_key,defaultValue)=>[defaultValue];",
+                                                      : "export const UnifiedErrorScreen=()=>null; export const UnifiedLoadingScreen=()=>null; export const useLocalSetting=(_key,defaultValue)=>[defaultValue]; export const setLocalSetting=()=>{};",
           }));
         },
       },

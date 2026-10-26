@@ -1,3 +1,4 @@
+import { workflowArtifacts } from "./workflowProducts.js";
 import {
   useCallback,
   useEffect,
@@ -83,7 +84,6 @@ import {
   workflowRuntimeForGraph,
   wrapWorkflowSubgraph,
   unwrapWorkflowSubgraph,
-  workflowSourceKeys,
   workflowUsesKnowledge,
 } from "./workflowModel.js";
 import WorkflowSubgraphPanel from "./WorkflowSubgraphPanel.jsx";
@@ -96,7 +96,6 @@ import {
   updateWorkflowInterface,
   WORKFLOW_INTERFACE_DEFINITIONS,
   workflowInterfaceContainer,
-  workflowInterfaceId,
   workflowInterfaceProjection,
 } from "./workflowInterfaceModel.js";
 import WorkflowSettingsFields from "./WorkflowSettingsFields.jsx";
@@ -458,7 +457,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 graph,
                 graphPath,
                 binding.direction,
-                binding.name,
+                binding.id,
                 { position: item.position },
               );
           }
@@ -638,7 +637,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           nodeId,
           saved,
           catalog.nodes,
-          workflowSourceKeys(root),
         );
         changeDraft((current) => ({
           ...current,
@@ -747,6 +745,14 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           runtime: runtimeNodes[node.id] || {},
           readOnly: readOnly || Boolean(busy || pendingPlacement),
           monitor: readOnly,
+          isOutput: (graph.outputNodes || []).includes(node.id),
+          onToggleOutput: (id, enabled) =>
+            changeGraph({
+              ...graph,
+              outputNodes: enabled
+                ? [...new Set([...(graph.outputNodes || []), id])]
+                : (graph.outputNodes || []).filter((key) => key !== id),
+            }),
           interactionDisabled: Boolean(busy || pendingPlacement),
           onValue,
           onBinding,
@@ -793,6 +799,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       templates,
       catalog.builtinTemplates,
       interfaceProjection.nodes,
+      changeGraph,
     ],
   );
   const edges = useMemo(
@@ -824,7 +831,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const selectedInterfaceEntry =
     selectedInterface &&
     interfaceContainer?.subgraph.interface?.[selectedInterface.direction]?.find(
-      (entry) => entry.name === selectedInterface.name,
+      (entry) => entry.id === selectedInterface.id,
     );
   const changeInterface = (binding, patch) => {
     try {
@@ -832,12 +839,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         draftRef.current.graph,
         graphPath,
         binding.direction,
-        binding.name,
+        binding.id,
         patch,
       );
       changeDraft((current) => ({ ...current, graph: next }));
-      if (patch?.name && patch.name !== binding.name)
-        select([workflowInterfaceId(binding.direction, patch.name)]);
       setError("");
     } catch (cause) {
       setError(cause.message);
@@ -924,7 +929,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           : pointer.current
             ? flow.screenToFlowPosition(pointer.current)
             : undefined),
-      { inputKeys: workflowSourceKeys(draftRef.current.graph) },
     );
     if (pasted.ids.length) {
       changeGraph(pasted.graph);
@@ -1003,11 +1007,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       wrapper.name = selectedNode.name;
       wrapper.position = selectedNode.position;
       const inputNames = new Set(
-        (wrapper.subgraph.interface?.inputs || []).map((port) => port.name),
+        (wrapper.subgraph.interface?.inputs || []).map((port) => port.id),
       );
       const parameterNames = new Set(
         (wrapper.subgraph.interface?.parameters || []).map(
-          (parameter) => parameter.name,
+          (parameter) => parameter.id,
         ),
       );
       wrapper.inputs = Object.fromEntries(
@@ -1115,7 +1119,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               graph,
               graphPath,
               binding.direction,
-              binding.name,
+              binding.id,
               null,
             );
         }
@@ -1127,7 +1131,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               graph,
               graphPath,
               binding.direction,
-              binding.name,
+              binding.id,
               { [binding.direction === "inputs" ? "target" : "source"]: null },
             );
         }
@@ -1152,7 +1156,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 graph,
                 graphPath,
                 direction,
-                entry.name,
+                entry.id,
                 { [direction === "inputs" ? "target" : "source"]: null },
               );
           }
@@ -1550,12 +1554,12 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     }
   };
 
-  const downloadResult = async () => {
-    if (!task?.result?.url || downloading) return;
+  const downloadResult = async (file) => {
+    if (!file?.url || downloading) return;
     setDownloading(true);
     setError("");
     try {
-      await downloadAttachmentResource(task.result.url, task.result.filename);
+      await downloadAttachmentResource(file.url, file.filename);
     } catch (cause) {
       if (alive.current) setError(cause.message);
     } finally {
@@ -2495,22 +2499,26 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           </div>
           {readOnly ? (
             <>
-              {/^cwm:\/\/artifact\/[A-Za-z0-9._-]+$/.test(
-                task?.result?.url || "",
-              ) && (
-                <Button
-                  variant="outline"
-                  disabled={downloading}
-                  onClick={() => void downloadResult()}
-                >
-                  {downloading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Download className="size-4" />
-                  )}
-                  下载导出文件
-                </Button>
-              )}
+              <div className="flex max-h-32 max-w-full flex-wrap gap-2 overflow-y-auto">
+                {workflowArtifacts(task?.result).map((file) => (
+                  <Button
+                    key={`${file.nodeId}:${file.artifactId}`}
+                    variant="outline"
+                    className="max-w-full"
+                    disabled={downloading}
+                    onClick={() => void downloadResult(file)}
+                  >
+                    {downloading ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Download className="size-4" />
+                    )}
+                    <span className="truncate">
+                      {file.filename || "下载产物"}
+                    </span>
+                  </Button>
+                ))}
+              </div>
               {task &&
                 ["running", "queued", "pending"].includes(task.status) && (
                   <Button

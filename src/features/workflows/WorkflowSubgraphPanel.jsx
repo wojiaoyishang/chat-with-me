@@ -6,6 +6,7 @@ import WorkflowDataField from "./WorkflowDataField.jsx";
 import {
   catalogNode,
   clone,
+  workflowId,
   effectiveWorkflowDefinition,
   resolveWorkflowSchema,
 } from "./workflowModel.js";
@@ -103,45 +104,16 @@ export default function WorkflowSubgraphPanel({
     ]),
   ].filter((id) => inner.nodes.some((child) => child.id === id));
   const renamePort = (direction, index, name) => {
-    const entry = contract[direction][index];
     if (
       !/^[A-Za-z0-9_-]{1,64}$/.test(name) ||
       contract[direction].some((item, i) => i !== index && item.name === name)
     )
       return;
-    const inputs = { ...node.inputs };
-    if (direction === "inputs" && Object.hasOwn(inputs, entry.name)) {
-      inputs[name] = inputs[entry.name];
-      delete inputs[entry.name];
-    }
-    const edges = graph.edges.map((edge) =>
-      direction === "inputs" &&
-      edge.target === node.id &&
-      edge.targetPort === entry.name
-        ? { ...edge, targetPort: name }
-        : direction === "outputs" &&
-            edge.source === node.id &&
-            edge.sourcePort === entry.name
-          ? { ...edge, sourcePort: name }
-          : edge,
-    );
-    const values = contract[direction].map((value, i) =>
-      i === index ? { ...value, name } : value,
-    );
-    update(
-      {
-        inputs,
-        subgraph: {
-          ...subgraph,
-          interface: { ...contract, [direction]: values },
-        },
-      },
-      { ...graph, edges },
-      {
-        [direction]: {
-          [`${node.id}\u0000${entry.name}`]: { nodeId: node.id, port: name },
-        },
-      },
+    updateContract(
+      direction,
+      contract[direction].map((value, i) =>
+        i === index ? { ...value, name } : value,
+      ),
     );
   };
   const removePort = (direction, index) => {
@@ -150,17 +122,17 @@ export default function WorkflowSubgraphPanel({
       (parentInterface[direction] || []).some((binding) => {
         const endpoint =
           direction === "inputs" ? binding.target : binding.source;
-        return endpoint?.nodeId === node.id && endpoint.port === entry.name;
+        return endpoint?.nodeId === node.id && endpoint.port === entry.id;
       }) ||
       graph.edges.some((edge) =>
         direction === "inputs"
-          ? edge.target === node.id && edge.targetPort === entry.name
-          : edge.source === node.id && edge.sourcePort === entry.name,
+          ? edge.target === node.id && edge.targetPort === entry.id
+          : edge.source === node.id && edge.sourcePort === entry.id,
       )
     )
       return;
     const inputs = { ...node.inputs };
-    if (direction === "inputs") delete inputs[entry.name];
+    if (direction === "inputs") delete inputs[entry.id];
     updateContract(
       direction,
       contract[direction].filter((_, i) => i !== index),
@@ -179,14 +151,12 @@ export default function WorkflowSubgraphPanel({
             (parentInterface[direction] || []).some((binding) => {
               const endpoint =
                 direction === "inputs" ? binding.target : binding.source;
-              return (
-                endpoint?.nodeId === node.id && endpoint.port === entry.name
-              );
+              return endpoint?.nodeId === node.id && endpoint.port === entry.id;
             }) ||
             graph.edges.some((edge) =>
               direction === "inputs"
-                ? edge.target === node.id && edge.targetPort === entry.name
-                : edge.source === node.id && edge.sourcePort === entry.name,
+                ? edge.target === node.id && edge.targetPort === entry.id
+                : edge.source === node.id && edge.sourcePort === entry.id,
             );
           const endpoint = `${entry[key]?.nodeId}\u0000${entry[key]?.port}`;
           return (
@@ -291,6 +261,7 @@ export default function WorkflowSubgraphPanel({
               updateContract(direction, [
                 ...entries,
                 {
+                  id: workflowId(),
                   name: keyFor(entries, direction === "inputs" ? "in" : "out"),
                   title: option.label.split(" · ").slice(1).join(" · "),
                   [key]: { nodeId: option.nodeId, port: option.port },
@@ -472,7 +443,7 @@ export default function WorkflowSubgraphPanel({
                 }
               />
               <p className="text-xs text-muted-foreground">
-                标识：{parameter.name}
+                标识：{parameter.id}
               </p>
               {(parameter.targets || []).map((binding, bindingIndex) => (
                 <div className="flex items-center gap-1" key={bindingIndex}>
@@ -490,7 +461,7 @@ export default function WorkflowSubgraphPanel({
                       );
                       const config = { ...node.config };
                       if (parameter.targets.length === 1)
-                        delete config[parameter.name];
+                        delete config[parameter.id];
                       modify(
                         {
                           targets: parameter.targets.map((entry, i) =>
@@ -572,17 +543,17 @@ export default function WorkflowSubgraphPanel({
                 添加同类型目标
               </Button>
               <WorkflowDataField
-                label={parameter.title || parameter.name}
+                label={parameter.title || parameter.id}
                 schema={selected?.schema || {}}
                 value={
-                  Object.hasOwn(node.config || {}, parameter.name)
-                    ? node.config[parameter.name]
+                  Object.hasOwn(node.config || {}, parameter.id)
+                    ? node.config[parameter.id]
                     : parameter.default
                 }
                 disabled={disabled}
                 onChange={(value) =>
                   update({
-                    config: { ...node.config, [parameter.name]: value },
+                    config: { ...node.config, [parameter.id]: value },
                   })
                 }
               />
@@ -591,11 +562,10 @@ export default function WorkflowSubgraphPanel({
                   variant="ghost"
                   size="sm"
                   disabled={
-                    disabled ||
-                    !Object.hasOwn(node.config || {}, parameter.name)
+                    disabled || !Object.hasOwn(node.config || {}, parameter.id)
                   }
                   onClick={() =>
-                    modify({ default: clone(node.config[parameter.name]) })
+                    modify({ default: clone(node.config[parameter.id]) })
                   }
                 >
                   将当前值设为默认
@@ -604,12 +574,11 @@ export default function WorkflowSubgraphPanel({
                   variant="ghost"
                   size="sm"
                   disabled={
-                    disabled ||
-                    !Object.hasOwn(node.config || {}, parameter.name)
+                    disabled || !Object.hasOwn(node.config || {}, parameter.id)
                   }
                   onClick={() => {
                     const config = { ...node.config };
-                    delete config[parameter.name];
+                    delete config[parameter.id];
                     update({ config });
                   }}
                 >
@@ -622,7 +591,7 @@ export default function WorkflowSubgraphPanel({
                 disabled={disabled}
                 onClick={() => {
                   const config = { ...node.config };
-                  delete config[parameter.name];
+                  delete config[parameter.id];
                   updateContract(
                     "parameters",
                     contract.parameters.filter((_, i) => i !== index),
@@ -651,6 +620,7 @@ export default function WorkflowSubgraphPanel({
             updateContract("parameters", [
               ...parameters,
               {
+                id: workflowId(),
                 name: keyFor(parameters, "parameter"),
                 title: option.label,
                 default: clone(

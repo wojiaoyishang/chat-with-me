@@ -118,6 +118,23 @@ export default function WorkflowNode({ data, selected }) {
           </div>
         )
       )}
+      {definition?.publicOutput && (
+        <label
+          className="nodrag flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground"
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <input
+            type="checkbox"
+            aria-label="作为产物输出"
+            checked={Boolean(data.isOutput)}
+            disabled={readOnly}
+            onChange={(event) =>
+              data.onToggleOutput?.(node.id, event.target.checked)
+            }
+          />
+          作为产物输出
+        </label>
+      )}
       {definition?.source && (
         <div
           className="workflow-source-value nodrag nowheel"

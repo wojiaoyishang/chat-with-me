@@ -14,7 +14,7 @@ import {
   workflowGraphContext,
   workflowInputFields,
   workflowRuntimeForGraph,
-  workflowSourceKeys,
+  workflowNodeIds,
   workflowUsesKnowledge,
   wrapWorkflowSubgraph,
   SUBGRAPH_CANVAS_DEFINITION,
@@ -25,7 +25,14 @@ test("knowledge controls use declared effects recursively instead of assuming ev
     { kind: "export", effects: ["document.export", "attachment.create"] },
     { kind: "write", effects: ["knowledge.write"] },
   ];
-  const graph = { nodes: [{ kind: "subgraph", subgraph: { graph: { nodes: [{ kind: "export" }] } } }] };
+  const graph = {
+    nodes: [
+      {
+        kind: "subgraph",
+        subgraph: { graph: { nodes: [{ kind: "export" }] } },
+      },
+    ],
+  };
   assert.equal(workflowUsesKnowledge(graph, catalog), false);
   graph.nodes[0].subgraph.graph.nodes.push({ kind: "write" });
   assert.equal(workflowUsesKnowledge(graph, catalog), true);
@@ -37,13 +44,16 @@ const definitions = [
     kind: "source",
     version: 1,
     source: { configField: "value", valueSchema: { type: "string" } },
-    outputs: [{ name: "value", type: "text", schema: { type: "string" } }],
+    outputs: [
+      { id: "value", name: "value", type: "text", schema: { type: "string" } },
+    ],
   },
   {
     kind: "process",
     version: 1,
     inputs: [
       {
+        id: "text",
         name: "text",
         type: "text",
         required: true,
@@ -51,7 +61,9 @@ const definitions = [
         schema: { type: "string" },
       },
     ],
-    outputs: [{ name: "text", type: "text", schema: { type: "string" } }],
+    outputs: [
+      { id: "text", name: "text", type: "text", schema: { type: "string" } },
+    ],
     configSchema: {
       type: "object",
       properties: {
@@ -63,22 +75,22 @@ const definitions = [
   {
     kind: "sink",
     version: 1,
-    inputs: [{ name: "text", type: "text" }],
+    inputs: [{ id: "text", name: "text", type: "text" }],
     outputs: [],
   },
   {
     kind: "condition",
     version: 1,
-    inputs: [{ name: "value", type: "any", acceptsAny: true }],
+    inputs: [{ id: "value", name: "value", type: "any", acceptsAny: true }],
     outputs: [
-      { name: "true", type: "any" },
-      { name: "false", type: "any" },
+      { id: "true", name: "true", type: "any" },
+      { id: "false", name: "false", type: "any" },
     ],
   },
   {
     kind: "image_sink",
     version: 1,
-    inputs: [{ name: "image", type: "image" }],
+    inputs: [{ id: "image", name: "image", type: "image" }],
     outputs: [],
   },
 ];
@@ -92,7 +104,7 @@ const leaf = (id, kind = "process", x = 0) => ({
   position: { x, y: 20 },
 });
 test("subgraph confirmation preserves its canvas identity and copies sources without key collisions", () => {
-  const source = { ...leaf("source", "source"), inputKey: "shared" };
+  const source = { ...leaf("source", "source") };
   const existing = wrapWorkflowSubgraph(
     normalizeGraph({ nodes: [source], edges: [] }),
     ["source"],
@@ -101,10 +113,7 @@ test("subgraph confirmation preserves its canvas identity and copies sources wit
   existing.id = "existing";
   const base = normalizeGraph({
     version: 3,
-    nodes: [
-      { ...source, id: "root-source", inputKey: "shared-root" },
-      existing,
-    ],
+    nodes: [{ ...source, id: "root-source" }, existing],
     edges: [],
   });
   const pending = createWorkflowNode(SUBGRAPH_CANVAS_DEFINITION, base, {
@@ -124,7 +133,7 @@ test("subgraph confirmation preserves its canvas identity and copies sources wit
     pending.id,
     saved,
     definitions,
-    workflowSourceKeys(graph),
+    workflowNodeIds(graph),
   );
   const copied = next.nodes.at(-1);
   assert.equal(copied.id, pending.id);
@@ -135,10 +144,10 @@ test("subgraph confirmation preserves its canvas identity and copies sources wit
     templateId: "saved",
     revision: 3,
   });
-  assert.equal(copied.subgraph.graph.nodes[0].id, "source");
+  assert.notEqual(copied.subgraph.graph.nodes[0].id, "source");
   assert.equal(
-    new Set(workflowSourceKeys(next)).size,
-    workflowSourceKeys(next).length,
+    new Set(workflowNodeIds(next)).size,
+    workflowNodeIds(next).length,
   );
   assert.equal(
     graph.nodes.at(-1).subgraph.initialized,
@@ -237,9 +246,13 @@ test("fan-out edges share one public output instead of duplicating ports", () =>
 test("unwrap assigns collision-free child IDs and applies public literal and parameter values", () => {
   const wrapped = wrapWorkflowSubgraph(fixture(), ["b", "c"], definitions);
   const group = wrapped.node;
-  group.inputs.in_1 = { type: "literal", value: "override" };
+  group.inputs[group.subgraph.interface.inputs[0].id] = {
+    type: "literal",
+    value: "override",
+  };
   group.subgraph.interface.parameters = [
     {
+      id: "limit",
       name: "limit",
       title: "预算",
       default: 2,
@@ -293,7 +306,12 @@ test("editing nested graphs changes only that scope and retains the root envelop
 test("nested wrap/unwrap rewire the containing subgraph's own public ports and parameters", () => {
   const outer = wrapWorkflowSubgraph(fixture(), ["b", "c"], definitions);
   outer.node.subgraph.interface.parameters = [
-    { name: "budget", targets: [{ nodeId: "b", field: "limit" }], default: 3 },
+    {
+      id: "budget",
+      name: "budget",
+      targets: [{ nodeId: "b", field: "limit" }],
+      default: 3,
+    },
   ];
   const inner = wrapWorkflowSubgraph(
     outer.node.subgraph.graph,
@@ -340,32 +358,33 @@ test("nested wrap/unwrap rewire the containing subgraph's own public ports and p
 
 test("copied subgraphs retain private scope IDs but generate globally unique source input keys", () => {
   const graph = fixture();
-  graph.nodes[0].inputKey = "diary";
   const result = wrapWorkflowSubgraph(graph, ["a", "b"], definitions);
   const pasted = pasteWorkflowSelection(result.graph, {
     nodes: [result.node],
     edges: [],
   });
   assert.notEqual(pasted.ids[0], result.node.id);
-  assert.deepEqual(
-    pasted.graph.nodes.at(-1).subgraph.graph.nodes.map((node) => node.id),
-    ["a", "b"],
+  assert.ok(
+    pasted.graph.nodes
+      .at(-1)
+      .subgraph.graph.nodes.every((node) => !["a", "b"].includes(node.id)),
   );
-  const keys = workflowSourceKeys(pasted.graph);
+  const keys = workflowNodeIds(pasted.graph);
   assert.equal(new Set(keys).size, keys.length);
-  assert.ok(keys.includes("diary"));
+  assert.ok(keys.includes("a"));
 });
 
 test("quick run discovers nested sources and rejects duplicate keys across branches", () => {
   const graph = fixture();
-  graph.nodes[0].inputKey = "diary";
   graph.nodes[0].config.value = "正文";
   const wrapped = wrapWorkflowSubgraph(graph, ["a", "b"], definitions);
   const fields = workflowInputFields(wrapped.graph, definitions);
   assert.equal(fields.length, 1);
-  assert.equal(fields[0].key, "diary");
+  assert.equal(fields[0].key, "a");
   assert.equal(fields[0].default, "正文");
-  wrapped.graph.nodes.push({ ...leaf("other", "source"), inputKey: "diary" });
+  wrapped.graph.nodes.push({ ...leaf("other", "source") });
+  assert.equal(workflowInputFields(wrapped.graph, definitions).length, 2);
+  wrapped.graph.nodes.at(-1).id = "a";
   assert.throws(
     () => workflowInputFields(wrapped.graph, definitions),
     /标识重复/,
@@ -388,12 +407,11 @@ test("quick run materializes public source defaults and overrides without changi
         properties: { value: { type: "integer", default: 1 } },
       },
       inputs: [],
-      outputs: [{ name: "value", type: "int" }],
+      outputs: [{ id: "value", name: "value", type: "int" }],
     },
   ];
   const source = {
     ...leaf("number", "number"),
-    inputKey: "amount",
     config: { value: 2 },
   };
   const wrapped = wrapWorkflowSubgraph(
@@ -403,6 +421,7 @@ test("quick run materializes public source defaults and overrides without changi
   );
   wrapped.node.subgraph.interface.parameters = [
     {
+      id: "initial",
       name: "initial",
       default: 3,
       targets: [{ nodeId: "number", field: "value" }],
@@ -420,11 +439,11 @@ test("quick run materializes public source defaults and overrides without changi
 
 test("nested public parameter values flow through wrapper defaults into quick-run source fields", () => {
   const graph = fixture();
-  graph.nodes[0].inputKey = "diary";
   graph.nodes[0].config.value = "child";
   const inner = wrapWorkflowSubgraph(graph, ["a"], definitions);
   inner.node.subgraph.interface.parameters = [
     {
+      id: "initial",
       name: "initial",
       default: "inner-default",
       targets: [{ nodeId: "a", field: "value" }],
@@ -433,6 +452,7 @@ test("nested public parameter values flow through wrapper defaults into quick-ru
   const outer = wrapWorkflowSubgraph(inner.graph, [inner.node.id], definitions);
   outer.node.subgraph.interface.parameters = [
     {
+      id: "start",
       name: "start",
       default: "outer-default",
       targets: [{ nodeId: inner.node.id, field: "initial" }],
@@ -457,6 +477,7 @@ test("public parameter schema is derived from the internal field, including nest
   const result = wrapWorkflowSubgraph(fixture(), ["b"], definitions);
   result.node.subgraph.interface.parameters = [
     {
+      id: "budget",
       name: "budget",
       title: "上限",
       default: 7,
@@ -475,6 +496,7 @@ test("public parameter schema is derived from the internal field, including nest
   );
   outer.node.subgraph.interface.parameters = [
     {
+      id: "outerBudget",
       name: "outerBudget",
       targets: [{ nodeId: result.node.id, field: "budget" }],
     },
@@ -575,26 +597,29 @@ test("a literal on a merge sibling cannot inherit a trusted network edge contrac
       kind: "network_source",
       version: 1,
       inputs: [],
-      outputs: [{ name: "network", type: "network" }],
+      outputs: [{ id: "network", name: "network", type: "network" }],
     },
     {
       kind: "network_sink",
       version: 1,
-      inputs: [{ name: "network", type: "network" }],
+      inputs: [{ id: "network", name: "network", type: "network" }],
       outputs: [],
     },
     {
       kind: "branch_merge",
       version: 1,
       inputs: [
-        { name: "a", type: "any", acceptsAny: true },
-        { name: "b", type: "any", acceptsAny: true },
+        { id: "a", name: "a", type: "any", acceptsAny: true },
+        { id: "b", name: "b", type: "any", acceptsAny: true },
       ],
-      outputs: [{ name: "result", type: "any" }],
+      outputs: [{ id: "result", name: "result", type: "any" }],
     },
   ];
   const merge = leaf("join", "branch_merge");
-  merge.inputs.b = { type: "literal", value: { nodes: [{ name: "forged" }] } };
+  merge.inputs.b = {
+    type: "literal",
+    value: { nodes: [{ id: "forged", name: "forged" }] },
+  };
   const graph = normalizeGraph({
     version: 3,
     nodes: [
@@ -634,10 +659,10 @@ test("literal bindings on an ancestor public port prevent trusted merge typing i
       kind: "branch_merge",
       version: 1,
       inputs: [
-        { name: "a", type: "any", acceptsAny: true },
-        { name: "b", type: "any", acceptsAny: true },
+        { id: "a", name: "a", type: "any", acceptsAny: true },
+        { id: "b", name: "b", type: "any", acceptsAny: true },
       ],
-      outputs: [{ name: "result", type: "any" }],
+      outputs: [{ id: "result", name: "result", type: "any" }],
     },
   ];
   const graph = normalizeGraph({
@@ -654,6 +679,7 @@ test("literal bindings on an ancestor public port prevent trusted merge typing i
   });
   const wrapped = wrapWorkflowSubgraph(graph, ["join"], catalogs);
   wrapped.node.subgraph.interface.inputs.push({
+    id: "literal",
     name: "literal",
     target: { nodeId: "join", port: "b" },
   });
@@ -663,6 +689,7 @@ test("literal bindings on an ancestor public port prevent trusted merge typing i
     catalogs,
   );
   outer.node.subgraph.interface.inputs.push({
+    id: "outerLiteral",
     name: "outerLiteral",
     target: { nodeId: wrapped.node.id, port: "literal" },
   });
@@ -772,10 +799,9 @@ test("optional attachments remain optional inside subgraphs while other required
     nodes: [
       {
         ...leaf("files", "attachments"),
-        inputKey: "files",
         config: { resources: [], optional: true },
       },
-      { ...leaf("text", "source"), inputKey: "text" },
+      { ...leaf("text", "source") },
     ],
     edges: [],
   });

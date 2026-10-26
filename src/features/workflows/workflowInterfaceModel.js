@@ -1,5 +1,6 @@
 import {
   catalogNode,
+  workflowId,
   effectiveWorkflowDefinition,
   updateWorkflowGraphAtPath,
   workflowGraphAtPath,
@@ -7,11 +8,11 @@ import {
 } from "./workflowModel.js";
 
 const PREFIX = "@interface:";
-export const workflowInterfaceId = (direction, name) =>
-  `${PREFIX}${direction}:${name}`;
+export const workflowInterfaceId = (direction, id) =>
+  `${PREFIX}${direction}:${id}`;
 export function parseWorkflowInterfaceId(id) {
   const match = /^@interface:(inputs|outputs):(.+)$/.exec(id || "");
-  return match ? { direction: match[1], name: match[2] } : null;
+  return match ? { direction: match[1], id: match[2] } : null;
 }
 export const WORKFLOW_INTERFACE_DEFINITIONS = [
   ["inputs", "输入参数", "外层输入 → 内部节点"],
@@ -55,7 +56,7 @@ export function workflowInterfaceProjection(root, path, definitions) {
     for (const [index, entry] of (
       container.subgraph.interface?.[direction] || []
     ).entries()) {
-      const id = workflowInterfaceId(direction, entry.name);
+      const id = workflowInterfaceId(direction, entry.id);
       const endpoint = direction === "inputs" ? entry.target : entry.source;
       nodes.push({
         id,
@@ -67,7 +68,7 @@ export function workflowInterfaceProjection(root, path, definitions) {
         data: {
           direction,
           entry,
-          port: ports?.[direction]?.find((port) => port.name === entry.name),
+          port: ports?.[direction]?.find((port) => port.name === entry.id),
         },
       });
       if (endpoint && graph.nodes.some((node) => node.id === endpoint.nodeId))
@@ -83,96 +84,65 @@ export function workflowInterfaceProjection(root, path, definitions) {
   return { nodes, edges };
 }
 
-export function updateWorkflowInterface(root, path, direction, name, patch) {
+export function updateWorkflowInterface(root, path, direction, id, patch) {
   const container = workflowInterfaceContainer(root, path);
   if (!container) throw new Error("参数节点只能在子图内部使用。");
   const entries = container.subgraph.interface?.[direction] || [];
-  const old = entries.find((entry) => entry.name === name);
+  const old = entries.find((entry) => entry.id === id);
   const next =
     typeof patch === "function"
       ? patch(old)
       : patch === null
         ? null
-        : { ...old, ...patch };
+        : { ...old, ...patch, id };
   if (
     next &&
-    (!/^[A-Za-z0-9_-]{1,64}$/.test(next.name) ||
-      entries.some((entry) => entry !== old && entry.name === next.name))
+    (!next.name?.trim() ||
+      entries.some((entry) => entry.id !== id && entry.name === next.name))
   )
-    throw new Error(
-      "参数标识需为 1–64 位字母、数字、短横线或下划线，且不可重复。",
-    );
-  // An enclosing interface depends on this public port. Require an explicit
-  // edit there instead of silently deleting another level of public contract.
+    throw new Error("参数名称不能为空或重复。");
   if (!next) {
     const enclosing = workflowInterfaceContainer(root, path.slice(0, -1));
-    const key = direction === "inputs" ? "target" : "source";
+    const endpoint = direction === "inputs" ? "target" : "source";
     if (
       enclosing?.subgraph.interface?.[direction]?.some(
         (entry) =>
-          entry[key]?.nodeId === container.id && entry[key]?.port === name,
+          entry[endpoint]?.nodeId === container.id &&
+          entry[endpoint]?.port === id,
       )
     )
-      throw new Error("此参数已被更外层子图公开，请先移除外层对应参数。");
+      throw new Error("请先移除外层对应参数。");
   }
-  const rename = next && old && next.name !== name;
-  return updateWorkflowGraphAtPath(
-    root,
-    path.slice(0, -1),
-    (parent) => ({
-      ...parent,
-      nodes: parent.nodes.map((node) => {
-        if (node.id !== container.id) return node;
-        const inputs = { ...node.inputs };
-        if (direction === "inputs" && (rename || !next)) {
-          if (rename && Object.hasOwn(inputs, name))
-            inputs[next.name] = inputs[name];
-          delete inputs[name];
-        }
-        return {
-          ...node,
-          inputs,
-          subgraph: {
-            ...node.subgraph,
-            interface: {
-              ...node.subgraph.interface,
-              [direction]: old
-                ? entries.flatMap((entry) =>
-                    entry.name === name ? (next ? [next] : []) : [entry],
-                  )
-                : [...entries, next],
-            },
+  return updateWorkflowGraphAtPath(root, path.slice(0, -1), (parent) => ({
+    ...parent,
+    nodes: parent.nodes.map((node) => {
+      if (node.id !== container.id) return node;
+      const inputs = { ...node.inputs };
+      if (!next && direction === "inputs") delete inputs[id];
+      return {
+        ...node,
+        inputs,
+        subgraph: {
+          ...node.subgraph,
+          interface: {
+            ...node.subgraph.interface,
+            [direction]: old
+              ? entries.flatMap((entry) =>
+                  entry.id === id ? (next ? [next] : []) : [entry],
+                )
+              : [...entries, next],
           },
-        };
-      }),
-      edges: parent.edges.flatMap((edge) => {
-        const matches =
-          direction === "inputs"
-            ? edge.target === container.id && edge.targetPort === name
-            : edge.source === container.id && edge.sourcePort === name;
-        if (!matches) return [edge];
-        return !next
-          ? []
-          : [
-              {
-                ...edge,
-                [direction === "inputs" ? "targetPort" : "sourcePort"]:
-                  next.name,
-              },
-            ];
-      }),
+        },
+      };
     }),
-    rename
-      ? {
-          [direction]: {
-            [`${container.id}\u0000${name}`]: {
-              nodeId: container.id,
-              port: next.name,
-            },
-          },
-        }
-      : undefined,
-  );
+    edges: next
+      ? parent.edges
+      : parent.edges.filter((edge) =>
+          direction === "inputs"
+            ? !(edge.target === container.id && edge.targetPort === id)
+            : !(edge.source === container.id && edge.sourcePort === id),
+        ),
+  }));
 }
 
 export function addWorkflowInterface(root, path, direction, position) {
@@ -185,14 +155,15 @@ export function addWorkflowInterface(root, path, direction, position) {
     index += 1;
   const name = `${prefix}_${index}`;
   const entry = {
+    id: workflowId(),
     name,
     title: direction === "inputs" ? "输入参数" : "输出参数",
     [direction === "inputs" ? "target" : "source"]: null,
     ...(position ? { position } : {}),
   };
   return {
-    graph: updateWorkflowInterface(root, path, direction, name, entry),
-    id: workflowInterfaceId(direction, name),
+    graph: updateWorkflowInterface(root, path, direction, entry.id, entry),
+    id: workflowInterfaceId(direction, entry.id),
   };
 }
 
@@ -207,6 +178,13 @@ export function connectWorkflowInterface(root, path, connection, definitions) {
   )
     throw new Error("输入参数连接内部输入，内部输出连接输出参数。");
   const binding = source || target;
+  const container = workflowInterfaceContainer(root, path);
+  if (
+    !container?.subgraph.interface?.[binding.direction]?.some(
+      (entry) => entry.id === binding.id,
+    )
+  )
+    throw new Error("公开参数不存在，请选择当前子图的实际参数节点。");
   const nodeId = source ? connection.target : connection.source;
   const port = source
     ? connection.targetPort || connection.targetHandle
@@ -236,7 +214,7 @@ export function connectWorkflowInterface(root, path, connection, definitions) {
     if (
       container.subgraph.interface.inputs.some(
         (entry) =>
-          entry.name !== source.name &&
+          entry.id !== source.id &&
           entry.target?.nodeId === nodeId &&
           entry.target?.port === port,
       )
@@ -255,7 +233,7 @@ export function connectWorkflowInterface(root, path, connection, definitions) {
       }),
     }));
   }
-  return updateWorkflowInterface(root, path, binding.direction, binding.name, {
+  return updateWorkflowInterface(root, path, binding.direction, binding.id, {
     [source ? "target" : "source"]: { nodeId, port },
   });
 }

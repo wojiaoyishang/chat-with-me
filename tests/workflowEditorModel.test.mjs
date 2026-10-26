@@ -219,7 +219,7 @@ test("unseen node kinds use catalog source bindings, categories and type names",
     },
   };
   const created = createWorkflowNode(definition, normalizeGraph());
-  assert.equal(created.inputKey, "future-clock-input-1");
+  assert.match(created.id, /^[a-f0-9-]{36}$/);
   assert.equal(nodeCategory(definition), "custom-inputs");
   assert.equal(nodeCategory({ kind: "text" }), "");
   assert.equal(sourceNodeValue(created, definition), 42);
@@ -229,7 +229,7 @@ test("unseen node kinds use catalog source bindings, categories and type names",
   });
   assert.deepEqual(workflowInputFields({ nodes: [created] }, [definition]), [
     {
-      key: created.inputKey,
+      key: created.id,
       nodeId: created.id,
       title: "预约时间",
       required: false,
@@ -314,7 +314,7 @@ test("annotated catalog ranges become standard form constraints without mutation
 
 test("constructor defaults and invoke bindings remain separate when nodes are created or connected", () => {
   const created = createWorkflowNode(definitions[0], graph);
-  assert.equal(created.id, "input-2");
+  assert.match(created.id, /^[a-f0-9-]{36}$/);
   assert.equal(created.config.max_concurrency, 3);
   assert.deepEqual(created.inputs, {});
   const next = connectWorkflow(

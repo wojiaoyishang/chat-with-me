@@ -151,16 +151,15 @@ export default function WorkflowNodePanel({
         />
         {definition.source && (
           <div className="space-y-1">
-            <label className="workflow-label">模板输入标识</label>
+            <label className="workflow-label">输入标识（自动生成）</label>
             <Input
-              aria-label="模板输入标识"
-              value={node.inputKey ?? node.id}
+              aria-label="输入标识（自动生成）"
+              value={node.id}
               disabled={disabled}
-              onChange={(event) => update({ inputKey: event.target.value })}
+              readOnly
             />
             <p className="text-xs text-muted-foreground">
-              整个工作流（包括所有子图）必须唯一。修改此标识会改变快速运行和 AI
-              传参的字段名称。
+              标识自动生成并保持固定，修改节点名称不会改变传参或已有连接。
             </p>
           </div>
         )}

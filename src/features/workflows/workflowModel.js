@@ -1,5 +1,6 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
 import { aggregateWorkflowTelemetry } from "./workflowMetrics.js";
+export const workflowId = () => globalThis.crypto.randomUUID();
 export const clone = (value) =>
   value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 
@@ -8,8 +9,10 @@ export function workflowUsesKnowledge(graph, definitions = []) {
   return (graph?.nodes || []).some((node) =>
     node.kind === "subgraph"
       ? workflowUsesKnowledge(node.subgraph?.graph, definitions)
-      : (definitions.find((definition) => definition.kind === node.kind)?.effects || [])
-          .some((effect) => effect.startsWith("knowledge.")),
+      : (
+          definitions.find((definition) => definition.kind === node.kind)
+            ?.effects || []
+        ).some((effect) => effect.startsWith("knowledge.")),
   );
 }
 export const SUBGRAPH_CANVAS_DEFINITION = Object.freeze({
@@ -103,6 +106,7 @@ export function normalizeGraph(graph, settingsDefaults = {}) {
         : {}),
     },
     variables: clone(graph?.variables || {}),
+    outputNodes: clone(graph?.outputNodes || []),
   };
 }
 
@@ -132,6 +136,8 @@ export function updateWorkflowNodePositions(graph, moved = []) {
 
 export function initializeGraph(graph, definitions, settingsDefaults) {
   const next = normalizeGraph(graph, settingsDefaults);
+  if (next.nodes.some((node) => Object.hasOwn(node, "inputKey")))
+    throw new Error("输入标识已统一为节点 ID，请按当前模板重建工作流。");
   if (
     next.nodes.some(
       (node) =>
@@ -303,7 +309,7 @@ export function workflowInputFields(graph, definitions = [], path = []) {
     .map((node) => {
       const definition = catalogNode(definitions, node);
       return {
-        key: node.inputKey || node.id,
+        key: node.id,
         nodeId: node.id,
         title: node.name || definition?.display?.title,
         required:
@@ -322,12 +328,10 @@ export function workflowInputFields(graph, definitions = [], path = []) {
     const childGraph = clone(node.subgraph.graph);
     for (const parameter of node.subgraph.interface?.parameters || []) {
       const configured =
-        Object.hasOwn(node.config || {}, parameter.name) &&
-        node.config[parameter.name] !== undefined;
+        Object.hasOwn(node.config || {}, parameter.id) &&
+        node.config[parameter.id] !== undefined;
       if (!configured && !Object.hasOwn(parameter, "default")) continue;
-      const value = configured
-        ? node.config[parameter.name]
-        : parameter.default;
+      const value = configured ? node.config[parameter.id] : parameter.default;
       for (const target of parameter.targets || []) {
         const child = childGraph.nodes.find(
           (entry) => entry.id === target.nodeId,
@@ -382,9 +386,6 @@ export function workflowValueMissing(value, schema = {}) {
 }
 
 export function createWorkflowNode(definition, graph, position) {
-  const used = new Set(graph.nodes.map((node) => node.id));
-  let index = 1;
-  while (used.has(`${definition.kind}-${index}`)) index += 1;
   const config = schemaDefaults(definition.configSchema) || {};
   const inputs = {};
   for (const item of workflowRepeatedItems({ config }, definition)) {
@@ -395,10 +396,9 @@ export function createWorkflowNode(definition, graph, position) {
       };
   }
   return {
-    id: `${definition.kind}-${index}`,
+    id: workflowId(),
     kind: definition.kind,
     name: definition.display?.title || "",
-    ...(definition.source ? { inputKey: `${definition.kind}-${index}` } : {}),
     version: definition.version,
     ...(definition.kind === "subgraph"
       ? {
@@ -520,105 +520,112 @@ export function copyWorkflowSelection(graph, ids) {
     edges: graph.edges.filter(
       (edge) => selected.has(edge.source) && selected.has(edge.target),
     ),
+    outputNodes: (graph.outputNodes || []).filter((key) => selected.has(key)),
   });
 }
 
-export function workflowSourceKeys(graph) {
-  return graph.nodes.flatMap((node) =>
-    [
-      node.inputKey,
-      ...(node.subgraph?.graph ? workflowSourceKeys(node.subgraph.graph) : []),
-    ].filter(Boolean),
-  );
+export function workflowNodeIds(graph) {
+  return graph.nodes.flatMap((node) => [
+    node.id,
+    ...(node.subgraph?.graph ? workflowNodeIds(node.subgraph.graph) : []),
+  ]);
 }
 
-export function pasteWorkflowSelection(
-  graph,
-  clipboard,
-  position,
-  options = {},
-) {
-  if (!clipboard?.nodes?.length) return { graph, ids: [] };
-  initializeGraph({ nodes: clipboard.nodes, edges: [] }, []);
-  const used = new Set(graph.nodes.map((node) => node.id));
-  const usedKeys = new Set(options.inputKeys || workflowSourceKeys(graph));
-  const mapping = new Map();
-  const minX = Math.min(
-    ...clipboard.nodes.map((node) => node.position?.x || 0),
-  );
-  const minY = Math.min(
-    ...clipboard.nodes.map((node) => node.position?.y || 0),
-  );
-  const base = position || { x: minX + 45, y: minY + 65 };
-  const nodes = clipboard.nodes.map((original) => {
-    let index = 1;
-    while (used.has(`${original.kind}-${index}`)) index += 1;
-    const id = `${original.kind}-${index}`;
-    used.add(id);
-    mapping.set(original.id, id);
-    const node = clone(original);
-    node.id = id;
-    node.position = {
-      x: base.x + (original.position?.x || 0) - minX,
-      y: base.y + (original.position?.y || 0) - minY,
-    };
-    if (original.inputKey) {
-      let suffix = 1,
-        key = id;
-      while (usedKeys.has(key)) key = `${id}-${suffix++}`;
-      node.inputKey = key;
-      usedKeys.add(key);
-    }
-    const rekeyNestedSources = (nested, prefix) => {
-      for (const child of nested.nodes) {
-        if (child.inputKey) {
-          const base = `${prefix}-${child.id}`;
-          let suffix = 1,
-            key = child.inputKey;
-          while (usedKeys.has(key)) key = `${base}-${suffix++}`;
-          child.inputKey = key;
-          usedKeys.add(key);
+/** Instantiate a graph tree. Saving/retrying never calls this function. */
+export function instantiateWorkflowGraph(original) {
+  initializeGraph(original, []);
+  const graph = clone(original);
+  const visit = (current) => {
+    const ids = new Map(current.nodes.map((node) => [node.id, workflowId()]));
+    const ports = new Map();
+    for (const node of current.nodes) {
+      const oldId = node.id;
+      node.id = ids.get(oldId);
+      if (!node.subgraph?.graph) continue;
+      const child = visit(node.subgraph.graph);
+      for (const direction of ["inputs", "outputs", "parameters"])
+        for (const entry of node.subgraph.interface?.[direction] || []) {
+          const old = entry.id;
+          entry.id = workflowId();
+          ports.set(`${oldId}:${direction}:${old}`, entry.id);
+          const endpoint = direction === "inputs" ? entry.target : entry.source;
+          if (endpoint) {
+            endpoint.port =
+              child.ports.get(
+                `${endpoint.nodeId}:${direction}:${endpoint.port}`,
+              ) || endpoint.port;
+            endpoint.nodeId = child.ids.get(endpoint.nodeId);
+          }
+          for (const target of entry.targets || []) {
+            target.field =
+              child.ports.get(`${target.nodeId}:parameters:${target.field}`) ||
+              target.field;
+            target.nodeId = child.ids.get(target.nodeId);
+          }
         }
-        if (child.subgraph?.graph)
-          rekeyNestedSources(child.subgraph.graph, `${prefix}-${child.id}`);
+      node.inputs = Object.fromEntries(
+        Object.entries(node.inputs || {}).map(([key, value]) => [
+          ports.get(`${oldId}:inputs:${key}`) || key,
+          value,
+        ]),
+      );
+      node.config = Object.fromEntries(
+        Object.entries(node.config || {}).map(([key, value]) => [
+          ports.get(`${oldId}:parameters:${key}`) || key,
+          value,
+        ]),
+      );
+      if (node.subgraph.execution?.branchOrder)
+        node.subgraph.execution.branchOrder =
+          node.subgraph.execution.branchOrder.map((key) => child.ids.get(key));
+    }
+    for (const edge of current.edges || []) {
+      edge.id = workflowId();
+      for (const side of ["source", "target"]) {
+        const port = `${side}Port`;
+        edge[port] =
+          ports.get(
+            `${edge[side]}:${side === "source" ? "outputs" : "inputs"}:${edge[port]}`,
+          ) || edge[port];
+        edge[side] = ids.get(edge[side]);
       }
-    };
-    if (node.subgraph?.graph) rekeyNestedSources(node.subgraph.graph, node.id);
-    return node;
+    }
+    current.outputNodes = (current.outputNodes || []).map((key) =>
+      ids.get(key),
+    );
+    return { ids, ports };
+  };
+  visit(graph);
+  return graph;
+}
+
+export function pasteWorkflowSelection(graph, clipboard, position) {
+  if (!clipboard?.nodes?.length) return { graph, ids: [] };
+  const copied = instantiateWorkflowGraph({
+    ...clipboard,
+    outputNodes: clipboard.outputNodes || [],
   });
-  const edgeIds = new Set(graph.edges.map((edge) => edge.id));
-  const edges = (clipboard.edges || [])
-    .filter((edge) => mapping.has(edge.source) && mapping.has(edge.target))
-    .map((original) => {
-      let index = 1;
-      while (edgeIds.has(`edge-${index}`)) index += 1;
-      const id = `edge-${index}`;
-      edgeIds.add(id);
-      return {
-        ...clone(original),
-        id,
-        source: mapping.get(original.source),
-        target: mapping.get(original.target),
-      };
-    });
+  const minX = Math.min(...copied.nodes.map((node) => node.position?.x || 0));
+  const minY = Math.min(...copied.nodes.map((node) => node.position?.y || 0));
+  const base = position || { x: minX + 45, y: minY + 65 };
+  for (const node of copied.nodes)
+    node.position = {
+      x: base.x + (node.position?.x || 0) - minX,
+      y: base.y + (node.position?.y || 0) - minY,
+    };
   return {
     graph: {
       ...graph,
-      nodes: [...graph.nodes, ...nodes],
-      edges: [...graph.edges, ...edges],
+      nodes: [...graph.nodes, ...copied.nodes],
+      edges: [...graph.edges, ...copied.edges],
+      outputNodes: [...(graph.outputNodes || []), ...copied.outputNodes],
     },
-    ids: nodes.map((node) => node.id),
+    ids: copied.nodes.map((node) => node.id),
   };
 }
 
 /** Confirm a placeholder in place; template sources are copied and globally rekeyed. */
-export function initializeWorkflowSubgraph(
-  graph,
-  nodeId,
-  saved,
-  definitions,
-  inputKeys = workflowSourceKeys(graph),
-) {
+export function initializeWorkflowSubgraph(graph, nodeId, saved, definitions) {
   const target = graph.nodes.find((node) => node.id === nodeId);
   if (target?.kind !== "subgraph" || target.subgraph?.initialized !== false)
     throw new Error("该子图已完成配置或已被删除，请重新选择。");
@@ -641,7 +648,6 @@ export function initializeWorkflowSubgraph(
       { ...graph, nodes: graph.nodes.filter((node) => node.id !== nodeId) },
       { nodes: [wrapper], edges: [] },
       target.position,
-      { inputKeys },
     );
     replacement = pasted.graph.nodes.at(-1);
     replacement.id = target.id;
@@ -778,6 +784,7 @@ export function removeWorkflowNodes(graph, ids) {
   return {
     ...graph,
     nodes: graph.nodes.filter((node) => !removed.has(node.id)),
+    outputNodes: (graph.outputNodes || []).filter((id) => !removed.has(id)),
     edges: graph.edges.filter(
       (edge) => !removed.has(edge.source) && !removed.has(edge.target),
     ),
@@ -862,7 +869,7 @@ export function catalogNode(
             ...resolveEdges(
               enclosing.graph,
               enclosing.container.id,
-              input.name,
+              input.id,
               ancestors.slice(0, -1),
             ),
           );
@@ -994,7 +1001,7 @@ export function workflowSubgraphDefinition(
     const endpoint = direction === "inputs" ? entry.target : entry.source;
     if (!endpoint)
       return {
-        name: entry.name,
+        name: entry.id,
         type: "any",
         schema: {},
         display: {
@@ -1019,7 +1026,7 @@ export function workflowSubgraphDefinition(
     if (!port) return null;
     return {
       ...port,
-      name: entry.name,
+      name: entry.id,
       inlineAllowed:
         direction === "inputs" ? port.inlineAllowed === true : false,
       display: {
@@ -1041,12 +1048,12 @@ export function workflowSubgraphDefinition(
     const target = parameter.targets?.[0];
     const child = graph.nodes.find((item) => item.id === target?.nodeId);
     const schema = child && catalogNode(definitions, child)?.configSchema;
-    properties[parameter.name] = {
+    properties[parameter.id] = {
       ...resolveWorkflowSchema(
         schema?.properties?.[target?.field] || {},
         schema,
       ),
-      title: parameter.title || parameter.name,
+      title: parameter.title || parameter.id,
       ...(parameter.description ? { description: parameter.description } : {}),
       ...(parameter.default !== undefined
         ? { default: parameter.default }
@@ -1079,10 +1086,8 @@ export function workflowSubgraphDefinition(
   };
 }
 
-function workflowUniqueId(used, prefix) {
-  let index = 1;
-  while (used.has(`${prefix}-${index}`)) index += 1;
-  const id = `${prefix}-${index}`;
+function workflowUniqueId(used) {
+  const id = workflowId();
   used.add(id);
   return id;
 }
@@ -1119,13 +1124,14 @@ export function wrapWorkflowSubgraph(
         catalogNode(definitions, child),
       )?.[direction]?.find((item) => item.name === port);
       entry = {
+        id: workflowId(),
         name: `${direction === "inputs" ? "in" : "out"}_${list.length + 1}`,
         title: endpoint?.display?.title || port,
         [key]: { nodeId, port },
       };
       list.push(entry);
     }
-    return entry.name;
+    return entry.id;
   };
   const internalEdges = graph.edges.filter(
     (edge) => selected.has(edge.source) && selected.has(edge.target),
@@ -1166,6 +1172,9 @@ export function wrapWorkflowSubgraph(
           },
         })),
         edges: internalEdges,
+        outputNodes: (graph.outputNodes || []).filter((key) =>
+          selected.has(key),
+        ),
         variables: graph.variables,
       }),
       interface: { inputs, outputs, parameters: [] },
@@ -1190,19 +1199,24 @@ export function wrapWorkflowSubgraph(
       const name = `parameter_${Object.keys(remap.parameters).length + 1}`;
       const key = `${target.nodeId}\u0000${target.field}`;
       if (remap.parameters[key]) continue;
+      const parameterId = workflowId();
       node.subgraph.interface.parameters.push({
+        id: parameterId,
         name,
         title: parameter.title || target.field,
         default: parameter.default,
         targets: [clone(target)],
       });
-      remap.parameters[key] = { nodeId: id, field: name };
+      remap.parameters[key] = { nodeId: id, field: parameterId };
     }
   return {
     graph: {
       ...graph,
       version: 3,
       nodes: [...graph.nodes.filter((item) => !selected.has(item.id)), node],
+      outputNodes: (graph.outputNodes || []).filter(
+        (key) => !selected.has(key),
+      ),
       edges,
     },
     node,
@@ -1240,15 +1254,15 @@ export function unwrapWorkflowSubgraph(graph, id) {
     const child = children.find(
       (node) => node.id === mapping.get(entry.target.nodeId),
     );
-    if (child && group.inputs?.[entry.name])
+    if (child && group.inputs?.[entry.id])
       child.inputs = {
         ...child.inputs,
-        [entry.target.port]: clone(group.inputs[entry.name]),
+        [entry.target.port]: clone(group.inputs[entry.id]),
       };
   }
   for (const parameter of contract.parameters || []) {
-    const value = Object.hasOwn(group.config || {}, parameter.name)
-      ? group.config[parameter.name]
+    const value = Object.hasOwn(group.config || {}, parameter.id)
+      ? group.config[parameter.id]
       : parameter.default;
     if (value === undefined) continue;
     for (const target of parameter.targets || []) {
@@ -1264,7 +1278,7 @@ export function unwrapWorkflowSubgraph(graph, id) {
     let next = edge;
     if (edge.source === id) {
       const entry = contract.outputs?.find(
-        (item) => item.name === edge.sourcePort,
+        (item) => item.id === edge.sourcePort,
       );
       if (!entry?.source || !mapping.has(entry.source.nodeId))
         throw new Error("子图输出端口失效，请先修复公开端口。");
@@ -1276,7 +1290,7 @@ export function unwrapWorkflowSubgraph(graph, id) {
     }
     if (edge.target === id) {
       const entry = contract.inputs?.find(
-        (item) => item.name === edge.targetPort,
+        (item) => item.id === edge.targetPort,
       );
       if (!entry?.target || !mapping.has(entry.target.nodeId))
         throw new Error("子图输入端口失效，请先修复公开端口。");
@@ -1292,7 +1306,9 @@ export function unwrapWorkflowSubgraph(graph, id) {
   for (const edge of inner.edges)
     edges.push({
       ...edge,
-      id: workflowUniqueId(edgeIds, "edge"),
+      id: edgeIds.has(edge.id)
+        ? workflowUniqueId(edgeIds)
+        : (edgeIds.add(edge.id), edge.id),
       source: mapping.get(edge.source),
       target: mapping.get(edge.target),
     });
@@ -1301,13 +1317,13 @@ export function unwrapWorkflowSubgraph(graph, id) {
     const key = direction === "inputs" ? "target" : "source";
     for (const entry of contract[direction] || [])
       if (entry[key])
-        boundary[direction][`${id}\u0000${entry.name}`] = {
+        boundary[direction][`${id}\u0000${entry.id}`] = {
           nodeId: mapping.get(entry[key].nodeId),
           port: entry[key].port,
         };
   }
   for (const parameter of contract.parameters || []) {
-    boundary.parameters[`${id}\u0000${parameter.name}`] = (
+    boundary.parameters[`${id}\u0000${parameter.id}`] = (
       parameter.targets || []
     ).map((target) => ({
       nodeId: mapping.get(target.nodeId),
@@ -1319,6 +1335,10 @@ export function unwrapWorkflowSubgraph(graph, id) {
       ...graph,
       version: 3,
       nodes: [...graph.nodes.filter((node) => node.id !== id), ...children],
+      outputNodes: [
+        ...(graph.outputNodes || []).filter((key) => key !== id),
+        ...(inner.outputNodes || []),
+      ],
       edges,
     },
     ids: children.map((node) => node.id),

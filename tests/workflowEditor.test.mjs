@@ -847,12 +847,19 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
     await click(button("进入子图"), app.dom);
     assert.ok(paletteButton("输入参数"));
     await click(paletteButton("知识提取"), app.dom);
+    const childId = globalThis.workflowUITest.flow.nodes.find(
+      (node) => node.data.kind === "extract",
+    ).id;
+    const capsuleId = (direction) =>
+      globalThis.workflowUITest.flow.nodes.find(
+        (node) => node.data.direction === direction,
+      ).id;
     await click(paletteButton("输入参数"), app.dom);
     await act(() =>
       globalThis.workflowUITest.flow.onConnect({
-        source: "@interface:inputs:input_1",
+        source: capsuleId("inputs"),
         sourceHandle: "value",
-        target: "extract-1",
+        target: childId,
         targetHandle: "bundle",
       }),
     );
@@ -874,15 +881,15 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
     await act(() =>
       globalThis.workflowUITest.flow.onNodeDragStop(
         {},
-        { id: "@interface:inputs:input_1", position: { x: -150, y: 75 } },
+        { id: capsuleId("inputs"), position: { x: -150, y: 75 } },
       ),
     );
     await click(paletteButton("输出参数"), app.dom);
     await act(() =>
       globalThis.workflowUITest.flow.onConnect({
-        source: "extract-1",
+        source: childId,
         sourceHandle: "extracted",
-        target: "@interface:outputs:output_1",
+        target: capsuleId("outputs"),
         targetHandle: "value",
       }),
     );
@@ -1103,7 +1110,13 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
         taskId: "existing-task",
         status: "completed",
         parameters: { graph },
-        runtime: { workflowMetrics: { activeRequests: 2, totalRequests: 5, peakActiveRequests: 2 } },
+        runtime: {
+          workflowMetrics: {
+            activeRequests: 2,
+            totalRequests: 5,
+            peakActiveRequests: 2,
+          },
+        },
         workflowNodes: {
           sg_input: {
             status: "completed",
@@ -1115,7 +1128,12 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
             nodePath: ["group", "extract-1"],
             namePath: ["并行增强", "知识提取"],
             progressMessage: "正在处理：九月十二日的日记",
-            telemetry: { activeRequests: 2, totalRequests: 5, phase: "external_execution", downloadedBytes: 2048 },
+            telemetry: {
+              activeRequests: 2,
+              totalRequests: 5,
+              phase: "external_execution",
+              downloadedBytes: 2048,
+            },
           },
         },
       },
@@ -1130,8 +1148,14 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
       document.querySelector(".workflow-inspector").textContent,
       /九月十二日/,
     );
-    assert.match(document.querySelector(".workflow-inspector").textContent, /存在连接数/);
-    assert.match(document.querySelector(".workflow-node-state").parentElement.textContent, /存在连接数：2/);
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /存在连接数/,
+    );
+    assert.match(
+      document.querySelector(".workflow-node-state").parentElement.textContent,
+      /存在连接数：2/,
+    );
     assert.equal(
       button("查看节点完整输出"),
       undefined,
@@ -1140,8 +1164,14 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
     await click(button("展开子图"), app.dom);
     assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
     await click(document.querySelector('[data-node="extract-1"]'), app.dom);
-    assert.match(document.querySelector(".workflow-inspector").textContent, /远端执行/);
-    assert.match(document.querySelector(".workflow-inspector").textContent, /2\.0 KB/);
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /远端执行/,
+    );
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /2\.0 KB/,
+    );
     await click(button("查看节点完整输出"), app.dom);
     assert.ok(
       app.calls.some((call) => call.url.includes("/nodes/sg_extract/output?")),
@@ -1305,7 +1335,11 @@ test("renaming a nested public port rewires its containing subgraph interface", 
       graph: { version: 3, nodes: [leaf], edges: [] },
       interface: {
         inputs: [
-          { name: "content", target: { nodeId: leaf.id, port: "bundle" } },
+          {
+            id: "content",
+            name: "content",
+            target: { nodeId: leaf.id, port: "bundle" },
+          },
         ],
         outputs: [],
         parameters: [],
@@ -1329,6 +1363,7 @@ test("renaming a nested public port rewires its containing subgraph interface", 
           interface: {
             inputs: [
               {
+                id: "root_content",
                 name: "root_content",
                 target: { nodeId: "inner", port: "content" },
               },
@@ -1356,7 +1391,7 @@ test("renaming a nested public port rewires its containing subgraph interface", 
       .payload.graph;
     assert.equal(
       saved.nodes[0].subgraph.interface.inputs[0].target.port,
-      "renamed",
+      "content",
     );
     assert.equal(
       saved.nodes[0].subgraph.graph.nodes[0].subgraph.interface.inputs[0].name,
@@ -1459,7 +1494,6 @@ function attachmentExpansionFixture() {
         kind: "boolean",
         version: 1,
         name: "将附件解析结果写入正文",
-        inputKey: "expandAttachmentContent",
         config: { value: false },
         inputs: {},
         position: { x: 20, y: 20 },
@@ -1583,7 +1617,7 @@ test("attachment expansion quick form submits false as a valid required input an
     assert.equal(document.querySelector('[role="alert"]'), null);
     assert.equal(
       app.calls.filter((call) => call.url === "/tasks/workflows/run").at(-1)
-        .payload.inputValues.expandAttachmentContent,
+        .payload.inputValues["attachment-content"],
       false,
     );
 
@@ -1593,8 +1627,8 @@ test("attachment expansion quick form submits false as a valid required input an
     const enabled = app.calls
       .filter((call) => call.url === "/tasks/workflows/run")
       .at(-1).payload;
-    assert.equal(enabled.inputValues.expandAttachmentContent, true);
-    assert.equal(typeof enabled.inputValues.expandAttachmentContent, "boolean");
+    assert.equal(enabled.inputValues["attachment-content"], true);
+    assert.equal(typeof enabled.inputValues["attachment-content"], "boolean");
     assert.equal(enabled.graph.nodes[0].config.value, false);
   } finally {
     await app.close();
@@ -2725,7 +2759,14 @@ test("quick template form preserves document revision and knowledge permissions"
     title: "文档提取模板",
     description: "根据文档提取知识",
     revision: 3,
-    graph: { version: 2, nodes: [{ id: "extract", kind: "extract", version: 1, config: {}, inputs: {} }], edges: [], settings: {} },
+    graph: {
+      version: 2,
+      nodes: [
+        { id: "extract", kind: "extract", version: 1, config: {}, inputs: {} },
+      ],
+      edges: [],
+      settings: {},
+    },
     inputFields: [
       {
         key: "document",
@@ -2820,7 +2861,6 @@ test("built-in workflow stays selected in the editor and quick runs submit its g
           id: "text-1",
           kind: "text",
           name: "待提取文本",
-          inputKey: "text",
           version: 1,
           config: { value: "默认内容" },
           inputs: {},
@@ -2874,7 +2914,7 @@ test("built-in workflow stays selected in the editor and quick runs submit its g
     ).payload;
     assert.deepEqual(payload.graph, builtin.graph);
     assert.equal(payload.templateId, undefined);
-    assert.equal(payload.inputValues.text, "默认内容");
+    assert.equal(payload.inputValues["text-1"], "默认内容");
     assert.equal(payload.title, builtin.title);
     assert.deepEqual(payload.permissions, {});
   } finally {
@@ -2885,30 +2925,76 @@ test("built-in workflow stays selected in the editor and quick runs submit its g
 test("document-only workflows hide knowledge policy controls in editor and quick run", async () => {
   const custom = structuredClone(catalog);
   custom.nodes.push({
-    kind: "document_export_source", version: 1, category: "source",
+    kind: "document_export_source",
+    version: 1,
+    category: "source",
     effects: ["document.read", "document.export", "attachment.create"],
     display: { title: "文档导出快照" },
-    configSchema: { type: "object", properties: { documentId: { type: "string", default: "doc-1" } } },
-    inputs: [], outputs: [],
+    configSchema: {
+      type: "object",
+      properties: { documentId: { type: "string", default: "doc-1" } },
+    },
+    inputs: [],
+    outputs: [],
   });
-  const graph = { version: 3, nodes: [{ id: "source", kind: "document_export_source", version: 1, config: { documentId: "doc-1" }, inputs: {}, position: { x: 0, y: 0 } }], edges: [], settings: {}, variables: {} };
+  const graph = {
+    version: 3,
+    nodes: [
+      {
+        id: "source",
+        kind: "document_export_source",
+        version: 1,
+        config: { documentId: "doc-1" },
+        inputs: {},
+        position: { x: 0, y: 0 },
+      },
+    ],
+    edges: [],
+    settings: {},
+    variables: {},
+  };
   const editor = await environment({}, { catalog: custom, graph });
   try {
     await click(button("全局设置"), editor.dom);
-    assert.doesNotMatch(document.querySelector(".workflow-inspector").textContent, /生成知识的归属与共享/);
-    assert.match(document.querySelector(".workflow-inspector").textContent, /模板共享成员/);
+    assert.doesNotMatch(
+      document.querySelector(".workflow-inspector").textContent,
+      /生成知识的归属与共享/,
+    );
+    assert.match(
+      document.querySelector(".workflow-inspector").textContent,
+      /模板共享成员/,
+    );
     await click(button("直接开始任务"), editor.dom);
-    const run = editor.calls.find((call) => call.url === "/tasks/workflows/run" && call.method === "post");
+    const run = editor.calls.find(
+      (call) => call.url === "/tasks/workflows/run" && call.method === "post",
+    );
     assert.deepEqual(run.payload.permissions, {});
   } finally {
     await editor.close();
   }
-  const template = { id: "export-template", title: "导出文档", revision: 1, graph };
-  const quick = await environment({ templateId: template.id }, { catalog: custom, template, component: "src/features/workflows/QuickTemplateRunDialog.jsx" });
+  const template = {
+    id: "export-template",
+    title: "导出文档",
+    revision: 1,
+    graph,
+  };
+  const quick = await environment(
+    { templateId: template.id },
+    {
+      catalog: custom,
+      template,
+      component: "src/features/workflows/QuickTemplateRunDialog.jsx",
+    },
+  );
   try {
-    assert.doesNotMatch(document.querySelector("[role=dialog]").textContent, /生成知识的归属与共享/);
+    assert.doesNotMatch(
+      document.querySelector("[role=dialog]").textContent,
+      /生成知识的归属与共享/,
+    );
     await click(button("创建并开始"), quick.dom);
-    const run = quick.calls.find((call) => call.url === "/tasks/workflows/run" && call.method === "post");
+    const run = quick.calls.find(
+      (call) => call.url === "/tasks/workflows/run" && call.method === "post",
+    );
     assert.deepEqual(run.payload.permissions, {});
   } finally {
     await quick.close();
@@ -3289,7 +3375,10 @@ test("dragging a connection to blank canvas previews before placing exact ports 
     saved = app.calls
       .filter((call) => call.url === "/tasks/workflows/validate")
       .at(-1).payload.graph;
-    assert.equal(saved.edges[0].source, "bundle-source-1");
+    assert.equal(
+      saved.nodes.find((node) => node.id === saved.edges[0].source).kind,
+      "bundle-source",
+    );
     assert.equal(saved.edges[0].target, "extract-1");
     assert.equal(saved.edges[0].sourcePort, "content");
   } finally {

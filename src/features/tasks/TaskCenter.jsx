@@ -1,3 +1,4 @@
+import { workflowArtifacts } from "../workflows/workflowProducts.js";
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -208,20 +209,24 @@ export default function TaskCenter() {
                                         <Play className="mr-1 size-4" />继续
                                     </Button>
                                 )}
-                                {task.result?.url && (
-                                    <Button
-                                        size="sm"
-                                        onClick={() =>
-                                            void downloadAttachmentResource(
-                                                task.result.url,
-                                                task.result.filename,
-                                            ).catch((error) => toast.error(error.message))
-                                        }
-                                    >
-                                        <Download className="size-4 mr-1" />
-                                        {t('taskCenter.download')}
-                                    </Button>
-                                )}
+                                <div className="flex max-h-40 min-w-0 max-w-full flex-col gap-1 overflow-y-auto">
+                                    {workflowArtifacts(task.result).map((file) => (
+                                        <Button
+                                            key={`${file.nodeId}:${file.artifactId}`}
+                                            className="max-w-full justify-start"
+                                            size="sm"
+                                            onClick={() =>
+                                                void downloadAttachmentResource(
+                                                    file.url,
+                                                    file.filename,
+                                                ).catch((error) => toast.error(error.message))
+                                            }
+                                        >
+                                            <Download className="size-4 mr-1" />
+                                            <span className="truncate">{file.filename || t('taskCenter.download')}</span>
+                                        </Button>
+                                    ))}
+                                </div>
                                 {['queued', 'pending', 'running', 'pause_requested', 'paused'].includes(task.status) && task.stage !== 'registering' && (
                                     <Button
                                         size="sm"
