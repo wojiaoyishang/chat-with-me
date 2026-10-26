@@ -27,9 +27,9 @@ src/features/documents/DocumentHistory 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:576:8727:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:576:8774:FUNCTION
 
-.. js:function:: DocumentHistory({ documentId, open, onOpenChange, restore, saving, currentContent })
+.. js:function:: DocumentHistory({ documentId, open, onOpenChange, restore, saving, currentContent, initialCommit })
 
    渲染 ``DocumentHistory`` React 组件，并协调该界面的状态、事件和子组件。
 
@@ -37,8 +37,8 @@ src/features/documents/DocumentHistory 模块
 
    **参数**
 
-   ``{ documentId, open, onOpenChange, restore, saving, currentContent }``
-      调用方传入的 ``documentId, open, onOpenChange, restore, saving, currentContent`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ documentId, open, onOpenChange, restore, saving, currentContent, initialCommit }``
+      调用方传入的 ``documentId, open, onOpenChange, restore, saving, currentContent, initialCommit`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -59,7 +59,7 @@ src/features/documents/DocumentHistory 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1085:2071:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1100:2103:FUNCTION
 
 .. rubric:: ``useEffect callback @ 22``
 
@@ -89,7 +89,7 @@ src/features/documents/DocumentHistory 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1316:1790:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1331:1822:FUNCTION
 
 .. rubric:: ``refresh``
 
@@ -117,7 +117,7 @@ src/features/documents/DocumentHistory 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1597:1640:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1612:1672:FUNCTION
 
 .. rubric:: ``setSelected callback @ 37``
 
@@ -138,7 +138,7 @@ src/features/documents/DocumentHistory 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1931:1964:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1963:1996:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'document.version.changed', documentId, direction: 'incoming' }).then callback @ 45``
 
@@ -160,7 +160,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``refresh``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:1991:2064:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2023:2096:FUNCTION
 
 .. rubric:: ``returned callback @ 47``
 
@@ -186,7 +186,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2108:2714:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2155:2761:FUNCTION
 
 .. rubric:: ``useEffect callback @ 52``
 
@@ -214,7 +214,7 @@ src/features/documents/DocumentHistory 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2383:2453:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2430:2500:FUNCTION
 
 .. rubric:: ``apiClient .get(\x60/document/${documentId}/history/${selected}\x60) .then callback @ 61``
 
@@ -237,7 +237,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``setDetail``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2474:2553:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2521:2600:FUNCTION
 
 .. rubric:: ``apiClient .get(\x60/document/${documentId}/history/${selected}\x60) .then((data) => { if (active) setDetail(data); }) .catch callback @ 64``
 
@@ -260,7 +260,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``setError``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2576:2644:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2623:2691:FUNCTION
 
 .. rubric:: ``apiClient .get(\x60/document/${documentId}/history/${selected}\x60) .then((data) => { if (active) setDetail(data); }) .catch(… callback @ 67``
 
@@ -282,7 +282,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``setLoading``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2661:2707:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2708:2754:FUNCTION
 
 .. rubric:: ``returned callback @ 70``
 
@@ -302,7 +302,7 @@ src/features/documents/DocumentHistory 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2772:3031:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:2819:3078:FUNCTION
 
 .. rubric:: ``handleRestore``
 
@@ -324,7 +324,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``restore``、``toast.success``、``t``、``onOpenChange``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:4445:4484:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:4492:4531:FUNCTION
 
 .. rubric:: ``onChange callback @ 107``
 
@@ -347,7 +347,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:4854:5118:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:4901:5165:FUNCTION
 
 .. rubric:: ``versions .filter callback @ 114``
 
@@ -370,7 +370,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``\x60${version.note} ${version.actor?.name || ''} ${formatLocalTimestamp(version.createdAt)}\x60 .toLowerCase() .includes``、``\x60${version.note} ${version.actor?.name || ''} ${formatLocalTimestamp(version.createdAt)}\x60 .toLowerCase``、``formatLocalTimestamp``、``query.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:5191:6514:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:5238:6561:FUNCTION
 
 .. rubric:: ``versions .filter((version) => \x60${version.note} ${version.actor?.name || ''} ${formatLocalTimestamp(version.createdAt)}\x60… callback @ 119``
 
@@ -395,7 +395,7 @@ src/features/documents/DocumentHistory 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:5668:5701:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:5715:5748:FUNCTION
 
 .. rubric:: ``onClick callback @ 125``
 
@@ -417,7 +417,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``setSelected``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:7068:7108:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:7115:7155:FUNCTION
 
 .. rubric:: ``versions.find callback @ 148``
 
@@ -438,7 +438,7 @@ src/features/documents/DocumentHistory 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:7926:7983:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:7973:8030:FUNCTION
 
 .. rubric:: ``onClick callback @ 163``
 
@@ -460,7 +460,7 @@ src/features/documents/DocumentHistory 模块
 
 **主要协作调用**：``setConfirm``、``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:8219:8276:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentHistory.jsx:8266:8323:FUNCTION
 
 .. rubric:: ``onClick callback @ 168``
 

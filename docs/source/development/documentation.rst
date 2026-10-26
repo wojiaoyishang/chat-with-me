@@ -3,6 +3,9 @@
 
 CWM 前端文档与源码同步维护。开发者应能从文档快速理解 Transport、Protocol、Event Runtime、Store、Surface 和各 Feature 的职责，再进入函数级 API 定位实现。
 
+发布说明书的正式来源是 docs/source 下的 RST。Markdown 仅用于协作记录和开发笔记，不能代替
+人工发布章节。新增或修改协议/功能后应更新 RST 并接入 toctree，再生成 JavaScript API。
+
 文档边界
 --------------------------------------------------------------------------------
 

@@ -235,5 +235,11 @@ test('settings tab routes the server component to the manager without global sav
     const source = await readFile('src/pages/SettingPage.jsx', 'utf8');
     assert.match(source, /dynamicConfig\.component === 'knowledge-databases'/);
     assert.match(source, /<KnowledgeDatabaseSettings config=\{dynamicConfig\}/);
-    assert.match(source, /dynamicConfig\?\.component !== 'knowledge-databases' && !isConfigPristine/);
+    const expression = source.match(/const hasUnsavedChanges = ([^;]+);/)?.[1];
+    assert.ok(expression);
+    const hasUnsavedChanges = new Function('isDynamicTab', 'dynamicConfig', 'isConfigPristine', `return ${expression}`);
+    assert.equal(hasUnsavedChanges(true, { component: 'knowledge-databases' }, false), false);
+    assert.equal(hasUnsavedChanges(true, { component: 'comfyui' }, false), false);
+    assert.equal(hasUnsavedChanges(true, { component: 'ordinary-form' }, false), true);
+    assert.equal(hasUnsavedChanges(true, { component: 'ordinary-form' }, true), false);
 });

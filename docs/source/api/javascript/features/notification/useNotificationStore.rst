@@ -298,7 +298,7 @@ src/features/notification/useNotificationStore 模块
 ``notificationId``
    目标对象的公共或运行时标识。
 
-``revision``（默认值 ``0``）
+``revision`` （默认值 ``0``）
    调用方传入的 ``revision`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -353,7 +353,7 @@ src/features/notification/useNotificationStore 模块
 ``notificationId``
    目标对象的公共或运行时标识。
 
-``revision``（默认值 ``0``）
+``revision`` （默认值 ``0``）
    调用方传入的 ``revision`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

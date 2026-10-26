@@ -3,7 +3,7 @@ src/context/useEventStore 模块
 
 .. js:module:: src/context/useEventStore
 
-Emit one semantic event. The returned thenable waits for an event whose \`\`reply\_to\`\` references the generated \`\`event\_id\`\`.
+Emit one semantic event. The returned thenable waits for an event whose \x60\x60reply\_to\x60\x60 references the generated \x60\x60event\_id\x60\x60.
 
 .. note::
 
@@ -168,7 +168,7 @@ Emit one semantic event. The returned thenable waits for an event whose \`\`repl
    ``envelope``
       调用方传入的 ``envelope`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{direction = 'local', localOnly = false}``（默认值 ``{}``）
+   ``{direction = 'local', localOnly = false}`` （默认值 ``{}``）
       调用方传入的 ``direction = 'local', localOnly = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -387,7 +387,7 @@ Emit one semantic event. The returned thenable waits for an event whose \`\`repl
 ``payload``
    事件或业务操作的结构化载荷。
 
-``event``（默认值 ``\x60${envelope.event}.result\x60``）
+``event`` （默认值 ``\x60${envelope.event}.result\x60``）
    语义事件名或 EventEnvelope。
 
 **返回值**

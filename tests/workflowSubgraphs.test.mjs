@@ -729,8 +729,8 @@ test("hashed runtime IDs are matched by nodePath and groups aggregate active/fai
   const local = workflowRuntimeForGraph(wrapped.graph, runtime);
   assert.equal(local[id].status, "running");
   assert.equal(local[id].activeCount, 1);
-  assert.equal(local[id].nodeProgress.processed, 1);
-  assert.match(local[id].progressMessage, /第一天/);
+  assert.equal(local[id].activeCount, 1);
+  assert.equal(local[id].nodeProgress, undefined, "observation metrics are produced by the backend, not aggregated by graph projection");
   const internal = workflowRuntimeForGraph(
     wrapped.node.subgraph.graph,
     runtime,
@@ -760,8 +760,8 @@ test("runtime path map restores monitoring after reload even if states omit meta
 test("pending monitor groups count all designed leaves before worker states arrive", () => {
   const wrapped = wrapWorkflowSubgraph(fixture(), ["b", "c"], definitions);
   const local = workflowRuntimeForGraph(wrapped.graph, {});
-  assert.equal(local[wrapped.node.id].nodeProgress.total, 2);
-  assert.equal(local[wrapped.node.id].nodeProgress.processed, 0);
+  assert.equal(local[wrapped.node.id].activeCount, 0);
+  assert.equal(local[wrapped.node.id].children.length, 0);
   assert.equal(local[wrapped.node.id].status, "pending");
 });
 

@@ -44,7 +44,7 @@ Accept only fresh commands for this mounted scene. History is never consumed.
    ``lastSequence``
       调用方传入的 ``lastSequence`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``now``（默认值 ``Date.now()``）
+   ``now`` （默认值 ``Date.now()``）
       调用方传入的 ``now`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

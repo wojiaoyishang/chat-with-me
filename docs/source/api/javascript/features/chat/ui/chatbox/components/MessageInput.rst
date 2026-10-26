@@ -243,7 +243,7 @@ src/features/chat/ui/chatbox/components/MessageInput 模块
 
 **参数**
 
-``options``（默认值 ``{}``）
+``options`` （默认值 ``{}``）
    调用方传入的可选配置对象。
 
 **返回值**

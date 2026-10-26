@@ -27,13 +27,13 @@ src/features/story/media/StoryMediaDeck 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/story/media/StoryMediaDeck.jsx:55:1416:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/StoryMediaDeck.jsx:55:1543:FUNCTION
 
 .. js:function:: StoryMediaDeck({part, layout, videoElement})
 
    渲染 ``StoryMediaDeck`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``3``—``32`` 行。
+   **性质**：同步函数；导出 API；源码第 ``3``—``34`` 行。
 
    **参数**
 

@@ -37,7 +37,7 @@ src/components/ui/avatar 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AvatarPrimitive.Root>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof AvatarPrimitive.Root>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -56,7 +56,7 @@ src/components/ui/avatar 模块
 
    **参数**
 
-   ``{ className, src, ...props }``（类型 ``React.ComponentProps<typeof AvatarPrimitive.Image>``）
+   ``{ className, src, ...props }`` （类型 ``React.ComponentProps<typeof AvatarPrimitive.Image>``）
       调用方传入的 ``className, src, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -75,7 +75,7 @@ src/components/ui/avatar 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AvatarPrimitive.Fallback>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof AvatarPrimitive.Fallback>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

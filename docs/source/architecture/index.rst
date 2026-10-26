@@ -16,6 +16,7 @@
    state_management
    surfaces
    rendering_widgets
+   workflow_tasks
    voice_runtime
    realtime_voice
    turn_admission

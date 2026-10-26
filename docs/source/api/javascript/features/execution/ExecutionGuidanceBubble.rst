@@ -22,18 +22,18 @@ src/features/execution/ExecutionGuidanceBubble 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``./WidgetResponseDetails.jsx``、``react``、``lucide-react``、``@/components/ui/avatar.tsx``、``@/context/userContext.jsx``、``@/lib/virtualUrl.js``、``./ExecutionGuidanceAction.jsx``。
+``./WidgetResponseDetails.jsx``、``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./executionStatusModel.js``、``./ExecutionGuidanceAttachments.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:477:1216:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:467:1206:FUNCTION
 
 .. js:function:: stateMeta(state)
 
    实现 ``stateMeta`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``10``—``24`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``9``—``23`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1256:4600:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1246:4739:FUNCTION
 
-.. rubric:: ``memo callback @ 26``
+.. rubric:: ``memo callback @ 25``
 
 .. code-block:: javascript
 
-   memo callback @ 26({ activity, execution })
+   memo callback @ 25({ activity, execution })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``26``—``95`` 行。
+**性质**：同步局部函数；源码第 ``25``—``98`` 行。
 
 **参数**
 
@@ -70,29 +70,30 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-3 flex gap-3 rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3" data-widget-response="true" > <ListChecks className="mt-0.5 h-5 w-5 shrink-0 text-gray…``、``( <div className="my-3 flex w-full items-end justify-end gap-3" data-execution-guidance-bubble="true" data-guidance-id={activity?.id || undefined} > <div className={\x60max-w-[80%] r…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-3 flex gap-3 rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3" data-widget-response="true" > <ListChecks className="mt-0.5 h-5 w-5 shrink-0 text-gray…``、``( <div className="my-3 w-full" data-execution-guidance-bubble="true" data-guidance-id={activity?.id || undefined} > <div className={\x60rounded-r-lg border-l-2 px-3 py-2.5 transition…``。
 
-**主要协作调用**：``useUserStore``、``String(activity?.content || activity?.label || '').trim``、``String``、``String(activity?.state || 'pending').toLowerCase``、``stateMeta``、``String(user?.nickname || user?.username || user?.name || 'U').trim``、``resolveResourceUrl``、``String(activity?.id || '').startsWith``。
+**主要协作调用**：``useState``、``String(activity?.content || activity?.label || '').trim``、``String``、``isVisibleExecutionGuidance``、``String(activity?.state || 'pending').toLowerCase``、``stateMeta``、``isWidgetExecutionGuidance``、``content.split``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1317:1338:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:4517:4573:FUNCTION
 
-.. rubric:: ``useUserStore callback @ 27``
+.. rubric:: ``onClick callback @ 90``
 
 .. code-block:: javascript
 
-   useUserStore callback @ 27(state)
+   onClick callback @ 90()
 
-封装 ``UserStore`` 的 React 状态、订阅与生命周期。
+处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``memo callback @ 26``。
+**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
-``state``
-   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+无。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setExpandedContent``。

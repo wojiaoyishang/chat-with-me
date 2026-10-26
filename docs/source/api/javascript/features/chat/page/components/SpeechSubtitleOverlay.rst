@@ -22,18 +22,18 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-dom``、``@/features/chat/speech/subtitleSettings.js``。
+``react``、``react-dom``、``@/lib/windowLayers.js``、``@/features/chat/speech/subtitleSettings.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:594:702:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:579:687:FUNCTION
 
 .. js:function:: fallbackText(t, key, fallback)
 
    实现 ``fallbackText`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``20``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``19``—``22`` 行。
 
    **参数**
 
@@ -52,13 +52,13 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
    **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:718:775:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:703:760:FUNCTION
 
 .. js:function:: clamp(value, min, max)
 
    实现 ``clamp`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``25``—``25`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``24``—``24`` 行。
 
    **参数**
 
@@ -77,13 +77,13 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
    **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:804:1199:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:789:1184:FUNCTION
 
 .. js:function:: getViewportMetrics()
 
    读取与 ``Viewport Metrics`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``27``—``39`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``26``—``38`` 行。
 
    **参数**
 
@@ -97,13 +97,13 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:1227:2006:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:1212:1991:FUNCTION
 
 .. js:function:: getCurrentSegment(speechState)
 
    读取与 ``Current Segment`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``41``—``61`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``40``—``60`` 行。
 
    **参数**
 
@@ -118,13 +118,13 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:2038:2824:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:2023:2809:FUNCTION
 
 .. js:function:: getQuickPositionLabel(t, id)
 
    读取与 ``Quick Position Label`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``63``—``77`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``62``—``76`` 行。
 
    **参数**
 
@@ -145,17 +145,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:1509:1573:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:1494:1558:FUNCTION
 
-.. rubric:: ``segments.find callback @ 46``
+.. rubric:: ``segments.find callback @ 45``
 
 .. code-block:: javascript
 
-   segments.find callback @ 46(item)
+   segments.find callback @ 45(item)
 
 作为 ``segments.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``46``—``46`` 行；所属函数 ``getCurrentSegment``。
+**性质**：同步局部函数；源码第 ``45``—``45`` 行；所属函数 ``getCurrentSegment``。
 
 **参数**
 
@@ -168,17 +168,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:2862:16342:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:2847:16520:FUNCTION
 
-.. rubric:: ``memo callback @ 79``
+.. rubric:: ``memo callback @ 78``
 
 .. code-block:: javascript
 
-   memo callback @ 79({speechState, enabled = true, t})
+   memo callback @ 78({speechState, enabled = true, t})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``79``—``355`` 行。
+**性质**：同步局部函数；源码第 ``78``—``358`` 行。
 
 **参数**
 
@@ -194,21 +194,21 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 * 注册事件、DOM 或运行时订阅。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``useRef``、``useState``、``useEffect``、``useMemo``、``fallbackText``、``String(currentSegment?.text || '').trim``、``String``、``Boolean``、``useCallback``、``SUBTITLE_QUICK_POSITIONS.map``、``createPortal``。
+**主要协作调用**：``useRef``、``useState``、``useEffect``、``useMemo``、``fallbackText``、``String(currentSegment?.text || '').trim``、``String``、``Boolean``、``useWindowLayer``、``useCallback``、``SUBTITLE_QUICK_POSITIONS.map``、``createPortal``。
 
 **内部回调数量**：15。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3420:3473:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3405:3458:FUNCTION
 
-.. rubric:: ``useEffect callback @ 90``
+.. rubric:: ``useEffect callback @ 89``
 
 .. code-block:: javascript
 
-   useEffect callback @ 90()
+   useEffect callback @ 89()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``90``—``92`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``89``—``91`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -218,17 +218,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3503:4508:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3488:4493:FUNCTION
 
-.. rubric:: ``useEffect callback @ 94``
+.. rubric:: ``useEffect callback @ 93``
 
 .. code-block:: javascript
 
-   useEffect callback @ 94()
+   useEffect callback @ 93()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``94``—``113`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``93``—``112`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -247,7 +247,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3609:3770:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3594:3755:FUNCTION
 
 .. rubric:: ``handlePositionChange``
 
@@ -257,7 +257,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 处理 ``Position Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``97``—``101`` 行；所属函数 ``useEffect callback @ 94``。
+**性质**：同步局部函数；源码第 ``96``—``100`` 行；所属函数 ``useEffect callback @ 93``。
 
 **参数**
 
@@ -270,7 +270,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``normalizeSubtitlePosition``、``setPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3805:3872:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3790:3857:FUNCTION
 
 .. rubric:: ``handleStyleChange``
 
@@ -280,7 +280,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 处理 ``Style Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``useEffect callback @ 94``。
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``useEffect callback @ 93``。
 
 **参数**
 
@@ -293,7 +293,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``setSubtitleStyle``、``normalizeSubtitleStyle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3903:3965:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:3888:3950:FUNCTION
 
 .. rubric:: ``handlePreview``
 
@@ -303,7 +303,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 处理 ``Preview`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``useEffect callback @ 94``。
+**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``useEffect callback @ 93``。
 
 **参数**
 
@@ -316,17 +316,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``setPreviewVisible``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:4222:4501:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:4207:4486:FUNCTION
 
-.. rubric:: ``returned callback @ 108``
+.. rubric:: ``returned callback @ 107``
 
 .. code-block:: javascript
 
-   returned callback @ 108()
+   returned callback @ 107()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``108``—``112`` 行；所属函数 ``useEffect callback @ 94``。
+**性质**：同步局部函数；源码第 ``107``—``111`` 行；所属函数 ``useEffect callback @ 93``。
 
 **参数**
 
@@ -342,17 +342,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:4551:4587:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:4536:4572:FUNCTION
 
-.. rubric:: ``useMemo callback @ 115``
+.. rubric:: ``useMemo callback @ 114``
 
 .. code-block:: javascript
 
-   useMemo callback @ 115()
+   useMemo callback @ 114()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -364,7 +364,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``getCurrentSegment``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5077:5267:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5105:5295:FUNCTION
 
 .. rubric:: ``useCallback callback @ 122``
 
@@ -374,7 +374,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``122``—``127`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``122``—``127`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -387,7 +387,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``saveSubtitlePosition``、``setPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5289:5943:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5317:5971:FUNCTION
 
 .. rubric:: ``useEffect callback @ 129``
 
@@ -397,7 +397,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``129``—``142`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``129``—``142`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -416,7 +416,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5389:5429:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5417:5457:FUNCTION
 
 .. rubric:: ``updateViewport``
 
@@ -438,7 +438,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``setViewport``、``getViewportMetrics``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5684:5936:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5712:5964:FUNCTION
 
 .. rubric:: ``returned callback @ 137``
 
@@ -464,7 +464,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``window.removeEventListener``、``window.visualViewport?.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5965:6742:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:5993:6770:FUNCTION
 
 .. rubric:: ``useEffect callback @ 144``
 
@@ -474,7 +474,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``144``—``162`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``144``—``162`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -493,7 +493,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6076:6103:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6104:6131:FUNCTION
 
 .. rubric:: ``closeMenu``
 
@@ -515,7 +515,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``setContextMenu``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6134:6210:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6162:6238:FUNCTION
 
 .. rubric:: ``handleKeyDown``
 
@@ -538,7 +538,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``closeMenu``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6458:6735:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6486:6763:FUNCTION
 
 .. rubric:: ``returned callback @ 156``
 
@@ -564,7 +564,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6811:7726:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:6839:7754:FUNCTION
 
 .. rubric:: ``useCallback callback @ 164``
 
@@ -574,7 +574,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``164``—``187`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``164``—``187`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -587,7 +587,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``clamp``、``setPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:7784:8307:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:7812:8335:FUNCTION
 
 .. rubric:: ``useCallback callback @ 189``
 
@@ -597,7 +597,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``189``—``203`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``189``—``203`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -610,7 +610,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``subtitleRef.current?.getBoundingClientRect``、``event.preventDefault``、``setContextMenu``、``setIsDragging``、``event.currentTarget.setPointerCapture``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:8357:8487:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:8385:8515:FUNCTION
 
 .. rubric:: ``useCallback callback @ 205``
 
@@ -620,7 +620,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``205``—``209`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``205``—``209`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -633,7 +633,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``event.preventDefault``、``updatePositionFromPointer``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:8555:8993:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:8583:9021:FUNCTION
 
 .. rubric:: ``useCallback callback @ 211``
 
@@ -643,7 +643,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``211``—``220`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``211``—``220`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -656,7 +656,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``updatePositionFromPointer``、``setIsDragging``、``event.currentTarget.releasePointerCapture``、``persistPosition``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:9085:10215:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:9113:10243:FUNCTION
 
 .. rubric:: ``useCallback callback @ 222``
 
@@ -666,7 +666,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``222``—``241`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``222``—``241`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -679,7 +679,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``getViewportMetrics``、``Math.max``、``Math.min``、``clamp``、``setContextMenu``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:10267:10363:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:10295:10391:FUNCTION
 
 .. rubric:: ``useCallback callback @ 243``
 
@@ -689,7 +689,7 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``243``—``246`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``243``—``246`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -702,17 +702,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``persistPosition``、``setContextMenu``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:13552:13586:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:13730:13764:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 307``
+.. rubric:: ``onPointerDown callback @ 310``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 307(event)
+   onPointerDown callback @ 310(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``310``—``310`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -725,17 +725,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:13623:13656:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:13801:13834:FUNCTION
 
-.. rubric:: ``onContextMenu callback @ 308``
+.. rubric:: ``onContextMenu callback @ 311``
 
 .. code-block:: javascript
 
-   onContextMenu callback @ 308(event)
+   onContextMenu callback @ 311(event)
 
 处理 ``Context Menu`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``308``—``308`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -748,17 +748,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:14113:15997:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:14291:16175:FUNCTION
 
-.. rubric:: ``SUBTITLE_QUICK_POSITIONS.map callback @ 316``
+.. rubric:: ``SUBTITLE_QUICK_POSITIONS.map callback @ 319``
 
 .. code-block:: javascript
 
-   SUBTITLE_QUICK_POSITIONS.map callback @ 316(item)
+   SUBTITLE_QUICK_POSITIONS.map callback @ 319(item)
 
 作为 ``SUBTITLE_QUICK_POSITIONS.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``316``—``344`` 行；所属函数 ``memo callback @ 79``。
+**性质**：同步局部函数；源码第 ``319``—``347`` 行；所属函数 ``memo callback @ 78``。
 
 **参数**
 
@@ -773,17 +773,17 @@ src/features/chat/page/components/SpeechSubtitleOverlay 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:14595:14626:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/SpeechSubtitleOverlay.jsx:14773:14804:FUNCTION
 
-.. rubric:: ``onClick callback @ 324``
+.. rubric:: ``onClick callback @ 327``
 
 .. code-block:: javascript
 
-   onClick callback @ 324()
+   onClick callback @ 327()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``324``—``324`` 行；所属函数 ``SUBTITLE_QUICK_POSITIONS.map callback @ 316``。
+**性质**：同步局部函数；源码第 ``327``—``327`` 行；所属函数 ``SUBTITLE_QUICK_POSITIONS.map callback @ 319``。
 
 **参数**
 

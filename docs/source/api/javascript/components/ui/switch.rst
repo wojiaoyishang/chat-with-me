@@ -37,7 +37,7 @@ src/components/ui/switch 模块
 
    **参数**
 
-   ``{ className, size = "default", ...props }``（类型 ``React.ComponentProps<typeof SwitchPrimitive.Root> & { size?: "sm" | "default" }``）
+   ``{ className, size = "default", ...props }`` （类型 ``React.ComponentProps<typeof SwitchPrimitive.Root> & { size?: "sm" | "default" }``）
       调用方传入的 ``className, size = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

@@ -35,7 +35,7 @@ src/features/chat/modelCapabilities 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``fallback``（默认值 ``false``）
+   ``fallback`` （默认值 ``false``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

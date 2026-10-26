@@ -1214,13 +1214,19 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
         taskId: "existing-task",
         status: "completed",
         parameters: { graph },
-        runtime: {
-          workflowMetrics: {
-            activeRequests: 2,
-            totalRequests: 5,
-            peakActiveRequests: 2,
-          },
-        },
+        observation: { version: 1, revision: 1, scopes: {
+          task: { kind: "task", title: "任务", components: [
+            { id: "requests", type: "request-activity", title: "外部请求", active: 2, total: 5, peak: 2 },
+          ] },
+          "subgraph:group": { kind: "subgraph", nodeId: "group", title: "并行增强", components: [
+            { id: "progress", type: "progress", title: "子图进度", completed: 1, total: 2, message: "正在处理：九月十二日的日记" },
+            { id: "requests", type: "request-activity", title: "外部请求", active: 2, total: 5, peak: 2 },
+          ] },
+          "node:sg_extract": { kind: "node", nodeId: "sg_extract", title: "知识提取", components: [
+            { id: "phase", type: "indicator", title: "当前阶段", value: "远端执行" },
+            { id: "downloaded", type: "indicator", title: "已下载", value: 2048, format: "bytes" },
+          ] },
+        } },
         workflowNodes: {
           sg_input: {
             status: "completed",
@@ -1231,13 +1237,6 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
             status: "running",
             nodePath: ["group", "extract-1"],
             namePath: ["并行增强", "知识提取"],
-            progressMessage: "正在处理：九月十二日的日记",
-            telemetry: {
-              activeRequests: 2,
-              totalRequests: 5,
-              phase: "external_execution",
-              downloadedBytes: 2048,
-            },
           },
         },
       },
@@ -1258,7 +1257,7 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
     );
     assert.match(
       document.querySelector(".workflow-node-state").parentElement.textContent,
-      /存在连接数：2/,
+      /存在连接数2/,
     );
     assert.equal(
       button("查看节点完整输出"),

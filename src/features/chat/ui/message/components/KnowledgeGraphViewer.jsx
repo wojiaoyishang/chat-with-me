@@ -202,7 +202,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
         refreshHistory(scope);
         return () => {
             epoch.current++;
-            for (const request of activeRequests.values()) { request.controller.abort(); request.graph?.expanding(request.id, false); }
+            for (const request of activeRequests.values()) { request.controller.abort(); request.graph?.loading?.(request, false); request.graph?.expanding(request.id, false); }
             activeRequests.clear();
         };
     }, [scope, refreshHistory]);
@@ -223,6 +223,8 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
         const offset = page?.hasMore ? page.nextOffset : 0;
         const epoch = generation.current, request = {controller: new AbortController(), scope, graph, id, key, ordered, skeleton, nearest};
         requests.current.set(key, request); if (id != null) graph?.expanding(id, true);
+        const nodeName = graph?.getNodes().find(node => node.id === String(id))?.name;
+        graph?.loading?.(request, true, nodeName ? `正在获取：${nodeName}…` : '正在获取…');
         refreshHistory(scope);
         setFeedback({ scope, message: ordered ? '正在读取前后顺序节点…' : skeleton ? '正在读取有序骨架…' : nearest ? '正在查找最近的有序节点…' : '正在读取关联节点…', error: false });
         try {
@@ -266,6 +268,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
         } catch (cause) {
             if (!request.controller.signal.aborted && generation.current === epoch) setFeedback({ scope, message: cause.message || (ordered ? '无法读取前后顺序节点，请稍后重试。' : '无法读取关联节点，请稍后重试。'), error: true });
         } finally {
+            graph?.loading?.(request, false);
             if (requests.current.get(key) === request) { requests.current.delete(key); if (id != null) graph?.expanding(id, false); }
             else if (!requests.current.has(key) && id != null) graph?.expanding(id, false);
             if (generation.current === epoch) refreshHistory(scope);
@@ -275,7 +278,7 @@ const KnowledgeGraphViewer = memo(function KnowledgeGraphViewer({ msg, conversat
         const pending = [...requests.current.values()].filter(request => request.scope === scope);
         if (direction === 'undo' && pending.length) {
             const request = pending.at(-1);
-            request.controller.abort(); requests.current.delete(request.key ?? request.id); if (request.id != null) request.graph?.expanding(request.id, false);
+            request.controller.abort(); requests.current.delete(request.key ?? request.id); request.graph?.loading?.(request, false); if (request.id != null) request.graph?.expanding(request.id, false);
             refreshHistory(scope);
             setFeedback({scope, error: false, message: request.ordered ? '已取消刚才的顺序节点请求。' : request.skeleton ? '已取消刚才的有序骨架请求。' : request.nearest ? '已取消刚才的查找请求。' : '已取消刚才的展开请求。'});
             return true;

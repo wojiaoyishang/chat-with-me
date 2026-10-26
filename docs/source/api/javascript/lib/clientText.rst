@@ -54,7 +54,7 @@ Require an explicit timezone; never guess the timezone of historical data.
    ``value``
       待读取、转换或校验的值。
 
-   ``{ locale, timeZone, fallback = '—' }``（默认值 ``{}``）
+   ``{ locale, timeZone, fallback = '—' }`` （默认值 ``{}``）
       调用方传入的 ``locale, timeZone, fallback = '—'`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -76,7 +76,7 @@ Require an explicit timezone; never guess the timezone of historical data.
    ``value``
       待读取、转换或校验的值。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**

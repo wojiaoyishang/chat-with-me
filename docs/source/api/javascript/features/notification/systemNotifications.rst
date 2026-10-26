@@ -94,7 +94,7 @@ src/features/notification/systemNotifications 模块
 
    **参数**
 
-   ``{ automatic = false }``（默认值 ``{}``）
+   ``{ automatic = false }`` （默认值 ``{}``）
       调用方传入的 ``automatic = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

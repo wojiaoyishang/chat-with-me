@@ -477,7 +477,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **参数**
 
-``resetOffset``（默认值 ``false``）
+``resetOffset`` （默认值 ``false``）
    调用方传入的 ``resetOffset`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -624,7 +624,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **参数**
 
-``restartIdleTimer``（默认值 ``true``）
+``restartIdleTimer`` （默认值 ``true``）
    调用方传入的 ``restartIdleTimer`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

@@ -45,7 +45,7 @@ src/runtime/voice/RealtimeVoiceTransport 模块
 
       **参数**
 
-      ``{url = REALTIME_VOICE_WEBSOCKET_URL, ticket, onEvent, onMedia, onClose, onError}``（默认值 ``{}``）
+      ``{url = REALTIME_VOICE_WEBSOCKET_URL, ticket, onEvent, onMedia, onClose, onError}`` （默认值 ``{}``）
          调用方传入的 ``url = REALTIME_VOICE_WEBSOCKET_URL, ticket, onEvent, onMedia, onClose, onError`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**
@@ -87,7 +87,7 @@ src/runtime/voice/RealtimeVoiceTransport 模块
 
       **参数**
 
-      ``{timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS}``（默认值 ``{}``）
+      ``{timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS}`` （默认值 ``{}``）
          调用方传入的 ``timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**
@@ -114,10 +114,10 @@ src/runtime/voice/RealtimeVoiceTransport 模块
 
       **参数**
 
-      ``code``（默认值 ``1000``）
+      ``code`` （默认值 ``1000``）
          调用方传入的 ``code`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-      ``reason``（默认值 ``'Voice session closed'``）
+      ``reason`` （默认值 ``'Voice session closed'``）
          调用方传入的 ``reason`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**

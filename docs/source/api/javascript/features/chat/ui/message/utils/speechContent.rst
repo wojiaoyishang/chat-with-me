@@ -37,7 +37,7 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **参数**
 
-   ``value``（默认值 ``''``）
+   ``value`` （默认值 ``''``）
       待读取、转换或校验的值。
 
    **返回值**
@@ -131,13 +131,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:3925:5253:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:3925:5439:FUNCTION
 
 .. js:function:: resolveReplacementSpeechContent(directiveName, rawAttributes, replacement, options)
 
    解析并确定与 ``Replacement Speech Content`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``103``—``131`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``103``—``133`` 行。
 
    **参数**
 
@@ -155,17 +155,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``''``、``resolveMarkdownSpeechContent(normalized.content, replacement, { depth: depth + 1, maxDepth, visitedIds: [...visitedIds, replacementId], includeOwnText, feedback, })``。
+   根据执行分支返回结果；代表性返回表达式为 ``''``、``resolveMarkdownSpeechContent(normalized.content, replacement, { depth: depth + 1, maxDepth, visitedIds: [...visitedIds, replacementId], includeOwnText, // A historical parent also…``。
 
    **主要协作调用**：``parseCardReplaceAttributes``、``isReplaceDirective``、``getCardReplaceIdFromAttributes``、``visitedIds.includes``、``String(attributes.type || '').trim``、``String``、``rawTokenType.toLowerCase``、``normalizeReplacementEntry``、``String(normalized.type || '').toLowerCase``、``resolveMarkdownSpeechContent``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:5285:5958:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:5471:6144:FUNCTION
 
 .. js:function:: resolveSpeechFragment(source, includeOwnText, feedback)
 
    解析并确定与 ``Speech Fragment`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``133``—``149`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``135``—``151`` 行。
 
    **参数**
 
@@ -186,23 +186,23 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:6004:7477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:6190:7663:FUNCTION
 
 .. js:function:: resolveMarkdownSpeechContent(content, replacement, options)
 
    解析并确定与 ``Markdown Speech Content`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``151``—``198`` 行。
+   **性质**：同步函数；导出 API；源码第 ``153``—``200`` 行。
 
    **参数**
 
    ``content``
       消息、文档或模型输出内容。
 
-   ``replacement``（默认值 ``{}``）
+   ``replacement`` （默认值 ``{}``）
       调用方传入的 ``replacement`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -213,13 +213,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:7517:8126:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:7703:8312:FUNCTION
 
 .. js:function:: stripIncompleteFencedCodeTail(value)
 
    实现 ``stripIncompleteFencedCodeTail`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``200``—``217`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``202``—``219`` 行。
 
    **参数**
 
@@ -232,20 +232,20 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``String``、``fencePattern.exec``、``match[0].trim().slice``、``match[0].trim``、``source.slice``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:8159:9087:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:8345:9273:FUNCTION
 
 .. js:function:: cleanSpeakableMarkdown(value, { preserveTrailingBoundary = false })
 
    实现 ``cleanSpeakableMarkdown`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``219``—``239`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``221``—``241`` 行。
 
    **参数**
 
    ``value``
       待读取、转换或校验的值。
 
-   ``{ preserveTrailingBoundary = false }``（默认值 ``{}``）
+   ``{ preserveTrailingBoundary = false }`` （默认值 ``{}``）
       调用方传入的 ``preserveTrailingBoundary = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -254,13 +254,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``String(value || '') // 跳过 fenced code block；表格不跳过，只清理表格分隔行。 .replace(FENCED_CODE_PATTERN, '\n') .replace(INLINE_CODE_PA…``、``String(value || '') // 跳过 fenced code block；表格不跳过，只清理表格分隔行。 .replace(FENCED_CODE_PATTERN, '\n') .replace``、``String(value || '') // 跳过 fenced code block；表格不跳过，只清理表格分隔行。 .replace``、``String``、``cleaned.replace``、``cleaned.trim``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9124:9166:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9310:9352:FUNCTION
 
 .. js:function:: getSpeakableContent(msg)
 
    读取与 ``Speakable Content`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``241``—``241`` 行。
+   **性质**：同步函数；导出 API；源码第 ``243``—``243`` 行。
 
    **参数**
 
@@ -273,13 +273,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``feedbackSpeechSource``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9184:9216:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9370:9402:FUNCTION
 
 .. js:function:: isDigit(char)
 
    判断与 ``Digit`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``243``—``243`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``245``—``245`` 行。
 
    **参数**
 
@@ -292,13 +292,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``/\d/.test``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9240:9382:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9426:9568:FUNCTION
 
 .. js:function:: getLinePrefix(source, index)
 
    读取与 ``Line Prefix`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``245``—``248`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``247``—``250`` 行。
 
    **参数**
 
@@ -314,13 +314,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``source.lastIndexOf``、``Math.max``、``source.slice``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9417:9659:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9603:9845:FUNCTION
 
 .. js:function:: isMarkdownOrderedListDot(source, index)
 
    判断与 ``Markdown Ordered List Dot`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``250``—``256`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``252``—``258`` 行。
 
    **参数**
 
@@ -336,13 +336,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``getLinePrefix``、``MARKDOWN_ORDERED_LIST_PATTERN.test``、``/\s/.test``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9688:10195:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:9874:10381:FUNCTION
 
 .. js:function:: isAsciiSentenceDot(source, index)
 
    判断与 ``Ascii Sentence Dot`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``258``—``272`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``260``—``274`` 行。
 
    **参数**
 
@@ -358,13 +358,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``isDigit``、``isMarkdownOrderedListDot``、``/\s/.test``、``CLOSING_SENTENCE_CHARS.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:10233:10949:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:10419:11135:FUNCTION
 
 .. js:function:: consumeClosingSentenceChars(source, index)
 
    实现 ``consumeClosingSentenceChars`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``274``—``305`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``276``—``307`` 行。
 
    **参数**
 
@@ -380,13 +380,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``CLOSING_SENTENCE_CHARS.has``、``SENTENCE_END_CHARS.has``、``source.slice``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:10979:11683:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:11165:11869:FUNCTION
 
 .. js:function:: getSentenceBreakEnd(source, index)
 
    读取与 ``Sentence Break End`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``307``—``331`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``309``—``333`` 行。
 
    **参数**
 
@@ -402,13 +402,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``consumeClosingSentenceChars``、``source.slice``、``SENTENCE_END_CHARS.has``、``isAsciiSentenceDot``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:11713:12351:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:11899:12537:FUNCTION
 
 .. js:function:: createSpeechSegment(source, rawStart, rawEnd, msgId, index, occurrenceMap)
 
    创建与 ``Speech Segment`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``333``—``352`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``335``—``354`` 行。
 
    **参数**
 
@@ -440,20 +440,20 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``normalizeWhitespace``、``source.slice``、``normalizeSpeechText(text).toLowerCase``、``normalizeSpeechText``、``occurrenceMap.get``、``occurrenceMap.set``、``getNormalizedPrefixLength``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:12389:13437:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:12575:13623:FUNCTION
 
 .. js:function:: splitSourceIntoSpeechSlices(source, { includeTrailing = true })
 
    实现 ``splitSourceIntoSpeechSlices`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``354``—``393`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``356``—``395`` 行。
 
    **参数**
 
    ``source``
       调用方传入的 ``source`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{ includeTrailing = true }``（默认值 ``{}``）
+   ``{ includeTrailing = true }`` （默认值 ``{}``）
       调用方传入的 ``includeTrailing = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -462,13 +462,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``getSentenceBreakEnd``、``slices.push``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:13477:14390:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:13663:14576:FUNCTION
 
 .. js:function:: splitSpeakableSegments(text, msgId)
 
    实现 ``splitSpeakableSegments`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``395``—``429`` 行。
+   **性质**：同步函数；导出 API；源码第 ``397``—``431`` 行。
 
    **参数**
 
@@ -486,20 +486,20 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:14421:15064:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:14607:15250:FUNCTION
 
 .. js:function:: feedbackSpeechSource(msg, streaming)
 
    实现 ``feedbackSpeechSource`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``431``—``444`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``433``—``446`` 行。
 
    **参数**
 
    ``msg``
       调用方传入的 ``msg`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``streaming``（默认值 ``false``）
+   ``streaming`` （默认值 ``false``）
       调用方传入的 ``streaming`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -508,13 +508,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``resolveMarkdownSpeechContent``、``String``、``stripIncompleteFencedCodeTail``、``cleanSpeakableMarkdown``、``source.matchAll``、``anchors.push``、``source.replace``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15089:15371:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15275:15557:FUNCTION
 
 .. js:function:: attachFeedback(segments, anchors)
 
    实现 ``attachFeedback`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``446``—``452`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``448``—``454`` 行。
 
    **参数**
 
@@ -532,13 +532,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15409:15563:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15595:15749:FUNCTION
 
 .. js:function:: getSpeakableSegments(msg, msgId)
 
    读取与 ``Speakable Segments`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``454``—``457`` 行。
+   **性质**：同步函数；导出 API；源码第 ``456``—``459`` 行。
 
    **参数**
 
@@ -554,13 +554,13 @@ src/features/chat/ui/message/utils/speechContent 模块
 
    **主要协作调用**：``feedbackSpeechSource``、``attachFeedback``、``splitSpeakableSegments``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15610:16496:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15796:16682:FUNCTION
 
 .. js:function:: getStreamingSpeakableSegments(msg, msgId, { final = false })
 
    读取与 ``Streaming Speakable Segments`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``459``—``482`` 行。
+   **性质**：同步函数；导出 API；源码第 ``461``—``484`` 行。
 
    **参数**
 
@@ -570,7 +570,7 @@ src/features/chat/ui/message/utils/speechContent 模块
    ``msgId``
       目标对象的公共或运行时标识。
 
-   ``{ final = false }``（默认值 ``{}``）
+   ``{ final = false }`` （默认值 ``{}``）
       调用方传入的 ``final = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -656,17 +656,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
 **主要协作调用**：``nonOverlapping.push``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:5457:5503:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:5643:5689:FUNCTION
 
-.. rubric:: ``items .filter callback @ 137``
+.. rubric:: ``items .filter callback @ 139``
 
 .. code-block:: javascript
 
-   items .filter callback @ 137(item)
+   items .filter callback @ 139(item)
 
 作为 ``items .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``resolveSpeechFragment``。
+**性质**：同步局部函数；源码第 ``139``—``139`` 行；所属函数 ``resolveSpeechFragment``。
 
 **参数**
 
@@ -677,17 +677,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:5522:5564:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:5708:5750:FUNCTION
 
-.. rubric:: ``items .filter((item) => item.trigger === 'next_speech_start') .map callback @ 138``
+.. rubric:: ``items .filter((item) => item.trigger === 'next_speech_start') .map callback @ 140``
 
 .. code-block:: javascript
 
-   items .filter((item) => item.trigger === 'next_speech_start') .map callback @ 138(item)
+   items .filter((item) => item.trigger === 'next_speech_start') .map callback @ 140(item)
 
 作为 ``items .filter((item) => item.trigger === 'next_speech_start') .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``138``—``138`` 行；所属函数 ``resolveSpeechFragment``。
+**性质**：同步局部函数；源码第 ``140``—``140`` 行；所属函数 ``resolveSpeechFragment``。
 
 **参数**
 
@@ -698,17 +698,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:6819:7323:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:7005:7509:FUNCTION
 
-.. rubric:: ``directiveMatches.forEach callback @ 174``
+.. rubric:: ``directiveMatches.forEach callback @ 176``
 
 .. code-block:: javascript
 
-   directiveMatches.forEach callback @ 174(match)
+   directiveMatches.forEach callback @ 176(match)
 
 作为 ``directiveMatches.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``174``—``191`` 行；所属函数 ``resolveMarkdownSpeechContent``。
+**性质**：同步局部函数；源码第 ``176``—``193`` 行；所属函数 ``resolveMarkdownSpeechContent``。
 
 **参数**
 
@@ -721,17 +721,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
 **主要协作调用**：``resolveSpeechFragment``、``source.slice``、``resolveReplacementSpeechContent``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:13647:13916:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:13833:14102:FUNCTION
 
-.. rubric:: ``splitSourceIntoSpeechSlices(source).forEach callback @ 400``
+.. rubric:: ``splitSourceIntoSpeechSlices(source).forEach callback @ 402``
 
 .. code-block:: javascript
 
-   splitSourceIntoSpeechSlices(source).forEach callback @ 400(slice)
+   splitSourceIntoSpeechSlices(source).forEach callback @ 402(slice)
 
 作为 ``splitSourceIntoSpeechSlices(source).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``400``—``411`` 行；所属函数 ``splitSpeakableSegments``。
+**性质**：同步局部函数；源码第 ``402``—``413`` 行；所属函数 ``splitSpeakableSegments``。
 
 **参数**
 
@@ -744,17 +744,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
 **主要协作调用**：``createSpeechSegment``、``segments.push``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15189:15226:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15375:15412:FUNCTION
 
-.. rubric:: ``segments.find callback @ 448``
+.. rubric:: ``segments.find callback @ 450``
 
 .. code-block:: javascript
 
-   segments.find callback @ 448(item)
+   segments.find callback @ 450(item)
 
 作为 ``segments.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``448``—``448`` 行；所属函数 ``attachFeedback``。
+**性质**：同步局部函数；源码第 ``450``—``450`` 行；所属函数 ``attachFeedback``。
 
 **参数**
 
@@ -765,17 +765,17 @@ src/features/chat/ui/message/utils/speechContent 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:15866:16134:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/speechContent.js:16052:16320:FUNCTION
 
-.. rubric:: ``splitSourceIntoSpeechSlices(source, { includeTrailing: Boolean(final) }).forEach callback @ 464``
+.. rubric:: ``splitSourceIntoSpeechSlices(source, { includeTrailing: Boolean(final) }).forEach callback @ 466``
 
 .. code-block:: javascript
 
-   splitSourceIntoSpeechSlices(source, { includeTrailing: Boolean(final) }).forEach callback @ 464(slice)
+   splitSourceIntoSpeechSlices(source, { includeTrailing: Boolean(final) }).forEach callback @ 466(slice)
 
 作为 ``splitSourceIntoSpeechSlices(source, { includeTrailing: Boolean(final) }).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``464``—``474`` 行；所属函数 ``getStreamingSpeakableSegments``。
+**性质**：同步局部函数；源码第 ``466``—``476`` 行；所属函数 ``getStreamingSpeakableSegments``。
 
 **参数**
 

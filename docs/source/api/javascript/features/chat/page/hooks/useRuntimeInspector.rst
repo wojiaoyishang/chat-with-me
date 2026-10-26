@@ -3,7 +3,7 @@ src/features/chat/page/hooks/useRuntimeInspector 模块
 
 .. js:module:: src/features/chat/page/hooks/useRuntimeInspector
 
-Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \`isOpenRef\` / \`markStale\` handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
+Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \x60isOpenRef\x60 / \x60markStale\x60 handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
 
 .. note::
 
@@ -17,7 +17,7 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 * **模块标识**：``src/features/chat/page/hooks/useRuntimeInspector``
 * **顶层函数/组件/Hook**：4
 * **类**：0
-* **局部函数与匿名回调**：29
+* **局部函数与匿名回调**：32
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -106,18 +106,21 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:1583:11839:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:1583:12464:FUNCTION
 
-.. js:function:: useRuntimeInspector(conversationId)
+.. js:function:: useRuntimeInspector(conversationId, branchKey)
 
-   Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \`isOpenRef\` / \`markStale\` handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
+   Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \x60isOpenRef\x60 / \x60markStale\x60 handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
 
-   **性质**：同步函数；导出 API；源码第 ``53``—``309`` 行。
+   **性质**：同步函数；导出 API；源码第 ``53``—``322`` 行。
 
    **参数**
 
    ``conversationId``
       Conversation 的公共 UUID。
+
+   ``branchKey`` （默认值 ``''``）
+      调用方传入的 ``branchKey`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -126,10 +129,11 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
    **副作用**
 
    * 发起 HTTP 请求或访问外部服务。
+   * 读取或修改浏览器全局对象、页面或历史状态。
 
    **主要协作调用**：``useState``、``useRef``、``useCallback``、``useEffect``。
 
-   **内部回调数量**：14。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：15。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
@@ -203,7 +207,7 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:2709:3051:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:2725:3067:FUNCTION
 
 .. rubric:: ``useCallback callback @ 69``
 
@@ -226,7 +230,7 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``updater``、``setDocument``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:3096:3333:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:3112:3349:FUNCTION
 
 .. rubric:: ``useCallback callback @ 77``
 
@@ -248,22 +252,22 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``abortControllerRef.current?.abort``、``setLoading``、``setModelCallLoadingId``、``setToolCallLoadingId``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:3380:5136:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:3396:5297:FUNCTION
 
 .. rubric:: ``useCallback callback @ 87``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 87({ section, focusMessageId = null, modelCallId = null, silent = false })
+   async useCallback callback @ 87({ section, focusMessageId = null, modelCallId = null, eventId = null, query = '', silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``87``—``126`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``87``—``128`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
-``{ section, focusMessageId = null, modelCallId = null, silent = false }``
-   调用方传入的 ``section, focusMessageId = null, modelCallId = null, silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ section, focusMessageId = null, modelCallId = null, eventId = null, query = '', silent = false }``
+   调用方传入的 ``section, focusMessageId = null, modelCallId = null, eventId = null, query = '', silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -275,21 +279,21 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``abortControllerRef.current?.abort``、``setLoading``、``setError``、``apiClient.get``、``isCancelledRequest``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:5209:5844:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:5370:6005:FUNCTION
 
-.. rubric:: ``useCallback callback @ 131``
+.. rubric:: ``useCallback callback @ 133``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 131({ focusMessageId = null, silent = false })
+   async useCallback callback @ 133({ focusMessageId = null, silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``131``—``143`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``133``—``145`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
-``{ focusMessageId = null, silent = false }``（默认值 ``{}``）
+``{ focusMessageId = null, silent = false }`` （默认值 ``{}``）
    调用方传入的 ``focusMessageId = null, silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -300,17 +304,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:5537:5568:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:5698:5729:FUNCTION
 
-.. rubric:: ``data.tabs?.some callback @ 135``
+.. rubric:: ``data.tabs?.some callback @ 137``
 
 .. code-block:: javascript
 
-   data.tabs?.some callback @ 135(tab)
+   data.tabs?.some callback @ 137(tab)
 
 作为 ``data.tabs?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``useCallback callback @ 131``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``useCallback callback @ 133``。
 
 **参数**
 
@@ -321,24 +325,24 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:5928:6824:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:6089:6985:FUNCTION
 
-.. rubric:: ``useCallback callback @ 148``
+.. rubric:: ``useCallback callback @ 150``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 148(tabId, { focusMessageId = null, force = false, silent = false })
+   async useCallback callback @ 150(tabId, { focusMessageId = null, force = false, silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``148``—``163`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``150``—``165`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
 ``tabId``
    目标对象的公共或运行时标识。
 
-``{ focusMessageId = null, force = false, silent = false }``（默认值 ``{}``）
+``{ focusMessageId = null, force = false, silent = false }`` （默认值 ``{}``）
    调用方传入的 ``focusMessageId = null, force = false, silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -349,17 +353,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:6306:6341:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:6467:6502:FUNCTION
 
-.. rubric:: ``(documentRef.current?.tabs || []).find callback @ 154``
+.. rubric:: ``(documentRef.current?.tabs || []).find callback @ 156``
 
 .. code-block:: javascript
 
-   (documentRef.current?.tabs || []).find callback @ 154(tab)
+   (documentRef.current?.tabs || []).find callback @ 156(tab)
 
 作为 ``(documentRef.current?.tabs || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``154``—``154`` 行；所属函数 ``useCallback callback @ 148``。
+**性质**：同步局部函数；源码第 ``156``—``156`` 行；所属函数 ``useCallback callback @ 150``。
 
 **参数**
 
@@ -370,17 +374,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:6697:6779:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:6858:6940:FUNCTION
 
-.. rubric:: ``updateDocument callback @ 161``
+.. rubric:: ``updateDocument callback @ 163``
 
 .. code-block:: javascript
 
-   updateDocument callback @ 161(current)
+   updateDocument callback @ 163(current)
 
 更新与 ``Document`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``useCallback callback @ 148``。
+**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``useCallback callback @ 150``。
 
 **参数**
 
@@ -393,45 +397,45 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``mergeTabSection``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:6914:8187:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7075:8339:FUNCTION
 
-.. rubric:: ``useCallback callback @ 168``
+.. rubric:: ``useCallback callback @ 170``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 168(modelCallId, { silent = false })
+   async useCallback callback @ 170(modelCallId, { silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``168``—``192`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``170``—``194`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
 ``modelCallId``
    目标对象的公共或运行时标识。
 
-``{ silent = false }``（默认值 ``{}``）
+``{ silent = false }`` （默认值 ``{}``）
    调用方传入的 ``silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``existing``、``data?.modelCall || null``。
 
-**主要协作调用**：``String(modelCallId || '').trim``、``String``、``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'model-request') ?.section?.modelCalls?.find``、``(documentRef.current?.tabs || []) .find``、``setModelCallLoadingId``、``requestSection``、``updateDocument``。
+**主要协作调用**：``String(modelCallId || '').trim``、``String``、``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'timeline') ?.section?.modelCalls?.find``、``(documentRef.current?.tabs || []) .find``、``setModelCallLoadingId``、``requestSection``、``updateDocument``。
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7149:7184:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7310:7340:FUNCTION
 
-.. rubric:: ``(documentRef.current?.tabs || []) .find callback @ 172``
+.. rubric:: ``(documentRef.current?.tabs || []) .find callback @ 174``
 
 .. code-block:: javascript
 
-   (documentRef.current?.tabs || []) .find callback @ 172(tab)
+   (documentRef.current?.tabs || []) .find callback @ 174(tab)
 
 作为 ``(documentRef.current?.tabs || []) .find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``172``—``172`` 行；所属函数 ``useCallback callback @ 168``。
+**性质**：同步局部函数；源码第 ``174``—``174`` 行；所属函数 ``useCallback callback @ 170``。
 
 **参数**
 
@@ -442,17 +446,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7230:7264:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7386:7420:FUNCTION
 
-.. rubric:: ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'model-request') ?.section?.modelCalls?.find callback @ 173``
+.. rubric:: ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'timeline') ?.section?.modelCalls?.find callback @ 175``
 
 .. code-block:: javascript
 
-   (documentRef.current?.tabs || []) .find((tab) => tab.id === 'model-request') ?.section?.modelCalls?.find callback @ 173(item)
+   (documentRef.current?.tabs || []) .find((tab) => tab.id === 'timeline') ?.section?.modelCalls?.find callback @ 175(item)
 
-作为 ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'model-request') ?.section?.modelCalls?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'timeline') ?.section?.modelCalls?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``useCallback callback @ 168``。
+**性质**：同步局部函数；源码第 ``175``—``175`` 行；所属函数 ``useCallback callback @ 170``。
 
 **参数**
 
@@ -463,17 +467,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7529:8036:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:7686:8188:FUNCTION
 
-.. rubric:: ``updateDocument callback @ 179``
+.. rubric:: ``updateDocument callback @ 181``
 
 .. code-block:: javascript
 
-   updateDocument callback @ 179(current)
+   updateDocument callback @ 181(current)
 
 更新与 ``Document`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``179``—``188`` 行；所属函数 ``useCallback callback @ 168``。
+**性质**：同步局部函数；源码第 ``181``—``190`` 行；所属函数 ``useCallback callback @ 170``。
 
 **参数**
 
@@ -486,17 +490,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``mergeModelCall``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8087:8131:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8239:8283:FUNCTION
 
-.. rubric:: ``setModelCallLoadingId callback @ 190``
+.. rubric:: ``setModelCallLoadingId callback @ 192``
 
 .. code-block:: javascript
 
-   setModelCallLoadingId callback @ 190(current)
+   setModelCallLoadingId callback @ 192(current)
 
 设置与 ``Model Call Loading Id`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``190``—``190`` 行；所属函数 ``useCallback callback @ 168``。
+**性质**：同步局部函数；源码第 ``192``—``192`` 行；所属函数 ``useCallback callback @ 170``。
 
 **参数**
 
@@ -507,24 +511,24 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8276:9289:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8428:9438:FUNCTION
 
-.. rubric:: ``useCallback callback @ 197``
+.. rubric:: ``useCallback callback @ 199``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 197(modelCallId, { silent = false })
+   async useCallback callback @ 199(modelCallId, { silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``197``—``216`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``199``—``218`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
 ``modelCallId``
    目标对象的公共或运行时标识。
 
-``{ silent = false }``（默认值 ``{}``）
+``{ silent = false }`` （默认值 ``{}``）
    调用方传入的 ``silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -535,17 +539,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8511:8538:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8663:8690:FUNCTION
 
-.. rubric:: ``(documentRef.current?.tabs || []) .find callback @ 201``
+.. rubric:: ``(documentRef.current?.tabs || []) .find callback @ 203``
 
 .. code-block:: javascript
 
-   (documentRef.current?.tabs || []) .find callback @ 201(tab)
+   (documentRef.current?.tabs || []) .find callback @ 203(tab)
 
 作为 ``(documentRef.current?.tabs || []) .find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``useCallback callback @ 197``。
+**性质**：同步局部函数；源码第 ``203``—``203`` 行；所属函数 ``useCallback callback @ 199``。
 
 **参数**
 
@@ -556,17 +560,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8584:8618:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8736:8770:FUNCTION
 
-.. rubric:: ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'tools') ?.section?.modelCalls?.find callback @ 202``
+.. rubric:: ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'tools') ?.section?.modelCalls?.find callback @ 204``
 
 .. code-block:: javascript
 
-   (documentRef.current?.tabs || []) .find((tab) => tab.id === 'tools') ?.section?.modelCalls?.find callback @ 202(item)
+   (documentRef.current?.tabs || []) .find((tab) => tab.id === 'tools') ?.section?.modelCalls?.find callback @ 204(item)
 
 作为 ``(documentRef.current?.tabs || []) .find((tab) => tab.id === 'tools') ?.section?.modelCalls?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``202``—``202`` 行；所属函数 ``useCallback callback @ 197``。
+**性质**：同步局部函数；源码第 ``204``—``204`` 行；所属函数 ``useCallback callback @ 199``。
 
 **参数**
 
@@ -577,17 +581,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:8911:9139:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:9065:9288:FUNCTION
 
-.. rubric:: ``updateDocument callback @ 208``
+.. rubric:: ``updateDocument callback @ 210``
 
 .. code-block:: javascript
 
-   updateDocument callback @ 208(current)
+   updateDocument callback @ 210(current)
 
 更新与 ``Document`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``208``—``212`` 行；所属函数 ``useCallback callback @ 197``。
+**性质**：同步局部函数；源码第 ``210``—``214`` 行；所属函数 ``useCallback callback @ 199``。
 
 **参数**
 
@@ -600,17 +604,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``mergeModelCall``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:9189:9233:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:9338:9382:FUNCTION
 
-.. rubric:: ``setToolCallLoadingId callback @ 214``
+.. rubric:: ``setToolCallLoadingId callback @ 216``
 
 .. code-block:: javascript
 
-   setToolCallLoadingId callback @ 214(current)
+   setToolCallLoadingId callback @ 216(current)
 
 设置与 ``Tool Call Loading Id`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``214``—``214`` 行；所属函数 ``useCallback callback @ 197``。
+**性质**：同步局部函数；源码第 ``216``—``216`` 行；所属函数 ``useCallback callback @ 199``。
 
 **参数**
 
@@ -621,21 +625,21 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:9379:9797:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:9528:9946:FUNCTION
 
-.. rubric:: ``useCallback callback @ 221``
+.. rubric:: ``useCallback callback @ 223``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 221({ focusMessageId = null })
+   async useCallback callback @ 223({ focusMessageId = null })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``221``—``230`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``223``—``232`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
-``{ focusMessageId = null }``（默认值 ``{}``）
+``{ focusMessageId = null }`` （默认值 ``{}``）
    调用方传入的 ``focusMessageId = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -644,17 +648,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``setOpen``、``setStale``、``loadOverview``、``loadTab``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:9879:9975:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10028:10124:FUNCTION
 
-.. rubric:: ``useCallback callback @ 234``
+.. rubric:: ``useCallback callback @ 236``
 
 .. code-block:: javascript
 
-   useCallback callback @ 234()
+   useCallback callback @ 236()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``234``—``238`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：同步局部函数；源码第 ``236``—``240`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
@@ -666,17 +670,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``setOpen``、``abortRequest``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10029:10089:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10178:10238:FUNCTION
 
-.. rubric:: ``useCallback callback @ 240``
+.. rubric:: ``useCallback callback @ 242``
 
 .. code-block:: javascript
 
-   useCallback callback @ 240()
+   useCallback callback @ 242()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``240``—``242`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：同步局部函数；源码第 ``242``—``244`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
@@ -688,24 +692,24 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``setStale``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10131:10364:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10280:10513:FUNCTION
 
-.. rubric:: ``useCallback callback @ 245``
+.. rubric:: ``useCallback callback @ 247``
 
 .. code-block:: javascript
 
-   useCallback callback @ 245(tabId, { focusMessageId = null })
+   useCallback callback @ 247(tabId, { focusMessageId = null })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``245``—``250`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：同步局部函数；源码第 ``247``—``252`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
 ``tabId``
    目标对象的公共或运行时标识。
 
-``{ focusMessageId = null }``（默认值 ``{}``）
+``{ focusMessageId = null }`` （默认值 ``{}``）
    调用方传入的 ``focusMessageId = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -714,21 +718,21 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``String``、``setActiveTab``、``loadTab``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10425:10929:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10574:11078:FUNCTION
 
-.. rubric:: ``useCallback callback @ 255``
+.. rubric:: ``useCallback callback @ 257``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 255({ focusMessageId = null })
+   async useCallback callback @ 257({ focusMessageId = null })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``255``—``266`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：异步局部函数；源码第 ``257``—``268`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
-``{ focusMessageId = null }``（默认值 ``{}``）
+``{ focusMessageId = null }`` （默认值 ``{}``）
    调用方传入的 ``focusMessageId = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -737,17 +741,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``loadOverview``、``setActiveTab``、``loadTab``、``setStale``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:10986:11263:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11135:11412:FUNCTION
 
-.. rubric:: ``useEffect callback @ 270``
+.. rubric:: ``useEffect callback @ 272``
 
 .. code-block:: javascript
 
-   useEffect callback @ 270()
+   useEffect callback @ 272()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``270``—``280`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：同步局部函数；源码第 ``272``—``282`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
@@ -759,17 +763,93 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **主要协作调用**：``setOpen``、``setDocument``、``setError``、``setStale``、``setActiveTab``、``abortRequest``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11313:11477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11511:11868:FUNCTION
 
-.. rubric:: ``useEffect callback @ 283``
+.. rubric:: ``useEffect callback @ 285``
 
 .. code-block:: javascript
 
-   useEffect callback @ 283()
+   useEffect callback @ 285()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``283``—``287`` 行；所属函数 ``useRuntimeInspector``。
+**性质**：同步局部函数；源码第 ``285``—``293`` 行；所属函数 ``useRuntimeInspector``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``、``() => window.clearTimeout(timer)``。
+
+**副作用**
+
+* 读取或修改浏览器全局对象、页面或历史状态。
+
+**主要协作调用**：``abortRequest``、``updateDocument``、``window.setTimeout``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11781:11806:FUNCTION
+
+.. rubric:: ``window.setTimeout callback @ 291``
+
+.. code-block:: javascript
+
+   window.setTimeout callback @ 291()
+
+实现 ``window.setTimeout`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``291``—``291`` 行；所属函数 ``useEffect callback @ 285``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``refresh``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11828:11861:FUNCTION
+
+.. rubric:: ``returned callback @ 292``
+
+.. code-block:: javascript
+
+   returned callback @ 292()
+
+实现 ``returned`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``292``—``292`` 行；所属函数 ``useEffect callback @ 285``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 读取或修改浏览器全局对象、页面或历史状态。
+
+**主要协作调用**：``window.clearTimeout``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11938:12102:FUNCTION
+
+.. rubric:: ``useEffect callback @ 296``
+
+.. code-block:: javascript
+
+   useEffect callback @ 296()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``296``—``300`` 行；所属函数 ``useRuntimeInspector``。
 
 **参数**
 
@@ -781,17 +861,17 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11327:11477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/hooks/useRuntimeInspector.js:11952:12102:FUNCTION
 
-.. rubric:: ``anonymous callback @ 283``
+.. rubric:: ``anonymous callback @ 296``
 
 .. code-block:: javascript
 
-   anonymous callback @ 283()
+   anonymous callback @ 296()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``283``—``287`` 行；所属函数 ``useEffect callback @ 283``。
+**性质**：同步局部函数；源码第 ``296``—``300`` 行；所属函数 ``useEffect callback @ 296``。
 
 **参数**
 

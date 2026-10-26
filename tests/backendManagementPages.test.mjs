@@ -17,6 +17,12 @@ from application.management_pages import _ENV
 print(json.dumps({kind: _ENV.get_template("management.html").render(kind=kind,title=kind,config={"kind":kind,"apiBase":"/api"},stylesheet="",script="") for kind in ("tasks","knowledge")}))
 `], {cwd: path.join(root,"../.."),encoding:"utf8"}));
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
+async function waitFor(predicate) {
+  const deadline = Date.now() + 3000;
+  while (!predicate() && Date.now() < deadline) await settle();
+  assert.ok(predicate(), "Expected the asynchronous page update to finish");
+}
+const observation = (components) => ({ version: 1, revision: 1, scopes: { task: { kind: "task", title: "任务", components } } });
 async function page(
   kind,
   responder,
@@ -221,13 +227,11 @@ test("backend task descriptor renders stage statistics and routes task creation 
       return {
         task: { taskId: "task-1", title: "安装说明", status },
         definition,
-        runtime: { activeSeconds: 61, elapsedSeconds: 80 },
-        usage: {
-          totalTokens: 300,
-          inputTokens: 200,
-          outputTokens: 100,
-          knownCalls: 1,
-        },
+        observation: observation([
+          { id: "active", type: "indicator", title: "实际运行", value: 61, format: "duration" },
+          { id: "usage", type: "model-usage", title: "模型用量", summary: { totalTokens: 300, inputTokens: 200, outputTokens: 100 }, stages: [], rows: [] },
+          { id: "phases", type: "phase-timeline", title: "执行阶段", rows: [{ id: "extract", title: "提取", status: "running", elapsedSeconds: 61 }] },
+        ]),
         stages: [
           {
             key: "extract",
@@ -246,7 +250,7 @@ test("backend task descriptor renders stage statistics and routes task creation 
   });
   t.after(() => dom.window.close());
   assert.match(document.querySelector("#detail").textContent, /300/);
-  assert.match(document.querySelector("#detail").textContent, /1 分 1 秒/);
+  assert.match(document.querySelector("#detail").textContent, /61 秒/);
   [...document.querySelectorAll("#detail button")]
     .find((node) => node.textContent === "此阶段后暂停")
     .click();
@@ -361,13 +365,13 @@ test("unknown token usage remains unknown and partial completed tasks expose ret
         : {
             ...task,
             definition,
-            usage: {
+            observation: observation([{ id: "usage", type: "model-usage", title: "模型用量", summary: {
               totalTokens: null,
               inputTokens: null,
               outputTokens: null,
               knownCalls: 0,
               unknownCalls: 1,
-            },
+            }, stages: [], rows: [] }]),
             stages: [],
             runtime: { activeSeconds: 2, elapsedSeconds: 4 },
           },
@@ -378,7 +382,7 @@ test("unknown token usage remains unknown and partial completed tasks expose ret
     cards
       .find((card) => card.textContent.startsWith("总 Token"))
       .querySelector("strong").textContent,
-    "—",
+    "未知",
   );
   assert.match(document.querySelector("#detail").textContent, /部分完成/);
   assert.ok(
@@ -626,6 +630,13 @@ test("task detail refresh preserves the focused stage pause action instead of ta
         task,
         definition,
         runtime: { activeSeconds },
+        observation: observation([
+          { id: "active", type: "indicator", title: "实际运行", value: activeSeconds, format: "duration" },
+          { id: "phases", type: "phase-timeline", title: "执行阶段", rows: [
+            { id: "extract", title: "提取阶段", status: "running", elapsedSeconds: activeSeconds },
+            { id: "persist", title: "入库阶段", status: "pending", elapsedSeconds: 0 },
+          ] },
+        ]),
         stages: [
           { key: "extract", name: "提取阶段", status: "running" },
           { key: "persist", name: "入库阶段", status: "pending" },
@@ -1118,7 +1129,8 @@ test("initial loading is delayed, never shows empty prematurely, and stops after
   assert.equal(document.querySelector('#graph-loading').hidden, false);
   assert.match(document.querySelector('#graph-loading').textContent, /正在读取/);
   release({ nodes: [{ id: 'root', name: 'Root', properties: {} }], relationships: [] });
-  await new Promise((resolve) => setTimeout(resolve, 65));
+  await waitFor(() => document.querySelector('#graph-loading').hidden &&
+    document.querySelector('#knowledge-canvas').getAttribute('aria-busy') === 'false');
   assert.equal(document.querySelector('#graph-loading').hidden, true);
   assert.equal(document.querySelector('#knowledge-canvas').getAttribute('aria-busy'), 'false');
   assert.equal(document.querySelector('#graph-empty').hidden, true);
@@ -1138,7 +1150,8 @@ test("initial graph failure leaves a finite retry status and retries successfull
   assert.equal(document.querySelector('#knowledge-canvas').getAttribute('aria-busy'), 'false');
   assert.match(document.querySelector('#graph-loading').textContent, /Network unavailable/);
   fail = false; document.querySelector('#graph-loading button').click();
-  await new Promise((resolve) => setTimeout(resolve, 65));
+  await waitFor(() => document.querySelector('#graph-loading').hidden &&
+    !document.querySelector('#graph-empty').hidden);
   assert.equal(document.querySelector('#graph-loading').hidden, true);
   assert.equal(document.querySelector('#graph-empty').hidden, false);
 });

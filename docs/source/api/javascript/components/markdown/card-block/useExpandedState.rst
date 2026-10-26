@@ -40,7 +40,7 @@ src/components/markdown/card-block/useExpandedState 模块
    ``expandedKey``
       调用方传入的 ``expandedKey`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``defaultExpanded``（默认值 ``false``）
+   ``defaultExpanded`` （默认值 ``false``）
       调用方传入的 ``defaultExpanded`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -126,7 +126,7 @@ src/components/markdown/card-block/useExpandedState 模块
 ``nextValueOrUpdater``
    调用方传入的 ``nextValueOrUpdater`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``options``（默认值 ``{}``）
+``options`` （默认值 ``{}``）
    调用方传入的可选配置对象。
 
 **返回值**

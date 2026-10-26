@@ -2,6 +2,7 @@ import { forceSimulation, forceLink, forceManyBody, forceCollide, forceX, forceY
 import { graphEdgeGeometry, isSourceChunk } from './knowledgeGraphPresentation.js';
 import { createOrderedGraphLayout, createOrderedOrbitLayout, orderedNodeRadius, orderedNodeCaption, orderedConvergencePath } from '../../../../knowledge/orderedGraphLayout.js';
 import { createKnowledgeGraphContextMenu } from './knowledgeGraphContextMenu.js';
+import { createSelectedNodeViewportFollow, createLocalDragInfluence } from '../../../../knowledge/selectedNodeViewportFollow.js';
 
 export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOrderedNeighbors, getOrderedTypes, onOrderedSkeleton, onNearestOrdered, onBeforeMove, onPhysicsChange, markerId, edgeAnimation = true } = {}) {
     const doc = svg.ownerDocument, win = doc.defaultView;
@@ -15,6 +16,18 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     const step = 1000 / 60, listeners = [], pointers = new Map();
     const orderedLayout = createOrderedGraphLayout();
     const orbitLayout = createOrderedOrbitLayout();
+    const viewportFollow = createSelectedNodeViewportFollow();
+    const dragInfluence = createLocalDragInfluence();
+    const pendingReads = new Map();
+    const loadingBadge = doc.createElement('div');
+    loadingBadge.className = 'chat-knowledge-fetch-status'; loadingBadge.hidden = true;
+    loadingBadge.setAttribute('role', 'status'); loadingBadge.setAttribute('aria-live', 'polite');
+    svg.parentElement?.append(loadingBadge);
+    function loading(key, active, message = '正在获取…') {
+        if (active) pendingReads.set(key, message); else pendingReads.delete(key);
+        loadingBadge.hidden = !pendingReads.size;
+        loadingBadge.textContent = pendingReads.size > 1 ? `正在获取…（${pendingReads.size} 个请求）` : [...pendingReads.values()][0] || '';
+    }
     const controlled = node => orbitLayout.controlled(node);
     const flexibleTime = node => node?.ordered?.hierarchy === true;
     const reducedMotion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -26,7 +39,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         .force('collision', forceCollide(node => node.radius + 30).strength(0.8).iterations(2))
         .force('x', forceX(0).strength(node => node.ordered || node.orderedOrbit || orderedPresent && orbitLayout.sourceAnchored(node) ? 0 : 0.035))
         .force('y', forceY(0).strength(node => node.ordered || node.orderedOrbit || orderedPresent && orbitLayout.sourceAnchored(node) ? 0 : 0.035))
-        .force('ordered', alpha => orbitLayout.tick(alpha));
+        .force('ordered', alpha => orbitLayout.tick(alpha))
+        .force('local-drag', () => dragInfluence.tick(nodes.values()));
     const listen = (target, type, callback, options) => {
         target.addEventListener(type, callback, options);
         listeners.push(() => target.removeEventListener(type, callback, options));
@@ -149,6 +163,11 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
             view.labelElement.style.visibility = geometry.path ? '' : 'hidden';
         }
         for (const view of convergenceViews) view.element.setAttribute('d', orderedConvergencePath(nodes.get(view.from), nodes.get(view.to), view));
+        const viewport = availableViewport();
+        viewportFollow.update({ node: nodes.get(selected), camera,
+            bounds: { left: viewport.x - viewport.width / 2, right: viewport.x + viewport.width / 2,
+                top: viewport.y - viewport.height / 2, bottom: viewport.y + viewport.height / 2 },
+            enabled, blocked: Boolean(drag || pinch || marquee) });
         applyCamera();
     }
     function cancelAutoFit() { initialFit = false; fittedView = null; }
@@ -171,6 +190,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         return true;
     }
     function fit(ids, maxZoom = 1.5) {
+        viewportFollow.stop();
         if (!frameCamera(ids, maxZoom)) return false;
         fittedView = { ids: ids == null ? null : [...ids], maxZoom };
         initialFit = ids == null && enabled && simulation.alpha() > simulation.alphaMin();
@@ -209,6 +229,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         requestDraw();
     }
     function clearFocus() {
+        viewportFollow.stop();
         cancelAutoFit();
         focused.clear(); multiSelected.clear(); selected = null; pendingFocus = null;
         for (const node of nodes.values()) if (node !== drag?.node && !node.ordered) node.fx = node.fy = null;
@@ -218,6 +239,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         clearFocus();
         multiSelected = new Set(ids);
         selected = multiSelected.values().next().value || null;
+        if (multiSelected.size === 1) viewportFollow.select(selected);
         initialFit = false;
         focusStyles();
     }
@@ -267,6 +289,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     }
     function setData(next) {
         if (destroyed) return;
+        dragInfluence.clear();
         closeOrderedMenu();
         endMarquee(true);
         const before = nodes.size, added = new Set(), keepNodes = new Set(next.nodes.map(node => node.id));
@@ -397,10 +420,11 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         } else {
             const node = nodes.get(ids[0]); if (!controlled(node)) { node.fx = node.x; node.fy = node.y; } node.vx = node.vy = 0;
         }
-        focusStyles(); fit(ids, 1.8); animate(0.15); return true;
+        focusStyles(); fit(ids, 1.8); if (ids.length === 1) viewportFollow.select(selected); animate(0.15); return true;
     }
     const point = event => { const rect = svg.getBoundingClientRect(); return { x: event.clientX - rect.left, y: event.clientY - rect.top }; };
     function zoom(factor, pointX = width / 2, pointY = height / 2) {
+        viewportFollow.stop();
         closeOrderedMenu();
         const previous = camera.scale; camera.scale = Math.max(0.12, Math.min(3.5, previous * factor));
         camera.x = pointX - (pointX - camera.x) / previous * camera.scale;
@@ -411,7 +435,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         const moved = Boolean(drag?.node && drag.moved);
         if (moved && (!drag.node.ordered || flexibleTime(drag.node))) drag.node.fx = drag.node.fy = null;
         drag = null; svg.classList.remove('dragging');
-        if (moved) animate(0.25);
+        if (moved) animate(0.12);
         else refreshPhysics();
     }
     function cancelGesture() {
@@ -443,6 +467,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         }
         pointers.set(event.pointerId, current);
         if (pointers.size === 2) {
+            viewportFollow.stop();
             releaseDrag(); const [a, b] = [...pointers.values()], center = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
             pinch = { distance: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), scale: camera.scale, x: (center.x - camera.x) / camera.scale, y: (center.y - camera.y) / camera.scale }; return;
         }
@@ -477,13 +502,18 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         }
         if (!drag || drag.pointerId !== event.pointerId) return;
         if (!drag.moved && Math.hypot(current.x - drag.start.x, current.y - drag.start.y) < 6) return;
-        if (!drag.moved) { onBeforeMove?.(drag.node ? '移动节点' : '移动画布'); svg.setPointerCapture?.(event.pointerId); svg.classList.add('dragging'); }
+        if (!drag.moved) {
+            if (drag.node) dragInfluence.begin(drag.node, nodes.values(), model?.edges || []);
+            else viewportFollow.stop();
+            onBeforeMove?.(drag.node ? '移动节点' : '移动画布'); svg.setPointerCapture?.(event.pointerId); svg.classList.add('dragging');
+        }
         drag.moved = true; cancelAutoFit();
         if (drag.node && nodes.has(drag.node.id)) {
             const x = (current.x - camera.x) / camera.scale - drag.offsetX, y = (current.y - camera.y) / camera.scale - drag.offsetY;
             if (!orderedLayout.move(drag.node, x, y) || flexibleTime(drag.node)) { drag.node.x = drag.node.fx = x; drag.node.y = drag.node.fy = y; }
             orbitLayout.move(drag.node, x, y);
-            drag.node.vx = drag.node.vy = 0; simulation.alphaTarget(0.35); animate();
+            dragInfluence.update(drag.node, nodes.values());
+            drag.node.vx = drag.node.vy = 0; simulation.alphaTarget(0); animate(0.12);
         } else { camera.x += current.x - drag.previous.x; camera.y += current.y - drag.previous.y; }
         drag.previous = current; draw(); event.preventDefault();
     });
@@ -516,7 +546,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         if (event.key === '+' || event.key === '=') zoom(1.25);
         else if (event.key === '-') zoom(0.8);
         else if (event.key === '0') fit();
-        else if (event.key.startsWith('Arrow')) { camera.x += event.key === 'ArrowLeft' ? 35 : event.key === 'ArrowRight' ? -35 : 0; camera.y += event.key === 'ArrowUp' ? 35 : event.key === 'ArrowDown' ? -35 : 0; cancelAutoFit(); draw(); }
+        else if (event.key.startsWith('Arrow')) { viewportFollow.stop(); camera.x += event.key === 'ArrowLeft' ? 35 : event.key === 'ArrowRight' ? -35 : 0; camera.y += event.key === 'ArrowUp' ? 35 : event.key === 'ArrowDown' ? -35 : 0; cancelAutoFit(); draw(); }
     });
     listen(doc, 'visibilitychange', () => { updateEdgeAnimation(); lastTime = null; if (doc.hidden) { endMarquee(true); if (frame) win.cancelAnimationFrame(frame); frame = 0; releaseDrag(); pointers.clear(); pinch = null; } else requestDraw(); });
     const resize = () => {
@@ -529,7 +559,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
     const observer = win.ResizeObserver ? new win.ResizeObserver(resize) : null;
     observer?.observe(svg); if (controlsLayer) observer?.observe(controlsLayer); listen(win, 'resize', resize); resize();
     return {
-        setData, focusNetwork, fit, zoom, closeContextMenu: closeOrderedMenu,
+        setData, focusNetwork, fit, zoom, loading, closeContextMenu: closeOrderedMenu,
         showOrderedNeighbors(id) { if (!destroyed && nodes.get(String(id))?.ordered) return onOrderedNeighbors?.(String(id)); },
         getViewState: () => ({
             camera: { ...camera }, width, height, physics: physicsPreference,
@@ -538,6 +568,7 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         }),
         restoreViewState(state) {
             if (destroyed || !state || !state.camera) return false;
+            viewportFollow.stop(); dragInfluence.clear();
             closeOrderedMenu(); cancelGesture();
             if (frame) win.cancelAnimationFrame(frame);
             frame = 0; lastTime = null; elapsed = 0; simulation.alphaTarget(0).alpha(0);
@@ -559,8 +590,8 @@ export function createChatKnowledgeGraph(svg, { onReady, onError, onExpand, onOr
         getNodePositions: () => [...nodes.values()].map(({ id, x, y }) => ({ id, x, y })),
         getRelationships: () => model?.relationships || [],
         setEdgeAnimation(value) { if (destroyed) return; edgeAnimationEnabled = value !== false; updateEdgeAnimation(); },
-        setPhysics(value) { const wasEnabled = enabled; physicsPreference = typeof value === 'boolean' ? value : null; enabled = physicsPreference ?? true; onPhysicsChange?.(enabled); updateEdgeAnimation(); if (wasEnabled === enabled) return; if (enabled) { if (fittedView?.ids === null) initialFit = true; animate(); } else { if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
+        setPhysics(value) { const wasEnabled = enabled; physicsPreference = typeof value === 'boolean' ? value : null; enabled = physicsPreference ?? true; onPhysicsChange?.(enabled); updateEdgeAnimation(); if (wasEnabled === enabled) return; if (enabled) { if (pickedIds().size === 1) viewportFollow.select(selected || [...pickedIds()][0]); if (fittedView?.ids === null) initialFit = true; animate(); } else { viewportFollow.stop(); if (frame) win.cancelAnimationFrame(frame); frame = 0; lastTime = null; elapsed = 0; svg.dataset.physicsState = 'paused'; draw(); if (!ready) requestDraw(); } },
         relayout() { clearFocus(); let index = 0; for (const node of nodes.values()) { const angle = index++ * 2.399963229728653, radius = 40 + Math.sqrt(index) * 54; node.x = Math.cos(angle) * radius; node.y = Math.sin(angle) * radius; node.vx = node.vy = 0; } orderedLayout.rebuild(nodes.values(), { reset: true, relationships: model?.relationships || [], completeParentIds: model?.completeParentIds || [] }); orbitLayout.rebuild(nodes.values(), model?.relationships || [], { reset: true }); fit(); initialFit = true; animate(0.65); },
-        destroy() { if (destroyed) return; destroyed = true; contextMenu.destroy(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
+        destroy() { if (destroyed) return; destroyed = true; viewportFollow.stop(); dragInfluence.clear(); pendingReads.clear(); loadingBadge.remove(); contextMenu.destroy(); updateEdgeAnimation(); endMarquee(true); if (frame) win.cancelAnimationFrame(frame); simulation.stop(); observer?.disconnect(); visibilityObserver?.disconnect(); listeners.forEach(dispose => dispose()); pointers.clear(); marqueeRect.remove(); convergenceLayer.remove(); nodeLayer.replaceChildren(); edgeLayer.replaceChildren(); nodes.clear(); views.clear(); },
     };
 }

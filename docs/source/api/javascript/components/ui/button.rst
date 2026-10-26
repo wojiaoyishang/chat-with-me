@@ -37,7 +37,7 @@ src/components/ui/button 模块
 
    **参数**
 
-   ``{ className, variant, size, asChild = false, ...props }``（类型 ``React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean }``）
+   ``{ className, variant, size, asChild = false, ...props }`` （类型 ``React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean }``）
       调用方传入的 ``className, variant, size, asChild = false, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

@@ -29,7 +29,7 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:427:3737:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:434:3876:FUNCTION
 
 .. rubric:: ``memo callback @ 8``
 
@@ -48,13 +48,13 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <> <KnowledgeGraphViewer key={msgId} msg={msg} className="w-[80%] mr-13" align="right" /> <div className="flex justify-end items-center gap-3 max-w-[80%] ml-auto"> <div ref={con…``、``( <div className="w-full pl-2 pr-2 lg:pl-10 lg:pr-10"> <div className="text-gray-800 break-words max-w-none"> <KnowledgeGraphViewer key={msgId} msg={msg} /> <div ref={contentRef}…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <> <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} className="w-[80%] mr-13" align="right" /> <div className="flex justify-end items-center gap-3 max…``、``( <div className="w-full pl-2 pr-2 lg:pl-10 lg:pr-10"> <div className="text-gray-800 break-words max-w-none"> <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversat…``。
 
 **主要协作调用**：``useRef``、``['loading', 'playing', 'paused'].includes``、``resolveResourceUrl``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:1283:1326:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:1338:1381:FUNCTION
 
 .. rubric:: ``anonymous callback @ 24``
 
@@ -77,7 +77,7 @@ src/features/chat/ui/message/components/TextOnlyMessageContent 模块
 
 **主要协作调用**：``onSpeechTextClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:2858:2901:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TextOnlyMessageContent.jsx:2975:3018:FUNCTION
 
 .. rubric:: ``anonymous callback @ 54``
 

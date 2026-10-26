@@ -3,7 +3,7 @@ src/components/markdown/replacementProtocol 模块
 
 .. js:module:: src/components/markdown/replacementProtocol
 
-Keep card replacement controls as Markdown block boundaries. Streaming can concatenate a completed marker directly with a heading, e.g. \`{{cardReplace id=42:11}}# Title\`. Without an explicit line break Markdown parses both pieces into the same block, allowing the rendered card to overlap or inherit heading layout. This normalizer isolates complete markers w…
+Keep card replacement controls as Markdown block boundaries. Streaming can concatenate a completed marker directly with a heading, e.g. \x60{{cardReplace id=42:11}}# Title\x60. Without an explicit line break Markdown parses both pieces into the same block, allowing the rendered card to overlap or inherit heading layout. This normalizer isolates complete markers w…
 
 .. note::
 
@@ -109,7 +109,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    **参数**
 
-   ``value``（默认值 ``''``）
+   ``value`` （默认值 ``''``）
       待读取、转换或校验的值。
 
    **返回值**
@@ -133,7 +133,7 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
    ``content``
       消息、文档或模型输出内容。
 
-   ``{isStreaming = false}``（默认值 ``{}``）
+   ``{isStreaming = false}`` （默认值 ``{}``）
       调用方传入的 ``isStreaming = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -144,13 +144,13 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:7140:7825:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:7140:7926:FUNCTION
 
 .. js:function:: getReplacementEntryValue(entry)
 
    读取与 ``Replacement Entry Value`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``235``—``260`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``235``—``263`` 行。
 
    **参数**
 
@@ -159,17 +159,17 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ content: entry, entryType: '', allowTts: false, contextStatus: null, }``、``{ content: entry.content ?? entry.frontend ?? entry.value ?? '', entryType: entry.type || '', allowTts: entry.allowTts === true || entry.tts === true, contextStatus: entry.context…``、``{ content: String(entry ?? ''), entryType: '', allowTts: false, contextStatus: null, }``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ content: entry, entryType: '', allowTts: false, contextStatus: null, snapshot: false, }``、``{ content: entry.content ?? entry.frontend ?? entry.value ?? '', entryType: entry.type || '', allowTts: entry.allowTts === true || entry.tts === true, contextStatus: entry.context…``、``{ content: String(entry ?? ''), entryType: '', allowTts: false, contextStatus: null, snapshot: false, }``。
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:7868:10074:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:7969:10271:FUNCTION
 
 .. js:function:: normalizeReplacementEntry(replacement, id, tokenType, isStreaming)
 
    规范化与 ``Replacement Entry`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``262``—``331`` 行。
+   **性质**：同步函数；导出 API；源码第 ``265``—``337`` 行。
 
    **参数**
 
@@ -179,29 +179,29 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
    ``id``
       调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``tokenType``（默认值 ``''``）
+   ``tokenType`` （默认值 ``''``）
       调用方传入的 ``tokenType`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``isStreaming``（默认值 ``false``）
+   ``isStreaming`` （默认值 ``false``）
       调用方传入的 ``isStreaming`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ exists: false, id: normalizedId, type: explicitTokenType || 'markdown', flags: new Set(), allowTts: false, contextStatus: null, content: '', incompleteProtocol: false, }``、``{ exists: true, id: normalizedId, type: resolvedType, flags: protocol.flags, allowTts, contextStatus: extracted.contextStatus, content: shouldStripProtocol ? protocol.content : no…``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ exists: false, id: normalizedId, type: explicitTokenType || 'markdown', flags: new Set(), allowTts: false, contextStatus: null, snapshot: false, content: '', incompleteProtocol:…``、``{ exists: true, id: normalizedId, type: resolvedType, flags: protocol.flags, allowTts, contextStatus: extracted.contextStatus, snapshot: extracted.snapshot, content: shouldStripPr…``。
 
    **主要协作调用**：``String``、``String(tokenType || '').trim``、``getReplacementEntryValue``、``normalizeReplacementLineBreaks``、``parseReplacementProtocol``、``String( explicitTokenType || extracted.entryType || protocol.type || 'markdown', ).trim``、``resolvedType.toLowerCase``、``String(protocol.type || '').toLowerCase``、``Boolean``、``protocol.flags.has``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:10118:10892:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:10315:11089:FUNCTION
 
 .. js:function:: parseCardReplaceAttributes(attributes)
 
    解析与 ``Card Replace Attributes`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``333``—``358`` 行。
+   **性质**：同步函数；导出 API；源码第 ``339``—``364`` 行。
 
    **参数**
 
-   ``attributes``（默认值 ``''``）
+   ``attributes`` （默认值 ``''``）
       调用方传入的 ``attributes`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -212,17 +212,17 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:10940:11083:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:11137:11280:FUNCTION
 
 .. js:function:: getCardReplaceIdFromAttributes(attributes)
 
    读取与 ``Card Replace Id From Attributes`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``360``—``366`` 行。
+   **性质**：同步函数；导出 API；源码第 ``366``—``372`` 行。
 
    **参数**
 
-   ``attributes``（默认值 ``{}``）
+   ``attributes`` （默认值 ``{}``）
       调用方传入的 ``attributes`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -282,17 +282,17 @@ Keep card replacement controls as Markdown block boundaries. Streaming can conca
 
 **主要协作调用**：``candidate.startsWith``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:10773:10810:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProtocol.js:10970:11007:FUNCTION
 
-.. rubric:: ``result.__tokens.find callback @ 353``
+.. rubric:: ``result.__tokens.find callback @ 359``
 
 .. code-block:: javascript
 
-   result.__tokens.find callback @ 353(token)
+   result.__tokens.find callback @ 359(token)
 
 作为 ``result.__tokens.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``353``—``353`` 行；所属函数 ``parseCardReplaceAttributes``。
+**性质**：同步局部函数；源码第 ``359``—``359`` 行；所属函数 ``parseCardReplaceAttributes``。
 
 **参数**
 

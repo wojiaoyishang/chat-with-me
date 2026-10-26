@@ -37,7 +37,7 @@ src/components/ui/input 模块
 
    **参数**
 
-   ``{ className, type, ...props }``（类型 ``React.ComponentProps<"input">``）
+   ``{ className, type, ...props }`` （类型 ``React.ComponentProps<"input">``）
       调用方传入的 ``className, type, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

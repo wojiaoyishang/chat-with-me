@@ -44,7 +44,7 @@ Conversation 设置中的两个 reasoning 开关相互独立：
    后端生成的设置 Schema 会把此项禁用；前端只渲染 ``disabled`` 状态，不自行猜测 Provider 能力。
 
 ``软思维自动关闭执行规划思考``
-   只对模型配置为 ``thinking_control_method=prompt``（UI：“使用软思维链”）时可用。原生 request-field
+   只对模型配置为 ``thinking_control_method=prompt`` （UI：“使用软思维链”）时可用。原生 request-field
    思考模型会由后端把该开关禁用，前端不得根据模型名称硬编码。
 
 DynamicSettings Schema

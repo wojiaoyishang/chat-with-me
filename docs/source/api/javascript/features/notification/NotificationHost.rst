@@ -17,23 +17,23 @@ src/features/notification/NotificationHost 模块
 * **模块标识**：``src/features/notification/NotificationHost``
 * **顶层函数/组件/Hook**：4
 * **类**：0
-* **局部函数与匿名回调**：67
+* **局部函数与匿名回调**：68
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``./widgetNotificationPolicy.js``、``./systemNotifications.js``、``./NotificationCenter.jsx``、``@/features/tasks/TaskCenter.jsx``、``@/context/useEventStore.jsx``、``react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/lib/tools.jsx``、``./NotificationToast.jsx``、``./notificationRegistry.js``、``./useNotificationStore.js``。
+``./widgetNotificationPolicy.js``、``./systemNotifications.js``、``./NotificationCenter.jsx``、``@/features/tasks/TaskCenter.jsx``、``@/features/tasks/useTaskStore.js``、``@/context/useEventStore.jsx``、``react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/lib/tools.jsx``、``./NotificationToast.jsx``、``./notificationRegistry.js``、``./useNotificationStore.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1248:1342:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1313:1407:FUNCTION
 
 .. js:function:: toastIdFor(notificationId, mobile)
 
    实现 ``toastIdFor`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``26``—``26`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``27``—``27`` 行。
 
    **参数**
 
@@ -47,13 +47,13 @@ src/features/notification/NotificationHost 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1364:1454:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1429:1519:FUNCTION
 
 .. js:function:: toastIdsFor(notificationId)
 
    实现 ``toastIdsFor`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``28``—``28`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``29``—``29`` 行。
 
    **参数**
 
@@ -66,13 +66,13 @@ src/features/notification/NotificationHost 模块
 
    **主要协作调用**：``toastIdFor``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1486:1807:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1551:1872:FUNCTION
 
 .. js:function:: notificationTimestamp(notification)
 
    实现 ``notificationTimestamp`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``30``—``37`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``31``—``38`` 行。
 
    **参数**
 
@@ -85,18 +85,18 @@ src/features/notification/NotificationHost 模块
 
    **主要协作调用**：``Number``、``Date.parse``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1834:20162:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1899:20931:FUNCTION
 
-.. js:function:: NotificationHost({ currentConversationId, isConversationVisible = true, onOpenConversation })
+.. js:function:: NotificationHost({ currentConversationId, isConversationVisible = true, isTaskPageVisible = false, onOpenConversatio…)
 
    渲染 ``NotificationHost`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``39``—``448`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``40``—``465`` 行。
 
    **参数**
 
-   ``{ currentConversationId, isConversationVisible = true, onOpenConversation }``
-      调用方传入的 ``currentConversationId, isConversationVisible = true, onOpenConversation`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ currentConversationId, isConversationVisible = true, isTaskPageVisible = false, onOpenConversatio…``
+      调用方传入的 ``currentConversationId, isConversationVisible = true, isTaskPageVisible = false, onOpenConversatio…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -109,45 +109,24 @@ src/features/notification/NotificationHost 模块
    * 注册事件、DOM 或运行时订阅。
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``useNotificationStore``、``useIsMobile``、``useState``、``useEffect``、``useRef``、``Date.now``、``document.title.replace``、``useMemo``、``useCallback``。
+   **主要协作调用**：``useTaskStore``、``useNotificationStore``、``useIsMobile``、``useState``、``useEffect``、``useRef``、``Date.now``、``document.title.replace``、``useMemo``、``useCallback``。
 
-   **内部回调数量**：30。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：31。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:1957:1979:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2050:2071:FUNCTION
 
-.. rubric:: ``useNotificationStore callback @ 40``
-
-.. code-block:: javascript
-
-   useNotificationStore callback @ 40(state)
-
-封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``40``—``40`` 行；所属函数 ``NotificationHost``。
-
-**参数**
-
-``state``
-   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2032:2062:FUNCTION
-
-.. rubric:: ``useNotificationStore callback @ 41``
+.. rubric:: ``useTaskStore callback @ 41``
 
 .. code-block:: javascript
 
-   useNotificationStore callback @ 41(state)
+   useTaskStore callback @ 41(state)
 
-封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
+封装 ``TaskStore`` 的 React 状态、订阅与生命周期。
 
 **性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``NotificationHost``。
 
@@ -160,7 +139,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2112:2142:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2113:2135:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 42``
 
@@ -181,7 +160,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2187:2212:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2188:2218:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 43``
 
@@ -202,7 +181,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2269:2306:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2268:2298:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 44``
 
@@ -223,7 +202,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2361:2396:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2343:2368:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 45``
 
@@ -244,7 +223,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2451:2486:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2425:2462:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 46``
 
@@ -265,7 +244,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2542:2578:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2517:2552:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 47``
 
@@ -286,7 +265,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2633:2668:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2607:2642:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 48``
 
@@ -307,7 +286,7 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2724:2760:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2698:2734:FUNCTION
 
 .. rubric:: ``useNotificationStore callback @ 49``
 
@@ -328,17 +307,59 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2907:2932:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2789:2824:FUNCTION
 
-.. rubric:: ``useState callback @ 52``
+.. rubric:: ``useNotificationStore callback @ 50``
 
 .. code-block:: javascript
 
-   useState callback @ 52()
+   useNotificationStore callback @ 50(state)
+
+封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``NotificationHost``。
+
+**参数**
+
+``state``
+   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2880:2916:FUNCTION
+
+.. rubric:: ``useNotificationStore callback @ 51``
+
+.. code-block:: javascript
+
+   useNotificationStore callback @ 51(state)
+
+封装 ``NotificationStore`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``NotificationHost``。
+
+**参数**
+
+``state``
+   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3063:3088:FUNCTION
+
+.. rubric:: ``useState callback @ 54``
+
+.. code-block:: javascript
+
+   useState callback @ 54()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -354,17 +375,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``document.hasFocus``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:2994:3024:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3150:3180:FUNCTION
 
-.. rubric:: ``useState callback @ 53``
+.. rubric:: ``useState callback @ 55``
 
 .. code-block:: javascript
 
-   useState callback @ 53()
+   useState callback @ 55()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -378,17 +399,17 @@ src/features/notification/NotificationHost 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3042:3126:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3198:3282:FUNCTION
 
-.. rubric:: ``useEffect callback @ 55``
+.. rubric:: ``useEffect callback @ 57``
 
 .. code-block:: javascript
 
-   useEffect callback @ 55()
+   useEffect callback @ 57()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``55``—``57`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``57``—``59`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -400,17 +421,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``requestSystemNotificationPermission``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3147:4358:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3303:4514:FUNCTION
 
-.. rubric:: ``useEffect callback @ 58``
+.. rubric:: ``useEffect callback @ 60``
 
 .. code-block:: javascript
 
-   useEffect callback @ 58()
+   useEffect callback @ 60()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``58``—``84`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``60``—``86`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -429,7 +450,7 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3177:3660:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3333:3816:FUNCTION
 
 .. rubric:: ``update``
 
@@ -439,7 +460,7 @@ src/features/notification/NotificationHost 模块
 
 更新与 ``update`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``59``—``69`` 行；所属函数 ``useEffect callback @ 58``。
+**性质**：同步局部函数；源码第 ``61``—``71`` 行；所属函数 ``useEffect callback @ 60``。
 
 **参数**
 
@@ -457,17 +478,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3296:3322:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3452:3478:FUNCTION
 
-.. rubric:: ``setPresenceRevision callback @ 62``
+.. rubric:: ``setPresenceRevision callback @ 64``
 
 .. code-block:: javascript
 
-   setPresenceRevision callback @ 62(revision)
+   setPresenceRevision callback @ 64(revision)
 
 设置与 ``Presence Revision`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``update``。
+**性质**：同步局部函数；源码第 ``64``—``64`` 行；所属函数 ``update``。
 
 **参数**
 
@@ -478,17 +499,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:3986:4351:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:4142:4507:FUNCTION
 
-.. rubric:: ``returned callback @ 76``
+.. rubric:: ``returned callback @ 78``
 
 .. code-block:: javascript
 
-   returned callback @ 76()
+   returned callback @ 78()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``76``—``83`` 行；所属函数 ``useEffect callback @ 58``。
+**性质**：同步局部函数；源码第 ``78``—``85`` 行；所属函数 ``useEffect callback @ 60``。
 
 **参数**
 
@@ -504,17 +525,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``clearInterval``、``window.removeEventListener``、``document.removeEventListener``、``removeNotificationPresence``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:4832:4869:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:4988:5025:FUNCTION
 
-.. rubric:: ``useMemo callback @ 94``
+.. rubric:: ``useMemo callback @ 96``
 
 .. code-block:: javascript
 
-   useMemo callback @ 94()
+   useMemo callback @ 96()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``96``—``96`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -526,17 +547,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``Object.values``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:4932:5244:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5088:5400:FUNCTION
 
-.. rubric:: ``useCallback callback @ 97``
+.. rubric:: ``useCallback callback @ 99``
 
 .. code-block:: javascript
 
-   useCallback callback @ 97(notification)
+   useCallback callback @ 99(notification)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``97``—``102`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``99``—``104`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -551,17 +572,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5133:5178:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5289:5334:FUNCTION
 
-.. rubric:: ``types.find callback @ 100``
+.. rubric:: ``types.find callback @ 102``
 
 .. code-block:: javascript
 
-   types.find callback @ 100(item)
+   types.find callback @ 102(item)
 
 作为 ``types.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``useCallback callback @ 97``。
+**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``useCallback callback @ 99``。
 
 **参数**
 
@@ -572,17 +593,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5320:5478:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5476:5634:FUNCTION
 
-.. rubric:: ``useCallback callback @ 106``
+.. rubric:: ``useCallback callback @ 108``
 
 .. code-block:: javascript
 
-   useCallback callback @ 106(notificationId)
+   useCallback callback @ 108(notificationId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``106``—``109`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``108``—``111`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -597,17 +618,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5386:5421:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5542:5577:FUNCTION
 
-.. rubric:: ``toastIdsFor(notificationId).forEach callback @ 107``
+.. rubric:: ``toastIdsFor(notificationId).forEach callback @ 109``
 
 .. code-block:: javascript
 
-   toastIdsFor(notificationId).forEach callback @ 107(toastId)
+   toastIdsFor(notificationId).forEach callback @ 109(toastId)
 
 作为 ``toastIdsFor(notificationId).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``useCallback callback @ 106``。
+**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``useCallback callback @ 108``。
 
 **参数**
 
@@ -620,24 +641,24 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``toast.dismiss``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5523:5790:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5679:5946:FUNCTION
 
-.. rubric:: ``useCallback callback @ 112``
+.. rubric:: ``useCallback callback @ 114``
 
 .. code-block:: javascript
 
-   useCallback callback @ 112(notificationId, revision)
+   useCallback callback @ 114(notificationId, revision)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``112``—``116`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``114``—``118`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
 ``notificationId``
    目标对象的公共或运行时标识。
 
-``revision``（默认值 ``null``）
+``revision`` （默认值 ``null``）
    调用方传入的 ``revision`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -646,17 +667,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``hideToast``、``backgroundRevisionRef.current.delete``、``hiddenRevisionRef.current.set``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:5854:6254:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:6010:6410:FUNCTION
 
-.. rubric:: ``useCallback callback @ 121``
+.. rubric:: ``useCallback callback @ 123``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 121(notification)
+   async useCallback callback @ 123(notification)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``121``—``129`` 行；所属函数 ``NotificationHost``。
+**性质**：异步局部函数；源码第 ``123``—``131`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -673,27 +694,27 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``apiClient.post``、``encodeURIComponent``、``resolveNotification``、``dismissToast``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:6365:7137:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:6521:7293:FUNCTION
 
-.. rubric:: ``useCallback callback @ 133``
+.. rubric:: ``useCallback callback @ 135``
 
 .. code-block:: javascript
 
-   useCallback callback @ 133(items, since, baseline)
+   useCallback callback @ 135(items, since, baseline)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``133``—``145`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``135``—``147`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
 ``items``
    待渲染、筛选或合并的数据项数组。
 
-``since``（默认值 ``null``）
+``since`` （默认值 ``null``）
    调用方传入的 ``since`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``baseline``（默认值 ``null``）
+``baseline`` （默认值 ``null``）
    调用方传入的 ``baseline`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -707,21 +728,21 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``notificationTimestamp``、``Number``、``baseline?.get``、``backgroundRevisionRef.current.set``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:7194:8358:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:7350:8514:FUNCTION
 
-.. rubric:: ``useCallback callback @ 148``
+.. rubric:: ``useCallback callback @ 150``
 
 .. code-block:: javascript
 
-   useCallback callback @ 148({ backgroundSince = null, backgroundBaseline = null })
+   useCallback callback @ 150({ backgroundSince = null, backgroundBaseline = null })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``148``—``170`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``150``—``172`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
-``{ backgroundSince = null, backgroundBaseline = null }``（默认值 ``{}``）
+``{ backgroundSince = null, backgroundBaseline = null }`` （默认值 ``{}``）
    调用方传入的 ``backgroundSince = null, backgroundBaseline = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -736,17 +757,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:7362:7523:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:7518:7679:FUNCTION
 
-.. rubric:: ``syncPromiseRef.current.then callback @ 150``
+.. rubric:: ``syncPromiseRef.current.then callback @ 152``
 
 .. code-block:: javascript
 
-   syncPromiseRef.current.then callback @ 150(items)
+   syncPromiseRef.current.then callback @ 152(items)
 
 处理 ``syncPromiseRef.current.then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``150``—``153`` 行；所属函数 ``useCallback callback @ 148``。
+**性质**：同步局部函数；源码第 ``152``—``155`` 行；所属函数 ``useCallback callback @ 150``。
 
 **参数**
 
@@ -759,17 +780,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``rememberBackgroundNotifications``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:7664:8129:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:7820:8285:FUNCTION
 
-.. rubric:: ``apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then callback @ 157``
+.. rubric:: ``apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then callback @ 159``
 
 .. code-block:: javascript
 
-   apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then callback @ 157(response)
+   apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then callback @ 159(response)
 
 处理 ``apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``157``—``164`` 行；所属函数 ``useCallback callback @ 148``。
+**性质**：同步局部函数；源码第 ``159``—``166`` 行；所属函数 ``useCallback callback @ 150``。
 
 **参数**
 
@@ -782,17 +803,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``rememberBackgroundNotifications``、``mergeNotifications``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8156:8272:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8312:8428:FUNCTION
 
-.. rubric:: ``apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications |… callback @ 165``
+.. rubric:: ``apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications |… callback @ 167``
 
 .. code-block:: javascript
 
-   apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications |… callback @ 165()
+   apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications |… callback @ 167()
 
 实现 ``apiClient .get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT) .then((response) => { const items = response?.notifications |…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``165``—``167`` 行；所属函数 ``useCallback callback @ 148``。
+**性质**：同步局部函数；源码第 ``167``—``169`` 行；所属函数 ``useCallback callback @ 150``。
 
 **参数**
 
@@ -802,17 +823,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8472:9468:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8628:9624:FUNCTION
 
-.. rubric:: ``useCallback callback @ 175``
+.. rubric:: ``useCallback callback @ 177``
 
 .. code-block:: javascript
 
-   useCallback callback @ 175(notification)
+   useCallback callback @ 177(notification)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``175``—``189`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``177``—``191`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -832,17 +853,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8566:8602:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8722:8758:FUNCTION
 
-.. rubric:: ``(notification.actions || []).find callback @ 176``
+.. rubric:: ``(notification.actions || []).find callback @ 178``
 
 .. code-block:: javascript
 
-   (notification.actions || []).find callback @ 176(item)
+   (notification.actions || []).find callback @ 178(item)
 
 作为 ``(notification.actions || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``176``—``176`` 行；所属函数 ``useCallback callback @ 175``。
+**性质**：同步局部函数；源码第 ``178``—``178`` 行；所属函数 ``useCallback callback @ 177``。
 
 **参数**
 
@@ -853,17 +874,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:8920:8993:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9076:9149:FUNCTION
 
-.. rubric:: ``apiClient .post(\x60${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(taskAction.taskId)}/acknowledge\x60) .catch callback @ 181``
+.. rubric:: ``apiClient .post(\x60${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(taskAction.taskId)}/acknowledge\x60) .catch callback @ 183``
 
 .. code-block:: javascript
 
-   apiClient .post(`${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(taskAction.taskId)}/acknowledge`) .catch callback @ 181(error)
+   apiClient .post(`${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(taskAction.taskId)}/acknowledge`) .catch callback @ 183(error)
 
 处理 ``apiClient .post(\x60${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(taskAction.taskId)}/acknowledge\x60) .catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``181``—``181`` 行；所属函数 ``useCallback callback @ 175``。
+**性质**：同步局部函数；源码第 ``183``—``183`` 行；所属函数 ``useCallback callback @ 177``。
 
 **参数**
 
@@ -876,17 +897,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``console.warn``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9165:9208:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9321:9364:FUNCTION
 
-.. rubric:: ``(notification.actions || []).find callback @ 185``
+.. rubric:: ``(notification.actions || []).find callback @ 187``
 
 .. code-block:: javascript
 
-   (notification.actions || []).find callback @ 185(item)
+   (notification.actions || []).find callback @ 187(item)
 
 作为 ``(notification.actions || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``185``—``185`` 行；所属函数 ``useCallback callback @ 175``。
+**性质**：同步局部函数；源码第 ``187``—``187`` 行；所属函数 ``useCallback callback @ 177``。
 
 **参数**
 
@@ -897,17 +918,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9536:10480:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9692:10636:FUNCTION
 
-.. rubric:: ``useEffect callback @ 193``
+.. rubric:: ``useEffect callback @ 195``
 
 .. code-block:: javascript
 
-   useEffect callback @ 193()
+   useEffect callback @ 195()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``193``—``215`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``195``—``217`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -926,17 +947,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9760:10214:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:9916:10370:FUNCTION
 
-.. rubric:: ``Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 199``
+.. rubric:: ``Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 201``
 
 .. code-block:: javascript
 
-   Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 199([typeResponse, pendingResponse])
+   Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 201([typeResponse, pendingResponse])
 
 实现 ``Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``199``—``206`` 行；所属函数 ``useEffect callback @ 193``。
+**性质**：同步局部函数；源码第 ``201``—``208`` 行；所属函数 ``useEffect callback @ 195``。
 
 **参数**
 
@@ -953,17 +974,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``setTypes``、``rememberBackgroundNotifications``、``mergeNotifications``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10235:10410:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10391:10566:FUNCTION
 
-.. rubric:: ``Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 207``
+.. rubric:: ``Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 209``
 
 .. code-block:: javascript
 
-   Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 207(error)
+   Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN… callback @ 209(error)
 
 实现 ``Promise.all([ apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT), apiClient.get(apiEndpoint.NOTIFICATION_PENDING_EN…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``207``—``211`` 行；所属函数 ``useEffect callback @ 193``。
+**性质**：同步局部函数；源码第 ``209``—``213`` 行；所属函数 ``useEffect callback @ 195``。
 
 **参数**
 
@@ -976,17 +997,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``isAuthRedirectError``、``console.warn``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10427:10473:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10583:10629:FUNCTION
 
-.. rubric:: ``returned callback @ 212``
+.. rubric:: ``returned callback @ 214``
 
 .. code-block:: javascript
 
-   returned callback @ 212()
+   returned callback @ 214()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``212``—``214`` 行；所属函数 ``useEffect callback @ 193``。
+**性质**：同步局部函数；源码第 ``214``—``216`` 行；所属函数 ``useEffect callback @ 195``。
 
 **参数**
 
@@ -996,17 +1017,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10563:12072:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10719:12228:FUNCTION
 
-.. rubric:: ``useEffect callback @ 217``
+.. rubric:: ``useEffect callback @ 219``
 
 .. code-block:: javascript
 
-   useEffect callback @ 217()
+   useEffect callback @ 219()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``217``—``247`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``219``—``249`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1024,17 +1045,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10641:12028:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:10797:12184:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'notification.*' }).then callback @ 218``
+.. rubric:: ``onEvent({ event: 'notification.*' }).then callback @ 220``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'notification.*' }).then callback @ 218({ event, payload })
+   onEvent({ event: 'notification.*' }).then callback @ 220({ event, payload })
 
 处理 ``onEvent({ event: 'notification.*' }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``218``—``245`` 行；所属函数 ``useEffect callback @ 217``。
+**性质**：同步局部函数；源码第 ``220``—``247`` 行；所属函数 ``useEffect callback @ 219``。
 
 **参数**
 
@@ -1047,17 +1068,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``rememberBackgroundNotifications``、``upsertNotification``、``hiddenRevisionRef.current.delete``、``backgroundRevisionRef.current.delete``、``hideToast``、``resolveNotification``、``removeNotification``、``replaceNotifications``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12045:12065:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12201:12221:FUNCTION
 
-.. rubric:: ``returned callback @ 246``
+.. rubric:: ``returned callback @ 248``
 
 .. code-block:: javascript
 
-   returned callback @ 246()
+   returned callback @ 248()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``246``—``246`` 行；所属函数 ``useEffect callback @ 217``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``useEffect callback @ 219``。
 
 **参数**
 
@@ -1073,17 +1094,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12274:12636:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12430:12792:FUNCTION
 
-.. rubric:: ``useEffect callback @ 256``
+.. rubric:: ``useEffect callback @ 258``
 
 .. code-block:: javascript
 
-   useEffect callback @ 256()
+   useEffect callback @ 258()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``256``—``263`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``258``—``265`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1101,17 +1122,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12357:12592:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12513:12748:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'transport.connected' }).then callback @ 257``
+.. rubric:: ``onEvent({ event: 'transport.connected' }).then callback @ 259``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'transport.connected' }).then callback @ 257()
+   onEvent({ event: 'transport.connected' }).then callback @ 259()
 
 处理 ``onEvent({ event: 'transport.connected' }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``257``—``261`` 行；所属函数 ``useEffect callback @ 256``。
+**性质**：同步局部函数；源码第 ``259``—``263`` 行；所属函数 ``useEffect callback @ 258``。
 
 **参数**
 
@@ -1125,17 +1146,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12453:12580:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12609:12736:FUNCTION
 
-.. rubric:: ``syncPendingNotifications({ backgroundSince: hiddenSinceRef.current }).catch callback @ 258``
+.. rubric:: ``syncPendingNotifications({ backgroundSince: hiddenSinceRef.current }).catch callback @ 260``
 
 .. code-block:: javascript
 
-   syncPendingNotifications({ backgroundSince: hiddenSinceRef.current }).catch callback @ 258(error)
+   syncPendingNotifications({ backgroundSince: hiddenSinceRef.current }).catch callback @ 260(error)
 
 处理 ``syncPendingNotifications({ backgroundSince: hiddenSinceRef.current }).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``258``—``260`` 行；所属函数 ``onEvent({ event: 'transport.connected' }).then callback @ 257``。
+**性质**：同步局部函数；源码第 ``260``—``262`` 行；所属函数 ``onEvent({ event: 'transport.connected' }).then callback @ 259``。
 
 **参数**
 
@@ -1148,17 +1169,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``console.warn``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12609:12629:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12765:12785:FUNCTION
 
-.. rubric:: ``returned callback @ 262``
+.. rubric:: ``returned callback @ 264``
 
 .. code-block:: javascript
 
-   returned callback @ 262()
+   returned callback @ 264()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``262``—``262`` 行；所属函数 ``useEffect callback @ 256``。
+**性质**：同步局部函数；源码第 ``264``—``264`` 行；所属函数 ``useEffect callback @ 258``。
 
 **参数**
 
@@ -1174,17 +1195,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12682:13198:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12838:13354:FUNCTION
 
-.. rubric:: ``useEffect callback @ 265``
+.. rubric:: ``useEffect callback @ 267``
 
 .. code-block:: javascript
 
-   useEffect callback @ 265()
+   useEffect callback @ 267()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``265``—``276`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``267``—``278`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1203,7 +1224,7 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12718:12857:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:12874:13013:FUNCTION
 
 .. rubric:: ``handleChange``
 
@@ -1213,7 +1234,7 @@ src/features/notification/NotificationHost 模块
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``266``—``269`` 行；所属函数 ``useEffect callback @ 265``。
+**性质**：同步局部函数；源码第 ``268``—``271`` 行；所属函数 ``useEffect callback @ 267``。
 
 **参数**
 
@@ -1226,17 +1247,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``event.key?.startsWith``、``reloadSubscriptions``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13016:13191:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13172:13347:FUNCTION
 
-.. rubric:: ``returned callback @ 272``
+.. rubric:: ``returned callback @ 274``
 
 .. code-block:: javascript
 
-   returned callback @ 272()
+   returned callback @ 274()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``272``—``275`` 行；所属函数 ``useEffect callback @ 265``。
+**性质**：同步局部函数；源码第 ``274``—``277`` 行；所属函数 ``useEffect callback @ 267``。
 
 **参数**
 
@@ -1252,17 +1273,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13239:14875:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13395:15031:FUNCTION
 
-.. rubric:: ``useEffect callback @ 278``
+.. rubric:: ``useEffect callback @ 280``
 
 .. code-block:: javascript
 
-   useEffect callback @ 278()
+   useEffect callback @ 280()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``278``—``313`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``280``—``315`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1281,7 +1302,7 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13279:14295:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13435:14451:FUNCTION
 
 .. rubric:: ``handleVisibility``
 
@@ -1291,7 +1312,7 @@ src/features/notification/NotificationHost 模块
 
 处理 ``Visibility`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``279``—``300`` 行；所属函数 ``useEffect callback @ 278``。
+**性质**：同步局部函数；源码第 ``281``—``302`` 行；所属函数 ``useEffect callback @ 280``。
 
 **参数**
 
@@ -1309,17 +1330,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13656:13674:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13812:13830:FUNCTION
 
-.. rubric:: ``Object.values(useNotificationStore.getState().notifications) .filter callback @ 286``
+.. rubric:: ``Object.values(useNotificationStore.getState().notifications) .filter callback @ 288``
 
 .. code-block:: javascript
 
-   Object.values(useNotificationStore.getState().notifications) .filter callback @ 286(item)
+   Object.values(useNotificationStore.getState().notifications) .filter callback @ 288(item)
 
 作为 ``Object.values(useNotificationStore.getState().notifications) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``handleVisibility``。
+**性质**：同步局部函数；源码第 ``288``—``288`` 行；所属函数 ``handleVisibility``。
 
 **参数**
 
@@ -1330,17 +1351,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13705:13752:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:13861:13908:FUNCTION
 
-.. rubric:: ``Object.values(useNotificationStore.getState().notifications) .filter((item) => item?.id) .map callback @ 287``
+.. rubric:: ``Object.values(useNotificationStore.getState().notifications) .filter((item) => item?.id) .map callback @ 289``
 
 .. code-block:: javascript
 
-   Object.values(useNotificationStore.getState().notifications) .filter((item) => item?.id) .map callback @ 287(item)
+   Object.values(useNotificationStore.getState().notifications) .filter((item) => item?.id) .map callback @ 289(item)
 
 作为 ``Object.values(useNotificationStore.getState().notifications) .filter((item) => item?.id) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``287``—``287`` 行；所属函数 ``handleVisibility``。
+**性质**：同步局部函数；源码第 ``289``—``289`` 行；所属函数 ``handleVisibility``。
 
 **参数**
 
@@ -1353,17 +1374,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14152:14283:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14308:14439:FUNCTION
 
-.. rubric:: ``syncPendingNotifications({ backgroundSince, backgroundBaseline }).catch callback @ 297``
+.. rubric:: ``syncPendingNotifications({ backgroundSince, backgroundBaseline }).catch callback @ 299``
 
 .. code-block:: javascript
 
-   syncPendingNotifications({ backgroundSince, backgroundBaseline }).catch callback @ 297(error)
+   syncPendingNotifications({ backgroundSince, backgroundBaseline }).catch callback @ 299(error)
 
 处理 ``syncPendingNotifications({ backgroundSince, backgroundBaseline }).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``297``—``299`` 行；所属函数 ``handleVisibility``。
+**性质**：同步局部函数；源码第 ``299``—``301`` 行；所属函数 ``handleVisibility``。
 
 **参数**
 
@@ -1376,7 +1397,7 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``console.warn``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14324:14564:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14480:14720:FUNCTION
 
 .. rubric:: ``handleFocus``
 
@@ -1386,7 +1407,7 @@ src/features/notification/NotificationHost 模块
 
 处理 ``Focus`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``301``—``306`` 行；所属函数 ``useEffect callback @ 278``。
+**性质**：同步局部函数；源码第 ``303``—``308`` 行；所属函数 ``useEffect callback @ 280``。
 
 **参数**
 
@@ -1404,17 +1425,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14442:14552:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14598:14708:FUNCTION
 
-.. rubric:: ``syncPendingNotifications().catch callback @ 303``
+.. rubric:: ``syncPendingNotifications().catch callback @ 305``
 
 .. code-block:: javascript
 
-   syncPendingNotifications().catch callback @ 303(error)
+   syncPendingNotifications().catch callback @ 305(error)
 
 处理 ``syncPendingNotifications().catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``303``—``305`` 行；所属函数 ``handleFocus``。
+**性质**：同步局部函数；源码第 ``305``—``307`` 行；所属函数 ``handleFocus``。
 
 **参数**
 
@@ -1427,17 +1448,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``console.warn``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14708:14868:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14864:15024:FUNCTION
 
-.. rubric:: ``returned callback @ 309``
+.. rubric:: ``returned callback @ 311``
 
 .. code-block:: javascript
 
-   returned callback @ 309()
+   returned callback @ 311()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``309``—``312`` 行；所属函数 ``useEffect callback @ 278``。
+**性质**：同步局部函数；源码第 ``311``—``314`` 行；所属函数 ``useEffect callback @ 280``。
 
 **参数**
 
@@ -1453,17 +1474,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``document.removeEventListener``、``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:14942:18465:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:15098:19183:FUNCTION
 
-.. rubric:: ``useEffect callback @ 315``
+.. rubric:: ``useEffect callback @ 317``
 
 .. code-block:: javascript
 
-   useEffect callback @ 315()
+   useEffect callback @ 317()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``315``—``392`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``317``—``407`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1477,21 +1498,21 @@ src/features/notification/NotificationHost 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``notifications.map``、``shownRef.current.keys``、``liveIds.has``、``hideToast``、``Number``、``hiddenRevisionRef.current.get``、``widgetNotificationChannel``、``isNotificationConversationOpen``、``isToastEnabled``、``hiddenRevisionRef.current.set``、``showWidgetSystemNotification``、``backgroundRevisionRef.current.get``。
+**主要协作调用**：``notifications.map``、``shownRef.current.keys``、``liveIds.has``、``hideToast``、``Number``、``hiddenRevisionRef.current.get``、``hiddenRevisionRef.current.set``、``widgetNotificationChannel``、``isNotificationConversationOpen``、``isToastEnabled``、``showWidgetSystemNotification``、``backgroundRevisionRef.current.get``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:15000:15017:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:15156:15173:FUNCTION
 
-.. rubric:: ``notifications.map callback @ 316``
+.. rubric:: ``notifications.map callback @ 318``
 
 .. code-block:: javascript
 
-   notifications.map callback @ 316(item)
+   notifications.map callback @ 318(item)
 
 作为 ``notifications.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``316``—``316`` 行；所属函数 ``useEffect callback @ 315``。
+**性质**：同步局部函数；源码第 ``318``—``318`` 行；所属函数 ``useEffect callback @ 317``。
 
 **参数**
 
@@ -1502,17 +1523,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:17808:18135:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:18526:18853:FUNCTION
 
-.. rubric:: ``toast.custom callback @ 376``
+.. rubric:: ``toast.custom callback @ 391``
 
 .. code-block:: javascript
 
-   toast.custom callback @ 376()
+   toast.custom callback @ 391()
 
 实现 ``toast.custom`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``376``—``383`` 行；所属函数 ``useEffect callback @ 315``。
+**性质**：同步局部函数；源码第 ``391``—``398`` 行；所属函数 ``useEffect callback @ 317``。
 
 **参数**
 
@@ -1524,17 +1545,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:17987:18023:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:18705:18741:FUNCTION
 
-.. rubric:: ``onOpen callback @ 380``
+.. rubric:: ``onOpen callback @ 395``
 
 .. code-block:: javascript
 
-   onOpen callback @ 380()
+   onOpen callback @ 395()
 
 处理 ``Open`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``380``—``380`` 行；所属函数 ``toast.custom callback @ 376``。
+**性质**：同步局部函数；源码第 ``395``—``395`` 行；所属函数 ``toast.custom callback @ 391``。
 
 **参数**
 
@@ -1546,17 +1567,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``openNotification``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:18060:18093:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:18778:18811:FUNCTION
 
-.. rubric:: ``onDismiss callback @ 381``
+.. rubric:: ``onDismiss callback @ 396``
 
 .. code-block:: javascript
 
-   onDismiss callback @ 381()
+   onDismiss callback @ 396()
 
 处理 ``Dismiss`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``381``—``381`` 行；所属函数 ``toast.custom callback @ 376``。
+**性质**：同步局部函数；源码第 ``396``—``396`` 行；所属函数 ``toast.custom callback @ 391``。
 
 **参数**
 
@@ -1568,17 +1589,17 @@ src/features/notification/NotificationHost 模块
 
 **主要协作调用**：``markRead``。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:18795:19690:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19564:20459:FUNCTION
 
-.. rubric:: ``useEffect callback @ 408``
+.. rubric:: ``useEffect callback @ 425``
 
 .. code-block:: javascript
 
-   useEffect callback @ 408()
+   useEffect callback @ 425()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``408``—``430`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``425``—``447`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1596,17 +1617,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19303:19311:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:20072:20080:FUNCTION
 
-.. rubric:: ``Promise.resolve(navigator.setAppBadge(attentionCount)).catch callback @ 419``
+.. rubric:: ``Promise.resolve(navigator.setAppBadge(attentionCount)).catch callback @ 436``
 
 .. code-block:: javascript
 
-   Promise.resolve(navigator.setAppBadge(attentionCount)).catch callback @ 419()
+   Promise.resolve(navigator.setAppBadge(attentionCount)).catch callback @ 436()
 
 处理 ``Promise.resolve(navigator.setAppBadge(attentionCount)).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``419``—``419`` 行；所属函数 ``useEffect callback @ 408``。
+**性质**：同步局部函数；源码第 ``436``—``436`` 行；所属函数 ``useEffect callback @ 425``。
 
 **参数**
 
@@ -1616,17 +1637,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19451:19459:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:20220:20228:FUNCTION
 
-.. rubric:: ``Promise.resolve(navigator.clearAppBadge()).catch callback @ 421``
+.. rubric:: ``Promise.resolve(navigator.clearAppBadge()).catch callback @ 438``
 
 .. code-block:: javascript
 
-   Promise.resolve(navigator.clearAppBadge()).catch callback @ 421()
+   Promise.resolve(navigator.clearAppBadge()).catch callback @ 438()
 
 处理 ``Promise.resolve(navigator.clearAppBadge()).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``421``—``421`` 行；所属函数 ``useEffect callback @ 408``。
+**性质**：同步局部函数；源码第 ``438``—``438`` 行；所属函数 ``useEffect callback @ 425``。
 
 **参数**
 
@@ -1636,17 +1657,17 @@ src/features/notification/NotificationHost 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19590:19683:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:20359:20452:FUNCTION
 
-.. rubric:: ``returned callback @ 427``
+.. rubric:: ``returned callback @ 444``
 
 .. code-block:: javascript
 
-   returned callback @ 427()
+   returned callback @ 444()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``427``—``429`` 行；所属函数 ``useEffect callback @ 408``。
+**性质**：同步局部函数；源码第 ``444``—``446`` 行；所属函数 ``useEffect callback @ 425``。
 
 **参数**
 
@@ -1660,17 +1681,17 @@ src/features/notification/NotificationHost 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19758:19996:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:20527:20765:FUNCTION
 
-.. rubric:: ``useEffect callback @ 433``
+.. rubric:: ``useEffect callback @ 450``
 
 .. code-block:: javascript
 
-   useEffect callback @ 433()
+   useEffect callback @ 450()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``433``—``438`` 行；所属函数 ``NotificationHost``。
+**性质**：同步局部函数；源码第 ``450``—``455`` 行；所属函数 ``NotificationHost``。
 
 **参数**
 
@@ -1686,17 +1707,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19772:19996:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:20541:20765:FUNCTION
 
-.. rubric:: ``anonymous callback @ 433``
+.. rubric:: ``anonymous callback @ 450``
 
 .. code-block:: javascript
 
-   anonymous callback @ 433()
+   anonymous callback @ 450()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``433``—``438`` 行；所属函数 ``useEffect callback @ 433``。
+**性质**：同步局部函数；源码第 ``450``—``455`` 行；所属函数 ``useEffect callback @ 450``。
 
 **参数**
 
@@ -1714,17 +1735,17 @@ src/features/notification/NotificationHost 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:19962:19970:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/NotificationHost.jsx:20731:20739:FUNCTION
 
-.. rubric:: ``Promise.resolve(navigator.clearAppBadge()).catch callback @ 436``
+.. rubric:: ``Promise.resolve(navigator.clearAppBadge()).catch callback @ 453``
 
 .. code-block:: javascript
 
-   Promise.resolve(navigator.clearAppBadge()).catch callback @ 436()
+   Promise.resolve(navigator.clearAppBadge()).catch callback @ 453()
 
 处理 ``Promise.resolve(navigator.clearAppBadge()).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``436``—``436`` 行；所属函数 ``anonymous callback @ 433``。
+**性质**：同步局部函数；源码第 ``453``—``453`` 行；所属函数 ``anonymous callback @ 450``。
 
 **参数**
 

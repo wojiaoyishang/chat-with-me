@@ -17,17 +17,17 @@ src/context/FatalErrorPopover 模块
 * **模块标识**：``src/context/FatalErrorPopover``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：12
+* **局部函数与匿名回调**：15
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-dom``、``react-i18next``。
+``react``、``@/components/ui/dialog``、``react-i18next``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:216:4891:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:270:5231:FUNCTION
 
 .. js:function:: FatalErrorPopoverElement()
 
@@ -41,22 +41,18 @@ src/context/FatalErrorPopover 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``createPortal( <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-[9999] transition-opacity duration-300" onClick={config.showCancelB…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) handleClose(); }}> <DialogContent showCloseButton={false} overlayClassName="z-[12000] bg-black/40 backdrop-blur-…``。
 
-   **副作用**
+   **主要协作调用**：``useTranslation``、``useState``、``useEffect``、``t``。
 
-   * 读取或修改浏览器全局对象、页面或历史状态。
-
-   **主要协作调用**：``useTranslation``、``useState``、``useEffect``、``createPortal``、``t``。
-
-   **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：9。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:356:471:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:410:525:FUNCTION
 
 .. rubric:: ``useEffect callback @ 14``
 
@@ -78,7 +74,7 @@ src/context/FatalErrorPopover 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:411:463:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:465:517:FUNCTION
 
 .. rubric:: ``returned callback @ 16``
 
@@ -98,7 +94,7 @@ src/context/FatalErrorPopover 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:696:705:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:750:759:FUNCTION
 
 .. rubric:: ``onRetry``
 
@@ -118,7 +114,7 @@ src/context/FatalErrorPopover 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:724:733:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:778:787:FUNCTION
 
 .. rubric:: ``onClose``
 
@@ -138,7 +134,7 @@ src/context/FatalErrorPopover 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:768:903:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:822:957:FUNCTION
 
 .. rubric:: ``handleRetry``
 
@@ -160,7 +156,7 @@ src/context/FatalErrorPopover 模块
 
 **主要协作调用**：``setOpen``、``config.onRetry``。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:931:1066:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:985:1120:FUNCTION
 
 .. rubric:: ``handleClose``
 
@@ -182,30 +178,99 @@ src/context/FatalErrorPopover 模块
 
 **主要协作调用**：``setOpen``、``config.onClose``。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:1549:1575:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:1181:1228:FUNCTION
 
-.. rubric:: ``onClick callback @ 53``
+.. rubric:: ``onOpenChange callback @ 47``
 
 .. code-block:: javascript
 
-   onClick callback @ 53(e)
+   onOpenChange callback @ 47(nextOpen)
 
-处理 ``Click`` 用户交互或运行时事件。
+处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``FatalErrorPopoverElement``。
+**性质**：同步局部函数；源码第 ``47``—``47`` 行；所属函数 ``FatalErrorPopoverElement``。
 
 **参数**
 
-``e``
-   调用方传入的 ``e`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``nextOpen``
+   调用方传入的 ``nextOpen`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``e.stopPropagation``。
+**主要协作调用**：``handleClose``。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:4926:5571:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:1571:1639:FUNCTION
+
+.. rubric:: ``onPointerDownOutside callback @ 52``
+
+.. code-block:: javascript
+
+   onPointerDownOutside callback @ 52(event)
+
+处理 ``Pointer Down Outside`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``FatalErrorPopoverElement``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:1677:1745:FUNCTION
+
+.. rubric:: ``onInteractOutside callback @ 53``
+
+.. code-block:: javascript
+
+   onInteractOutside callback @ 53(event)
+
+处理 ``Interact Outside`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``FatalErrorPopoverElement``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:1781:1876:FUNCTION
+
+.. rubric:: ``onEscapeKeyDown callback @ 54``
+
+.. code-block:: javascript
+
+   onEscapeKeyDown callback @ 54(event)
+
+处理 ``Escape Key Down`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``FatalErrorPopoverElement``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5266:5911:FUNCTION
 
 .. rubric:: ``anonymous callback @ 123``
 
@@ -219,7 +284,7 @@ src/context/FatalErrorPopover 模块
 
 **参数**
 
-``options``（默认值 ``{}``）
+``options`` （默认值 ``{}``）
    调用方传入的可选配置对象。
 
 **返回值**
@@ -230,7 +295,7 @@ src/context/FatalErrorPopover 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5321:5329:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5661:5669:FUNCTION
 
 .. rubric:: ``anonymous callback @ 134``
 
@@ -250,7 +315,7 @@ src/context/FatalErrorPopover 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5370:5378:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5710:5718:FUNCTION
 
 .. rubric:: ``anonymous callback @ 135``
 
@@ -270,7 +335,7 @@ src/context/FatalErrorPopover 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5489:5556:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5829:5896:FUNCTION
 
 .. rubric:: ``setTimeout callback @ 142``
 
@@ -292,7 +357,7 @@ src/context/FatalErrorPopover 模块
 
 **主要协作调用**：``setShowOpen``。
 
-.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5607:5660:FUNCTION
+.. CWM-AST-FUNCTION src/context/FatalErrorPopover.jsx:5947:6000:FUNCTION
 
 .. rubric:: ``anonymous callback @ 148``
 

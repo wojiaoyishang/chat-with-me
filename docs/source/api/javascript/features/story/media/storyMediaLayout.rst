@@ -22,13 +22,13 @@ src/features/story/media/storyMediaLayout 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:156:229:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:194:267:FUNCTION
 
 .. js:function:: clamp(value, minimum, maximum)
 
    实现 ``clamp`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``4``—``4`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``5`` 行。
 
    **参数**
 
@@ -47,13 +47,13 @@ src/features/story/media/storyMediaLayout 模块
 
    **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:253:382:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:291:420:FUNCTION
 
 .. js:function:: finitePositive(value, fallback)
 
    实现 ``finitePositive`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``5``—``8`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``6``—``9`` 行。
 
    **参数**
 
@@ -69,13 +69,13 @@ src/features/story/media/storyMediaLayout 模块
 
    **主要协作调用**：``Number``、``Number.isFinite``。
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:422:521:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:460:559:FUNCTION
 
 .. js:function:: normalizeVideoPosition(value)
 
    规范化与 ``Video Position`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``10``—``12`` 行。
+   **性质**：同步函数；导出 API；源码第 ``11``—``13`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ src/features/story/media/storyMediaLayout 模块
 
    **主要协作调用**：``VIDEO_POSITIONS.has``、``String(value || '').trim``、``String``、``String(value).trim``。
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:559:661:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:597:699:FUNCTION
 
 .. js:function:: normalizeVideoTiming(value)
 
    规范化与 ``Video Timing`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``14``—``16`` 行。
+   **性质**：同步函数；导出 API；源码第 ``15``—``17`` 行。
 
    **参数**
 
@@ -107,13 +107,13 @@ src/features/story/media/storyMediaLayout 模块
 
    **主要协作调用**：``VIDEO_TIMINGS.has``、``String(value || '').trim``、``String``、``String(value).trim``。
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:702:879:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:740:917:FUNCTION
 
 .. js:function:: resolveImageAspectRatio(part)
 
    解析并确定与 ``Image Aspect Ratio`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``18``—``22`` 行。
+   **性质**：同步函数；导出 API；源码第 ``19``—``23`` 行。
 
    **参数**
 
@@ -126,13 +126,13 @@ src/features/story/media/storyMediaLayout 模块
 
    **主要协作调用**：``finitePositive``。
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:915:1575:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:953:1633:FUNCTION
 
 .. js:function:: resolveImageLayout(part, fontScale, {viewportWidth, forceStacked = false, renderImage = true})
 
    解析并确定与 ``Image Layout`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``24``—``35`` 行。
+   **性质**：同步函数；导出 API；源码第 ``25``—``36`` 行。
 
    **参数**
 
@@ -142,7 +142,7 @@ src/features/story/media/storyMediaLayout 模块
    ``fontScale``
       调用方传入的 ``fontScale`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{viewportWidth, forceStacked = false, renderImage = true}``（默认值 ``{}``）
+   ``{viewportWidth, forceStacked = false, renderImage = true}`` （默认值 ``{}``）
       调用方传入的 ``viewportWidth, forceStacked = false, renderImage = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -151,17 +151,17 @@ src/features/story/media/storyMediaLayout 模块
 
    **主要协作调用**：``finitePositive``、``resolveImageAspectRatio``、``String``。
 
-.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:1616:3504:FUNCTION
+.. CWM-AST-FUNCTION src/features/story/media/storyMediaLayout.js:1674:3845:FUNCTION
 
 .. js:function:: resolveStoryMediaLayout({part, fontScale = 1, viewportWidth = 1024, videoAspectRatio = null})
 
    解析并确定与 ``Story Media Layout`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``37``—``80`` 行。
+   **性质**：同步函数；导出 API；源码第 ``38``—``85`` 行。
 
    **参数**
 
-   ``{part, fontScale = 1, viewportWidth = 1024, videoAspectRatio = null}``（默认值 ``{}``）
+   ``{part, fontScale = 1, viewportWidth = 1024, videoAspectRatio = null}`` （默认值 ``{}``）
       调用方传入的 ``part, fontScale = 1, viewportWidth = 1024, videoAspectRatio = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

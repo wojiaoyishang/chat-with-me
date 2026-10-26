@@ -15,9 +15,9 @@ src/features/chat/page/utils/networkMerge 模块
 
 * **源码文件**：``src/features/chat/page/utils/networkMerge.js``
 * **模块标识**：``src/features/chat/page/utils/networkMerge``
-* **顶层函数/组件/Hook**：7
+* **顶层函数/组件/Hook**：16
 * **类**：0
-* **局部函数与匿名回调**：2
+* **局部函数与匿名回调**：8
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
@@ -92,10 +92,10 @@ src/features/chat/page/utils/networkMerge 模块
 
    **参数**
 
-   ``current``（默认值 ``[]``）
+   ``current`` （默认值 ``[]``）
       调用方传入的 ``current`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``incoming``（默认值 ``[]``）
+   ``incoming`` （默认值 ``[]``）
       调用方传入的 ``incoming`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    ``getKey``
@@ -130,13 +130,142 @@ src/features/chat/page/utils/networkMerge 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``{}``、``normalized``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2074:2797:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2075:2185:FUNCTION
 
-.. js:function:: mergeNetworkData(oldNetwork, incomingNetwork)
+.. js:function:: networkDatabaseId(network)
 
-   合并与 ``Network Data`` 相关的数据或状态。
+   实现 ``networkDatabaseId`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``69``—``91`` 行。
+   **性质**：同步函数；导出 API；源码第 ``69``—``69`` 行。
+
+   **参数**
+
+   ``network``
+      调用方传入的 ``network`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``String``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2229:2402:FUNCTION
+
+.. js:function:: hasNetworkDatabaseConflict(network, update)
+
+   实现 ``hasNetworkDatabaseConflict`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``71``—``73`` 行。
+
+   **参数**
+
+   ``network``
+      调用方传入的 ``network`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``update``
+      调用方传入的 ``update`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``Boolean``、``networkDatabaseId``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2421:2518:FUNCTION
+
+.. js:function:: parentOf(node)
+
+   实现 ``parentOf`` 对应的前端处理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``75``—``75`` 行。
+
+   **参数**
+
+   ``node``
+      调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``String``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2539:2663:FUNCTION
+
+.. js:function:: referenceId(value)
+
+   实现 ``referenceId`` 对应的前端处理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``76``—``76`` 行。
+
+   **参数**
+
+   ``value``
+      待读取、转换或校验的值。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``getNodeMergeKey``、``String``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2685:2728:FUNCTION
+
+.. js:function:: networkItems(value)
+
+   实现 ``networkItems`` 对应的前端处理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``77``—``77`` 行。
+
+   **参数**
+
+   ``value``
+      待读取、转换或校验的值。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``Array.isArray``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2983:5186:FUNCTION
+
+.. js:function:: mergeCompleteParents(old, incoming, merged)
+
+   合并与 ``Complete Parents`` 相关的数据或状态。
+
+   **性质**：同步函数；模块内部入口；源码第 ``82``—``116`` 行。
+
+   **参数**
+
+   ``old``
+      调用方传入的 ``old`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``incoming``
+      调用方传入的 ``incoming`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``merged``
+      调用方传入的 ``merged`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
+
+   **主要协作调用**：``Array.isArray``、``networkItems(old.completeParentIds).map``、``networkItems``、``networkItems(old.nodes).map``、``getNodeMergeKey``、``identities.set``、``String``、``previous.get``、``parentOf``、``previous.has``、``complete.delete``、``hasOwn``。
+
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:5207:5753:FUNCTION
+
+.. js:function:: mergeScope(oldNetwork, incomingNetwork)
+
+   合并与 ``Scope`` 相关的数据或状态。
+
+   **性质**：同步函数；模块内部入口；源码第 ``118``—``126`` 行。
 
    **参数**
 
@@ -150,15 +279,89 @@ src/features/chat/page/utils/networkMerge 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``merged``。
 
-   **主要协作调用**：``normalizeNetworkData``、``hasOwn``、``upsertArrayByKey``。
+   **主要协作调用**：``normalizeNetworkData``、``hasOwn``、``upsertArrayByKey``、``mergeCompleteParents``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2829:3178:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:5960:6709:FUNCTION
+
+.. js:function:: networkDatabaseViews(network)
+
+   实现 ``networkDatabaseViews`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``130``—``143`` 行。
+
+   **参数**
+
+   ``network``
+      调用方传入的 ``network`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``Object.fromEntries(result)``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
+
+   **主要协作调用**：``Object.entries``、``Array.isArray``、``result.set``、``mergeScope``、``hasOwn``、``networkDatabaseId``、``result.get``、``Object.fromEntries``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:6743:8213:FUNCTION
+
+.. js:function:: mergeNetworkData(oldNetwork, incomingNetwork)
+
+   合并与 ``Network Data`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``145``—``163`` 行。
+
+   **参数**
+
+   ``oldNetwork``
+      调用方传入的 ``oldNetwork`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``incomingNetwork``
+      调用方传入的 ``incomingNetwork`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``databaseViews.size ? { ...merged, databaseViews: Object.fromEntries(databaseViews) } : merged``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
+   * 创建或控制浏览器实时媒体资源。
+
+   **主要协作调用**：``normalizeNetworkData``、``networkDatabaseId``、``Object.entries``、``networkDatabaseViews``、``databaseViews.set``、``hasNetworkDatabaseConflict``、``hasOwn``、``databaseViews.get``、``mergeScope``、``Object.fromEntries``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:8248:10079:FUNCTION
+
+.. js:function:: removeNetworkData(network, removal)
+
+   移除与 ``Network Data`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``165``—``201`` 行。
+
+   **参数**
+
+   ``network``
+      调用方传入的 ``network`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``removal``
+      调用方传入的 ``removal`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``network``、``result``。
+
+   **主要协作调用**：``hasNetworkDatabaseConflict``、``normalizeNetworkData``、``toDeleteKeySet``、``Array.isArray``、``keys.has``、``getNodeMergeKey``、``invalidParents.add``、``parentOf``、``result.nodes.filter``、``getRelationshipMergeKey``、``referenceId``、``result.relationships.filter``。
+
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:10111:10460:FUNCTION
 
 .. js:function:: toDeleteKeySet(items, getObjectKey)
 
    实现 ``toDeleteKeySet`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``93``—``102`` 行。
+   **性质**：同步函数；导出 API；源码第 ``203``—``212`` 行。
 
    **参数**
 
@@ -208,17 +411,153 @@ src/features/chat/page/utils/networkMerge 模块
 
 **主要协作调用**：``getKey``、``indexByKey.has``、``indexByKey.get``、``indexByKey.set``、``result.push``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:2938:3139:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:3250:3287:FUNCTION
 
-.. rubric:: ``(Array.isArray(items) ? items : []) .map callback @ 96``
+.. rubric:: ``networkItems(old.nodes).map callback @ 85``
 
 .. code-block:: javascript
 
-   (Array.isArray(items) ? items : []) .map callback @ 96(item)
+   networkItems(old.nodes).map callback @ 85(node)
+
+作为 ``networkItems(old.nodes).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``mergeCompleteParents``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``getNodeMergeKey``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:4965:5034:FUNCTION
+
+.. rubric:: ``networkItems(merged.nodes).some callback @ 112``
+
+.. code-block:: javascript
+
+   networkItems(merged.nodes).some callback @ 112(node)
+
+作为 ``networkItems(merged.nodes).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``mergeCompleteParents``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``parentOf``、``returned.has``、``getNodeMergeKey``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:5147:5175:FUNCTION
+
+.. rubric:: ``[...complete].filter callback @ 115``
+
+.. code-block:: javascript
+
+   [...complete].filter callback @ 115(id)
+
+作为 ``[...complete].filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``mergeCompleteParents``。
+
+**参数**
+
+``id``
+   调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:8982:9022:FUNCTION
+
+.. rubric:: ``result.nodes.filter callback @ 179``
+
+.. code-block:: javascript
+
+   result.nodes.filter callback @ 179(node)
+
+作为 ``result.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``179``—``179`` 行；所属函数 ``removeNetworkData``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``keys.has``、``getNodeMergeKey``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:9518:9564:FUNCTION
+
+.. rubric:: ``result.relationships.filter callback @ 187``
+
+.. code-block:: javascript
+
+   result.relationships.filter callback @ 187(rel)
+
+作为 ``result.relationships.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``187``—``187`` 行；所属函数 ``removeNetworkData``。
+
+**参数**
+
+``rel``
+   调用方传入的 ``rel`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``keys.has``、``getRelationshipMergeKey``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:9778:9842:FUNCTION
+
+.. rubric:: ``result.completeParentIds.filter callback @ 193``
+
+.. code-block:: javascript
+
+   result.completeParentIds.filter callback @ 193(id)
+
+作为 ``result.completeParentIds.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``removeNetworkData``。
+
+**参数**
+
+``id``
+   调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``visible.has``、``String``、``invalidParents.has``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/networkMerge.js:10220:10421:FUNCTION
+
+.. rubric:: ``(Array.isArray(items) ? items : []) .map callback @ 206``
+
+.. code-block:: javascript
+
+   (Array.isArray(items) ? items : []) .map callback @ 206(item)
 
 作为 ``(Array.isArray(items) ? items : []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``96``—``99`` 行；所属函数 ``toDeleteKeySet``。
+**性质**：同步局部函数；源码第 ``206``—``209`` 行；所属函数 ``toDeleteKeySet``。
 
 **参数**
 

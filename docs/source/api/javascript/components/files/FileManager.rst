@@ -27,18 +27,18 @@ src/components/files/FileManager 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:705:17896:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:705:17945:FUNCTION
 
-.. js:function:: FileManager({ adapter, onOpen, onUpload, accept, uploadPolicy = {}, refreshToken = 0, uploads = [], showTitle =…)
+.. js:function:: FileManager({ adapter, onOpen, onUpload, accept, uploadPolicy = {}, refreshToken = 0, uploads = [], onDismissUp…)
 
    渲染 ``FileManager`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``33``—``437`` 行。
+   **性质**：同步函数；导出 API；源码第 ``33``—``438`` 行。
 
    **参数**
 
-   ``{ adapter, onOpen, onUpload, accept, uploadPolicy = {}, refreshToken = 0, uploads = [], showTitle =…``
-      调用方传入的 ``adapter, onOpen, onUpload, accept, uploadPolicy = , refreshToken = 0, uploads = , showTitle =…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ adapter, onOpen, onUpload, accept, uploadPolicy = {}, refreshToken = 0, uploads = [], onDismissUp…``
+      调用方传入的 ``adapter, onOpen, onUpload, accept, uploadPolicy = , refreshToken = 0, uploads = , onDismissUp…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -53,17 +53,17 @@ src/components/files/FileManager 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:1765:2194:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:1786:2215:FUNCTION
 
-.. rubric:: ``useCallback callback @ 60``
+.. rubric:: ``useCallback callback @ 61``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 60()
+   async useCallback callback @ 61()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``60``—``72`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``61``—``73`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -75,17 +75,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setLoading``、``setError``、``adapter.list``、``setFiles``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2254:2295:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2275:2316:FUNCTION
 
-.. rubric:: ``useCallback callback @ 73``
+.. rubric:: ``useCallback callback @ 74``
 
 .. code-block:: javascript
 
-   useCallback callback @ 73()
+   useCallback callback @ 74()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``73``—``75`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``74``—``76`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -95,17 +95,17 @@ src/components/files/FileManager 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2316:2405:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2337:2426:FUNCTION
 
-.. rubric:: ``useEffect callback @ 76``
+.. rubric:: ``useEffect callback @ 77``
 
 .. code-block:: javascript
 
-   useEffect callback @ 76()
+   useEffect callback @ 77()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``76``—``80`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``77``—``81`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -117,7 +117,7 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setEditing``、``reload``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2462:2851:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2483:2872:FUNCTION
 
 .. rubric:: ``rename``
 
@@ -127,7 +127,7 @@ src/components/files/FileManager 模块
 
 实现 ``rename`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``81``—``94`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``82``—``95`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -139,7 +139,7 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setBusy``、``adapter.mkdir``、``adapter.rename``、``setCreating``、``setEditing``、``reload``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2877:3270:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:2898:3291:FUNCTION
 
 .. rubric:: ``browseTarget``
 
@@ -149,7 +149,7 @@ src/components/files/FileManager 模块
 
 实现 ``browseTarget`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``95``—``105`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``96``—``106`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -164,17 +164,17 @@ src/components/files/FileManager 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3116:3151:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3137:3172:FUNCTION
 
-.. rubric:: ``data.files.filter callback @ 100``
+.. rubric:: ``data.files.filter callback @ 101``
 
 .. code-block:: javascript
 
-   data.files.filter callback @ 100(file)
+   data.files.filter callback @ 101(file)
 
 作为 ``data.files.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``browseTarget``。
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``browseTarget``。
 
 **参数**
 
@@ -185,7 +185,7 @@ src/components/files/FileManager 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3297:3596:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3318:3617:FUNCTION
 
 .. rubric:: ``prepareDelete``
 
@@ -195,7 +195,7 @@ src/components/files/FileManager 模块
 
 准备与 ``Delete`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``106``—``116`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``107``—``117`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -208,7 +208,7 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setBusy``、``adapter.prepareDelete``、``setPendingDelete``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3616:3971:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3637:3992:FUNCTION
 
 .. rubric:: ``remove``
 
@@ -218,7 +218,7 @@ src/components/files/FileManager 模块
 
 移除与 ``remove`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``117``—``129`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``118``—``130`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -230,7 +230,7 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setBusy``、``adapter.remove``、``setPendingDelete``、``reload``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:3989:4285:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:4010:4306:FUNCTION
 
 .. rubric:: ``move``
 
@@ -240,7 +240,7 @@ src/components/files/FileManager 模块
 
 实现 ``move`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``130``—``141`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``131``—``142`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -252,17 +252,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setBusy``、``adapter.move``、``setMoving``、``reload``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:4953:5136:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:4974:5157:FUNCTION
 
-.. rubric:: ``onClick callback @ 154``
+.. rubric:: ``onClick callback @ 155``
 
 .. code-block:: javascript
 
-   onClick callback @ 154()
+   onClick callback @ 155()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``154``—``158`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``155``—``159`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -274,17 +274,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setCreating``、``setEditing``、``setName``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:5583:5611:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:5604:5632:FUNCTION
 
-.. rubric:: ``onClick callback @ 169``
+.. rubric:: ``onClick callback @ 170``
 
 .. code-block:: javascript
 
-   onClick callback @ 169()
+   onClick callback @ 170()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``169``—``169`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``170``—``170`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -296,17 +296,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``input.current?.click``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:5984:6003:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:6005:6024:FUNCTION
 
-.. rubric:: ``onClick callback @ 179``
+.. rubric:: ``onClick callback @ 180``
 
 .. code-block:: javascript
 
-   onClick callback @ 179()
+   onClick callback @ 180()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``179``—``179`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``180``—``180`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -318,17 +318,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``reload``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:6689:6752:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:6738:6801:FUNCTION
 
-.. rubric:: ``onClick callback @ 196``
+.. rubric:: ``onClick callback @ 197``
 
 .. code-block:: javascript
 
-   onClick callback @ 196()
+   onClick callback @ 197()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``196``—``196`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``197``—``197`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -340,17 +340,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setDirectory``、``directory.split('/').slice(0, -1).join``、``directory.split('/').slice``、``directory.split``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:7060:7082:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:7109:7131:FUNCTION
 
-.. rubric:: ``onClick callback @ 205``
+.. rubric:: ``onClick callback @ 206``
 
 .. code-block:: javascript
 
-   onClick callback @ 205()
+   onClick callback @ 206()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``205``—``205`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -362,17 +362,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setDirectory``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:7297:7923:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:7346:7972:FUNCTION
 
-.. rubric:: ``directory .split('/') .filter(Boolean) .map callback @ 212``
+.. rubric:: ``directory .split('/') .filter(Boolean) .map callback @ 213``
 
 .. code-block:: javascript
 
-   directory .split('/') .filter(Boolean) .map callback @ 212(part, index, parts)
+   directory .split('/') .filter(Boolean) .map callback @ 213(part, index, parts)
 
 作为 ``directory .split('/') .filter(Boolean) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``212``—``224`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``213``—``225`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -391,17 +391,17 @@ src/components/files/FileManager 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:7706:7761:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:7755:7810:FUNCTION
 
-.. rubric:: ``onClick callback @ 219``
+.. rubric:: ``onClick callback @ 220``
 
 .. code-block:: javascript
 
-   onClick callback @ 219()
+   onClick callback @ 220()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``219``—``219`` 行；所属函数 ``directory .split('/') .filter(Boolean) .map callback @ 212``。
+**性质**：同步局部函数；源码第 ``220``—``220`` 行；所属函数 ``directory .split('/') .filter(Boolean) .map callback @ 213``。
 
 **参数**
 
@@ -413,17 +413,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setDirectory``、``parts.slice(0, index + 1).join``、``parts.slice``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:8149:8848:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:8198:8897:FUNCTION
 
-.. rubric:: ``onChange callback @ 232``
+.. rubric:: ``onChange callback @ 233``
 
 .. code-block:: javascript
 
-   async onChange callback @ 232(event)
+   async onChange callback @ 233(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``232``—``248`` 行；所属函数 ``FileManager``。
+**性质**：异步局部函数；源码第 ``233``—``249`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -438,17 +438,17 @@ src/components/files/FileManager 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:8313:8359:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:8362:8408:FUNCTION
 
-.. rubric:: ``selected.some callback @ 235``
+.. rubric:: ``selected.some callback @ 236``
 
 .. code-block:: javascript
 
-   selected.some callback @ 235(file)
+   selected.some callback @ 236(file)
 
 作为 ``selected.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``onChange callback @ 232``。
+**性质**：同步局部函数；源码第 ``236``—``236`` 行；所属函数 ``onChange callback @ 233``。
 
 **参数**
 
@@ -461,17 +461,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``isUploadAllowed``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:9204:12895:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:9253:12944:FUNCTION
 
-.. rubric:: ``files.map callback @ 257``
+.. rubric:: ``files.map callback @ 258``
 
 .. code-block:: javascript
 
-   files.map callback @ 257(file)
+   files.map callback @ 258(file)
 
 作为 ``files.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``257``—``327`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``258``—``328`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -486,17 +486,17 @@ src/components/files/FileManager 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:9952:10130:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:10001:10179:FUNCTION
 
-.. rubric:: ``onClick callback @ 269``
+.. rubric:: ``onClick callback @ 270``
 
 .. code-block:: javascript
 
-   onClick callback @ 269()
+   onClick callback @ 270()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``269``—``272`` 行；所属函数 ``files.map callback @ 257``。
+**性质**：同步局部函数；源码第 ``270``—``273`` 行；所属函数 ``files.map callback @ 258``。
 
 **参数**
 
@@ -508,17 +508,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setDirectory``、``onOpen``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:11138:11310:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:11187:11359:FUNCTION
 
-.. rubric:: ``onClick callback @ 290``
+.. rubric:: ``onClick callback @ 291``
 
 .. code-block:: javascript
 
-   onClick callback @ 290()
+   onClick callback @ 291()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``290``—``293`` 行；所属函数 ``files.map callback @ 257``。
+**性质**：同步局部函数；源码第 ``291``—``294`` 行；所属函数 ``files.map callback @ 258``。
 
 **参数**
 
@@ -530,17 +530,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setMoving``、``browseTarget``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:11940:11970:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:11989:12019:FUNCTION
 
-.. rubric:: ``onClick callback @ 306``
+.. rubric:: ``onClick callback @ 307``
 
 .. code-block:: javascript
 
-   onClick callback @ 306()
+   onClick callback @ 307()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``306``—``306`` 行；所属函数 ``files.map callback @ 257``。
+**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``files.map callback @ 258``。
 
 **参数**
 
@@ -552,17 +552,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``prepareDelete``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:12480:12692:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:12529:12741:FUNCTION
 
-.. rubric:: ``onClick callback @ 317``
+.. rubric:: ``onClick callback @ 318``
 
 .. code-block:: javascript
 
-   onClick callback @ 317()
+   onClick callback @ 318()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``317``—``321`` 行；所属函数 ``files.map callback @ 257``。
+**性质**：同步局部函数；源码第 ``318``—``322`` 行；所属函数 ``files.map callback @ 258``。
 
 **参数**
 
@@ -574,17 +574,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setCreating``、``setEditing``、``setName``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:13243:13364:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:13292:13413:FUNCTION
 
-.. rubric:: ``onSubmit callback @ 335``
+.. rubric:: ``onSubmit callback @ 336``
 
 .. code-block:: javascript
 
-   onSubmit callback @ 335(event)
+   onSubmit callback @ 336(event)
 
 处理 ``Submit`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``335``—``338`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``336``—``339`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -597,17 +597,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``event.preventDefault``、``rename``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:13482:13520:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:13531:13569:FUNCTION
 
-.. rubric:: ``onChange callback @ 342``
+.. rubric:: ``onChange callback @ 343``
 
 .. code-block:: javascript
 
-   onChange callback @ 342(event)
+   onChange callback @ 343(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``342``—``342`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``343``—``343`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -620,17 +620,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setName``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:14017:14144:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:14066:14193:FUNCTION
 
-.. rubric:: ``onClick callback @ 353``
+.. rubric:: ``onClick callback @ 354``
 
 .. code-block:: javascript
 
-   onClick callback @ 353()
+   onClick callback @ 354()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``353``—``356`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``354``—``357`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -642,17 +642,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setCreating``、``setEditing``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:14371:14464:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:14420:14513:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 364``
+.. rubric:: ``onOpenChange callback @ 365``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 364(open)
+   onOpenChange callback @ 365(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``364``—``366`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``365``—``367`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -665,17 +665,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setPendingDelete``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:15174:15202:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:15223:15251:FUNCTION
 
-.. rubric:: ``onClick callback @ 379``
+.. rubric:: ``onClick callback @ 380``
 
 .. code-block:: javascript
 
-   onClick callback @ 379()
+   onClick callback @ 380()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``379``—``379`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``380``—``380`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -687,17 +687,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setPendingDelete``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:15360:15379:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:15409:15428:FUNCTION
 
-.. rubric:: ``onClick callback @ 382``
+.. rubric:: ``onClick callback @ 383``
 
 .. code-block:: javascript
 
-   onClick callback @ 382()
+   onClick callback @ 383()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``382``—``382`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``383``—``383`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -709,17 +709,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``remove``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:15651:15737:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:15700:15786:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 390``
+.. rubric:: ``onOpenChange callback @ 391``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 390(open)
+   onOpenChange callback @ 391(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``390``—``392`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``391``—``393`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -732,17 +732,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setMoving``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:16281:16351:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:16330:16400:FUNCTION
 
-.. rubric:: ``onClick callback @ 403``
+.. rubric:: ``onClick callback @ 404``
 
 .. code-block:: javascript
 
-   onClick callback @ 403()
+   onClick callback @ 404()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``403``—``403`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``404``—``404`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -754,17 +754,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``browseTarget``、``destination.split('/').slice(0, -1).join``、``destination.split('/').slice``、``destination.split``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:16684:17373:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:16733:17422:FUNCTION
 
-.. rubric:: ``targetFolders.map callback @ 410``
+.. rubric:: ``targetFolders.map callback @ 411``
 
 .. code-block:: javascript
 
-   targetFolders.map callback @ 410(folder)
+   targetFolders.map callback @ 411(folder)
 
 作为 ``targetFolders.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``410``—``423`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``411``—``424`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -779,17 +779,17 @@ src/components/files/FileManager 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:17134:17170:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:17183:17219:FUNCTION
 
-.. rubric:: ``onClick callback @ 418``
+.. rubric:: ``onClick callback @ 419``
 
 .. code-block:: javascript
 
-   onClick callback @ 418()
+   onClick callback @ 419()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``418``—``418`` 行；所属函数 ``targetFolders.map callback @ 410``。
+**性质**：同步局部函数；源码第 ``419``—``419`` 行；所属函数 ``targetFolders.map callback @ 411``。
 
 **参数**
 
@@ -801,17 +801,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``browseTarget``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:17513:17534:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:17562:17583:FUNCTION
 
-.. rubric:: ``onClick callback @ 426``
+.. rubric:: ``onClick callback @ 427``
 
 .. code-block:: javascript
 
-   onClick callback @ 426()
+   onClick callback @ 427()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``426``—``426`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``427``—``427`` 行；所属函数 ``FileManager``。
 
 **参数**
 
@@ -823,17 +823,17 @@ src/components/files/FileManager 模块
 
 **主要协作调用**：``setMoving``。
 
-.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:17670:17687:FUNCTION
+.. CWM-AST-FUNCTION src/components/files/FileManager.jsx:17719:17736:FUNCTION
 
-.. rubric:: ``onClick callback @ 429``
+.. rubric:: ``onClick callback @ 430``
 
 .. code-block:: javascript
 
-   onClick callback @ 429()
+   onClick callback @ 430()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``429``—``429`` 行；所属函数 ``FileManager``。
+**性质**：同步局部函数；源码第 ``430``—``430`` 行；所属函数 ``FileManager``。
 
 **参数**
 

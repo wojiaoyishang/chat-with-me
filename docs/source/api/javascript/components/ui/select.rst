@@ -22,73 +22,73 @@ src/components/ui/select 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``radix-ui``、``@/lib/utils``。
+``react``、``lucide-react``、``radix-ui``、``@/lib/utils``、``@/lib/windowLayers.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:190:342:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:252:404:FUNCTION
 
 .. js:function:: Select({ ...props })
 
    渲染 ``Select`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``7``—``11`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``8``—``12`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Root>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Root>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``<SelectPrimitive.Root data-slot="select" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:342:507:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:404:569:FUNCTION
 
 .. js:function:: SelectGroup({ ...props })
 
    渲染 ``SelectGroup`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``13``—``17`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``14``—``18`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Group>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Group>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``<SelectPrimitive.Group data-slot="select-group" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:507:672:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:569:734:FUNCTION
 
 .. js:function:: SelectValue({ ...props })
 
    渲染 ``SelectValue`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``19``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``20``—``24`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Value>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Value>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``<SelectPrimitive.Value data-slot="select-value" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:672:2015:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:734:2077:FUNCTION
 
 .. js:function:: SelectTrigger({ className, size = "default", children, ...props })
 
    渲染 ``SelectTrigger`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``25``—``49`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``26``—``50`` 行。
 
    **参数**
 
-   ``{ className, size = "default", children, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Trigger> & { size?: "sm" | "default" }``）
+   ``{ className, size = "default", children, ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Trigger> & { size?: "sm" | "default" }``）
       调用方传入的 ``className, size = "default", children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -97,36 +97,36 @@ src/components/ui/select 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:2015:3631:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:2077:3935:FUNCTION
 
-.. js:function:: SelectContent({ className, children, position = "popper", align = "start", ...props })
+.. js:function:: SelectContent({ className, style, children, position = "popper", align = "start", ...props })
 
    渲染 ``SelectContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``51``—``86`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``52``—``94`` 行。
 
    **参数**
 
-   ``{ className, children, position = "popper", align = "start", ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Content>``）
-      调用方传入的 ``className, children, position = "popper", align = "start", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, style, children, position = "popper", align = "start", ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Content>``）
+      调用方传入的 ``className, style, children, position = "popper", align = "start", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <SelectPrimitive.Portal> <SelectPrimitive.Content data-slot="select-content" className={cn( "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:…``。
 
-   **主要协作调用**：``cn``。
+   **主要协作调用**：``useWindowPopoverLayer``、``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:3631:3912:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:3935:4216:FUNCTION
 
 .. js:function:: SelectLabel({ className, ...props })
 
    渲染 ``SelectLabel`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``88``—``99`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``96``—``107`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Label>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Label>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -135,17 +135,17 @@ src/components/ui/select 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:3912:4928:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:4216:5232:FUNCTION
 
 .. js:function:: SelectItem({ className, children, ...props })
 
    渲染 ``SelectItem`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``101``—``123`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``109``—``131`` 行。
 
    **参数**
 
-   ``{ className, children, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Item>``）
+   ``{ className, children, ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Item>``）
       调用方传入的 ``className, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -154,17 +154,17 @@ src/components/ui/select 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:4928:5229:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:5232:5533:FUNCTION
 
 .. js:function:: SelectSeparator({ className, ...props })
 
    渲染 ``SelectSeparator`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``125``—``136`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``133``—``144`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.Separator>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.Separator>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -173,17 +173,17 @@ src/components/ui/select 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:5229:5639:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:5533:5943:FUNCTION
 
 .. js:function:: SelectScrollUpButton({ className, ...props })
 
    渲染 ``SelectScrollUpButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``138``—``151`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``146``—``159`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -192,17 +192,17 @@ src/components/ui/select 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/select.tsx:5639:6061:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/select.tsx:5943:6365:FUNCTION
 
 .. js:function:: SelectScrollDownButton({ className, ...props })
 
    渲染 ``SelectScrollDownButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``153``—``166`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``161``—``174`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

@@ -15,47 +15,25 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 * **源码文件**：``src/features/tools/components/ConversationToolsDialog.jsx``
 * **模块标识**：``src/features/tools/components/ConversationToolsDialog``
-* **顶层函数/组件/Hook**：8
+* **顶层函数/组件/Hook**：5
 * **类**：0
-* **局部函数与匿名回调**：57
+* **局部函数与匿名回调**：54
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/components/ui/dialog``、``@/components/ui/button``。
+``react``、``lucide-react``、``@/components/ui/dialog``、``@/components/ui/button``、``../toolPermissions.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:414:569:FUNCTION
-
-.. js:function:: normalizeMode(value, fallback)
-
-   规范化与 ``Mode`` 相关的数据或状态。
-
-   **性质**：同步函数；模块内部入口；源码第 ``12``—``15`` 行。
-
-   **参数**
-
-   ``value``
-      待读取、转换或校验的值。
-
-   ``fallback``（默认值 ``'ask'``）
-      调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-   **返回值**
-
-   根据执行分支返回结果；代表性返回表达式为 ``['allow', 'ask', 'deny'].includes(mode) ? mode : fallback``。
-
-   **主要协作调用**：``String(value || '').toLowerCase``、``String``、``['allow', 'ask', 'deny'].includes``。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:596:851:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:586:843:FUNCTION
 
 .. js:function:: toolAllowedModes(tool)
 
    实现 ``toolAllowedModes`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``17``—``19`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``14``—``16`` 行。
 
    **参数**
 
@@ -70,13 +48,13 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:877:923:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:871:917:FUNCTION
 
 .. js:function:: toolDefaultMode(tool)
 
    实现 ``toolDefaultMode`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``21``—``21`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``18``—``18`` 行。
 
    **参数**
 
@@ -89,13 +67,13 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    **主要协作调用**：``normalizeMode``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:946:989:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:941:984:FUNCTION
 
 .. js:function:: isToolMutable(tool)
 
    判断与 ``Tool Mutable`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``22``—``22`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``19``—``19`` 行。
 
    **参数**
 
@@ -106,13 +84,13 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1013:1112:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1009:1108:FUNCTION
 
 .. js:function:: canSetToolMode(tool, mode)
 
    实现 ``canSetToolMode`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``23``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``20``—``20`` 行。
 
    **参数**
 
@@ -128,61 +106,13 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    **主要协作调用**：``isToolMutable``、``toolAllowedModes(tool).includes``、``toolAllowedModes``、``normalizeMode``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1139:1266:FUNCTION
-
-.. js:function:: unwrapToolRegion(items)
-
-   实现 ``unwrapToolRegion`` 对应的前端处理。
-
-   **性质**：同步函数；模块内部入口；源码第 ``25``—``28`` 行。
-
-   **参数**
-
-   ``items``（默认值 ``[]``）
-      待渲染、筛选或合并的数据项数组。
-
-   **返回值**
-
-   根据执行分支返回结果；代表性返回表达式为 ``region?.children || items``。
-
-   **主要协作调用**：``items.find``。
-
-   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1289:2420:FUNCTION
-
-.. js:function:: collectTools(items, group, result)
-
-   实现 ``collectTools`` 对应的前端处理。
-
-   **性质**：同步函数；模块内部入口；源码第 ``30``—``60`` 行。
-
-   **参数**
-
-   ``items``（默认值 ``[]``）
-      待渲染、筛选或合并的数据项数组。
-
-   ``group``（默认值 ``null``）
-      调用方传入的 ``group`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-   ``result``（默认值 ``[]``）
-      调用方传入的 ``result`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-   **返回值**
-
-   根据执行分支返回结果；代表性返回表达式为 ``result``。
-
-   **主要协作调用**：``items.forEach``。
-
-   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2454:27211:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1144:26930:FUNCTION
 
 .. js:function:: ConversationToolsDialog({ open, onOpenChange, toolsConfig = [], currentPermissions = {}, defaultPermissions = {}, onApply,…)
 
    渲染 ``ConversationToolsDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``62``—``464`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``22``—``425`` 行。
 
    **参数**
 
@@ -191,28 +121,28 @@ src/features/tools/components/ConversationToolsDialog 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={open} onOpenChange={onOpenChange}> <DialogContent className="flex max-h-[min(84vh,760px)] w-[min(96vw,860px)] max-w-none flex-col gap-0 overflow-hidden p-0"> <Dial…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <Dialog open={open} onOpenChange={onOpenChange}> <DialogContent onPointerDownOutside={(event) => event.preventDefault()} className="flex max-h-[min(84vh,760px)] w-[min(96vw,860p…``。
 
    **主要协作调用**：``useState``、``useRef``、``useMemo``、``useEffect``、``query.trim().toLowerCase``、``query.trim``、``allTools.reduce``、``allTools.some``、``isMutablePermissionCommitted``、``t``、``visibleGroups.map``。
 
-   **内部回调数量**：23。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：24。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:704:779:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:695:770:FUNCTION
 
-.. rubric:: ``tool.allowedModes.filter callback @ 18``
+.. rubric:: ``tool.allowedModes.filter callback @ 15``
 
 .. code-block:: javascript
 
-   tool.allowedModes.filter callback @ 18(mode)
+   tool.allowedModes.filter callback @ 15(mode)
 
 作为 ``tool.allowedModes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``toolAllowedModes``。
+**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``toolAllowedModes``。
 
 **参数**
 
@@ -225,17 +155,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``['allow', 'ask', 'deny'].includes``、``String(mode || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:785:819:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:776:810:FUNCTION
 
-.. rubric:: ``tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map callback @ 18``
+.. rubric:: ``tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map callback @ 15``
 
 .. code-block:: javascript
 
-   tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map callback @ 18(mode)
+   tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map callback @ 15(mode)
 
 作为 ``tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``toolAllowedModes``。
+**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``toolAllowedModes``。
 
 **参数**
 
@@ -248,108 +178,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``String(mode).toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1188:1224:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1522:1537:FUNCTION
 
-.. rubric:: ``items.find callback @ 26``
-
-.. code-block:: javascript
-
-   items.find callback @ 26(item)
-
-作为 ``items.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``unwrapToolRegion``。
-
-**参数**
-
-``item``
-   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1353:2397:FUNCTION
-
-.. rubric:: ``items.forEach callback @ 31``
+.. rubric:: ``useState callback @ 36``
 
 .. code-block:: javascript
 
-   items.forEach callback @ 31(item)
-
-作为 ``items.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``31``—``58`` 行；所属函数 ``collectTools``。
-
-**参数**
-
-``item``
-   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-根据执行分支返回结果；代表性返回表达式为 ``undefined``。
-
-**主要协作调用**：``collectTools``、``result.push``、``(() => { let fallbackGroup = result.find(entry => entry.id === '__other__'); if (!fallbackGroup) { fallbackGroup = {id:…``、``target.tools.push``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2006:2340:FUNCTION
-
-.. rubric:: ``anonymous callback @ 48``
-
-.. code-block:: javascript
-
-   anonymous callback @ 48()
-
-实现 ``anonymous`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``48``—``55`` 行；所属函数 ``items.forEach callback @ 31``。
-
-**参数**
-
-无。
-
-**返回值**
-
-根据执行分支返回结果；代表性返回表达式为 ``fallbackGroup``。
-
-**主要协作调用**：``result.find``、``result.push``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2062:2095:FUNCTION
-
-.. rubric:: ``result.find callback @ 49``
-
-.. code-block:: javascript
-
-   result.find callback @ 49(entry)
-
-作为 ``result.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``anonymous callback @ 48``。
-
-**参数**
-
-``entry``
-   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2818:2833:FUNCTION
-
-.. rubric:: ``useState callback @ 76``
-
-.. code-block:: javascript
-
-   useState callback @ 76()
+   useState callback @ 36()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``76``—``76`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -359,17 +198,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2959:3008:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1667:1713:FUNCTION
 
-.. rubric:: ``useMemo callback @ 80``
+.. rubric:: ``useMemo callback @ 40``
 
 .. code-block:: javascript
 
-   useMemo callback @ 80()
+   useMemo callback @ 40()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``40``—``40`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -379,19 +218,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``collectTools``、``unwrapToolRegion``。
+**主要协作调用**：``collectToolPermissionGroups``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3055:3097:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1761:1803:FUNCTION
 
-.. rubric:: ``useMemo callback @ 81``
+.. rubric:: ``useMemo callback @ 41``
 
 .. code-block:: javascript
 
-   useMemo callback @ 81()
+   useMemo callback @ 41()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -405,17 +244,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3076:3096:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1782:1802:FUNCTION
 
-.. rubric:: ``groups.flatMap callback @ 81``
+.. rubric:: ``groups.flatMap callback @ 41``
 
 .. code-block:: javascript
 
-   groups.flatMap callback @ 81(group)
+   groups.flatMap callback @ 41(group)
 
 实现 ``groups.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``useMemo callback @ 81``。
+**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``useMemo callback @ 41``。
 
 **参数**
 
@@ -426,17 +265,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3125:3739:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:1833:2484:FUNCTION
 
-.. rubric:: ``useEffect callback @ 83``
+.. rubric:: ``useEffect callback @ 43``
 
 .. code-block:: javascript
 
-   useEffect callback @ 83()
+   useEffect callback @ 43()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``83``—``101`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``43``—``61`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -450,17 +289,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3330:3584:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2045:2323:FUNCTION
 
-.. rubric:: ``allTools.forEach callback @ 90``
+.. rubric:: ``allTools.forEach callback @ 50``
 
 .. code-block:: javascript
 
-   allTools.forEach callback @ 90(tool)
+   allTools.forEach callback @ 50(tool)
 
 作为 ``allTools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``90``—``95`` 行；所属函数 ``useEffect callback @ 83``。
+**性质**：同步局部函数；源码第 ``50``—``55`` 行；所属函数 ``useEffect callback @ 43``。
 
 **参数**
 
@@ -471,19 +310,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``toolDefaultMode``、``normalizeMode``。
+**主要协作调用**：``toolDefaultMode``、``normalizeMode``、``readToolPermission``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3891:4552:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2639:3341:FUNCTION
 
-.. rubric:: ``useMemo callback @ 104``
+.. rubric:: ``useMemo callback @ 64``
 
 .. code-block:: javascript
 
-   useMemo callback @ 104()
+   useMemo callback @ 64()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``104``—``117`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``64``—``77`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -497,17 +336,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3908:4511:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:2656:3300:FUNCTION
 
-.. rubric:: ``groups.map callback @ 104``
+.. rubric:: ``groups.map callback @ 64``
 
 .. code-block:: javascript
 
-   groups.map callback @ 104(group)
+   groups.map callback @ 64(group)
 
 作为 ``groups.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``104``—``117`` 行；所属函数 ``useMemo callback @ 104``。
+**性质**：同步局部函数；源码第 ``64``—``77`` 行；所属函数 ``useMemo callback @ 64``。
 
 **参数**
 
@@ -516,23 +355,23 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{...group, sourceTools}``、``{ ...group, sourceTools, tools: groupMatches ? sourceTools : sourceTools.filter((tool) => [tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some(value =>…``。
+根据执行分支返回结果；代表性返回表达式为 ``{...group, sourceTools}``、``{ ...group, sourceTools, tools: groupMatches ? sourceTools : sourceTools.filter((tool) => [getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description] .fil…``。
 
 **主要协作调用**：``String(t(group.name) || group.name).toLowerCase().includes``、``String(t(group.name) || group.name).toLowerCase``、``String``、``t``、``sourceTools.filter``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4299:4492:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3056:3279:FUNCTION
 
-.. rubric:: ``sourceTools.filter callback @ 113``
+.. rubric:: ``sourceTools.filter callback @ 73``
 
 .. code-block:: javascript
 
-   sourceTools.filter callback @ 113(tool)
+   sourceTools.filter callback @ 73(tool)
 
 作为 ``sourceTools.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``113``—``115`` 行；所属函数 ``groups.map callback @ 104``。
+**性质**：同步局部函数；源码第 ``73``—``75`` 行；所属函数 ``groups.map callback @ 64``。
 
 **参数**
 
@@ -543,21 +382,21 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``[tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some``、``[tool.name, t(tool.text || tool.name), tool.description] .filter``、``t``。
+**主要协作调用**：``[getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some``、``[getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description] .filter``、``getToolPermissionKey``、``t``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4429:4491:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3216:3278:FUNCTION
 
-.. rubric:: ``[tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback @ 115``
+.. rubric:: ``[getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback @ 75``
 
 .. code-block:: javascript
 
-   [tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback @ 115(value)
+   [getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback @ 75(value)
 
-作为 ``[tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``[getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description] .filter(Boolean) .some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``sourceTools.filter callback @ 113``。
+**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``sourceTools.filter callback @ 73``。
 
 **参数**
 
@@ -570,17 +409,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``String(value).toLowerCase().includes``、``String(value).toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4520:4551:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3309:3340:FUNCTION
 
-.. rubric:: ``groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 117``
+.. rubric:: ``groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 77``
 
 .. code-block:: javascript
 
-   groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 117(group)
+   groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co… callback @ 77(group)
 
 实现 ``groups.map((group) => { const sourceTools = group.tools || []; if (!normalizedQuery) return {...group, sourceTools}; co…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``useMemo callback @ 104``。
+**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``useMemo callback @ 64``。
 
 **参数**
 
@@ -591,17 +430,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4631:4767:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3422:3579:FUNCTION
 
-.. rubric:: ``allTools.reduce callback @ 119``
+.. rubric:: ``allTools.reduce callback @ 79``
 
 .. code-block:: javascript
 
-   allTools.reduce callback @ 119(counts, tool)
+   allTools.reduce callback @ 79(counts, tool)
 
 作为 ``allTools.reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``119``—``123`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``79``—``83`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -615,19 +454,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``counts``。
 
-**主要协作调用**：``normalizeMode``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4833:4941:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3646:3789:FUNCTION
 
-.. rubric:: ``allTools.some callback @ 124``
+.. rubric:: ``allTools.some callback @ 84``
 
 .. code-block:: javascript
 
-   allTools.some callback @ 124(tool)
+   allTools.some callback @ 84(tool)
 
 作为 ``allTools.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``124``—``125`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``84``—``85`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -638,19 +477,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``isToolMutable``、``normalizeMode``。
+**主要协作调用**：``isToolMutable``、``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4977:5013:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3826:3862:FUNCTION
 
-.. rubric:: ``useMemo callback @ 126``
+.. rubric:: ``useMemo callback @ 86``
 
 .. code-block:: javascript
 
-   useMemo callback @ 126()
+   useMemo callback @ 86()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``86``—``86`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -662,7 +501,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``allTools.filter``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5054:5128:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3904:3978:FUNCTION
 
 .. rubric:: ``batchableTools``
 
@@ -672,7 +511,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 实现 ``batchableTools`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``87``—``87`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -690,17 +529,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5093:5127:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:3943:3977:FUNCTION
 
-.. rubric:: ``(tools || []).filter callback @ 127``
+.. rubric:: ``(tools || []).filter callback @ 87``
 
 .. code-block:: javascript
 
-   (tools || []).filter callback @ 127(tool)
+   (tools || []).filter callback @ 87(tool)
 
 作为 ``(tools || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``batchableTools``。
+**性质**：同步局部函数；源码第 ``87``—``87`` 行；所属函数 ``batchableTools``。
 
 **参数**
 
@@ -713,7 +552,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``canSetToolMode``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5170:5449:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4021:4339:FUNCTION
 
 .. rubric:: ``isMutablePermissionCommitted``
 
@@ -723,7 +562,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 判断与 ``Mutable Permission Committed`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``128``—``133`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``88``—``93`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -732,23 +571,23 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``batch.length > 0 && batch.every(tool => normalizeMode(draft[tool.name], 'ask') === mode) && batch.every(tool => normalizeMode(initial[tool.name], 'ask') === mode)``。
+根据执行分支返回结果；代表性返回表达式为 ``batch.length > 0 && batch.every(tool => normalizeMode(draft[getToolPermissionKey(tool)], 'ask') === mode) && batch.every(tool => normalizeMode(initial[getToolPermissionKey(tool)],…``。
 
 **主要协作调用**：``batchableTools``、``batch.every``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5300:5355:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4154:4226:FUNCTION
 
-.. rubric:: ``batch.every callback @ 131``
+.. rubric:: ``batch.every callback @ 91``
 
 .. code-block:: javascript
 
-   batch.every callback @ 131(tool)
+   batch.every callback @ 91(tool)
 
 作为 ``batch.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``131``—``131`` 行；所属函数 ``isMutablePermissionCommitted``。
+**性质**：同步局部函数；源码第 ``91``—``91`` 行；所属函数 ``isMutablePermissionCommitted``。
 
 **参数**
 
@@ -759,19 +598,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``normalizeMode``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5384:5441:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4256:4330:FUNCTION
 
-.. rubric:: ``batch.every callback @ 132``
+.. rubric:: ``batch.every callback @ 92``
 
 .. code-block:: javascript
 
-   batch.every callback @ 132(tool)
+   batch.every callback @ 92(tool)
 
 作为 ``batch.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``132``—``132`` 行；所属函数 ``isMutablePermissionCommitted``。
+**性质**：同步局部函数；源码第 ``92``—``92`` 行；所属函数 ``isMutablePermissionCommitted``。
 
 **参数**
 
@@ -782,9 +621,9 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``normalizeMode``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5725:5956:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4621:4859:FUNCTION
 
 .. rubric:: ``toggleGroup``
 
@@ -794,7 +633,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 切换与 ``Group`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``139``—``146`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``99``—``106`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -809,17 +648,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5761:5948:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4658:4850:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 140``
+.. rubric:: ``setExpanded callback @ 100``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 140(previous)
+   setExpanded callback @ 100(previous)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``140``—``145`` 行；所属函数 ``toggleGroup``。
+**性质**：同步局部函数；源码第 ``100``—``105`` 行；所属函数 ``toggleGroup``。
 
 **参数**
 
@@ -832,7 +671,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``next.has``、``next.delete``、``next.add``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5991:7667:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:4896:6701:FUNCTION
 
 .. rubric:: ``applyPermissionBatch``
 
@@ -842,7 +681,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 应用与 ``Permission Batch`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``148``—``192`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：异步局部函数；源码第 ``108``—``152`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -863,17 +702,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:6445:6514:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5360:5448:FUNCTION
 
-.. rubric:: ``mutableBatchTools.forEach callback @ 158``
+.. rubric:: ``mutableBatchTools.forEach callback @ 118``
 
 .. code-block:: javascript
 
-   mutableBatchTools.forEach callback @ 158(tool)
+   mutableBatchTools.forEach callback @ 118(tool)
 
 作为 ``mutableBatchTools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``158``—``160`` 行；所属函数 ``applyPermissionBatch``。
+**性质**：同步局部函数；源码第 ``118``—``120`` 行；所属函数 ``applyPermissionBatch``。
 
 **参数**
 
@@ -884,17 +723,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:6580:6771:FUNCTION
+**主要协作调用**：``getToolPermissionKey``。
 
-.. rubric:: ``mutableBatchTools.forEach callback @ 163``
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:5517:5762:FUNCTION
+
+.. rubric:: ``mutableBatchTools.forEach callback @ 123``
 
 .. code-block:: javascript
 
-   mutableBatchTools.forEach callback @ 163(tool)
+   mutableBatchTools.forEach callback @ 123(tool)
 
 作为 ``mutableBatchTools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``163``—``166`` 行；所属函数 ``applyPermissionBatch``。
+**性质**：同步局部函数；源码第 ``123``—``126`` 行；所属函数 ``applyPermissionBatch``。
 
 **参数**
 
@@ -905,19 +746,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``normalizeMode``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7228:7495:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:6232:6522:FUNCTION
 
-.. rubric:: ``setInitial callback @ 179``
+.. rubric:: ``setInitial callback @ 139``
 
 .. code-block:: javascript
 
-   setInitial callback @ 179(previousInitial)
+   setInitial callback @ 139(previousInitial)
 
 设置与 ``Initial`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``179``—``185`` 行；所属函数 ``applyPermissionBatch``。
+**性质**：同步局部函数；源码第 ``139``—``145`` 行；所属函数 ``applyPermissionBatch``。
 
 **参数**
 
@@ -932,17 +773,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7351:7443:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:6357:6468:FUNCTION
 
-.. rubric:: ``mutableBatchTools.forEach callback @ 181``
+.. rubric:: ``mutableBatchTools.forEach callback @ 141``
 
 .. code-block:: javascript
 
-   mutableBatchTools.forEach callback @ 181(tool)
+   mutableBatchTools.forEach callback @ 141(tool)
 
 作为 ``mutableBatchTools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``181``—``183`` 行；所属函数 ``setInitial callback @ 179``。
+**性质**：同步局部函数；源码第 ``141``—``143`` 行；所属函数 ``setInitial callback @ 139``。
 
 **参数**
 
@@ -953,7 +794,9 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7700:7846:FUNCTION
+**主要协作调用**：``getToolPermissionKey``。
+
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:6736:6886:FUNCTION
 
 .. rubric:: ``applyAllPermission``
 
@@ -963,7 +806,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 应用与 ``All Permission`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``194``—``198`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``154``—``158`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -976,7 +819,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyPermissionBatch``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7881:8051:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:6923:7097:FUNCTION
 
 .. rubric:: ``applyGroupPermission``
 
@@ -986,7 +829,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 应用与 ``Group Permission`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``200``—``204`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``160``—``164`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1002,7 +845,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyPermissionBatch``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8083:8289:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7131:7358:FUNCTION
 
 .. rubric:: ``setToolPermission``
 
@@ -1012,7 +855,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 设置与 ``Tool Permission`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``206``—``210`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``166``—``170`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1030,17 +873,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8229:8281:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7280:7349:FUNCTION
 
-.. rubric:: ``setDraft callback @ 209``
+.. rubric:: ``setDraft callback @ 169``
 
 .. code-block:: javascript
 
-   setDraft callback @ 209(previous)
+   setDraft callback @ 169(previous)
 
 设置与 ``Draft`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``209``—``209`` 行；所属函数 ``setToolPermission``。
+**性质**：同步局部函数；源码第 ``169``—``169`` 行；所属函数 ``setToolPermission``。
 
 **参数**
 
@@ -1051,7 +894,9 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8319:8600:FUNCTION
+**主要协作调用**：``getToolPermissionKey``。
+
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7390:7711:FUNCTION
 
 .. rubric:: ``restoreDefaults``
 
@@ -1061,7 +906,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 实现 ``restoreDefaults`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``212``—``220`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``172``—``180`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1075,17 +920,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8378:8568:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7451:7677:FUNCTION
 
-.. rubric:: ``allTools.forEach callback @ 214``
+.. rubric:: ``allTools.forEach callback @ 174``
 
 .. code-block:: javascript
 
-   allTools.forEach callback @ 214(tool)
+   allTools.forEach callback @ 174(tool)
 
 作为 ``allTools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``214``—``218`` 行；所属函数 ``restoreDefaults``。
+**性质**：同步局部函数；源码第 ``174``—``178`` 行；所属函数 ``restoreDefaults``。
 
 **参数**
 
@@ -1096,9 +941,9 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``toolDefaultMode``、``normalizeMode``。
+**主要协作调用**：``getToolPermissionKey``、``toolDefaultMode``、``normalizeMode``、``readToolPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8620:9267:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7733:8447:FUNCTION
 
 .. rubric:: ``apply``
 
@@ -1108,7 +953,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 应用与 ``apply`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``222``—``238`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：异步局部函数；源码第 ``182``—``198`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1122,17 +967,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8740:9046:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:7856:8218:FUNCTION
 
-.. rubric:: ``allTools.forEach callback @ 225``
+.. rubric:: ``allTools.forEach callback @ 185``
 
 .. code-block:: javascript
 
-   allTools.forEach callback @ 225(tool)
+   allTools.forEach callback @ 185(tool)
 
 作为 ``allTools.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``225``—``230`` 行；所属函数 ``apply``。
+**性质**：同步局部函数；源码第 ``185``—``190`` 行；所属函数 ``apply``。
 
 **参数**
 
@@ -1143,19 +988,42 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``isToolMutable``、``normalizeMode``、``toolAllowedModes(tool).includes``、``toolAllowedModes``。
+**主要协作调用**：``isToolMutable``、``normalizeMode``、``getToolPermissionKey``、``toolAllowedModes(tool).includes``、``toolAllowedModes``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:10931:10968:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:8573:8606:FUNCTION
 
-.. rubric:: ``onChange callback @ 266``
+.. rubric:: ``onPointerDownOutside callback @ 202``
 
 .. code-block:: javascript
 
-   onChange callback @ 266(event)
+   onPointerDownOutside callback @ 202(event)
+
+处理 ``Pointer Down Outside`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``202``—``202`` 行；所属函数 ``ConversationToolsDialog``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:10194:10231:FUNCTION
+
+.. rubric:: ``onChange callback @ 226``
+
+.. code-block:: javascript
+
+   onChange callback @ 226(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``266``—``266`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``226``—``226`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1168,17 +1036,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:12172:12205:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:11453:11486:FUNCTION
 
-.. rubric:: ``onClick callback @ 284``
+.. rubric:: ``onClick callback @ 244``
 
 .. code-block:: javascript
 
-   onClick callback @ 284()
+   onClick callback @ 244()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``284``—``284`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``244``—``244`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1190,17 +1058,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyAllPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:12836:12867:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:12126:12157:FUNCTION
 
-.. rubric:: ``onClick callback @ 293``
+.. rubric:: ``onClick callback @ 253``
 
 .. code-block:: javascript
 
-   onClick callback @ 293()
+   onClick callback @ 253()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``253``—``253`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1212,17 +1080,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyAllPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:13492:13524:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:12791:12823:FUNCTION
 
-.. rubric:: ``onClick callback @ 302``
+.. rubric:: ``onClick callback @ 262``
 
 .. code-block:: javascript
 
-   onClick callback @ 302()
+   onClick callback @ 262()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``302``—``302`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``262``—``262`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1234,17 +1102,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyAllPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:14776:26253:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:14096:25952:FUNCTION
 
-.. rubric:: ``visibleGroups.map callback @ 323``
+.. rubric:: ``visibleGroups.map callback @ 283``
 
 .. code-block:: javascript
 
-   visibleGroups.map callback @ 323(group)
+   visibleGroups.map callback @ 283(group)
 
 作为 ``visibleGroups.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``323``—``444`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``283``—``405`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 
@@ -1259,7 +1127,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:15120:15525:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:14444:14888:FUNCTION
 
 .. rubric:: ``groupPermissionCommitted``
 
@@ -1269,7 +1137,7 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 实现 ``groupPermissionCommitted`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``327``—``332`` 行；所属函数 ``visibleGroups.map callback @ 323``。
+**性质**：同步局部函数；源码第 ``287``—``292`` 行；所属函数 ``visibleGroups.map callback @ 283``。
 
 **参数**
 
@@ -1278,23 +1146,23 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``batch.length > 0 && batch.every(tool => normalizeMode(draft[tool.name], 'ask') === mode) && batch.every(tool => normalizeMode(initial[tool.name], 'ask') === mode)``。
+根据执行分支返回结果；代表性返回表达式为 ``batch.length > 0 && batch.every(tool => normalizeMode(draft[getToolPermissionKey(tool)], 'ask') === mode) && batch.every(tool => normalizeMode(initial[getToolPermissionKey(tool)],…``。
 
 **主要协作调用**：``batchableTools``、``batch.every``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:15328:15383:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:14655:14727:FUNCTION
 
-.. rubric:: ``batch.every callback @ 330``
+.. rubric:: ``batch.every callback @ 290``
 
 .. code-block:: javascript
 
-   batch.every callback @ 330(tool)
+   batch.every callback @ 290(tool)
 
 作为 ``batch.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``330``—``330`` 行；所属函数 ``groupPermissionCommitted``。
+**性质**：同步局部函数；源码第 ``290``—``290`` 行；所属函数 ``groupPermissionCommitted``。
 
 **参数**
 
@@ -1305,19 +1173,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``normalizeMode``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:15436:15493:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:14781:14855:FUNCTION
 
-.. rubric:: ``batch.every callback @ 331``
+.. rubric:: ``batch.every callback @ 291``
 
 .. code-block:: javascript
 
-   batch.every callback @ 331(tool)
+   batch.every callback @ 291(tool)
 
 作为 ``batch.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``331``—``331`` 行；所属函数 ``groupPermissionCommitted``。
+**性质**：同步局部函数；源码第 ``291``—``291`` 行；所属函数 ``groupPermissionCommitted``。
 
 **参数**
 
@@ -1328,19 +1196,19 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``normalizeMode``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:16191:16218:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:15563:15590:FUNCTION
 
-.. rubric:: ``onClick callback @ 341``
+.. rubric:: ``onClick callback @ 301``
 
 .. code-block:: javascript
 
-   onClick callback @ 341()
+   onClick callback @ 301()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``341``—``341`` 行；所属函数 ``visibleGroups.map callback @ 323``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``visibleGroups.map callback @ 283``。
 
 **参数**
 
@@ -1352,17 +1220,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``toggleGroup``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:17219:17279:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:16602:16662:FUNCTION
 
-.. rubric:: ``onClick callback @ 352``
+.. rubric:: ``onClick callback @ 312``
 
 .. code-block:: javascript
 
-   onClick callback @ 352()
+   onClick callback @ 312()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``352``—``352`` 行；所属函数 ``visibleGroups.map callback @ 323``。
+**性质**：同步局部函数；源码第 ``312``—``312`` 行；所属函数 ``visibleGroups.map callback @ 283``。
 
 **参数**
 
@@ -1374,17 +1242,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyGroupPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:18331:18389:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:17725:17783:FUNCTION
 
-.. rubric:: ``onClick callback @ 363``
+.. rubric:: ``onClick callback @ 323``
 
 .. code-block:: javascript
 
-   onClick callback @ 363()
+   onClick callback @ 323()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``363``—``363`` 行；所属函数 ``visibleGroups.map callback @ 323``。
+**性质**：同步局部函数；源码第 ``323``—``323`` 行；所属函数 ``visibleGroups.map callback @ 283``。
 
 **参数**
 
@@ -1396,17 +1264,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyGroupPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:19432:19491:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:18837:18896:FUNCTION
 
-.. rubric:: ``onClick callback @ 374``
+.. rubric:: ``onClick callback @ 334``
 
 .. code-block:: javascript
 
-   onClick callback @ 374()
+   onClick callback @ 334()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``374``—``374`` 行；所属函数 ``visibleGroups.map callback @ 323``。
+**性质**：同步局部函数；源码第 ``334``—``334`` 行；所属函数 ``visibleGroups.map callback @ 283``。
 
 **参数**
 
@@ -1418,17 +1286,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``applyGroupPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:20500:26065:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:20090:25759:FUNCTION
 
-.. rubric:: ``group.tools.map callback @ 386``
+.. rubric:: ``group.tools.map callback @ 347``
 
 .. code-block:: javascript
 
-   group.tools.map callback @ 386(tool)
+   group.tools.map callback @ 347(tool)
 
 作为 ``group.tools.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``386``—``439`` 行；所属函数 ``visibleGroups.map callback @ 323``。
+**性质**：同步局部函数；源码第 ``347``—``400`` 行；所属函数 ``visibleGroups.map callback @ 283``。
 
 **参数**
 
@@ -1437,23 +1305,23 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={tool.name} className="flex gap-3 px-3 py-3"> <div className="min-w-0 flex-1"> <div className="flex items-center gap-1.5 text-sm font-medium text-gray-800"> <span class…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={getToolPermissionKey(tool)} className="flex gap-3 px-3 py-3"> <div className="min-w-0 flex-1"> <div className="flex items-center gap-1.5 text-sm font-medium text-gray-…``。
 
-**主要协作调用**：``normalizeMode``、``t``、``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询…``。
+**主要协作调用**：``normalizeMode``、``getToolPermissionKey``、``t``、``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询…``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:23858:23909:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:23530:23581:FUNCTION
 
-.. rubric:: ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 417``
+.. rubric:: ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 378``
 
 .. code-block:: javascript
 
-   ([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 417([value])
+   ([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 378([value])
 
 实现 ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``417``—``417`` 行；所属函数 ``group.tools.map callback @ 386``。
+**性质**：同步局部函数；源码第 ``378``—``378`` 行；所属函数 ``group.tools.map callback @ 347``。
 
 **参数**
 
@@ -1466,17 +1334,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``toolAllowedModes(tool).includes``、``toolAllowedModes``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:23915:25781:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:23587:25470:FUNCTION
 
-.. rubric:: ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 417``
+.. rubric:: ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 378``
 
 .. code-block:: javascript
 
-   ([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 417([value, Icon, label, tone])
+   ([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 378([value, Icon, label, tone])
 
 实现 ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``417``—``434`` 行；所属函数 ``group.tools.map callback @ 386``。
+**性质**：同步局部函数；源码第 ``378``—``395`` 行；所属函数 ``group.tools.map callback @ 347``。
 
 **参数**
 
@@ -1489,17 +1357,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:24393:24429:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:24070:24106:FUNCTION
 
-.. rubric:: ``onClick callback @ 422``
+.. rubric:: ``onClick callback @ 383``
 
 .. code-block:: javascript
 
-   onClick callback @ 422()
+   onClick callback @ 383()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``422``—``422`` 行；所属函数 ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 417``。
+**性质**：同步局部函数；源码第 ``383``—``383`` 行；所属函数 ``([ ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'], ['ask', CircleHelp, t('tool_permission_ask', '询… callback @ 378``。
 
 **参数**
 
@@ -1511,17 +1379,17 @@ src/features/tools/components/ConversationToolsDialog 模块
 
 **主要协作调用**：``setToolPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:26798:26823:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/components/ConversationToolsDialog.jsx:26507:26532:FUNCTION
 
-.. rubric:: ``onClick callback @ 454``
+.. rubric:: ``onClick callback @ 415``
 
 .. code-block:: javascript
 
-   onClick callback @ 454()
+   onClick callback @ 415()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``454``—``454`` 行；所属函数 ``ConversationToolsDialog``。
+**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``ConversationToolsDialog``。
 
 **参数**
 

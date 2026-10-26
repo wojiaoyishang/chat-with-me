@@ -45,7 +45,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
       **参数**
 
-      ``message``（默认值 ``'Microphone permission request was cancelled.'``）
+      ``message`` （默认值 ``'Microphone permission request was cancelled.'``）
          调用方传入的 ``message`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**
@@ -146,7 +146,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **参数**
 
-   ``{ permissionIntroMessage = 'Voice input needs microphone access. Please choose Allow in the browser…``（默认值 ``{}``）
+   ``{ permissionIntroMessage = 'Voice input needs microphone access. Please choose Allow in the browser…`` （默认值 ``{}``）
       调用方传入的 ``permissionIntroMessage = 'Voice input needs microphone access. Please choose Allow in the browser…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -220,7 +220,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
    ``sourceSampleRate``
       调用方传入的 ``sourceSampleRate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``targetSampleRate``（默认值 ``TARGET_SAMPLE_RATE``）
+   ``targetSampleRate`` （默认值 ``TARGET_SAMPLE_RATE``）
       调用方传入的 ``targetSampleRate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -280,7 +280,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
 
    **参数**
 
-   ``barCount``（默认值 ``DEFAULT_WAVEFORM_BARS``）
+   ``barCount`` （默认值 ``DEFAULT_WAVEFORM_BARS``）
       调用方传入的 ``barCount`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -304,7 +304,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
    ``samples``
       调用方传入的 ``samples`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``barCount``（默认值 ``DEFAULT_WAVEFORM_BARS``）
+   ``barCount`` （默认值 ``DEFAULT_WAVEFORM_BARS``）
       调用方传入的 ``barCount`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -350,7 +350,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
    ``stream``
       调用方传入的 ``stream`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{ onWaveform, waveformBars = DEFAULT_WAVEFORM_BARS, }``（默认值 ``{}``）
+   ``{ onWaveform, waveformBars = DEFAULT_WAVEFORM_BARS, }`` （默认值 ``{}``）
       调用方传入的 ``onWaveform, waveformBars = DEFAULT_WAVEFORM_BARS,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -381,7 +381,7 @@ src/features/chat/ui/chatbox/utils/voiceRecorder 模块
    ``stream``
       调用方传入的 ``stream`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{ onPcmChunk, onWaveform, onSpeechStart, onSpeechEnd, onInputEnded, waveformBars = 28, vadOptions =…``（默认值 ``{}``）
+   ``{ onPcmChunk, onWaveform, onSpeechStart, onSpeechEnd, onInputEnded, waveformBars = 28, vadOptions =…`` （默认值 ``{}``）
       调用方传入的 ``onPcmChunk, onWaveform, onSpeechStart, onSpeechEnd, onInputEnded, waveformBars = 28, vadOptions =…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

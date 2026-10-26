@@ -19,6 +19,14 @@ from application.management_pages import _ENV
 print(_ENV.get_template("management.html").render(kind="knowledge",title="知识库",config={"kind":"knowledge","apiBase":"/api"},stylesheet="",script=""))
 `],{cwd:path.join(root,"../.."),encoding:"utf8",env:{...process.env,PYTHONIOENCODING:"utf-8"}});
 const settle = (ms = 35) => new Promise((resolve) => setTimeout(resolve, ms));
+async function waitForGraphCondition(condition, description, advanceFrames) {
+  const deadline = Date.now() + 3000;
+  while (!condition()) {
+    assert.ok(Date.now() < deadline, `Timed out waiting for ${description}`);
+    advanceFrames?.();
+    await settle(10);
+  }
+}
 const nodes = [
   {
     id: "node-1",
@@ -2268,6 +2276,10 @@ test("successful database deletion clears undo so locally hidden history cannot 
 test("relayout undo restores exact positions and leaves the restored layout asleep", async (t) => {
   const ui = await page(undefined, { controlledAnimation: true, fullGraph: true });
   t.after(() => ui.dom.window.close());
+  await waitForGraphCondition(
+    () => ui.document.querySelector('#graph-loading').hidden && Boolean(ui.dumpStorage()[canvasKey()]),
+    'the initialized canvas to be painted and persisted', () => ui.runFrames(2),
+  );
   ui.runFrames(40);
   const before = positionsOf(ui.document), camera = cameraOf(ui.document);
   ui.document.querySelector("#graph-layout").click();
@@ -4716,6 +4728,12 @@ async function switchDatabase(dom, document, databaseId) {
 test("knowledge database selection resolves the registry first and scopes every graph request by stable ID", async t => {
   const ui = await page(url => url.pathname === "/api/knowledge/databases" ? libraryRegistry : undefined, { controlledAnimation: true, databaseId: "default", conversationId: "conversation-one" });
   t.after(() => ui.dom.window.close());
+  await waitForGraphCondition(
+    () => ui.calls.some(call => call.parsed.pathname === "/api/knowledge/search" &&
+      call.parsed.searchParams.get("databaseId") === "db-one") &&
+      Boolean(ui.dumpStorage()[canvasKey("conversation-one", "db-one")]),
+    'the resolved database canvas and initial scoped search', () => ui.runFrames(2),
+  );
   const selector = ui.document.querySelector("#knowledge-database");
   assert.equal(selector.value, "db-one");
   assert.match(selector.closest(".cwm-select-control").textContent, /工作知识/);
@@ -4728,6 +4746,11 @@ test("knowledge database selection resolves the registry first and scopes every 
   assert.ok(graphCalls.length >= 3);
   assert.ok(graphCalls.every(call => call.parsed.searchParams.get("databaseId") === "db-one"));
   await switchDatabase(ui.dom, ui.document, "db-two");
+  await waitForGraphCondition(
+    () => ui.calls.some(call => call.parsed.pathname === "/api/knowledge/search" &&
+      call.parsed.searchParams.get("databaseId") === "db-two"),
+    'the newly selected database scoped search', () => ui.runFrames(2),
+  );
   const last = ui.calls.filter(call => call.parsed.pathname === "/api/knowledge/search").at(-1);
   assert.equal(last.parsed.searchParams.get("databaseId"), "db-two");
   assert.equal(last.parsed.searchParams.get("conversationId"), "conversation-one");
@@ -4833,8 +4856,17 @@ test("chat imports restore the target database and conversation canvas before ad
     };
   }, { controlledAnimation: true, iframeParent: trustedParent, conversationId: "conversation-old", seedStorage: { [targetScope]: JSON.stringify(targetSnapshot) } });
   t.after(() => ui.dom.window.close());
+  await waitForGraphCondition(
+    () => Boolean(ui.dumpStorage()[canvasKey("conversation-old", "db-one")]) &&
+      messages.some(message => message.type === "cwm.knowledge-ready" && message.databaseId === "db-one"),
+    'the original conversation canvas ready acknowledgement', () => ui.runFrames(2),
+  );
   ui.dom.window.dispatchEvent(new ui.dom.window.MessageEvent("message", { source: trustedParent, origin: "http://localhost", data: { type: "cwm.knowledge-import", id: "conversation-library-import", databaseId: "db-two", conversationId: "conversation-new", nodeIds: ["node-3"], edgeIds: [] } }));
-  await settle(220);
+  await waitForGraphCondition(
+    () => messages.some(message => message.type === "cwm.knowledge-imported" && message.id === "conversation-library-import") &&
+      JSON.parse(ui.dumpStorage()[targetScope] || '{}').nodes?.some(node => node.id === "node-3"),
+    'the imported canvas acknowledgement and persisted identities', () => ui.runFrames(2),
+  );
   assert.deepEqual(beforeImport, { ids: ["node-2"], position: [25, -38], camera: [390, 220, 1.6] });
   const imported = ui.calls.find(call => call.parsed.pathname === "/api/knowledge/canvas/import");
   assert.equal(imported.parsed.searchParams.get("databaseId"), "db-two");
@@ -4998,4 +5030,64 @@ test("Chunk and Time colors contrast in both management graph nodes and legend",
   assert.equal(chunk.querySelector("circle").getAttribute("fill"), "#4f8bb8");
   assert.equal(time.querySelector("circle").getAttribute("fill"), "#dc8792");
   await settle(120);
+});
+
+test('selected knowledge nodes stay visible during physics and manual camera movement disarms follow', async t => {
+  const snapshot = { version: 1, initialized: true, nodes: [
+    { id: 'node-1', x: 0, y: 0 }, { id: 'node-2', x: -35, y: 0 }, { id: 'node-3', x: -900, y: 0 },
+  ], edgeIds: [], camera: { x: 740, y: 270, scale: 1 }, selected: null, hiddenIds: [] };
+  const ui = await page(undefined, { controlledAnimation: true, localSettings: { KnowledgeGraphPhysicsAnimation: false },
+    seedStorage: { [canvasKey()]: JSON.stringify(snapshot) } });
+  t.after(() => ui.dom.window.close());
+  const { document, dom } = ui, svg = document.querySelector('#knowledge-canvas');
+  const chosen = document.querySelector('[data-node-id="node-1"]');
+  chosen.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true })); document.querySelector('#graph-physics').click(); ui.runFrames(30);
+  const view = cameraOf(document), position = positionOf(chosen);
+  assert.ok(view[0] < 740, 'outward physical movement causes a small pan');
+  assert.equal(view[2], 1);
+  assert.ok(view[0] + position[0] + 25 <= 784);
+  pointer(dom, svg, 'pointerdown', 200, 180, { button: 1 });
+  pointer(dom, dom.window, 'pointermove', 350, 180, { button: 1 }); ui.runFrames(1);
+  pointer(dom, dom.window, 'pointerup', 350, 180, { button: 1 });
+  const manuallyPanned = cameraOf(document); ui.runFrames(30);
+  assert.deepEqual(cameraOf(document), manuallyPanned);
+  document.querySelector('#graph-zoom-in').click(); const zoomed = cameraOf(document); ui.runFrames(30);
+  assert.deepEqual(cameraOf(document), zoomed, 'navigation controls do not compete with the selected node');
+  await settle(180);
+});
+
+test('knowledge drag heat stays local instead of waking distant independent nodes', async t => {
+  const snapshot = { version: 1, initialized: true, nodes: [
+    { id: 'node-1', x: 0, y: 0 }, { id: 'node-2', x: 160, y: 0 }, { id: 'node-3', x: 1200, y: 0 },
+  ], edgeIds: [], camera: { x: 300, y: 270, scale: 1 }, selected: null, hiddenIds: [] };
+  const ui = await page(undefined, { controlledAnimation: true, seedStorage: { [canvasKey()]: JSON.stringify(snapshot) } });
+  t.after(() => ui.dom.window.close());
+  const { document, dom } = ui, root = document.querySelector('[data-node-id="node-1"]'),
+    near = document.querySelector('[data-node-id="node-2"]'), far = document.querySelector('[data-node-id="node-3"]');
+  const farBefore = positionOf(far), nearBefore = positionOf(near);
+  pointer(dom, root, 'pointerdown', 300, 270);
+  pointer(dom, dom.window, 'pointermove', 360, 270); ui.runFrames(30);
+  assert.deepEqual(positionOf(far), farBefore); assert.notDeepEqual(positionOf(near), nearBefore);
+  pointer(dom, dom.window, 'pointerup', 360, 270); ui.runFrames(30);
+  assert.deepEqual(positionOf(far), farBefore);
+  await settle(180);
+});
+
+test('knowledge top-right fetching status lasts until all concurrent reads finish and clears on cancellation', async t => {
+  const pending = new Map();
+  const ui = await page((url) => {
+    if (/\/knowledge\/nodes\/[^/]+\/graph$/.test(url.pathname))
+      return new Promise(resolve => pending.set(url.pathname.split('/')[4], resolve));
+  }, { fullGraph: true, controlledAnimation: true });
+  t.after(() => ui.dom.window.close());
+  const { document, dom } = ui, badge = document.querySelector('.graph-fetch-status');
+  const expand = id => document.querySelector(`[data-node-id="${id}"]`).dispatchEvent(new dom.window.MouseEvent('dblclick', { bubbles: true }));
+  expand('node-1'); expand('node-2'); await settle();
+  assert.equal(badge.hidden, false); assert.match(badge.textContent, /2 个请求/);
+  pending.get('node-1')({ nodes: [nodes[0]], relationships: [] }); await settle(70);
+  assert.equal(badge.hidden, false, 'finishing one request keeps the second visible');
+  document.querySelector('#graph-undo').click(); await settle();
+  assert.equal(badge.hidden, true, 'undo aborts pending reads immediately');
+  pending.get('node-2')({ nodes: [nodes[1]], relationships: [] }); await settle(70);
+  assert.equal(badge.hidden, true, 'late cancelled responses cannot revive loading');
 });

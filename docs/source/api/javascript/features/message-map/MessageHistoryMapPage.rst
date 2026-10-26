@@ -22,18 +22,18 @@ src/features/message-map/MessageHistoryMapPage 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/lib/clientText.js``、``react``、``react-router-dom``、``lucide-react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/button``、``@/components/ui/badge``、``./MessageMapSearch.jsx``、``@/components/markdown/MarkdownRenderer.jsx``。
+``@/lib/clientText.js``、``react``、``react-router-dom``、``lucide-react``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/components/ui/button``、``@/components/ui/badge``、``@/features/chat/freeze/useConversationFreeze.js``、``@/features/chat/freeze/ConversationFreezeNotice.jsx``、``./MessageMapSearch.jsx``、``@/components/markdown/MarkdownRenderer.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1214:1272:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1435:1493:FUNCTION
 
 .. js:function:: formatTime(value)
 
    格式化与 ``Time`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``43``—``43`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``45``—``45`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/message-map/MessageHistoryMapPage 模块
 
    **主要协作调用**：``formatLocalTimestamp``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1297:1552:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1520:1782:FUNCTION
 
 .. js:function:: rememberDetail(cache, messageId, detail)
 
    实现 ``rememberDetail`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``45``—``52`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``47``—``54`` 行。
 
    **参数**
 
@@ -71,13 +71,13 @@ src/features/message-map/MessageHistoryMapPage 模块
 
    **主要协作调用**：``cache.has``、``cache.delete``、``cache.set``、``cache.keys().next``、``cache.keys``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1572:1642:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1804:1874:FUNCTION
 
 .. js:function:: clampZoom(value)
 
    实现 ``clampZoom`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``54``—``54`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``56``—``56`` 行。
 
    **参数**
 
@@ -90,13 +90,13 @@ src/features/message-map/MessageHistoryMapPage 模块
 
    **主要协作调用**：``Math.min``、``Math.max``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1671:1801:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1905:2036:FUNCTION
 
 .. js:function:: getPointerDistance(first, second)
 
    读取与 ``Pointer Distance`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``56``—``57`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``58``—``59`` 行。
 
    **参数**
 
@@ -112,13 +112,13 @@ src/features/message-map/MessageHistoryMapPage 模块
 
    **主要协作调用**：``Math.hypot``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:1830:1977:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:2067:2217:FUNCTION
 
 .. js:function:: getPointerMidpoint(first, second)
 
    读取与 ``Pointer Midpoint`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``59``—``62`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``61``—``64`` 行。
 
    **参数**
 
@@ -134,13 +134,13 @@ src/features/message-map/MessageHistoryMapPage 模块
 
    **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:2009:59809:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:2251:61421:FUNCTION
 
 .. js:function:: MessageHistoryMapPage()
 
    渲染 ``MessageHistoryMapPage`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``64``—``1260`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``66``—``1265`` 行。
 
    **参数**
 
@@ -148,7 +148,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex h-screen w-screen items-center justify-center bg-background text-muted-foreground"> <Loader2 className="mr-2 size-5 animate-spin" /> 正在加载消息历史地图… </div> )``、``( <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center"> <p className="text-sm text-destructive">{loadError || '消息地图不可用…``、``( <div className="flex h-screen w-screen flex-col overflow-hidden bg-background"> <header className="relative z-30 flex min-h-16 flex-wrap items-center gap-2 border-b bg-backgroun…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex h-screen w-screen items-center justify-center bg-background text-muted-foreground"> <Loader2 className="mr-2 size-5 animate-spin" /> 正在加载消息历史地图… </div> )``、``( <div className="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center"> <p className="text-sm text-destructive">{loadError || '消息地图不可用…``、``( <div className="flex h-screen w-screen flex-col overflow-hidden bg-background"> <ConversationFreezeNotice freeze={freeze}/> <header className="relative z-30 flex min-h-16 flex-w…``。
 
    **副作用**
 
@@ -157,7 +157,7 @@ src/features/message-map/MessageHistoryMapPage 模块
    * 读取或修改浏览器全局对象、页面或历史状态。
    * 改变前端路由或浏览器历史。
 
-   **主要协作调用**：``useParams``、``useSearchParams``、``useNavigate``、``String``、``searchParams.get``、``useState``、``useRef``、``useCallback``、``useEffect``、``useMemo``、``nodeById.get``、``Array.isArray``。
+   **主要协作调用**：``useParams``、``useConversationFreeze``、``useSearchParams``、``useNavigate``、``String``、``searchParams.get``、``useState``、``useRef``、``useCallback``、``useEffect``、``useMemo``、``nodeById.get``。
 
    **内部回调数量**：54。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -166,17 +166,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:3049:3064:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:3368:3383:FUNCTION
 
-.. rubric:: ``useState callback @ 82``
+.. rubric:: ``useState callback @ 85``
 
 .. code-block:: javascript
 
-   useState callback @ 82()
+   useState callback @ 85()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -186,17 +186,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:3887:4525:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4226:4879:FUNCTION
 
-.. rubric:: ``useCallback callback @ 102``
+.. rubric:: ``useCallback callback @ 105``
 
 .. code-block:: javascript
 
-   useCallback callback @ 102(nextTransform)
+   useCallback callback @ 105(nextTransform)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``102``—``117`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``105``—``120`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -211,17 +211,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4297:4517:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4645:4870:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 111``
+.. rubric:: ``requestAnimationFrame callback @ 114``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 111()
+   requestAnimationFrame callback @ 114()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``111``—``116`` 行；所属函数 ``useCallback callback @ 102``。
+**性质**：同步局部函数；源码第 ``114``—``119`` 行；所属函数 ``useCallback callback @ 105``。
 
 **参数**
 
@@ -233,17 +233,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``setViewTransform``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4547:4680:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4903:5039:FUNCTION
 
-.. rubric:: ``useEffect callback @ 120``
+.. rubric:: ``useEffect callback @ 123``
 
 .. code-block:: javascript
 
-   useEffect callback @ 120()
+   useEffect callback @ 123()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``120``—``122`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``123``—``125`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -255,17 +255,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4561:4680:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4918:5039:FUNCTION
 
-.. rubric:: ``anonymous callback @ 120``
+.. rubric:: ``anonymous callback @ 123``
 
 .. code-block:: javascript
 
-   anonymous callback @ 120()
+   anonymous callback @ 123()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``120``—``122`` 行；所属函数 ``useEffect callback @ 120``。
+**性质**：同步局部函数；源码第 ``123``—``125`` 行；所属函数 ``useEffect callback @ 123``。
 
 **参数**
 
@@ -277,17 +277,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:4734:5624:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:5097:6010:FUNCTION
 
-.. rubric:: ``useCallback callback @ 126``
+.. rubric:: ``useCallback callback @ 129``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 126()
+   async useCallback callback @ 129()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``126``—``149`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：异步局部函数；源码第 ``129``—``152`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -303,17 +303,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``mapAbortRef.current?.abort``、``setLoading``、``setLoadError``、``apiClient.get``、``setMapData``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:5660:6060:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6048:6458:FUNCTION
 
-.. rubric:: ``useEffect callback @ 151``
+.. rubric:: ``useEffect callback @ 154``
 
 .. code-block:: javascript
 
-   useEffect callback @ 151()
+   useEffect callback @ 154()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``151``—``161`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``154``—``164`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -327,17 +327,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6018:6053:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6415:6450:FUNCTION
 
-.. rubric:: ``returned callback @ 160``
+.. rubric:: ``returned callback @ 163``
 
 .. code-block:: javascript
 
-   returned callback @ 160()
+   returned callback @ 163()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``160``—``160`` 行；所属函数 ``useEffect callback @ 151``。
+**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``useEffect callback @ 154``。
 
 **参数**
 
@@ -349,17 +349,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``mapAbortRef.current?.abort``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6130:6237:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6530:6638:FUNCTION
 
-.. rubric:: ``useMemo callback @ 164``
+.. rubric:: ``useMemo callback @ 167``
 
 .. code-block:: javascript
 
-   useMemo callback @ 164()
+   useMemo callback @ 167()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``164``—``164`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``167``—``167`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -373,17 +373,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6183:6235:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6584:6636:FUNCTION
 
-.. rubric:: ``(layout?.positions || []).map callback @ 164``
+.. rubric:: ``(layout?.positions || []).map callback @ 167``
 
 .. code-block:: javascript
 
-   (layout?.positions || []).map callback @ 164(position)
+   (layout?.positions || []).map callback @ 167(position)
 
 作为 ``(layout?.positions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``164``—``164`` 行；所属函数 ``useMemo callback @ 164``。
+**性质**：同步局部函数；源码第 ``167``—``167`` 行；所属函数 ``useMemo callback @ 167``。
 
 **参数**
 
@@ -396,17 +396,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6389:6762:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6794:7175:FUNCTION
 
-.. rubric:: ``useMemo callback @ 169``
+.. rubric:: ``useMemo callback @ 172``
 
 .. code-block:: javascript
 
-   useMemo callback @ 169()
+   useMemo callback @ 172()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``169``—``176`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``172``—``179`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -422,7 +422,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6423:6472:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6830:6879:FUNCTION
 
 .. rubric:: ``has``
 
@@ -432,7 +432,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 实现 ``has`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``170``—``170`` 行；所属函数 ``useMemo callback @ 169``。
+**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``useMemo callback @ 172``。
 
 **参数**
 
@@ -445,7 +445,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``layoutPositionById.has``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6490:6750:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6898:7162:FUNCTION
 
 .. rubric:: ``get``
 
@@ -455,7 +455,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 读取与 ``get`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``171``—``175`` 行；所属函数 ``useMemo callback @ 169``。
+**性质**：同步局部函数；源码第 ``174``—``178`` 行；所属函数 ``useMemo callback @ 172``。
 
 **参数**
 
@@ -472,17 +472,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``layoutPositionById.get``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6843:6935:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7259:7352:FUNCTION
 
-.. rubric:: ``useMemo callback @ 180``
+.. rubric:: ``useMemo callback @ 183``
 
 .. code-block:: javascript
 
-   useMemo callback @ 180()
+   useMemo callback @ 183()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``180``—``180`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``183``—``183`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -496,17 +496,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:6893:6933:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7310:7350:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []).map callback @ 180``
+.. rubric:: ``(mapData?.nodes || []).map callback @ 183``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []).map callback @ 180(node)
+   (mapData?.nodes || []).map callback @ 183(node)
 
 作为 ``(mapData?.nodes || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``180``—``180`` 行；所属函数 ``useMemo callback @ 180``。
+**性质**：同步局部函数；源码第 ``183``—``183`` 行；所属函数 ``useMemo callback @ 183``。
 
 **参数**
 
@@ -519,17 +519,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7000:7362:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7420:7791:FUNCTION
 
-.. rubric:: ``useMemo callback @ 183``
+.. rubric:: ``useMemo callback @ 186``
 
 .. code-block:: javascript
 
-   useMemo callback @ 183()
+   useMemo callback @ 186()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``183``—``192`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``186``—``195`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -547,17 +547,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7081:7331:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7503:7758:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []).forEach callback @ 185``
+.. rubric:: ``(mapData?.nodes || []).forEach callback @ 188``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []).forEach callback @ 185(node)
+   (mapData?.nodes || []).forEach callback @ 188(node)
 
 作为 ``(mapData?.nodes || []).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``185``—``190`` 行；所属函数 ``useMemo callback @ 183``。
+**性质**：同步局部函数；源码第 ``188``—``193`` 行；所属函数 ``useMemo callback @ 186``。
 
 **参数**
 
@@ -574,17 +574,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``、``result.has``、``result.set``、``result.get(parentId).push``、``result.get``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7411:7709:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7841:8146:FUNCTION
 
-.. rubric:: ``useMemo callback @ 194``
+.. rubric:: ``useMemo callback @ 197``
 
 .. code-block:: javascript
 
-   useMemo callback @ 194()
+   useMemo callback @ 197()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``194``—``200`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``197``—``203`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -598,17 +598,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7485:7653:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7918:8089:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []) .filter callback @ 196``
+.. rubric:: ``(mapData?.nodes || []) .filter callback @ 199``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []) .filter callback @ 196(node)
+   (mapData?.nodes || []) .filter callback @ 199(node)
 
 作为 ``(mapData?.nodes || []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``196``—``199`` 行；所属函数 ``useMemo callback @ 194``。
+**性质**：同步局部函数；源码第 ``199``—``202`` 行；所属函数 ``useMemo callback @ 197``。
 
 **参数**
 
@@ -621,17 +621,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``、``nodeById.has``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7676:7708:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8113:8145:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []) .filter((node) => { const parentId = String(node?.parentMessageId || ''); return !parentId || !n… callback @ 200``
+.. rubric:: ``(mapData?.nodes || []) .filter((node) => { const parentId = String(node?.parentMessageId || ''); return !parentId || !n… callback @ 203``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []) .filter((node) => { const parentId = String(node?.parentMessageId || ''); return !parentId || !n… callback @ 200(node)
+   (mapData?.nodes || []) .filter((node) => { const parentId = String(node?.parentMessageId || ''); return !parentId || !n… callback @ 203(node)
 
 实现 ``(mapData?.nodes || []) .filter((node) => { const parentId = String(node?.parentMessageId || ''); return !parentId || !n…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``useMemo callback @ 194``。
+**性质**：同步局部函数；源码第 ``203``—``203`` 行；所属函数 ``useMemo callback @ 197``。
 
 **参数**
 
@@ -644,17 +644,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:7787:8403:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8227:8857:FUNCTION
 
-.. rubric:: ``useMemo callback @ 203``
+.. rubric:: ``useMemo callback @ 206``
 
 .. code-block:: javascript
 
-   useMemo callback @ 203()
+   useMemo callback @ 206()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``203``—``217`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``206``—``220`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -670,17 +670,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``[...rootMessageIds].reverse``、``String``、``stack.pop``、``visible.has``、``nodeById.has``、``visible.add``、``expandedMessageIds.has``、``childrenByParent.get``、``stack.push``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8507:8610:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8962:9066:FUNCTION
 
-.. rubric:: ``useMemo callback @ 219``
+.. rubric:: ``useMemo callback @ 222``
 
 .. code-block:: javascript
 
-   useMemo callback @ 219()
+   useMemo callback @ 222()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``219``—``219`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``222``—``222`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -694,17 +694,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8552:8609:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9008:9065:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []).filter callback @ 219``
+.. rubric:: ``(mapData?.nodes || []).filter callback @ 222``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []).filter callback @ 219(node)
+   (mapData?.nodes || []).filter callback @ 222(node)
 
 作为 ``(mapData?.nodes || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``219``—``219`` 行；所属函数 ``useMemo callback @ 219``。
+**性质**：同步局部函数；源码第 ``222``—``222`` 行；所属函数 ``useMemo callback @ 222``。
 
 **参数**
 
@@ -717,17 +717,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``displayedMessageIds.has``、``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8674:9279:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9134:9753:FUNCTION
 
-.. rubric:: ``useEffect callback @ 223``
+.. rubric:: ``useEffect callback @ 226``
 
 .. code-block:: javascript
 
-   useEffect callback @ 223()
+   useEffect callback @ 226()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``223``—``237`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``226``—``240`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -741,17 +741,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:8970:9011:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9437:9478:FUNCTION
 
-.. rubric:: ``anonymous callback @ 230``
+.. rubric:: ``anonymous callback @ 233``
 
 .. code-block:: javascript
 
-   anonymous callback @ 230(event)
+   anonymous callback @ 233(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``useEffect callback @ 223``。
+**性质**：同步局部函数；源码第 ``233``—``233`` 行；所属函数 ``useEffect callback @ 226``。
 
 **参数**
 
@@ -764,17 +764,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``setLayout``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9037:9067:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9505:9535:FUNCTION
 
-.. rubric:: ``anonymous callback @ 231``
+.. rubric:: ``anonymous callback @ 234``
 
 .. code-block:: javascript
 
-   anonymous callback @ 231()
+   anonymous callback @ 234()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``useEffect callback @ 223``。
+**性质**：同步局部函数；源码第 ``234``—``234`` 行；所属函数 ``useEffect callback @ 226``。
 
 **参数**
 
@@ -786,17 +786,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9138:9272:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9608:9745:FUNCTION
 
-.. rubric:: ``returned callback @ 233``
+.. rubric:: ``returned callback @ 236``
 
 .. code-block:: javascript
 
-   returned callback @ 233()
+   returned callback @ 236()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``233``—``236`` 行；所属函数 ``useEffect callback @ 223``。
+**性质**：同步局部函数；源码第 ``236``—``239`` 行；所属函数 ``useEffect callback @ 226``。
 
 **参数**
 
@@ -808,17 +808,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``worker.terminate``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9335:9791:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9810:10276:FUNCTION
 
-.. rubric:: ``useMemo callback @ 238``
+.. rubric:: ``useMemo callback @ 241``
 
 .. code-block:: javascript
 
-   useMemo callback @ 238()
+   useMemo callback @ 241()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``238``—``248`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``241``—``251`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -836,17 +836,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9419:9760:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9896:10243:FUNCTION
 
-.. rubric:: ``(layout?.positions || []).forEach callback @ 240``
+.. rubric:: ``(layout?.positions || []).forEach callback @ 243``
 
 .. code-block:: javascript
 
-   (layout?.positions || []).forEach callback @ 240(point)
+   (layout?.positions || []).forEach callback @ 243(point)
 
 作为 ``(layout?.positions || []).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``240``—``246`` 行；所属函数 ``useMemo callback @ 238``。
+**性质**：同步局部函数；源码第 ``243``—``249`` 行；所属函数 ``useMemo callback @ 241``。
 
 **参数**
 
@@ -863,17 +863,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Math.floor``、``Number``、``result.has``、``result.set``、``result.get(key).push``、``result.get``、``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:9850:10351:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10337:10849:FUNCTION
 
-.. rubric:: ``useCallback callback @ 251``
+.. rubric:: ``useCallback callback @ 254``
 
 .. code-block:: javascript
 
-   useCallback callback @ 251(messageId)
+   useCallback callback @ 254(messageId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``251``—``261`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``254``—``264`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -892,17 +892,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10271:10293:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10766:10788:FUNCTION
 
-.. rubric:: ``(childrenByParent.get(childId) || []).forEach callback @ 258``
+.. rubric:: ``(childrenByParent.get(childId) || []).forEach callback @ 261``
 
 .. code-block:: javascript
 
-   (childrenByParent.get(childId) || []).forEach callback @ 258(id)
+   (childrenByParent.get(childId) || []).forEach callback @ 261(id)
 
 作为 ``(childrenByParent.get(childId) || []).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``258``—``258`` 行；所属函数 ``useCallback callback @ 251``。
+**性质**：同步局部函数；源码第 ``261``—``261`` 行；所属函数 ``useCallback callback @ 254``。
 
 **参数**
 
@@ -915,17 +915,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``stack.push``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10433:10990:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10935:11506:FUNCTION
 
-.. rubric:: ``useCallback callback @ 266``
+.. rubric:: ``useCallback callback @ 269``
 
 .. code-block:: javascript
 
-   useCallback callback @ 266(messageId)
+   useCallback callback @ 269(messageId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``266``—``279`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``269``—``282`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -944,17 +944,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10619:10978:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:11125:11493:FUNCTION
 
-.. rubric:: ``setExpandedMessageIds callback @ 269``
+.. rubric:: ``setExpandedMessageIds callback @ 272``
 
 .. code-block:: javascript
 
-   setExpandedMessageIds callback @ 269(previous)
+   setExpandedMessageIds callback @ 272(previous)
 
 设置与 ``Expanded Message Ids`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``269``—``278`` 行；所属函数 ``useCallback callback @ 266``。
+**性质**：同步局部函数；源码第 ``272``—``281`` 行；所属函数 ``useCallback callback @ 269``。
 
 **参数**
 
@@ -969,17 +969,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:10827:10850:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:11337:11360:FUNCTION
 
-.. rubric:: ``collectDescendantIds(targetId).forEach callback @ 273``
+.. rubric:: ``collectDescendantIds(targetId).forEach callback @ 276``
 
 .. code-block:: javascript
 
-   collectDescendantIds(targetId).forEach callback @ 273(id)
+   collectDescendantIds(targetId).forEach callback @ 276(id)
 
 作为 ``collectDescendantIds(targetId).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``setExpandedMessageIds callback @ 269``。
+**性质**：同步局部函数；源码第 ``276``—``276`` 行；所属函数 ``setExpandedMessageIds callback @ 272``。
 
 **参数**
 
@@ -992,24 +992,24 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``next.delete``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:11094:12280:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:11614:12825:FUNCTION
 
-.. rubric:: ``useCallback callback @ 284``
+.. rubric:: ``useCallback callback @ 287``
 
 .. code-block:: javascript
 
-   useCallback callback @ 284(messageId, { select = true, expandTarget = true })
+   useCallback callback @ 287(messageId, { select = true, expandTarget = true })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``284``—``308`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``287``—``311`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
 ``messageId``
    Message 的公共 UUID。
 
-``{ select = true, expandTarget = true }``（默认值 ``{}``）
+``{ select = true, expandTarget = true }`` （默认值 ``{}``）
    调用方传入的 ``select = true, expandTarget = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -1024,17 +1024,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:11909:12072:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12445:12612:FUNCTION
 
-.. rubric:: ``setExpandedMessageIds callback @ 299``
+.. rubric:: ``setExpandedMessageIds callback @ 302``
 
 .. code-block:: javascript
 
-   setExpandedMessageIds callback @ 299(previous)
+   setExpandedMessageIds callback @ 302(previous)
 
 设置与 ``Expanded Message Ids`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``299``—``303`` 行；所属函数 ``useCallback callback @ 284``。
+**性质**：同步局部函数；源码第 ``302``—``306`` 行；所属函数 ``useCallback callback @ 287``。
 
 **参数**
 
@@ -1049,17 +1049,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12007:12027:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12545:12565:FUNCTION
 
-.. rubric:: ``expansion.forEach callback @ 301``
+.. rubric:: ``expansion.forEach callback @ 304``
 
 .. code-block:: javascript
 
-   expansion.forEach callback @ 301(id)
+   expansion.forEach callback @ 304(id)
 
 作为 ``expansion.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``setExpandedMessageIds callback @ 299``。
+**性质**：同步局部函数；源码第 ``304``—``304`` 行；所属函数 ``setExpandedMessageIds callback @ 302``。
 
 **参数**
 
@@ -1072,17 +1072,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``next.add``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12342:12557:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12891:13110:FUNCTION
 
-.. rubric:: ``useEffect callback @ 312``
+.. rubric:: ``useEffect callback @ 315``
 
 .. code-block:: javascript
 
-   useEffect callback @ 312()
+   useEffect callback @ 315()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``312``—``316`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``315``—``319`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1094,17 +1094,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``revealMessageBranch``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12635:12970:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13190:13534:FUNCTION
 
-.. rubric:: ``useCallback callback @ 318``
+.. rubric:: ``useCallback callback @ 321``
 
 .. code-block:: javascript
 
-   useCallback callback @ 318()
+   useCallback callback @ 321()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``318``—``327`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``321``—``330`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1122,17 +1122,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12762:12835:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13321:13394:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []) .filter callback @ 322``
+.. rubric:: ``(mapData?.nodes || []) .filter callback @ 325``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []) .filter callback @ 322(node)
+   (mapData?.nodes || []) .filter callback @ 325(node)
 
 作为 ``(mapData?.nodes || []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``322``—``322`` 行；所属函数 ``useCallback callback @ 318``。
+**性质**：同步局部函数；源码第 ``325``—``325`` 行；所属函数 ``useCallback callback @ 321``。
 
 **参数**
 
@@ -1149,17 +1149,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``childrenByParent.get``、``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:12862:12894:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13422:13454:FUNCTION
 
-.. rubric:: ``(mapData?.nodes || []) .filter((node) => (childrenByParent.get(String(node.messageId)) || []).length > 0) .map callback @ 323``
+.. rubric:: ``(mapData?.nodes || []) .filter((node) => (childrenByParent.get(String(node.messageId)) || []).length > 0) .map callback @ 326``
 
 .. code-block:: javascript
 
-   (mapData?.nodes || []) .filter((node) => (childrenByParent.get(String(node.messageId)) || []).length > 0) .map callback @ 323(node)
+   (mapData?.nodes || []) .filter((node) => (childrenByParent.get(String(node.messageId)) || []).length > 0) .map callback @ 326(node)
 
 作为 ``(mapData?.nodes || []) .filter((node) => (childrenByParent.get(String(node.messageId)) || []).length > 0) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``323``—``323`` 行；所属函数 ``useCallback callback @ 318``。
+**性质**：同步局部函数；源码第 ``326``—``326`` 行；所属函数 ``useCallback callback @ 321``。
 
 **参数**
 
@@ -1172,17 +1172,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13047:13144:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13613:13713:FUNCTION
 
-.. rubric:: ``useCallback callback @ 329``
+.. rubric:: ``useCallback callback @ 332``
 
 .. code-block:: javascript
 
-   useCallback callback @ 329()
+   useCallback callback @ 332()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``329``—``332`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``332``—``335`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1194,17 +1194,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``setExpandedMessageIds``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13166:13606:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13737:14187:FUNCTION
 
-.. rubric:: ``useEffect callback @ 334``
+.. rubric:: ``useEffect callback @ 337``
 
 .. code-block:: javascript
 
-   useEffect callback @ 334()
+   useEffect callback @ 337()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``334``—``344`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``337``—``347`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1218,7 +1218,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13283:13392:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13857:13968:FUNCTION
 
 .. rubric:: ``updateSize``
 
@@ -1228,7 +1228,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 更新与 ``Size`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``337``—``339`` 行；所属函数 ``useEffect callback @ 334``。
+**性质**：同步局部函数；源码第 ``340``—``342`` 行；所属函数 ``useEffect callback @ 337``。
 
 **参数**
 
@@ -1240,17 +1240,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``setViewportSize``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13570:13599:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:14150:14179:FUNCTION
 
-.. rubric:: ``returned callback @ 343``
+.. rubric:: ``returned callback @ 346``
 
 .. code-block:: javascript
 
-   returned callback @ 343()
+   returned callback @ 346()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``343``—``343`` 行；所属函数 ``useEffect callback @ 334``。
+**性质**：同步局部函数；源码第 ``346``—``346`` 行；所属函数 ``useEffect callback @ 337``。
 
 **参数**
 
@@ -1262,17 +1262,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``observer?.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:13664:14246:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:14247:14841:FUNCTION
 
-.. rubric:: ``useCallback callback @ 347``
+.. rubric:: ``useCallback callback @ 350``
 
 .. code-block:: javascript
 
-   useCallback callback @ 347(nextScale, viewportX, viewportY)
+   useCallback callback @ 350(nextScale, viewportX, viewportY)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``347``—``358`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``350``—``361`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1291,17 +1291,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``clampZoom``、``Math.abs``、``Number``、``scheduleViewTransform``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:14326:14601:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:14925:15206:FUNCTION
 
-.. rubric:: ``useCallback callback @ 363``
+.. rubric:: ``useCallback callback @ 366``
 
 .. code-block:: javascript
 
-   useCallback callback @ 363(factor)
+   useCallback callback @ 366(factor)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``363``—``368`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``366``—``371`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1314,17 +1314,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``zoomAtViewportPoint``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:14676:15272:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:15285:15892:FUNCTION
 
-.. rubric:: ``useCallback callback @ 372``
+.. rubric:: ``useCallback callback @ 375``
 
 .. code-block:: javascript
 
-   useCallback callback @ 372()
+   useCallback callback @ 375()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``372``—``383`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``375``—``386`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1336,24 +1336,24 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Math.max``、``clampZoom``、``Math.min``、``scheduleViewTransform``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:15347:16209:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:15969:16848:FUNCTION
 
-.. rubric:: ``useCallback callback @ 386``
+.. rubric:: ``useCallback callback @ 389``
 
 .. code-block:: javascript
 
-   useCallback callback @ 386(messageId, { select = true, scale = null })
+   useCallback callback @ 389(messageId, { select = true, scale = null })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``386``—``402`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``389``—``405`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
 ``messageId``
    Message 的公共 UUID。
 
-``{ select = true, scale = null }``（默认值 ``{}``）
+``{ select = true, scale = null }`` （默认值 ``{}``）
    调用方传入的 ``select = true, scale = null`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -1366,17 +1366,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String``、``positionById.get``、``clampZoom``、``scheduleViewTransform``、``setFocusedMessageId``、``setSelectedMessageId``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:16288:17152:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:16931:17812:FUNCTION
 
-.. rubric:: ``useEffect callback @ 406``
+.. rubric:: ``useEffect callback @ 409``
 
 .. code-block:: javascript
 
-   useEffect callback @ 406()
+   useEffect callback @ 409()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``406``—``423`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``409``—``426`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1390,17 +1390,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:16592:16620:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:17240:17268:FUNCTION
 
-.. rubric:: ``(mapData.nodes || []).find callback @ 411``
+.. rubric:: ``(mapData.nodes || []).find callback @ 414``
 
 .. code-block:: javascript
 
-   (mapData.nodes || []).find callback @ 411(node)
+   (mapData.nodes || []).find callback @ 414(node)
 
 作为 ``(mapData.nodes || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``411``—``411`` 行；所属函数 ``useEffect callback @ 406``。
+**性质**：同步局部函数；源码第 ``414``—``414`` 行；所属函数 ``useEffect callback @ 409``。
 
 **参数**
 
@@ -1411,17 +1411,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:17228:17614:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:17890:18282:FUNCTION
 
-.. rubric:: ``useEffect callback @ 425``
+.. rubric:: ``useEffect callback @ 428``
 
 .. code-block:: javascript
 
-   useEffect callback @ 425()
+   useEffect callback @ 428()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``425``—``431`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``428``—``434`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1435,17 +1435,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:17530:17606:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:18197:18273:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 430``
+.. rubric:: ``requestAnimationFrame callback @ 433``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 430()
+   requestAnimationFrame callback @ 433()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``430``—``430`` 行；所属函数 ``useEffect callback @ 425``。
+**性质**：同步局部函数；源码第 ``433``—``433`` 行；所属函数 ``useEffect callback @ 428``。
 
 **参数**
 
@@ -1457,17 +1457,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``locateMessage``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:17685:17911:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:18355:18585:FUNCTION
 
-.. rubric:: ``useEffect callback @ 433``
+.. rubric:: ``useEffect callback @ 436``
 
 .. code-block:: javascript
 
-   useEffect callback @ 433()
+   useEffect callback @ 436()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``433``—``437`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``436``—``440`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1479,17 +1479,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:17964:18176:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:18640:18856:FUNCTION
 
-.. rubric:: ``useEffect callback @ 439``
+.. rubric:: ``useEffect callback @ 442``
 
 .. code-block:: javascript
 
-   useEffect callback @ 439()
+   useEffect callback @ 442()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``439``—``443`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``442``—``446`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1501,17 +1501,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:18229:19224:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:18911:19926:FUNCTION
 
-.. rubric:: ``useEffect callback @ 445``
+.. rubric:: ``useEffect callback @ 448``
 
 .. code-block:: javascript
 
-   useEffect callback @ 445()
+   useEffect callback @ 448()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``445``—``465`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``448``—``468`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1529,7 +1529,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:18387:19068:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:19074:19766:FUNCTION
 
 .. rubric:: ``handleWheel``
 
@@ -1539,7 +1539,7 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 处理 ``Wheel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``450``—``461`` 行；所属函数 ``useEffect callback @ 445``。
+**性质**：同步局部函数；源码第 ``453``—``464`` 行；所属函数 ``useEffect callback @ 448``。
 
 **参数**
 
@@ -1552,17 +1552,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``event.preventDefault``、``element.getBoundingClientRect``、``Number``、``Math.abs``、``Math.max``、``Math.min``、``Math.exp``、``zoomAtViewportPoint``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:19161:19217:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:19862:19918:FUNCTION
 
-.. rubric:: ``returned callback @ 464``
+.. rubric:: ``returned callback @ 467``
 
 .. code-block:: javascript
 
-   returned callback @ 464()
+   returned callback @ 467()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``464``—``464`` 行；所属函数 ``useEffect callback @ 445``。
+**性质**：同步局部函数；源码第 ``467``—``467`` 行；所属函数 ``useEffect callback @ 448``。
 
 **参数**
 
@@ -1574,17 +1574,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``element.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:19302:20311:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:20006:21035:FUNCTION
 
-.. rubric:: ``useCallback callback @ 467``
+.. rubric:: ``useCallback callback @ 470``
 
 .. code-block:: javascript
 
-   useCallback callback @ 467()
+   useCallback callback @ 470()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``467``—``487`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``470``—``490`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1596,17 +1596,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Array.from(activePointersRef.current.values()).slice``、``Array.from``、``activePointersRef.current.values``、``Math.max``、``getPointerDistance``、``getPointerMidpoint``、``element.getBoundingClientRect``、``setIsCanvasDragging``、``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:20367:22882:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:21093:23669:FUNCTION
 
-.. rubric:: ``useCallback callback @ 490``
+.. rubric:: ``useCallback callback @ 493``
 
 .. code-block:: javascript
 
-   useCallback callback @ 490(event)
+   useCallback callback @ 493(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``490``—``550`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``493``—``553`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1625,17 +1625,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:21024:21312:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:21763:22057:FUNCTION
 
-.. rubric:: ``activePointersRef.current.forEach callback @ 502``
+.. rubric:: ``activePointersRef.current.forEach callback @ 505``
 
 .. code-block:: javascript
 
-   activePointersRef.current.forEach callback @ 502(_, pointerId)
+   activePointersRef.current.forEach callback @ 505(_, pointerId)
 
 作为 ``activePointersRef.current.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``502``—``508`` 行；所属函数 ``useCallback callback @ 490``。
+**性质**：同步局部函数；源码第 ``505``—``511`` 行；所属函数 ``useCallback callback @ 493``。
 
 **参数**
 
@@ -1651,17 +1651,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``element.setPointerCapture``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:22969:26203:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:23760:27058:FUNCTION
 
-.. rubric:: ``useCallback callback @ 555``
+.. rubric:: ``useCallback callback @ 558``
 
 .. code-block:: javascript
 
-   useCallback callback @ 555(event)
+   useCallback callback @ 558(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``555``—``618`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``558``—``621`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1680,17 +1680,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:23276:23591:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:24074:24395:FUNCTION
 
-.. rubric:: ``setNodeOffsets callback @ 561``
+.. rubric:: ``setNodeOffsets callback @ 564``
 
 .. code-block:: javascript
 
-   setNodeOffsets callback @ 561(previous)
+   setNodeOffsets callback @ 564(previous)
 
 设置与 ``Node Offsets`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``561``—``567`` 行；所属函数 ``useCallback callback @ 555``。
+**性质**：同步局部函数；源码第 ``564``—``570`` 行；所属函数 ``useCallback callback @ 558``。
 
 **参数**
 
@@ -1701,17 +1701,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:26306:27329:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:27165:28211:FUNCTION
 
-.. rubric:: ``useCallback callback @ 622``
+.. rubric:: ``useCallback callback @ 625``
 
 .. code-block:: javascript
 
-   useCallback callback @ 622(event)
+   useCallback callback @ 625(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``622``—``645`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``625``—``648`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1728,17 +1728,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``window.clearTimeout``、``Date.now``、``activePointersRef.current.delete``、``setIsCanvasDragging``、``element?.hasPointerCapture``、``element.releasePointerCapture``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:27351:28695:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28235:29615:FUNCTION
 
-.. rubric:: ``useEffect callback @ 647``
+.. rubric:: ``useEffect callback @ 650``
 
 .. code-block:: javascript
 
-   useEffect callback @ 647()
+   useEffect callback @ 650()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``647``—``683`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``650``—``686`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1756,17 +1756,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28087:28226:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28992:29134:FUNCTION
 
-.. rubric:: ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {… callback @ 668``
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {… callback @ 671``
 
 .. code-block:: javascript
 
-   apiClient .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, { params: {… callback @ 668(data)
+   apiClient .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, { params: {… callback @ 671(data)
 
 实现 ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``668``—``671`` 行；所属函数 ``useEffect callback @ 647``。
+**性质**：同步局部函数；源码第 ``671``—``674`` 行；所属函数 ``useEffect callback @ 650``。
 
 **参数**
 
@@ -1779,17 +1779,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``rememberDetail``、``setDetail``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28247:28427:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29156:29339:FUNCTION
 
-.. rubric:: ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {… callback @ 672``
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {… callback @ 675``
 
 .. code-block:: javascript
 
-   apiClient .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, { params: {… callback @ 672(error)
+   apiClient .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, { params: {… callback @ 675(error)
 
 实现 ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``672``—``675`` 行；所属函数 ``useEffect callback @ 647``。
+**性质**：同步局部函数；源码第 ``675``—``678`` 行；所属函数 ``useEffect callback @ 650``。
 
 **参数**
 
@@ -1802,17 +1802,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28450:28646:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29363:29564:FUNCTION
 
-.. rubric:: ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {… callback @ 676``
+.. rubric:: ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {… callback @ 679``
 
 .. code-block:: javascript
 
-   apiClient .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, { params: {… callback @ 676()
+   apiClient .get(`${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}`, { params: {… callback @ 679()
 
 实现 ``apiClient .get(\x60${apiEndpoint.CHAT_MESSAGE_MAP_DETAIL_ENDPOINT}/${encodeURIComponent(selectedMessageId)}\x60, { params: {…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``676``—``681`` 行；所属函数 ``useEffect callback @ 647``。
+**性质**：同步局部函数；源码第 ``679``—``684`` 行；所属函数 ``useEffect callback @ 650``。
 
 **参数**
 
@@ -1824,17 +1824,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``setDetailLoading``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28663:28688:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29582:29607:FUNCTION
 
-.. rubric:: ``returned callback @ 682``
+.. rubric:: ``returned callback @ 685``
 
 .. code-block:: javascript
 
-   returned callback @ 682()
+   returned callback @ 685()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``682``—``682`` 行；所属函数 ``useEffect callback @ 647``。
+**性质**：同步局部函数；源码第 ``685``—``685`` 行；所属函数 ``useEffect callback @ 650``。
 
 **参数**
 
@@ -1846,17 +1846,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28750:28809:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29672:29731:FUNCTION
 
-.. rubric:: ``useEffect callback @ 685``
+.. rubric:: ``useEffect callback @ 688``
 
 .. code-block:: javascript
 
-   useEffect callback @ 685()
+   useEffect callback @ 688()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``685``—``685`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``688``—``688`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1872,17 +1872,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28755:28809:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29677:29731:FUNCTION
 
-.. rubric:: ``anonymous callback @ 685``
+.. rubric:: ``anonymous callback @ 688``
 
 .. code-block:: javascript
 
-   anonymous callback @ 685()
+   anonymous callback @ 688()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``685``—``685`` 行；所属函数 ``useEffect callback @ 685``。
+**性质**：同步局部函数；源码第 ``688``—``688`` 行；所属函数 ``useEffect callback @ 688``。
 
 **参数**
 
@@ -1898,17 +1898,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:28860:29104:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29784:30034:FUNCTION
 
-.. rubric:: ``useCallback callback @ 688``
+.. rubric:: ``useCallback callback @ 691``
 
 .. code-block:: javascript
 
-   useCallback callback @ 688(item)
+   useCallback callback @ 691(item)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``688``—``693`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``691``—``696`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1921,17 +1921,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``revealMessageBranch``、``setSelectedMessageId``、``toast.info``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29195:29454:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:30129:30393:FUNCTION
 
-.. rubric:: ``useCallback callback @ 698``
+.. rubric:: ``useCallback callback @ 701``
 
 .. code-block:: javascript
 
-   useCallback callback @ 698(messageId)
+   useCallback callback @ 701(messageId)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``698``—``702`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``701``—``705`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1948,17 +1948,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``String(messageId || '').trim``、``String``、``navigate``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:29548:30557:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:30491:31551:FUNCTION
 
-.. rubric:: ``useCallback callback @ 706``
+.. rubric:: ``useCallback callback @ 709``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 706()
+   async useCallback callback @ 709()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``706``—``734`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：异步局部函数；源码第 ``709``—``737`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1972,19 +1972,19 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``String(selectedMessageId || '').trim``、``String``、``nodeById.get``、``openMessageInConversation``、``setBranchSwitching``、``apiClient.post``、``toast.success``、``toast.error``、``Number``、``detailCacheRef.current.clear``、``setDetail``、``loadMap``。
+**主要协作调用**：``String(selectedMessageId || '').trim``、``String``、``freeze.canMutate``、``nodeById.get``、``openMessageInConversation``、``setBranchSwitching``、``apiClient.post``、``toast.success``、``toast.error``、``Number``、``detailCacheRef.current.clear``、``setDetail``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:30816:31232:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:31838:32263:FUNCTION
 
-.. rubric:: ``useMemo callback @ 745``
+.. rubric:: ``useMemo callback @ 749``
 
 .. code-block:: javascript
 
-   useMemo callback @ 745()
+   useMemo callback @ 749()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``745``—``754`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``749``—``758`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -1996,17 +1996,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:31300:32637:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:32333:33697:FUNCTION
 
-.. rubric:: ``useMemo callback @ 756``
+.. rubric:: ``useMemo callback @ 760``
 
 .. code-block:: javascript
 
-   useMemo callback @ 756()
+   useMemo callback @ 760()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``756``—``783`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``760``—``787`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2024,17 +2024,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:31898:31940:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:32941:32983:FUNCTION
 
-.. rubric:: ``Object.keys(nodeOffsets).forEach callback @ 766``
+.. rubric:: ``Object.keys(nodeOffsets).forEach callback @ 770``
 
 .. code-block:: javascript
 
-   Object.keys(nodeOffsets).forEach callback @ 766(messageId)
+   Object.keys(nodeOffsets).forEach callback @ 770(messageId)
 
 作为 ``Object.keys(nodeOffsets).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``766``—``766`` 行；所属函数 ``useMemo callback @ 756``。
+**性质**：同步局部函数；源码第 ``770``—``770`` 行；所属函数 ``useMemo callback @ 760``。
 
 **参数**
 
@@ -2047,17 +2047,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``candidateIds.add``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:32156:32198:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:33203:33245:FUNCTION
 
-.. rubric:: ``(spatialBuckets.get(\x60${cellX}:${cellY}\x60) || []).forEach callback @ 770``
+.. rubric:: ``(spatialBuckets.get(\x60${cellX}:${cellY}\x60) || []).forEach callback @ 774``
 
 .. code-block:: javascript
 
-   (spatialBuckets.get(`${cellX}:${cellY}`) || []).forEach callback @ 770(messageId)
+   (spatialBuckets.get(`${cellX}:${cellY}`) || []).forEach callback @ 774(messageId)
 
 作为 ``(spatialBuckets.get(\x60${cellX}:${cellY}\x60) || []).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``770``—``770`` 行；所属函数 ``useMemo callback @ 756``。
+**性质**：同步局部函数；源码第 ``774``—``774`` 行；所属函数 ``useMemo callback @ 760``。
 
 **参数**
 
@@ -2070,17 +2070,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``candidateIds.add``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:32282:32606:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:33334:33664:FUNCTION
 
-.. rubric:: ``candidateIds.forEach callback @ 775``
+.. rubric:: ``candidateIds.forEach callback @ 779``
 
 .. code-block:: javascript
 
-   candidateIds.forEach callback @ 775(messageId)
+   candidateIds.forEach callback @ 779(messageId)
 
 作为 ``candidateIds.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``775``—``781`` 行；所属函数 ``useMemo callback @ 756``。
+**性质**：同步局部函数；源码第 ``779``—``785`` 行；所属函数 ``useMemo callback @ 760``。
 
 **参数**
 
@@ -2097,17 +2097,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``nodeById.get``、``positionById.get``、``result.push``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:32771:34119:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:33833:35212:FUNCTION
 
-.. rubric:: ``useMemo callback @ 785``
+.. rubric:: ``useMemo callback @ 789``
 
 .. code-block:: javascript
 
-   useMemo callback @ 785()
+   useMemo callback @ 789()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``785``—``816`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``789``—``820`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2125,17 +2125,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:33011:33344:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:34078:34417:FUNCTION
 
-.. rubric:: ``visibleNodes.forEach callback @ 790``
+.. rubric:: ``visibleNodes.forEach callback @ 794``
 
 .. code-block:: javascript
 
-   visibleNodes.forEach callback @ 790(node)
+   visibleNodes.forEach callback @ 794(node)
 
 作为 ``visibleNodes.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``790``—``796`` 行；所属函数 ``useMemo callback @ 785``。
+**性质**：同步局部函数；源码第 ``794``—``800`` 行；所属函数 ``useMemo callback @ 789``。
 
 **参数**
 
@@ -2154,17 +2154,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:33295:33332:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:34367:34404:FUNCTION
 
-.. rubric:: ``(childrenByParent.get(messageId) || []).forEach callback @ 795``
+.. rubric:: ``(childrenByParent.get(messageId) || []).forEach callback @ 799``
 
 .. code-block:: javascript
 
-   (childrenByParent.get(messageId) || []).forEach callback @ 795(childId)
+   (childrenByParent.get(messageId) || []).forEach callback @ 799(childId)
 
 作为 ``(childrenByParent.get(messageId) || []).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``795``—``795`` 行；所属函数 ``visibleNodes.forEach callback @ 790``。
+**性质**：同步局部函数；源码第 ``799``—``799`` 行；所属函数 ``visibleNodes.forEach callback @ 794``。
 
 **参数**
 
@@ -2177,17 +2177,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``edgeNodeIds.add``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:33403:34088:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:34479:35179:FUNCTION
 
-.. rubric:: ``edgeNodeIds.forEach callback @ 799``
+.. rubric:: ``edgeNodeIds.forEach callback @ 803``
 
 .. code-block:: javascript
 
-   edgeNodeIds.forEach callback @ 799(messageId)
+   edgeNodeIds.forEach callback @ 803(messageId)
 
 作为 ``edgeNodeIds.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``799``—``814`` 行；所属函数 ``useMemo callback @ 785``。
+**性质**：同步局部函数；源码第 ``803``—``818`` 行；所属函数 ``useMemo callback @ 789``。
 
 **参数**
 
@@ -2204,17 +2204,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``nodeById.get``、``String``、``positionById.get``、``result.push``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:34358:34724:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:35455:35830:FUNCTION
 
-.. rubric:: ``useMemo callback @ 820``
+.. rubric:: ``useMemo callback @ 824``
 
 .. code-block:: javascript
 
-   useMemo callback @ 820()
+   useMemo callback @ 824()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``820``—``829`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``824``—``833`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2224,17 +2224,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``{ ...message, readonly: true, }``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:35762:35829:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:36890:36957:FUNCTION
 
-.. rubric:: ``onClick callback @ 851``
+.. rubric:: ``onClick callback @ 855``
 
 .. code-block:: javascript
 
-   onClick callback @ 851()
+   onClick callback @ 855()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``851``—``851`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``855``—``855`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2250,17 +2250,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``navigate``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:36443:36510:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:37645:37712:FUNCTION
 
-.. rubric:: ``onClick callback @ 868``
+.. rubric:: ``onClick callback @ 873``
 
 .. code-block:: javascript
 
-   onClick callback @ 868()
+   onClick callback @ 873()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``868``—``868`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``873``—``873`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2276,17 +2276,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``navigate``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:38372:38512:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:39617:39760:FUNCTION
 
-.. rubric:: ``onClick callback @ 911``
+.. rubric:: ``onClick callback @ 916``
 
 .. code-block:: javascript
 
-   onClick callback @ 911()
+   onClick callback @ 916()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``911``—``914`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``916``—``919`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2298,17 +2298,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``loadMap``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:40080:40113:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:41360:41393:FUNCTION
 
-.. rubric:: ``onAuxClick callback @ 946``
+.. rubric:: ``onAuxClick callback @ 951``
 
 .. code-block:: javascript
 
-   onAuxClick callback @ 946(event)
+   onAuxClick callback @ 951(event)
 
 处理 ``Aux Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``946``—``946`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``951``—``951`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2321,17 +2321,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:41327:42174:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:42630:43489:FUNCTION
 
-.. rubric:: ``visibleEdges.map callback @ 969``
+.. rubric:: ``visibleEdges.map callback @ 974``
 
 .. code-block:: javascript
 
-   visibleEdges.map callback @ 969(edge)
+   visibleEdges.map callback @ 974(edge)
 
 作为 ``visibleEdges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``969``—``981`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``974``—``986`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2344,17 +2344,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:42259:50014:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:43577:51439:FUNCTION
 
-.. rubric:: ``visibleNodes.map callback @ 984``
+.. rubric:: ``visibleNodes.map callback @ 989``
 
 .. code-block:: javascript
 
-   visibleNodes.map callback @ 984(node)
+   visibleNodes.map callback @ 989(node)
 
 作为 ``visibleNodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``984``—``1091`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``989``—``1096`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2374,17 +2374,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:43106:43139:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:44437:44470:FUNCTION
 
-.. rubric:: ``onContextMenu callback @ 997``
+.. rubric:: ``onContextMenu callback @ 1002``
 
 .. code-block:: javascript
 
-   onContextMenu callback @ 997(event)
+   onContextMenu callback @ 1002(event)
 
 处理 ``Context Menu`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``997``—``997`` 行；所属函数 ``visibleNodes.map callback @ 984``。
+**性质**：同步局部函数；源码第 ``1002``—``1002`` 行；所属函数 ``visibleNodes.map callback @ 989``。
 
 **参数**
 
@@ -2397,17 +2397,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:43192:43800:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:44524:45141:FUNCTION
 
-.. rubric:: ``onKeyDown callback @ 998``
+.. rubric:: ``onKeyDown callback @ 1003``
 
 .. code-block:: javascript
 
-   onKeyDown callback @ 998(event)
+   onKeyDown callback @ 1003(event)
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``998``—``1007`` 行；所属函数 ``visibleNodes.map callback @ 984``。
+**性质**：同步局部函数；源码第 ``1003``—``1012`` 行；所属函数 ``visibleNodes.map callback @ 989``。
 
 **参数**
 
@@ -2420,17 +2420,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``['Enter', ' '].includes``、``event.preventDefault``、``setSelectedMessageId``、``setFocusedMessageId``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:43857:45763:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:45199:47131:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 1008``
+.. rubric:: ``onPointerDown callback @ 1013``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 1008(event)
+   onPointerDown callback @ 1013(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1008``—``1034`` 行；所属函数 ``visibleNodes.map callback @ 984``。
+**性质**：同步局部函数；源码第 ``1013``—``1039`` 行；所属函数 ``visibleNodes.map callback @ 989``。
 
 **参数**
 
@@ -2449,17 +2449,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:44948:45627:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:46305:46993:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 1023``
+.. rubric:: ``window.setTimeout callback @ 1028``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 1023()
+   window.setTimeout callback @ 1028()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1023``—``1032`` 行；所属函数 ``onPointerDown callback @ 1008``。
+**性质**：同步局部函数；源码第 ``1028``—``1037`` 行；所属函数 ``onPointerDown callback @ 1013``。
 
 **参数**
 
@@ -2471,17 +2471,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Date.now``、``canvasRef.current?.setPointerCapture``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:45814:46130:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:47183:47503:FUNCTION
 
-.. rubric:: ``onClick callback @ 1035``
+.. rubric:: ``onClick callback @ 1040``
 
 .. code-block:: javascript
 
-   onClick callback @ 1035()
+   onClick callback @ 1040()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1035``—``1039`` 行；所属函数 ``visibleNodes.map callback @ 984``。
+**性质**：同步局部函数；源码第 ``1040``—``1044`` 行；所属函数 ``visibleNodes.map callback @ 989``。
 
 **参数**
 
@@ -2493,17 +2493,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``Date.now``、``setSelectedMessageId``、``setFocusedMessageId``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:48744:48996:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:50150:50405:FUNCTION
 
-.. rubric:: ``onClick callback @ 1072``
+.. rubric:: ``onClick callback @ 1077``
 
 .. code-block:: javascript
 
-   onClick callback @ 1072(event)
+   onClick callback @ 1077(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1072``—``1075`` 行；所属函数 ``visibleNodes.map callback @ 984``。
+**性质**：同步局部函数；源码第 ``1077``—``1080`` 行；所属函数 ``visibleNodes.map callback @ 989``。
 
 **参数**
 
@@ -2516,17 +2516,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``event.stopPropagation``、``toggleMessageBranch``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:50875:50917:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:52318:52360:FUNCTION
 
-.. rubric:: ``onClick callback @ 1109``
+.. rubric:: ``onClick callback @ 1114``
 
 .. code-block:: javascript
 
-   onClick callback @ 1109()
+   onClick callback @ 1114()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1109``—``1109`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``1114``—``1114`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2538,17 +2538,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``zoomAtCenter``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:51350:51427:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:52801:52878:FUNCTION
 
-.. rubric:: ``onClick callback @ 1117``
+.. rubric:: ``onClick callback @ 1122``
 
 .. code-block:: javascript
 
-   onClick callback @ 1117()
+   onClick callback @ 1122()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1117``—``1117`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``1122``—``1122`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2560,17 +2560,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``zoomAtViewportPoint``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:51807:51845:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:53267:53305:FUNCTION
 
-.. rubric:: ``onClick callback @ 1126``
+.. rubric:: ``onClick callback @ 1131``
 
 .. code-block:: javascript
 
-   onClick callback @ 1126()
+   onClick callback @ 1131()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1126``—``1126`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``1131``—``1131`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2582,17 +2582,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``zoomAtCenter``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:53933:53965:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:55428:55460:FUNCTION
 
-.. rubric:: ``onClick callback @ 1161``
+.. rubric:: ``onClick callback @ 1166``
 
 .. code-block:: javascript
 
-   onClick callback @ 1161()
+   onClick callback @ 1166()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``1161``—``1161`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``1166``—``1166`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 
@@ -2604,17 +2604,17 @@ src/features/message-map/MessageHistoryMapPage 模块
 
 **主要协作调用**：``setSelectedMessageId``。
 
-.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:57059:58096:FUNCTION
+.. CWM-AST-FUNCTION src/features/message-map/MessageHistoryMapPage.jsx:58602:59653:FUNCTION
 
-.. rubric:: ``attachments.map callback @ 1209``
+.. rubric:: ``attachments.map callback @ 1214``
 
 .. code-block:: javascript
 
-   attachments.map callback @ 1209(attachment, index)
+   attachments.map callback @ 1214(attachment, index)
 
 作为 ``attachments.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1209``—``1223`` 行；所属函数 ``MessageHistoryMapPage``。
+**性质**：同步局部函数；源码第 ``1214``—``1228`` 行；所属函数 ``MessageHistoryMapPage``。
 
 **参数**
 

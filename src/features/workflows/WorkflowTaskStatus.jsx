@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Check, CircleAlert, CircleX, Clock3, Loader2, Pause } from 'lucide-react';
 
 import { useTaskStore } from '@/features/tasks/useTaskStore.js';
+import RunObservation from '../tasks/RunObservation.jsx';
 
 const STATUS = {
     queued: { label: '排队中', Icon: Clock3 },
@@ -58,6 +59,7 @@ const WorkflowTaskStatus = memo(({ content = '' }) => {
                 <span className="shrink-0 text-xs opacity-70">查看详情</span>
                 <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0 opacity-60" />
             </button>
+            {current.observation && <div className="px-3 pb-2"><RunObservation observation={current.observation} taskId={task.taskId} view="summary" compact /></div>}
         </div>
     );
 });

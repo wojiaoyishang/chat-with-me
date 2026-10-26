@@ -222,7 +222,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``rect``
       调用方传入的 ``rect`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``padding``（默认值 ``0``）
+   ``padding`` （默认值 ``0``）
       调用方传入的 ``padding`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -244,7 +244,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``rect``
       调用方传入的 ``rect`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``extra``（默认值 ``{}``）
+   ``extra`` （默认值 ``{}``）
       调用方传入的 ``extra`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -329,7 +329,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``maxWidth``
       调用方传入的 ``maxWidth`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``maxLines``（默认值 ``3``）
+   ``maxLines`` （默认值 ``3``）
       调用方传入的 ``maxLines`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -385,7 +385,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``height``
       调用方传入的 ``height`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``position``（默认值 ``'center'``）
+   ``position`` （默认值 ``'center'``）
       调用方传入的 ``position`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -411,7 +411,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``pose``
       调用方传入的 ``pose`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{compact = false, dragging = false, invalidate}``（默认值 ``{}``）
+   ``{compact = false, dragging = false, invalidate}`` （默认值 ``{}``）
       调用方传入的 ``compact = false, dragging = false, invalidate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -436,7 +436,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``pose``
       调用方传入的 ``pose`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{count = 0, active = 0, label = ''}``（默认值 ``{}``）
+   ``{count = 0, active = 0, label = ''}`` （默认值 ``{}``）
       调用方传入的 ``count = 0, active = 0, label = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -494,7 +494,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``invalidate``
       调用方传入的 ``invalidate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``poseOverrides``（默认值 ``null``）
+   ``poseOverrides`` （默认值 ``null``）
       调用方传入的 ``poseOverrides`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -518,7 +518,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``width``
       调用方传入的 ``width`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``viewportHeight``（默认值 ``760``）
+   ``viewportHeight`` （默认值 ``760``）
       调用方传入的 ``viewportHeight`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -568,7 +568,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``point``
       调用方传入的 ``point`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``time``（默认值 ``performance.now()``）
+   ``time`` （默认值 ``performance.now()``）
       调用方传入的 ``time`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -590,7 +590,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``samples``
       调用方传入的 ``samples`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``now``（默认值 ``performance.now()``）
+   ``now`` （默认值 ``performance.now()``）
       调用方传入的 ``now`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -620,7 +620,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
    ``layout``
       调用方传入的 ``layout`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``pointerType``（默认值 ``'mouse'``）
+   ``pointerType`` （默认值 ``'mouse'``）
       调用方传入的 ``pointerType`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -2318,7 +2318,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 ``to``
    调用方传入的 ``to`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``{duration = 235, compact = false, ease = 'out'}``（默认值 ``{}``）
+``{duration = 235, compact = false, ease = 'out'}`` （默认值 ``{}``）
    调用方传入的 ``duration = 235, compact = false, ease = 'out'`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -2630,7 +2630,7 @@ src/components/markdown/card-block/widget/CanvasCardDeck 模块
 ``event``
    语义事件名或 EventEnvelope。
 
-``cancelled``（默认值 ``false``）
+``cancelled`` （默认值 ``false``）
    调用方传入的 ``cancelled`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

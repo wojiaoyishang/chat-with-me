@@ -2,6 +2,8 @@
 
 本目录是 CWM 前端完整开发说明书。文档源码、API 生成工具和唯一的 Windows 构建入口都位于 `docs/` 内。
 
+发布文档以 `docs/source/` 的 RST 为准，Markdown 用于协作记录和开发笔记，不能代替发布章节。任务与工作流正式说明为 `docs/source/architecture/workflow_tasks.rst`，组件扩展步骤为 `docs/source/development/observation_components.rst`。
+
 在前端项目根目录可以直接执行：
 
 ```bat

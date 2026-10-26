@@ -29,7 +29,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:71:6796:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:71:7075:FUNCTION
 
 .. rubric:: ``memo callback @ 3``
 
@@ -39,7 +39,7 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``3``—``148`` 行。
+**性质**：同步局部函数；源码第 ``3``—``149`` 行。
 
 **参数**
 
@@ -48,13 +48,13 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={sendButtonStyle.disabled} aria-label={ executionActive ? (messageContent.trim() ? t('execution_guidance_send', '追加到当前执行') : t('…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <button type="button" onClick={onClick} disabled={sendButtonStyle.disabled} aria-busy={submissionPending || status === 'loading' || executionGuidancePending || uploadPending} ar…``。
 
-**主要协作调用**：``useMemo``、``messageContent.trim``、``t``。
+**主要协作调用**：``useMemo``、``t``、``messageContent.trim``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:250:5986:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:300:6036:FUNCTION
 
 .. rubric:: ``useMemo callback @ 4``
 
@@ -72,21 +72,21 @@ src/features/chat/ui/chatbox/components/SendButton 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``{ state: 'loading', className: 'text-white bg-blue-600 cursor-wait', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3 border-blue-300 bord…``、``{ state: canSendExecutionGuidance ? 'execution-guidance' : 'execution-stop', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: canSendExecutionGuidance ?…``、``{ state: 'disabled', className: 'text-gray-400 bg-gray-200 cursor-not-allowed', icon: baseIcon, disabled: true, }``、``{ state: 'loading', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3…``。
+根据执行分支返回结果；代表性返回表达式为 ``{ state: 'loading', className: 'text-white bg-blue-600 cursor-wait', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-[-9px] border-3 border-blue-300 bord…``、``{ state: canSendExecutionGuidance ? 'execution-guidance' : 'execution-stop', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: canSendExecutionGuidance ?…``、``{ state: 'disabled', className: 'text-gray-400 bg-gray-200 cursor-not-allowed', icon: baseIcon, disabled: true, }``、``{ state: 'generating', className: 'text-white bg-blue-600 hover:bg-blue-700 cursor-pointer', icon: ( <div className="relative w-6 h-6"> <div className="absolute inset-0 flex items…``。
 
 **主要协作调用**：``Boolean``、``messageContent.trim``、``String(executionStatus || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:6797:7305:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/SendButton.jsx:7076:7720:FUNCTION
 
-.. rubric:: ``memo callback @ 148``
+.. rubric:: ``memo callback @ 149``
 
 .. code-block:: javascript
 
-   memo callback @ 148(prevProps, nextProps)
+   memo callback @ 149(prevProps, nextProps)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``148``—``158`` 行。
+**性质**：同步局部函数；源码第 ``149``—``161`` 行。
 
 **参数**
 

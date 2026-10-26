@@ -106,7 +106,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:2038:43694:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:2038:43734:FUNCTION
 
 .. js:function:: useRealtimeVoiceConversation({ textInputEnabled = false, conversationId, speechState, beginStreamingSpeech, requestStreamingSpee…)
 
@@ -322,7 +322,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 ``status``
    调用方传入的 ``status`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``targetConversationId``（默认值 ``null``）
+``targetConversationId`` （默认值 ``null``）
    目标对象的公共或运行时标识。
 
 **返回值**
@@ -415,7 +415,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **参数**
 
-``{ silent = false }``（默认值 ``{}``）
+``{ silent = false }`` （默认值 ``{}``）
    调用方传入的 ``silent = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -544,7 +544,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``armedSpeechTurnIdsRef.current.has``、``armedSpeechTurnIdsRef.current.add``、``beginStreamingSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:13034:20193:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:13034:20233:FUNCTION
 
 .. rubric:: ``useCallback callback @ 313``
 
@@ -569,7 +569,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``patchState``、``terminalVoiceTurnIdsRef.current.has``、``activeTurnIdsRef.current.add``、``startedTurnMessagesRef.current.get``、``armStreamingSpeechForTurn``、``isSpeakingState``、``pauseActiveSpeech``、``clearBargeProbe``、``cancelStreamingSpeech``、``cancelActiveSpeech``、``resumeActiveSpeech``、``['thinking', 'understanding'].includes``。
+**主要协作调用**：``patchState``、``['execution_interrupt', 'execution_guidance'].includes``、``terminalVoiceTurnIdsRef.current.has``、``activeTurnIdsRef.current.add``、``startedTurnMessagesRef.current.get``、``armStreamingSpeechForTurn``、``isSpeakingState``、``pauseActiveSpeech``、``clearBargeProbe``、``cancelStreamingSpeech``、``cancelActiveSpeech``、``resumeActiveSpeech``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
@@ -638,7 +638,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``generateUUID``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:20532:34790:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:20572:34830:FUNCTION
 
 .. rubric:: ``useCallback callback @ 457``
 
@@ -673,7 +673,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:21489:21530:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:21529:21570:FUNCTION
 
 .. rubric:: ``isCurrent``
 
@@ -693,7 +693,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:22459:24353:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:22499:24393:FUNCTION
 
 .. rubric:: ``onPcmChunk``
 
@@ -719,7 +719,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``transportRef.current.sendAudio``、``console.error``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:24386:24529:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:24426:24569:FUNCTION
 
 .. rubric:: ``onWaveform``
 
@@ -742,7 +742,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``patchState``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:24564:25145:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:24604:25185:FUNCTION
 
 .. rubric:: ``onInputEnded``
 
@@ -764,7 +764,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``patchState``、``stop``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:25181:26454:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:25221:26494:FUNCTION
 
 .. rubric:: ``onSpeechStart``
 
@@ -787,7 +787,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``patchState``、``isSpeakingState``、``['thinking', 'understanding', 'speaking'].includes``、``armBargeProbe``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:26488:28088:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:26528:28128:FUNCTION
 
 .. rubric:: ``onSpeechEnd``
 
@@ -813,7 +813,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``transportRef.current?.sendEvent``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:29654:29799:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:29694:29839:FUNCTION
 
 .. rubric:: ``onEvent``
 
@@ -836,7 +836,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``handleVoiceEvent``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:29829:30831:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:29869:30871:FUNCTION
 
 .. rubric:: ``onClose``
 
@@ -860,7 +860,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:30481:30781:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:30521:30821:FUNCTION
 
 .. rubric:: ``patchState callback @ 640``
 
@@ -881,7 +881,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:30861:31650:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:30901:31690:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -904,7 +904,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``isCurrent``、``cancelActiveSpeech``、``stopMedia``、``applyComposerStatus``、``patchState``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:35084:38954:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:35124:38994:FUNCTION
 
 .. rubric:: ``useEffect callback @ 747``
 
@@ -933,7 +933,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:35363:38946:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:35403:38986:FUNCTION
 
 .. rubric:: ``onEvent({ event: [EventName.TURN_STARTED, EventName.TURN_COMPLETED, EventName.TURN_CANCELLED, EventName.TURN_FAILED], c… callback @ 753``
 
@@ -960,7 +960,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``startedTurnMessagesRef.current.set``、``activeTurnIdsRef.current.add``、``activeTurnIdsRef.current.has``、``armStreamingSpeechForTurn``、``applyComposerStatus``、``terminalVoiceTurnIdsRef.current.add``、``startedTurnMessagesRef.current.get``、``requestStreamingSpeechFinalize``、``['user_speaking', 'understanding', 'thinking'].includes``、``patchState``、``isSpeakingState``、``cancelStreamingSpeech``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:39160:40044:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:39200:40084:FUNCTION
 
 .. rubric:: ``useEffect callback @ 825``
 
@@ -988,7 +988,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:39444:40026:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:39484:40066:FUNCTION
 
 .. rubric:: ``setState callback @ 830``
 
@@ -1011,7 +1011,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``[ 'user_speaking', 'thinking', 'understanding', 'connecting', 'negotiating', 'requesting_microphone', 'error', ].includ…``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40473:40524:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40513:40564:FUNCTION
 
 .. rubric:: ``useEffect callback @ 854``
 
@@ -1031,7 +1031,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40550:40642:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40590:40682:FUNCTION
 
 .. rubric:: ``useEffect callback @ 859``
 
@@ -1053,7 +1053,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40564:40642:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40604:40682:FUNCTION
 
 .. rubric:: ``anonymous callback @ 859``
 
@@ -1075,7 +1075,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``stopLatestRef.current``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40678:40950:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:40718:40990:FUNCTION
 
 .. rubric:: ``useEffect callback @ 865``
 
@@ -1097,7 +1097,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``toast.warning``、``stop``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:41027:41262:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:41067:41302:FUNCTION
 
 .. rubric:: ``useEffect callback @ 873``
 
@@ -1119,7 +1119,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``applyComposerStatus``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:41388:43474:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:41428:43514:FUNCTION
 
 .. rubric:: ``useCallback callback @ 881``
 
@@ -1147,7 +1147,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:42838:43466:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:42878:43506:FUNCTION
 
 .. rubric:: ``patchState callback @ 908``
 
@@ -1170,7 +1170,7 @@ src/features/chat/voice/useRealtimeVoiceConversation 模块
 
 **主要协作调用**：``createSilentWaveformLevels``、``isSpeakingState``、``['thinking', 'understanding'].includes``。
 
-.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:43643:43684:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/voice/useRealtimeVoiceConversation.js:43683:43724:FUNCTION
 
 .. rubric:: ``setMinimized``
 

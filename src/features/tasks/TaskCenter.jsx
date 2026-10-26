@@ -6,12 +6,12 @@ import { ClipboardList, Download, RefreshCw, X, ArrowUpRight, Play } from 'lucid
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { onEvent } from '@/context/useEventStore.jsx';
 import { useTaskStore } from './useTaskStore.js';
 import { downloadAttachmentResource } from '@/lib/resourceDownload.js';
+import RunObservation from './RunObservation.jsx';
 import { toast } from 'sonner';
 
 const taskStatusNames = { queued: '排队中', pending: '等待中', running: '运行中', completed: '已完成', failed: '失败', cancelled: '已取消', cancel_requested: '取消中', pause_requested: '等待阶段暂停', paused: '已暂停' };
@@ -147,18 +147,10 @@ export default function TaskCenter() {
                                 </span>
                             </div>
                             <div className="text-sm text-muted-foreground">{stageName(task, task.stage)}</div>
-                            {['running', 'queued', 'pending', 'cancel_requested', 'pause_requested', 'paused'].includes(task.status) &&
-                                (task.progress === null ? (
-                                    <div className={`h-1.5 rounded-full bg-muted ${task.status === 'paused' ? '' : 'animate-pulse'}`} />
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <Progress value={task.progress || 0} />
-                                        <span className="text-xs">{task.progress || 0}%</span>
-                                    </div>
-                                ))}
                             <time className="block text-xs text-muted-foreground">
                                 {formatLocalTimestamp(task.createdAt)}
                             </time>
+                            <RunObservation observation={task.observation} taskId={task.taskId} view="summary" compact />
                             {task.submission && (
                                 <details className="text-xs text-muted-foreground">
                                     <summary className="cursor-pointer">{t('taskCenter.submission')}</summary>

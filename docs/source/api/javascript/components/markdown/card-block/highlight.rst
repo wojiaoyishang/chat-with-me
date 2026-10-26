@@ -104,7 +104,7 @@ src/components/markdown/card-block/highlight 模块
    ``language``
       调用方传入的 ``language`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{autoDetectUnknown = true}``（默认值 ``{}``）
+   ``{autoDetectUnknown = true}`` （默认值 ``{}``）
       调用方传入的 ``autoDetectUnknown = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

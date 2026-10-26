@@ -53,7 +53,7 @@ Schedule one incoming semantic event callback without discarding any lane. FIFO 
    ``event``
       语义事件名或 EventEnvelope。
 
-   ``replyTo``（默认值 ``null``）
+   ``replyTo`` （默认值 ``null``）
       调用方传入的 ``replyTo`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

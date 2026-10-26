@@ -27,7 +27,7 @@ src/components/markdown/CodeBlock 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:514:832:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:527:853:FUNCTION
 
 .. js:function:: scheduleIdleWork(callback)
 
@@ -57,7 +57,7 @@ src/components/markdown/CodeBlock 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:682:724:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:698:740:FUNCTION
 
 .. rubric:: ``returned callback @ 17``
 
@@ -83,7 +83,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``window.cancelIdleCallback``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:795:829:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:815:849:FUNCTION
 
 .. rubric:: ``returned callback @ 21``
 
@@ -109,7 +109,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:858:6479:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:881:6711:FUNCTION
 
 .. rubric:: ``memo callback @ 24``
 
@@ -138,7 +138,7 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：8。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1077:1182:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1104:1214:FUNCTION
 
 .. rubric:: ``useState callback @ 28``
 
@@ -158,7 +158,7 @@ src/components/markdown/CodeBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1225:1267:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1259:1301:FUNCTION
 
 .. rubric:: ``useMemo callback @ 35``
 
@@ -180,7 +180,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``normalizeHighlightLanguage``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1318:1390:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1353:1426:FUNCTION
 
 .. rubric:: ``useMemo callback @ 37``
 
@@ -202,7 +202,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``String(language || 'text').trim().toLowerCase``、``String(language || 'text').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1450:1729:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1490:1778:FUNCTION
 
 .. rubric:: ``useMemo callback @ 41``
 
@@ -224,7 +224,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``codeString.indexOf``、``codeString.endsWith``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1904:2042:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1958:2099:FUNCTION
 
 .. rubric:: ``useMemo callback @ 55``
 
@@ -248,7 +248,7 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1999:2023:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2055:2079:FUNCTION
 
 .. rubric:: ``Array.from callback @ 57``
 
@@ -272,7 +272,7 @@ src/components/markdown/CodeBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2509:3217:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2577:3307:FUNCTION
 
 .. rubric:: ``useEffect callback @ 69``
 
@@ -296,7 +296,7 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2684:3114:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2758:3198:FUNCTION
 
 .. rubric:: ``scheduleIdleWork callback @ 75``
 
@@ -318,7 +318,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``highlightCode``、``setHighlightState``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3132:3210:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3218:3299:FUNCTION
 
 .. rubric:: ``returned callback @ 87``
 
@@ -340,7 +340,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``cancelIdleWork``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3639:3769:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3743:3877:FUNCTION
 
 .. rubric:: ``useEffect callback @ 105``
 
@@ -366,7 +366,7 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3644:3769:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3748:3877:FUNCTION
 
 .. rubric:: ``anonymous callback @ 105``
 
@@ -392,7 +392,7 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3812:4355:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3922:4481:FUNCTION
 
 .. rubric:: ``useCallback callback @ 111``
 
@@ -420,7 +420,7 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:4135:4240:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:4254:4362:FUNCTION
 
 .. rubric:: ``window.setTimeout callback @ 120``
 

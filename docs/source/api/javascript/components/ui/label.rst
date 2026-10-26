@@ -37,7 +37,7 @@ src/components/ui/label 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof LabelPrimitive.Root>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof LabelPrimitive.Root>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

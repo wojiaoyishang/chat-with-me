@@ -38,7 +38,7 @@ src/components/markdown/card-block/expandedStore 模块
    ``id``
       调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``type``（默认值 ``''``）
+   ``type`` （默认值 ``''``）
       调用方传入的 ``type`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -182,7 +182,7 @@ src/components/markdown/card-block/expandedStore 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -208,7 +208,7 @@ src/components/markdown/card-block/expandedStore 模块
    ``expandedKey``
       调用方传入的 ``expandedKey`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**

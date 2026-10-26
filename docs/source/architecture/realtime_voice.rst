@@ -216,8 +216,8 @@ Realtime Voice 使用两条物理 WebSocket，但只让主 ``/ws`` 承担完整�
 前端先通过主 Event Runtime 请求 ``voice.media_ticket.request``；取得短期一次性 Ticket 后，才创建
 ``/ws/realtime?ticket=...`` 媒体连接。
 
-启动状态因此按顺序显示 ``requesting_microphone``（验证物理输入）、``authorizing``（正在授权媒体通道）、
-``connecting``（正在连接实时语音）和 ``negotiating``（正在协商语音协议）。如果 Ticket 请求失败，应优先检查主
+启动状态因此按顺序显示 ``requesting_microphone`` （验证物理输入）、``authorizing`` （正在授权媒体通道）、
+``connecting`` （正在连接实时语音）和 ``negotiating`` （正在协商语音协议）。如果 Ticket 请求失败，应优先检查主
 WebSocket/登录 Session；如果 Ticket 已签发而媒体握手失败，则检查 Realtime Gateway、反向代理和 Ticket
 消费日志。
 

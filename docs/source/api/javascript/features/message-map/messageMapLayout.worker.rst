@@ -35,7 +35,7 @@ src/features/message-map/messageMapLayout.worker 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``fallback``（默认值 ``0``）
+   ``fallback`` （默认值 ``0``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

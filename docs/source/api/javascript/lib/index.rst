@@ -28,6 +28,11 @@
      - 0
      - 1
      - ``src/lib/clientText.js``
+   * - :doc:`src/lib/horizontalWheel </api/javascript/lib/horizontalWheel>`
+     - 1
+     - 0
+     - 3
+     - ``src/lib/horizontalWheel.js``
    * - :doc:`src/lib/resourceDownload </api/javascript/lib/resourceDownload>`
      - 4
      - 0
@@ -48,6 +53,11 @@
      - 0
      - 3
      - ``src/lib/virtualUrl.js``
+   * - :doc:`src/lib/windowLayers </api/javascript/lib/windowLayers>`
+     - 6
+     - 0
+     - 11
+     - ``src/lib/windowLayers.js``
 
 .. toctree::
    :hidden:
@@ -56,8 +66,10 @@
    /api/javascript/lib/apiClient
    /api/javascript/lib/browserHistoryLayers
    /api/javascript/lib/clientText
+   /api/javascript/lib/horizontalWheel
    /api/javascript/lib/resourceDownload
    /api/javascript/lib/tools
    /api/javascript/lib/utils
    /api/javascript/lib/virtualUrl
+   /api/javascript/lib/windowLayers
 

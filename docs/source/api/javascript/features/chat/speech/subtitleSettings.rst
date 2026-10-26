@@ -65,7 +65,7 @@ src/features/chat/speech/subtitleSettings 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``digits``（默认值 ``2``）
+   ``digits`` （默认值 ``2``）
       调用方传入的 ``digits`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -163,7 +163,7 @@ src/features/chat/speech/subtitleSettings 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``{notify = true}``（默认值 ``{}``）
+   ``{notify = true}`` （默认值 ``{}``）
       调用方传入的 ``notify = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -189,7 +189,7 @@ src/features/chat/speech/subtitleSettings 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``{notify = true}``（默认值 ``{}``）
+   ``{notify = true}`` （默认值 ``{}``）
       调用方传入的 ``notify = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -212,7 +212,7 @@ src/features/chat/speech/subtitleSettings 模块
 
    **参数**
 
-   ``{notify = true}``（默认值 ``{}``）
+   ``{notify = true}`` （默认值 ``{}``）
       调用方传入的 ``notify = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -266,7 +266,7 @@ src/features/chat/speech/subtitleSettings 模块
 ``key``
    调用方传入的 ``key`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``digits``（默认值 ``0``）
+``digits`` （默认值 ``0``）
    调用方传入的 ``digits`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

@@ -64,6 +64,62 @@ function screenCenter(ui, ids = ui.controller.getNodes().map(node => node.id)) {
 }
 const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < 0.001, `${actual} should be near ${expected}`);
 
+test('a selected moving chat node stays visible until a manual viewport gesture stops follow', t => {
+    const ui = setup(t), network = { nodes: [
+        { id: 'a', name: '选中节点', label: 'Event' },
+        { id: 'b', name: '邻近节点', label: 'Event' },
+        { id: 'far', name: '远处节点', label: 'Event' },
+    ], relationships: [] };
+    ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(600); ui.controller.setPhysics(false);
+    const state = ui.controller.getViewState();
+    state.camera = { x: 590, y: 150, scale: 1 };
+    state.positions = [
+        { id: 'a', x: 0, y: 0 }, { id: 'b', x: -35, y: 0 }, { id: 'far', x: -900, y: 0 },
+    ];
+    ui.controller.restoreViewState(state);
+    ui.svg.querySelector('[data-node-id="a"]').dispatchEvent(new ui.dom.window.MouseEvent('click', { bubbles: true }));
+    ui.controller.setPhysics(true); ui.run(30);
+    const [x, y, scale] = cameraValues(ui.svg), chosen = ui.controller.getNodePositions().find(n => n.id === 'a');
+    assert.ok(x < 590, 'camera follows outward physical movement rather than recentering');
+    assert.equal(scale, 1);
+    assert.ok(chosen.x * scale + x < 616 && chosen.y * scale + y > 16);
+    point(ui.dom, ui.svg, 'pointerdown', 200, 120, { button: 1 });
+    point(ui.dom, ui.dom.window, 'pointermove', 360, 120, { button: 1 });
+    point(ui.dom, ui.dom.window, 'pointerup', 360, 120, { button: 1 });
+    const manuallyPanned = camera(ui.svg); ui.run(30);
+    assert.equal(camera(ui.svg), manuallyPanned, 'physical animation never takes the viewport back after a manual pan');
+    ui.controller.zoom(1.1); const manuallyZoomed = camera(ui.svg); ui.run(30);
+    assert.equal(camera(ui.svg), manuallyZoomed);
+});
+
+test('chat drag reheat is local and does not restart distant nodes', t => {
+    const ui = setup(t), network = { nodes: ['a', 'b', 'far'].map(id => ({ id, name: id, label: 'Event' })), relationships: [] };
+    ui.controller.setData(knowledgeGraphPresentation(network)); ui.run(600);
+    const state = ui.controller.getViewState();
+    state.camera = { x: 300, y: 150, scale: 1 };
+    state.positions = [{ id: 'a', x: 0, y: 0 }, { id: 'b', x: 160, y: 0 }, { id: 'far', x: 1200, y: 0 }];
+    ui.controller.restoreViewState(state);
+    const before = ui.controller.getNodePositions(), root = ui.svg.querySelector('[data-node-id="a"]');
+    point(ui.dom, root, 'pointerdown', 300, 150);
+    point(ui.dom, ui.dom.window, 'pointermove', 360, 150); ui.run(30);
+    const after = ui.controller.getNodePositions();
+    assert.deepEqual(after.find(n => n.id === 'far'), before.find(n => n.id === 'far'));
+    assert.notDeepEqual(after.find(n => n.id === 'b'), before.find(n => n.id === 'b'));
+    point(ui.dom, ui.dom.window, 'pointerup', 360, 150); ui.run(30);
+    assert.deepEqual(ui.controller.getNodePositions().find(n => n.id === 'far'), before.find(n => n.id === 'far'));
+});
+
+test('chat top-right fetch status counts independent reads and is disposed with the graph', t => {
+    const ui = setup(t), first = {}, second = {};
+    ui.controller.loading(first, true, '正在获取：节点A…');
+    const badge = ui.svg.parentElement.querySelector('.chat-knowledge-fetch-status');
+    assert.equal(badge.hidden, false); assert.match(badge.textContent, /节点A/);
+    ui.controller.loading(second, true); assert.match(badge.textContent, /2 个请求/);
+    ui.controller.loading(first, false); assert.equal(badge.hidden, false);
+    ui.controller.loading(second, false); assert.equal(badge.hidden, true);
+    ui.controller.loading(first, true); ui.controller.destroy(); assert.equal(badge.isConnected, false);
+});
+
 test('owned knowledge sleeps exactly at rest and real physics resumes only after a node drag', t => {
     const ui = setup(t), node = id => ui.svg.querySelector(`[data-node-id="${id}"]`);
     ui.controller.setData(knowledgeGraphPresentation(orderedTimeForks())); ui.run(600);

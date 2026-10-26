@@ -29,7 +29,7 @@ src/features/tasks/useTaskStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/tasks/useTaskStore.js:69:690:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/useTaskStore.js:69:1233:FUNCTION
 
 .. rubric:: ``create callback @ 2``
 
@@ -39,7 +39,7 @@ src/features/tasks/useTaskStore 模块
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``2``—``18`` 行。
+**性质**：同步局部函数；源码第 ``2``—``26`` 行。
 
 **参数**
 
@@ -70,7 +70,7 @@ src/features/tasks/useTaskStore 模块
 
 **参数**
 
-``selectedId``（默认值 ``null``）
+``selectedId`` （默认值 ``null``）
    目标对象的公共或运行时标识。
 
 **返回值**
@@ -102,7 +102,7 @@ src/features/tasks/useTaskStore 模块
 
 **主要协作调用**：``set``。
 
-.. CWM-AST-FUNCTION src/features/tasks/useTaskStore.js:249:686:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/useTaskStore.js:249:1229:FUNCTION
 
 .. rubric:: ``merge``
 
@@ -112,7 +112,7 @@ src/features/tasks/useTaskStore 模块
 
 合并与 ``merge`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``8``—``17`` 行；所属函数 ``create callback @ 2``。
+**性质**：同步局部函数；源码第 ``8``—``25`` 行；所属函数 ``create callback @ 2``。
 
 **参数**
 
@@ -131,7 +131,7 @@ src/features/tasks/useTaskStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/useTaskStore.js:273:685:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/useTaskStore.js:273:1228:FUNCTION
 
 .. rubric:: ``set callback @ 9``
 
@@ -141,7 +141,7 @@ src/features/tasks/useTaskStore 模块
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``9``—``17`` 行；所属函数 ``merge``。
+**性质**：同步局部函数；源码第 ``9``—``25`` 行；所属函数 ``merge``。
 
 **参数**
 
@@ -152,4 +152,4 @@ src/features/tasks/useTaskStore 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``{ tasks }``。
 
-**主要协作调用**：``Number.isInteger``。
+**主要协作调用**：``Number.isInteger``、``Object.hasOwn``。

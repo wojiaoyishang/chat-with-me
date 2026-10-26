@@ -56,7 +56,7 @@ src/components/markdown/card-block/blocks/useFollowOutputScroll 模块
 
    **参数**
 
-   ``{contentKey = '', enabled = true}``（默认值 ``{}``）
+   ``{contentKey = '', enabled = true}`` （默认值 ``{}``）
       调用方传入的 ``contentKey = '', enabled = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -109,7 +109,7 @@ src/components/markdown/card-block/blocks/useFollowOutputScroll 模块
 
 **参数**
 
-``{behavior = 'auto', resume = true}``（默认值 ``{}``）
+``{behavior = 'auto', resume = true}`` （默认值 ``{}``）
    调用方传入的 ``behavior = 'auto', resume = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

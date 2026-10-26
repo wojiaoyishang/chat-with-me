@@ -141,10 +141,10 @@ src/components/modal/universalModal 模块
    ``endpoint``
       调用方传入的 ``endpoint`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``params``（默认值 ``{}``）
+   ``params`` （默认值 ``{}``）
       调用方传入的 ``params`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**

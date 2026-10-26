@@ -3,7 +3,7 @@ src/lib/browserHistoryLayers 模块
 
 .. js:module:: src/lib/browserHistoryLayers
 
-Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser Back closes the newest layer first. - Normal close buttons collapse the synthetic history entry. - \`onBack\` may return false to keep the layer open and immediately re-arm it. This is useful for an unsaved-change confirmation flow.
+Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser Back closes the newest layer first. - Normal close buttons collapse the synthetic history entry. - \x60onBack\x60 may return false to keep the layer open and immediately re-arm it. This is useful for an unsaved-change confirmation flow.
 
 .. note::
 
@@ -151,7 +151,7 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
 
    **参数**
 
-   ``{kind = 'overlay', onBack, onConsumed}``（默认值 ``{}``）
+   ``{kind = 'overlay', onBack, onConsumed}`` （默认值 ``{}``）
       调用方传入的 ``kind = 'overlay', onBack, onConsumed`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -173,7 +173,7 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
    ``id``
       调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{collapseHistory = true}``（默认值 ``{}``）
+   ``{collapseHistory = true}`` （默认值 ``{}``）
       调用方传入的 ``collapseHistory = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -246,7 +246,7 @@ Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser
    ``onBack``
       调用方提供的事件回调。
 
-   ``{kind = 'overlay'}``（默认值 ``{}``）
+   ``{kind = 'overlay'}`` （默认值 ``{}``）
       调用方传入的 ``kind = 'overlay'`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

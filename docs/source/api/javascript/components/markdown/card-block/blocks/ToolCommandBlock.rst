@@ -51,13 +51,13 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:960:5006:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:960:5047:FUNCTION
 
 .. rubric:: ``memo callback @ 39``
 
 .. code-block:: javascript
 
-   memo callback @ 39({content = '', id})
+   memo callback @ 39({content = '', id, snapshot = false})
 
 实现 ``memo`` 对应的前端处理。
 
@@ -65,18 +65,18 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **参数**
 
-``{content = '', id}``
-   调用方传入的 ``content = '', id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{content = '', id, snapshot = false}``
+   调用方传入的 ``content = '', id, snapshot = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="card-tool-command-soft-breathe relative my-1.5 overflow-hidden rounded-lg border border-sky-200/80 bg-sky-50/90 text-slate-700 shadow-[0_8px_24px_rgba(14,165,233…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className={\x60${snapshot ? '' : 'card-tool-command-soft-breathe'} relative my-1.5 overflow-hidden rounded-lg border border-sky-200/80 bg-sky-50/90 text-slate-700 shadow-[0_8p…``。
 
 **主要协作调用**：``useState``、``useMemo``、``useFollowOutputScroll``、``useEffect``、``codeString.trim``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1043:1148:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1061:1166:FUNCTION
 
 .. rubric:: ``useState callback @ 40``
 
@@ -96,7 +96,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1218:1280:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1236:1298:FUNCTION
 
 .. rubric:: ``useMemo callback @ 50``
 
@@ -118,7 +118,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **主要协作调用**：``parseToolCommandContent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1561:2182:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1579:2200:FUNCTION
 
 .. rubric:: ``useEffect callback @ 66``
 
@@ -142,7 +142,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1720:2085:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:1738:2103:FUNCTION
 
 .. rubric:: ``doHighlight``
 
@@ -164,7 +164,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **主要协作调用**：``highlightCode``、``setHighlightState``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:2126:2175:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:2144:2193:FUNCTION
 
 .. rubric:: ``returned callback @ 87``
 
@@ -184,7 +184,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:5007:5116:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/ToolCommandBlock.jsx:5048:5200:FUNCTION
 
 .. rubric:: ``memo callback @ 153``
 
@@ -194,7 +194,7 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``153``—``158`` 行。
+**性质**：同步局部函数；源码第 ``153``—``159`` 行。
 
 **参数**
 
@@ -206,4 +206,4 @@ src/components/markdown/card-block/blocks/ToolCommandBlock 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( prev.id === next.id && prev.content === next.content )``。
+根据执行分支返回结果；代表性返回表达式为 ``( prev.id === next.id && prev.snapshot === next.snapshot && prev.content === next.content )``。

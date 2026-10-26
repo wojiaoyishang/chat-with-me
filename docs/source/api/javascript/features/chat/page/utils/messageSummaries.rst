@@ -51,10 +51,10 @@ Utilities for keeping the lightweight message-overview cache authoritative.
 
    **参数**
 
-   ``existingItems``（默认值 ``[]``）
+   ``existingItems`` （默认值 ``[]``）
       调用方传入的 ``existingItems`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``overlap``（默认值 ``MESSAGE_SUMMARY_APPEND_OVERLAP``）
+   ``overlap`` （默认值 ``MESSAGE_SUMMARY_APPEND_OVERLAP``）
       调用方传入的 ``overlap`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -73,7 +73,7 @@ Utilities for keeping the lightweight message-overview cache authoritative.
 
    **参数**
 
-   ``items``（默认值 ``[]``）
+   ``items`` （默认值 ``[]``）
       待渲染、筛选或合并的数据项数组。
 
    **返回值**
@@ -98,13 +98,13 @@ Utilities for keeping the lightweight message-overview cache authoritative.
 
    **参数**
 
-   ``existingItems``（默认值 ``[]``）
+   ``existingItems`` （默认值 ``[]``）
       调用方传入的 ``existingItems`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``incomingItems``（默认值 ``[]``）
+   ``incomingItems`` （默认值 ``[]``）
       调用方传入的 ``incomingItems`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{append = false}``（默认值 ``{}``）
+   ``{append = false}`` （默认值 ``{}``）
       调用方传入的 ``append = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

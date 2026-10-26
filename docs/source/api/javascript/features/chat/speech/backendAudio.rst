@@ -53,7 +53,7 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
    **返回值**
@@ -72,7 +72,7 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
    **返回值**
@@ -91,10 +91,10 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
-   ``fallback``（默认值 ``0``）
+   ``fallback`` （默认值 ``0``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -113,10 +113,10 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
-   ``fallback``（默认值 ``0``）
+   ``fallback`` （默认值 ``0``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -135,10 +135,10 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
-   ``fallback``（默认值 ``DEFAULT_BACKEND_PCM_SAMPLE_RATE``）
+   ``fallback`` （默认值 ``DEFAULT_BACKEND_PCM_SAMPLE_RATE``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -157,10 +157,10 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
-   ``fallback``（默认值 ``DEFAULT_BACKEND_PCM_CHANNELS``）
+   ``fallback`` （默认值 ``DEFAULT_BACKEND_PCM_CHANNELS``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -179,10 +179,10 @@ src/features/chat/speech/backendAudio 模块
 
    **参数**
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
-   ``fallback``（默认值 ``DEFAULT_BACKEND_PCM_BITS_PER_SAMPLE``）
+   ``fallback`` （默认值 ``DEFAULT_BACKEND_PCM_BITS_PER_SAMPLE``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -273,7 +273,7 @@ src/features/chat/speech/backendAudio 模块
    ``pcmBytes``
       调用方传入的 ``pcmBytes`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -299,7 +299,7 @@ src/features/chat/speech/backendAudio 模块
    ``byteArrays``
       调用方传入的 ``byteArrays`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``payload``（默认值 ``{}``）
+   ``payload`` （默认值 ``{}``）
       事件或业务操作的结构化载荷。
 
    **返回值**

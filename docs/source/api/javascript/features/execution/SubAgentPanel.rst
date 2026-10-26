@@ -201,7 +201,7 @@ src/features/execution/SubAgentPanel 模块
 ``session``
    调用方传入的 ``session`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``offset``（默认值 ``0``）
+``offset`` （默认值 ``0``）
    调用方传入的 ``offset`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

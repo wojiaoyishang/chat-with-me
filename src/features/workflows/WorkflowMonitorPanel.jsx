@@ -4,9 +4,8 @@ import { Loader2 } from "lucide-react";
 import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import { workflowApi } from "./workflowApi.js";
 import { workflowStatusLabels } from "./workflowStatus.js";
-import { workflowElapsedSeconds, workflowTokens } from "./workflowMetrics.js";
 import WorkflowLogViewer from "./WorkflowLogViewer.jsx";
-import WorkflowTelemetryStats from "./WorkflowTelemetryStats.jsx";
+import RunObservation from "../tasks/RunObservation.jsx";
 
 const printable = (value) =>
   typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -15,7 +14,6 @@ export default function WorkflowMonitorPanel({
   node,
   definition,
   runtime = {},
-  stages = [],
   onOpenLogs,
   onEnterSubgraph,
   nodeHeader,
@@ -30,7 +28,6 @@ export default function WorkflowMonitorPanel({
   const nodeId = runtime.runtimeId || node?.id;
   const isSubgraph = node?.kind === "subgraph";
   const preview = runtime.outputPreview;
-  const stage = stages.find((item) => item.key === nodeId) || {};
   useEffect(() => {
     setOutput(null);
     setOffset(0);
@@ -71,9 +68,6 @@ export default function WorkflowMonitorPanel({
       controller.abort();
     };
   }, [taskId, nodeId, opened, offset, refresh]);
-  const completed = Object.values(
-    task?.workflowNodes || task?.runtime?.checkpoint?.data?.workflowNodes || {},
-  ).filter((item) => ["completed", "succeeded"].includes(item.status)).length;
   return (
     <div className="space-y-5">
       <section className="space-y-3">
@@ -86,26 +80,8 @@ export default function WorkflowMonitorPanel({
               {workflowStatusLabels[task?.status] || task?.status}
             </strong>
           </div>
-          <div>
-            <small>进度</small>
-            <strong>
-              {task?.progress == null ? "未知" : `${task.progress}%`}
-            </strong>
-          </div>
-          <div>
-            <small>总 Token</small>
-            <strong>{workflowTokens(task?.usage)}</strong>
-          </div>
-          <div>
-            <small>已完成节点</small>
-            <strong>{completed}</strong>
-          </div>
-          <div>
-            <small>耗时</small>
-            <strong>{Math.round(workflowElapsedSeconds(task))} 秒</strong>
-          </div>
         </div>
-        <WorkflowTelemetryStats value={task} />
+        <RunObservation observation={task?.observation} taskId={taskId} />
       </section>
       <WorkflowLogViewer
         taskId={taskId}
@@ -129,15 +105,6 @@ export default function WorkflowMonitorPanel({
             {runtime.namePath?.length > 1 && (
               <p className="text-xs text-muted-foreground">
                 位置：{runtime.namePath.join(" › ")}
-              </p>
-            )}
-            {(runtime.progressMessage ||
-              runtime.nodeProgress?.message ||
-              runtime.nodeProgress?.currentItem?.preview) && (
-              <p role="status" className="rounded-lg bg-muted/40 p-3 text-sm">
-                {runtime.progressMessage ||
-                  runtime.nodeProgress?.message ||
-                  runtime.nodeProgress?.currentItem?.preview}
               </p>
             )}
             {isSubgraph && (
@@ -169,50 +136,13 @@ export default function WorkflowMonitorPanel({
               <div>
                 <small>节点状态</small>
                 <strong>
-                  {workflowStatusLabels[runtime.status || stage.status] ||
+                  {workflowStatusLabels[runtime.status] ||
                     runtime.status ||
-                    stage.status ||
                     "等待"}
                 </strong>
               </div>
-              <div>
-                <small>Token</small>
-                <strong>
-                  {workflowTokens(runtime.usage || stage.usage || stage)}
-                </strong>
-              </div>
-              <div>
-                <small>耗时</small>
-                <strong>
-                  {Math.round(
-                    workflowElapsedSeconds(runtime) ||
-                      workflowElapsedSeconds(stage),
-                  )}{" "}
-                  秒
-                </strong>
-              </div>
-              {runtime.nodeProgress && (
-                <div>
-                  <small>已处理{runtime.nodeProgress.unit || "项目"}</small>
-                  <strong>
-                    {runtime.nodeProgress.processed ?? 0}
-                    {runtime.nodeProgress.total != null
-                      ? `/${runtime.nodeProgress.total}`
-                      : ""}
-                  </strong>
-                  {runtime.nodeProgress.total > 0 &&
-                    Number.isFinite(runtime.nodeProgress.percent) && (
-                      <progress
-                        className="mt-2 h-1 w-full accent-primary"
-                        max="100"
-                        value={runtime.nodeProgress.percent}
-                        aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
-                      />
-                    )}
-                </div>
-              )}
             </div>
-            <WorkflowTelemetryStats value={runtime} />
+            <RunObservation observation={task?.observation} taskId={taskId} scopeId={`${isSubgraph ? "subgraph" : "node"}:${isSubgraph ? node.id : nodeId}`} />
             {runtime.error && (
               <p role="alert" className="break-words text-sm text-destructive">
                 {runtime.error}

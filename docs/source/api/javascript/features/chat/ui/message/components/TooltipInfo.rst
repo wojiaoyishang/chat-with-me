@@ -59,7 +59,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``maximumFractionDigits``（默认值 ``6``）
+   ``maximumFractionDigits`` （默认值 ``6``）
       调用方传入的 ``maximumFractionDigits`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

@@ -37,7 +37,7 @@ src/components/ui/progress 模块
 
    **参数**
 
-   ``{ className, value, ...props }``（类型 ``React.ComponentProps<typeof ProgressPrimitive.Root>``）
+   ``{ className, value, ...props }`` （类型 ``React.ComponentProps<typeof ProgressPrimitive.Root>``）
       调用方传入的 ``className, value, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

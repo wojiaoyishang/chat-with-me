@@ -231,7 +231,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -253,7 +253,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``nodes``
       调用方传入的 ``nodes`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -305,7 +305,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``segmentText``
       调用方传入的 ``segmentText`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``fromIndex``（默认值 ``0``）
+   ``fromIndex`` （默认值 ``0``）
       调用方传入的 ``fromIndex`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -327,7 +327,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``segment``
       调用方传入的 ``segment`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -354,7 +354,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``normalizedSegment``
       调用方传入的 ``normalizedSegment`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``segment``（默认值 ``{}``）
+   ``segment`` （默认值 ``{}``）
       调用方传入的 ``segment`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -413,7 +413,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``segment``
       调用方传入的 ``segment`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -473,7 +473,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``targetSegmentIndex``
       调用方传入的 ``targetSegmentIndex`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``options``（默认值 ``{}``）
+   ``options`` （默认值 ``{}``）
       调用方传入的可选配置对象。
 
    **返回值**
@@ -568,7 +568,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
    ``rects``
       调用方传入的 ``rects`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``padding``（默认值 ``0``）
+   ``padding`` （默认值 ``0``）
       调用方传入的 ``padding`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -810,7 +810,7 @@ src/features/chat/ui/message/components/SpeechOverlayHighlighter 模块
 
    **参数**
 
-   ``segments``（默认值 ``[]``）
+   ``segments`` （默认值 ``[]``）
       调用方传入的 ``segments`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    ``currentSegmentId``

@@ -48,7 +48,7 @@ src/runtime/transport/WebSocketTransport 模块
       ``url``
          目标 HTTP、WebSocket 或虚拟资源地址。
 
-      ``handlers``（默认值 ``{}``）
+      ``handlers`` （默认值 ``{}``）
          调用方传入的 ``handlers`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**
@@ -65,7 +65,7 @@ src/runtime/transport/WebSocketTransport 模块
 
       **参数**
 
-      ``handlers``（默认值 ``{}``）
+      ``handlers`` （默认值 ``{}``）
          调用方传入的 ``handlers`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**
@@ -127,10 +127,10 @@ src/runtime/transport/WebSocketTransport 模块
 
       **参数**
 
-      ``code``（默认值 ``1000``）
+      ``code`` （默认值 ``1000``）
          调用方传入的 ``code`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-      ``reason``（默认值 ``'Client closed'``）
+      ``reason`` （默认值 ``'Client closed'``）
          调用方传入的 ``reason`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**

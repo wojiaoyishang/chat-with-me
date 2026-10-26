@@ -29,7 +29,7 @@ src/features/chat/ui/chatbox/components/ComposerPrimaryAction 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ComposerPrimaryAction.jsx:179:1771:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ComposerPrimaryAction.jsx:179:1924:FUNCTION
 
 .. rubric:: ``memo callback @ 6``
 
@@ -39,7 +39,7 @@ src/features/chat/ui/chatbox/components/ComposerPrimaryAction 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``6``—``63`` 行。
+**性质**：同步局部函数；源码第 ``6``—``67`` 行。
 
 **参数**
 
@@ -54,17 +54,17 @@ src/features/chat/ui/chatbox/components/ComposerPrimaryAction 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ComposerPrimaryAction.jsx:1287:1341:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ComposerPrimaryAction.jsx:1348:1402:FUNCTION
 
-.. rubric:: ``onClick callback @ 45``
+.. rubric:: ``onClick callback @ 47``
 
 .. code-block:: javascript
 
-   onClick callback @ 45()
+   onClick callback @ 47()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``45``—``45`` 行；所属函数 ``memo callback @ 6``。
+**性质**：同步局部函数；源码第 ``47``—``47`` 行；所属函数 ``memo callback @ 6``。
 
 **参数**
 

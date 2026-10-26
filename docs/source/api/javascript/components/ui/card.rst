@@ -37,7 +37,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -56,7 +56,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -75,7 +75,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -94,7 +94,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -113,7 +113,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -132,7 +132,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -151,7 +151,7 @@ src/components/ui/card 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

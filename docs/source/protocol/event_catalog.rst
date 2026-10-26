@@ -43,7 +43,7 @@ Execution 事件
 
 ``message.updated``
    后端已保存的消息配置增量，也用于 PATCH 成功后的本地同步。Payload 带
-   ``messageId``、``messageConfig``（含 ``revision``）、``messageStates`` 和
+   ``messageId``、``messageConfig`` （含 ``revision``）、``messageStates`` 和
    ``contextRevision``。只更新已加载消息的元数据，不新增消息或触发滚动。
    HTTP、实时流和历史快照合并时均保留较新的配置版本。
    ``messageConfig.badges`` 是后端计算的完整标记数组，允许多项；显式 ``[]`` 清空，

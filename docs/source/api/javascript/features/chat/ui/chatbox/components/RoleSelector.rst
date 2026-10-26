@@ -75,7 +75,7 @@ src/features/chat/ui/chatbox/components/RoleSelector 模块
 
 **主要协作调用**：``resolveRoleDisplay``、``resolveResourceUrl``、``text?.charAt(0).toUpperCase``、``text?.charAt``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/RoleSelector.jsx:1216:3474:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/RoleSelector.jsx:1216:3608:FUNCTION
 
 .. rubric:: ``memo callback @ 45``
 
@@ -122,7 +122,7 @@ src/features/chat/ui/chatbox/components/RoleSelector 模块
 
 **主要协作调用**：``resolveRoleDisplay``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/RoleSelector.jsx:2480:3404:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/RoleSelector.jsx:2516:3538:FUNCTION
 
 .. rubric:: ``roles.map callback @ 73``
 
@@ -141,13 +141,13 @@ src/features/chat/ui/chatbox/components/RoleSelector 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuItem key={role.name} onClick={() => onRoleChange(role)} className="cursor-pointer flex items-center px-2 py-1.5 text-sm hover:bg-gray-100" > <RoleAvatar role={role}…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuItem key={role.name} onClick={() => onRoleChange(role)} className="w-full min-h-11 cursor-pointer gap-2 px-2 py-1.5 text-sm hover:bg-gray-100" > <RoleAvatar role={r…``。
 
 **主要协作调用**：``resolveRoleDisplay``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/RoleSelector.jsx:2793:2817:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/RoleSelector.jsx:2829:2853:FUNCTION
 
 .. rubric:: ``onClick callback @ 80``
 

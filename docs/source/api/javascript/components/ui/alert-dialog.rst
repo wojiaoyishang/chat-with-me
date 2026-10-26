@@ -17,120 +17,122 @@ src/components/ui/alert-dialog 模块
 * **模块标识**：``src/components/ui/alert-dialog``
 * **顶层函数/组件/Hook**：12
 * **类**：0
-* **局部函数与匿名回调**：2
+* **局部函数与匿名回调**：3
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``radix-ui``、``@/lib/utils``、``@/components/ui/button``、``@/lib/browserHistoryLayers.js``。
+``react``、``radix-ui``、``@/lib/utils``、``@/components/ui/button``、``@/lib/browserHistoryLayers.js``、``@/lib/windowLayers.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:243:1022:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:318:1223:FUNCTION
 
 .. js:function:: AlertDialog({ open, defaultOpen, onOpenChange, ...props })
 
    渲染 ``AlertDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``8``—``36`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``9``—``40`` 行。
 
    **参数**
 
-   ``{ open, defaultOpen, onOpenChange, ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Root>``）
+   ``{ open, defaultOpen, onOpenChange, ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Root>``）
       调用方传入的 ``open, defaultOpen, onOpenChange, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <AlertDialogPrimitive.Root data-slot="alert-dialog" open={actualOpen} onOpenChange={handleOpenChange} {...props} /> )``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <WindowLayerContext.Provider value={layer}> <AlertDialogPrimitive.Root data-slot="alert-dialog" open={actualOpen} onOpenChange={handleOpenChange} {...props} /> </WindowLayerCont…``。
 
-   **主要协作调用**：``React.useState``、``Boolean``、``React.useCallback``、``useBrowserBackLayer``。
+   **主要协作调用**：``React.useState``、``Boolean``、``useWindowLayer``、``React.useCallback``、``useBrowserBackLayer``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1022:1226:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1223:1427:FUNCTION
 
 .. js:function:: AlertDialogTrigger({ ...props })
 
    渲染 ``AlertDialogTrigger`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``38``—``44`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``42``—``48`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Trigger>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Trigger>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1226:1426:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1427:1627:FUNCTION
 
 .. js:function:: AlertDialogPortal({ ...props })
 
    渲染 ``AlertDialogPortal`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``46``—``52`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``50``—``56`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Portal>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Portal>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1426:1869:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1627:2239:FUNCTION
 
-.. js:function:: AlertDialogOverlay({ className, ...props })
+.. js:function:: AlertDialogOverlay({ className, style, ...props })
 
    渲染 ``AlertDialogOverlay`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``54``—``68`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``58``—``76`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Overlay>``）
-      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, style, ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Overlay>``）
+      调用方传入的 ``className, style, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <AlertDialogPrimitive.Overlay data-slot="alert-dialog-overlay" className={cn( "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[…``。
 
-   **主要协作调用**：``cn``。
+   **主要协作调用**：``React.useContext``、``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1869:2784:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:2239:3404:FUNCTION
 
-.. js:function:: AlertDialogContent({ className, size = "default", ...props })
+.. js:function:: AlertDialogContent({ className, style, onPointerDownCapture, size = "default", ...props })
 
    渲染 ``AlertDialogContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``70``—``91`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``78``—``105`` 行。
 
    **参数**
 
-   ``{ className, size = "default", ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Content> & { size?: "default" | "sm" }``）
-      调用方传入的 ``className, size = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, style, onPointerDownCapture, size = "default", ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Content> & { size?: "default" | "sm" }``）
+      调用方传入的 ``className, style, onPointerDownCapture, size = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <AlertDialogPortal> <AlertDialogOverlay /> <AlertDialogPrimitive.Content data-slot="alert-dialog-content" data-size={size} className={cn( "bg-background data-[state=open]:animat…``。
 
-   **主要协作调用**：``cn``。
+   **主要协作调用**：``React.useContext``、``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:2784:3422:FUNCTION
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3404:4042:FUNCTION
 
 .. js:function:: AlertDialogHeader({ className, ...props })
 
    渲染 ``AlertDialogHeader`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``93``—``107`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``107``—``121`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -139,17 +141,17 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3422:3813:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4042:4433:FUNCTION
 
 .. js:function:: AlertDialogFooter({ className, ...props })
 
    渲染 ``AlertDialogFooter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``109``—``123`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``123``—``137`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -158,17 +160,17 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3813:4243:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4433:4863:FUNCTION
 
 .. js:function:: AlertDialogTitle({ className, ...props })
 
    渲染 ``AlertDialogTitle`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``125``—``139`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``139``—``153`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Title>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Title>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -177,17 +179,17 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4243:4557:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4863:5177:FUNCTION
 
 .. js:function:: AlertDialogDescription({ className, ...props })
 
    渲染 ``AlertDialogDescription`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``141``—``152`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``155``—``166`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Description>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Description>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -196,17 +198,17 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4557:4961:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5177:5581:FUNCTION
 
 .. js:function:: AlertDialogMedia({ className, ...props })
 
    渲染 ``AlertDialogMedia`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``154``—``168`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``168``—``182`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -215,17 +217,17 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4961:5406:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5581:6026:FUNCTION
 
 .. js:function:: AlertDialogAction({ className, variant = "default", size = "default", ...props })
 
    渲染 ``AlertDialogAction`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``170``—``186`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``184``—``200`` 行。
 
    **参数**
 
-   ``{ className, variant = "default", size = "default", ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Action> & Pick<React.ComponentProps<typeof Button>, "variant" | "size">``）
+   ``{ className, variant = "default", size = "default", ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Action> & Pick<React.ComponentProps<typeof Button>, "variant" | "size">``）
       调用方传入的 ``className, variant = "default", size = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -234,17 +236,17 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5406:5851:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:6026:6471:FUNCTION
 
 .. js:function:: AlertDialogCancel({ className, variant = "outline", size = "default", ...props })
 
    渲染 ``AlertDialogCancel`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``188``—``204`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``202``—``218`` 行。
 
    **参数**
 
-   ``{ className, variant = "outline", size = "default", ...props }``（类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Cancel> & Pick<React.ComponentProps<typeof Button>, "variant" | "size">``）
+   ``{ className, variant = "outline", size = "default", ...props }`` （类型 ``React.ComponentProps<typeof AlertDialogPrimitive.Cancel> & Pick<React.ComponentProps<typeof Button>, "variant" | "size">``）
       调用方传入的 ``className, variant = "outline", size = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -258,21 +260,21 @@ src/components/ui/alert-dialog 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:607:711:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:725:829:FUNCTION
 
-.. rubric:: ``React.useCallback callback @ 18``
+.. rubric:: ``React.useCallback callback @ 20``
 
 .. code-block:: javascript
 
-   React.useCallback callback @ 18(nextOpen)
+   React.useCallback callback @ 20(nextOpen)
 
 实现 ``React.useCallback`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``18``—``21`` 行；所属函数 ``AlertDialog``。
+**性质**：同步局部函数；源码第 ``20``—``23`` 行；所属函数 ``AlertDialog``。
 
 **参数**
 
-``nextOpen``（类型 ``boolean``）
+``nextOpen`` （类型 ``boolean``）
    调用方传入的 ``nextOpen`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -281,17 +283,17 @@ src/components/ui/alert-dialog 模块
 
 **主要协作调用**：``setInternalOpen``、``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:775:831:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:893:949:FUNCTION
 
-.. rubric:: ``useBrowserBackLayer callback @ 23``
+.. rubric:: ``useBrowserBackLayer callback @ 25``
 
 .. code-block:: javascript
 
-   useBrowserBackLayer callback @ 23()
+   useBrowserBackLayer callback @ 25()
 
 封装 ``BrowserBackLayer`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``23``—``26`` 行；所属函数 ``AlertDialog``。
+**性质**：同步局部函数；源码第 ``25``—``28`` 行；所属函数 ``AlertDialog``。
 
 **参数**
 
@@ -302,3 +304,26 @@ src/components/ui/alert-dialog 模块
 根据执行分支返回结果；代表性返回表达式为 ``true``。
 
 **主要协作调用**：``handleOpenChange``。
+
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3302:3363:FUNCTION
+
+.. rubric:: ``onPointerDownCapture callback @ 101``
+
+.. code-block:: javascript
+
+   onPointerDownCapture callback @ 101(event)
+
+处理 ``Pointer Down Capture`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``AlertDialogContent``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``layer?.activate``、``onPointerDownCapture``。

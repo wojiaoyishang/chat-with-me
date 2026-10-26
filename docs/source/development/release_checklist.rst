@@ -34,6 +34,9 @@
 - [ ] 人工文档更新。
 - [ ] API 参考重生成。
 - [ ] Sphinx 严格构建通过。
+- [ ] 任务/工作流变更同步发布 RST，菜单只消费后端 nodeMenus/menuPath，指标只消费 observation。
+- [ ] 共享观测 renderer 同步副本和管理页 bundle 均通过 --check。
+- [ ] 组件明细按需分页，未知用量不补零，刷新保留展开状态，运行态不读取终态缓存。
 - [ ] ZIP 从真实升级链验证。
 - [ ] 无 node_modules、dist、Vite Cache 和系统临时文件。
 - [ ] 包含清理、验证、Manifest 和说明。

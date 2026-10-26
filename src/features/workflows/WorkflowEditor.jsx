@@ -810,6 +810,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             runtimeNodes[node.id]?.status ||
             runtimeStages.find((stage) => stage.key === node.id)?.status,
           runtime: runtimeNodes[node.id] || {},
+          observation: task?.observation,
           readOnly: readOnly || Boolean(busy || pendingPlacement),
           monitor: readOnly,
           isOutput: (graph.outputNodes || []).includes(node.id),
@@ -846,6 +847,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       monitorPositions,
       catalog.nodes,
       runtimeNodes,
+      task?.observation,
       runtimeStages,
       readOnly,
       busy,

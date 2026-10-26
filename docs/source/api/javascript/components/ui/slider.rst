@@ -37,7 +37,7 @@ src/components/ui/slider 模块
 
    **参数**
 
-   ``{ className, defaultValue, value, min = 0, max = 100, thumbProps, ...props }``（类型 ``React.ComponentProps<typeof SliderPrimitive.Root> & { thumbProps?: React.ComponentProps<typeof SliderPrimitive.Thumb>; }``）
+   ``{ className, defaultValue, value, min = 0, max = 100, thumbProps, ...props }`` （类型 ``React.ComponentProps<typeof SliderPrimitive.Root> & { thumbProps?: React.ComponentProps<typeof SliderPrimitive.Thumb>; }``）
       调用方传入的 ``className, defaultValue, value, min = 0, max = 100, thumbProps, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

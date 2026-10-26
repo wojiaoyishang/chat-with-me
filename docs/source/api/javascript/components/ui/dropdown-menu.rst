@@ -22,109 +22,109 @@ src/components/ui/dropdown-menu 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@radix-ui/react-dropdown-menu``、``lucide-react``、``@/lib/utils``。
+``react``、``@radix-ui/react-dropdown-menu``、``lucide-react``、``@/lib/utils``、``@/lib/windowLayers.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:206:383:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:268:459:FUNCTION
 
 .. js:function:: DropdownMenu({ ...props })
 
    渲染 ``DropdownMenu`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``7``—``11`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``8``—``12`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Root>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Root>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<DropdownMenuPrimitive.Root data-slot="dropdown-menu" {...props} />``。
+   根据执行分支返回结果；代表性返回表达式为 ``<DropdownMenuPrimitive.Root data-slot="dropdown-menu" modal={false} {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:383:587:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:459:663:FUNCTION
 
 .. js:function:: DropdownMenuPortal({ ...props })
 
    渲染 ``DropdownMenuPortal`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``13``—``19`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``14``—``20`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Portal>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Portal>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:587:811:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:663:887:FUNCTION
 
 .. js:function:: DropdownMenuTrigger({ ...props })
 
    渲染 ``DropdownMenuTrigger`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``21``—``30`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``22``—``31`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:811:1811:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:887:2040:FUNCTION
 
-.. js:function:: DropdownMenuContent({ className, sideOffset = 4, ...props })
+.. js:function:: DropdownMenuContent({ className, style, sideOffset = 4, ...props })
 
    渲染 ``DropdownMenuContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``32``—``50`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``33``—``55`` 行。
 
    **参数**
 
-   ``{ className, sideOffset = 4, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Content>``）
-      调用方传入的 ``className, sideOffset = 4, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, style, sideOffset = 4, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Content>``）
+      调用方传入的 ``className, style, sideOffset = 4, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.Portal> <DropdownMenuPrimitive.Content data-slot="dropdown-menu-content" sideOffset={sideOffset} className={cn( "bg-popover text-popover-foreground data-[…``。
 
-   **主要协作调用**：``cn``。
+   **主要协作调用**：``useWindowPopoverLayer``、``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:1811:2011:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:2040:2240:FUNCTION
 
 .. js:function:: DropdownMenuGroup({ ...props })
 
    渲染 ``DropdownMenuGroup`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``52``—``58`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``57``—``63`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Group>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Group>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.Group data-slot="dropdown-menu-group" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:2011:3098:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:2240:3327:FUNCTION
 
 .. js:function:: DropdownMenuItem({ className, inset, variant = "default", ...props })
 
    渲染 ``DropdownMenuItem`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``60``—``81`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``65``—``86`` 行。
 
    **参数**
 
-   ``{ className, inset, variant = "default", ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Item> & { inset?: boolean variant?: "default" | "destructive" }``）
+   ``{ className, inset, variant = "default", ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Item> & { inset?: boolean variant?: "default" | "destructive" }``）
       调用方传入的 ``className, inset, variant = "default", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -133,17 +133,17 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:3098:4109:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:3327:4338:FUNCTION
 
 .. js:function:: DropdownMenuCheckboxItem({ className, children, checked, ...props })
 
    渲染 ``DropdownMenuCheckboxItem`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``83``—``107`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``88``—``112`` 行。
 
    **参数**
 
-   ``{ className, children, checked, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>``）
+   ``{ className, children, checked, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>``）
       调用方传入的 ``className, children, checked, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -152,34 +152,34 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4109:4346:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4338:4575:FUNCTION
 
 .. js:function:: DropdownMenuRadioGroup({ ...props })
 
    渲染 ``DropdownMenuRadioGroup`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``109``—``118`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``114``—``123`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4346:5321:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:4575:5550:FUNCTION
 
 .. js:function:: DropdownMenuRadioItem({ className, children, ...props })
 
    渲染 ``DropdownMenuRadioItem`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``120``—``142`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``125``—``147`` 行。
 
    **参数**
 
-   ``{ className, children, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>``）
+   ``{ className, children, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>``）
       调用方传入的 ``className, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -188,17 +188,17 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5321:5717:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5550:5946:FUNCTION
 
 .. js:function:: DropdownMenuLabel({ className, inset, ...props })
 
    渲染 ``DropdownMenuLabel`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``144``—``162`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``149``—``167`` 行。
 
    **参数**
 
-   ``{ className, inset, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }``）
+   ``{ className, inset, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }``）
       调用方传入的 ``className, inset, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -207,17 +207,17 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5717:6023:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:5946:6252:FUNCTION
 
 .. js:function:: DropdownMenuSeparator({ className, ...props })
 
    渲染 ``DropdownMenuSeparator`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``164``—``175`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``169``—``180`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Separator>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Separator>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -226,17 +226,17 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6023:6320:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6252:6549:FUNCTION
 
 .. js:function:: DropdownMenuShortcut({ className, ...props })
 
    渲染 ``DropdownMenuShortcut`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``177``—``191`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``182``—``196`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"span">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"span">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -245,34 +245,34 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6320:6502:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6549:6731:FUNCTION
 
 .. js:function:: DropdownMenuSub({ ...props })
 
    渲染 ``DropdownMenuSub`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``193``—``197`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``198``—``202`` 行。
 
    **参数**
 
-   ``{ ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Sub>``）
+   ``{ ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.Sub>``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``<DropdownMenuPrimitive.Sub data-slot="dropdown-menu-sub" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6502:7214:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:6731:7443:FUNCTION
 
 .. js:function:: DropdownMenuSubTrigger({ className, inset, children, ...props })
 
    渲染 ``DropdownMenuSubTrigger`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``199``—``221`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``204``—``226`` 行。
 
    **参数**
 
-   ``{ className, inset, children, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }``）
+   ``{ className, inset, children, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & { inset?: boolean }``）
       调用方传入的 ``className, inset, children, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -281,21 +281,21 @@ src/components/ui/dropdown-menu 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:7214:8017:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dropdown-menu.tsx:7443:8399:FUNCTION
 
-.. js:function:: DropdownMenuSubContent({ className, ...props })
+.. js:function:: DropdownMenuSubContent({ className, style, ...props })
 
    渲染 ``DropdownMenuSubContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``223``—``237`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``228``—``246`` 行。
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>``）
-      调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ className, style, ...props }`` （类型 ``React.ComponentProps<typeof DropdownMenuPrimitive.SubContent>``）
+      调用方传入的 ``className, style, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``( <DropdownMenuPrimitive.SubContent data-slot="dropdown-menu-sub-content" className={cn( "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:anima…``。
 
-   **主要协作调用**：``cn``。
+   **主要协作调用**：``useWindowPopoverLayer``、``cn``。

@@ -119,10 +119,10 @@ src/features/chat/ui/chatbox/utils/toolState 模块
 
    **参数**
 
-   ``items``（默认值 ``[]``）
+   ``items`` （默认值 ``[]``）
       待渲染、筛选或合并的数据项数组。
 
-   ``parentPath``（默认值 ``[]``）
+   ``parentPath`` （默认值 ``[]``）
       调用方传入的 ``parentPath`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

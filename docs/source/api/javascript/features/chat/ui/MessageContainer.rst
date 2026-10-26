@@ -15,14 +15,41 @@ src/features/chat/ui/MessageContainer 模块
 
 * **源码文件**：``src/features/chat/ui/MessageContainer.jsx``
 * **模块标识**：``src/features/chat/ui/MessageContainer``
-* **顶层函数/组件/Hook**：0
+* **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：7
+* **局部函数与匿名回调**：8
 
 主要依赖
 --------------------------------------------------------------------------------
 
 ``react``、``sonner``、``react-i18next``、``@/components/ui/ThreeDotLoading.jsx``、``./message/components/MessageItem.jsx``、``./message/hooks/useMessageAnimation.js``、``./message/hooks/useMessageEvents.js``、``./message/styles/messageAnimations.js``。
+
+顶层函数、组件与 Hook
+--------------------------------------------------------------------------------
+
+.. CWM-AST-FUNCTION src/features/chat/ui/MessageContainer.jsx:6906:7255:FUNCTION
+
+.. js:function:: compareMessageContainerProps(previous, next)
+
+   实现 ``compareMessageContainerProps`` 对应的前端处理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``175``—``182`` 行。
+
+   **参数**
+
+   ``previous``
+      调用方传入的 ``previous`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``next``
+      调用方传入的 ``next`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``false``、``true``、``keys.length === Object.keys(previous).length && keys.every((key) => Object.is(previous[key], next[key]))``。
+
+   **主要协作调用**：``Object.keys``、``keys.every``。
+
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
@@ -200,3 +227,26 @@ src/features/chat/ui/MessageContainer 模块
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``renderMessage``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/MessageContainer.jsx:7207:7251:FUNCTION
+
+.. rubric:: ``keys.every callback @ 181``
+
+.. code-block:: javascript
+
+   keys.every callback @ 181(key)
+
+作为 ``keys.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``181``—``181`` 行；所属函数 ``compareMessageContainerProps``。
+
+**参数**
+
+``key``
+   调用方传入的 ``key`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``Object.is``。

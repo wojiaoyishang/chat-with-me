@@ -27,7 +27,7 @@ src/features/documents/LocalMarkdownEditor 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/LocalMarkdownEditor.jsx:756:6343:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/LocalMarkdownEditor.jsx:756:6376:FUNCTION
 
 .. js:function:: LocalMarkdownEditor({ value = '', onChange, readOnly = false, autoFocus = false, onEditorKeyDown, })
 

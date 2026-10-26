@@ -21,7 +21,7 @@
    * - :doc:`src/context/FatalErrorPopover </api/javascript/context/FatalErrorPopover>`
      - 1
      - 0
-     - 12
+     - 15
      - ``src/context/FatalErrorPopover.jsx``
    * - :doc:`src/context/LazyVisibility </api/javascript/context/LazyVisibility>`
      - 1
@@ -36,8 +36,13 @@
    * - :doc:`src/context/WebSocketContext </api/javascript/context/WebSocketContext>`
      - 4
      - 0
-     - 21
+     - 23
      - ``src/context/WebSocketContext.jsx``
+   * - :doc:`src/context/WebSocketReconnectPrompt </api/javascript/context/WebSocketReconnectPrompt>`
+     - 1
+     - 0
+     - 5
+     - ``src/context/WebSocketReconnectPrompt.jsx``
    * - :doc:`src/context/useEventStore </api/javascript/context/useEventStore>`
      - 11
      - 0
@@ -58,6 +63,7 @@
    /api/javascript/context/LazyVisibility
    /api/javascript/context/MyToaster
    /api/javascript/context/WebSocketContext
+   /api/javascript/context/WebSocketReconnectPrompt
    /api/javascript/context/useEventStore
    /api/javascript/context/userContext
 

@@ -455,7 +455,7 @@ function writeParameters(lines, info, indent) {
     if (parameter.defaultValue) details.push(`默认值 ${rstCode(parameter.defaultValue)}`);
     if (parameter.optional) details.push('可选');
     if (parameter.rest) details.push('剩余参数');
-    lines.push(`${indent}${rstCode(parameter.name)}${details.length ? `（${details.join('；')}）` : ''}`);
+    lines.push(`${indent}${rstCode(parameter.name)}${details.length ? ` （${details.join('；')}）` : ''}`);
     lines.push(`${indent}   ${parameterDescription(parameter.name)}`, '');
   }
 }

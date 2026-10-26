@@ -27,13 +27,13 @@ src/features/documents/collaboratorPosition 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/collaboratorPosition.js:25:509:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/collaboratorPosition.js:25:565:FUNCTION
 
 .. js:function:: collaboratorPosition(resource, clientId)
 
    实现 ``collaboratorPosition`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``4``—``12`` 行。
+   **性质**：同步函数；导出 API；源码第 ``4``—``13`` 行。
 
    **参数**
 

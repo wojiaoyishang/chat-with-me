@@ -32,7 +32,7 @@ src/features/chat/speech/frontendFeedback 模块
 
    **参数**
 
-   ``content``（默认值 ``''``）
+   ``content`` （默认值 ``''``）
       消息、文档或模型输出内容。
 
    **返回值**
@@ -53,7 +53,7 @@ src/features/chat/speech/frontendFeedback 模块
 
    **参数**
 
-   ``content``（默认值 ``''``）
+   ``content`` （默认值 ``''``）
       消息、文档或模型输出内容。
 
    **返回值**

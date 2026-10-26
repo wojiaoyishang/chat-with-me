@@ -21,17 +21,17 @@
    * - :doc:`src/pages/ChatWithEditor </api/javascript/pages/ChatWithEditor>`
      - 1
      - 0
-     - 19
+     - 20
      - ``src/pages/ChatWithEditor.jsx``
    * - :doc:`src/pages/DashboardPage </api/javascript/pages/DashboardPage>`
      - 2
      - 0
-     - 25
+     - 33
      - ``src/pages/DashboardPage.jsx``
    * - :doc:`src/pages/DocEditorHome </api/javascript/pages/DocEditorHome>`
      - 3
      - 0
-     - 68
+     - 72
      - ``src/pages/DocEditorHome.jsx``
    * - :doc:`src/pages/LoginPage </api/javascript/pages/LoginPage>`
      - 1
@@ -41,7 +41,7 @@
    * - :doc:`src/pages/SettingPage </api/javascript/pages/SettingPage>`
      - 6
      - 0
-     - 65
+     - 70
      - ``src/pages/SettingPage.jsx``
 
 .. toctree::

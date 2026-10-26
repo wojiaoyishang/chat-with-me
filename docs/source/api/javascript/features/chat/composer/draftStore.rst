@@ -3,7 +3,7 @@ src/features/chat/composer/draftStore 模块
 
 .. js:module:: src/features/chat/composer/draftStore
 
-该模块实现聊天 Surface、消息树、语音、输入区或消息交互。
+A pending delivery receipt belongs to the draft, never to the server queue.
 
 .. note::
 
@@ -15,14 +15,14 @@ src/features/chat/composer/draftStore 模块
 
 * **源码文件**：``src/features/chat/composer/draftStore.js``
 * **模块标识**：``src/features/chat/composer/draftStore``
-* **顶层函数/组件/Hook**：17
+* **顶层函数/组件/Hook**：23
 * **类**：0
-* **局部函数与匿名回调**：4
+* **局部函数与匿名回调**：5
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:178:195:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:183:200:FUNCTION
 
 .. js:function:: now()
 
@@ -40,7 +40,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:221:312:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:228:321:FUNCTION
 
 .. js:function:: conversationKey(conversationId)
 
@@ -59,7 +59,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:339:445:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:350:458:FUNCTION
 
 .. js:function:: legacyStorageKey(conversationId)
 
@@ -78,7 +78,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``encodeURIComponent``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:465:519:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:480:534:FUNCTION
 
 .. js:function:: emptyRoot()
 
@@ -94,7 +94,7 @@ src/features/chat/composer/draftStore 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:538:1099:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:555:1128:FUNCTION
 
 .. js:function:: readRoot()
 
@@ -117,7 +117,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``emptyRoot``、``window.localStorage.getItem``、``JSON.parse``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1119:1363:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1150:1397:FUNCTION
 
 .. js:function:: writeRoot(root)
 
@@ -141,7 +141,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``window.localStorage.setItem``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1387:1512:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1423:1550:FUNCTION
 
 .. js:function:: cloneJsonSafe(value)
 
@@ -160,7 +160,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``JSON.parse``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1542:2325:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1582:2384:FUNCTION
 
 .. js:function:: sanitizeAttachments(attachments)
 
@@ -181,7 +181,7 @@ src/features/chat/composer/draftStore 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2350:2665:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2411:2734:FUNCTION
 
 .. js:function:: normalizeDraft(draft)
 
@@ -200,7 +200,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``String``、``sanitizeAttachments``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2693:2922:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2765:3000:FUNCTION
 
 .. js:function:: draftsEquivalent(left, right)
 
@@ -222,7 +222,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``Boolean``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2953:3235:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3033:3323:FUNCTION
 
 .. js:function:: getConversationEntry(root, conversationId, create)
 
@@ -238,7 +238,7 @@ src/features/chat/composer/draftStore 模块
    ``conversationId``
       Conversation 的公共 UUID。
 
-   ``create``（默认值 ``false``）
+   ``create`` （默认值 ``false``）
       调用方传入的 ``create`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -247,7 +247,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``conversationKey``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3267:3667:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3357:3764:FUNCTION
 
 .. js:function:: readLegacyNormalDraft(conversationId)
 
@@ -271,7 +271,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``legacyStorageKey``、``window.localStorage.getItem``、``window.localStorage.removeItem``、``now``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3702:4384:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3801:4503:FUNCTION
 
 .. js:function:: readComposerDraft({conversationId, mode = 'normal', messageId = null})
 
@@ -290,7 +290,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``readRoot``、``getConversationEntry``、``normalizeDraft``、``readLegacyNormalDraft``、``writeComposerDraft``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4420:5603:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4541:5755:FUNCTION
 
 .. js:function:: writeComposerDraft({conversationId, mode = 'normal', messageId = null, draft})
 
@@ -309,7 +309,7 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``normalizeDraft``、``now``、``readRoot``、``getConversationEntry``、``String``、``draftsEquivalent``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:5639:6324:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:5793:6574:FUNCTION
 
 .. js:function:: clearComposerDraft({conversationId, mode = 'normal', messageId = null})
 
@@ -328,13 +328,147 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``readRoot``、``getConversationEntry``、``String``、``Object.keys``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:6372:6980:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:6708:7145:FUNCTION
+
+.. js:function:: readComposerGuidanceSubmission(conversationId)
+
+   实现 ``readComposerGuidanceSubmission`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``191``—``199`` 行。
+
+   **参数**
+
+   ``conversationId``
+      Conversation 的公共 UUID。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``{ ...value, submitted }``。
+
+   **主要协作调用**：``getConversationEntry``、``readRoot``、``String``、``normalizeDraft``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:7195:8022:FUNCTION
+
+.. js:function:: saveComposerGuidanceSubmission(conversationId, value)
+
+   保存与 ``Composer Guidance Submission`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``201``—``219`` 行。
+
+   **参数**
+
+   ``conversationId``
+      Conversation 的公共 UUID。
+
+   ``value``
+      待读取、转换或校验的值。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``receipt``。
+
+   **主要协作调用**：``normalizeDraft``、``readRoot``、``getConversationEntry``、``String``、``writeRoot``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:8073:8522:FUNCTION
+
+.. js:function:: clearComposerGuidanceSubmission(conversationId, guidanceId)
+
+   清空与 ``Composer Guidance Submission`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``221``—``228`` 行。
+
+   **参数**
+
+   ``conversationId``
+      Conversation 的公共 UUID。
+
+   ``guidanceId``
+      目标对象的公共或运行时标识。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+   **主要协作调用**：``readRoot``、``getConversationEntry``、``Object.keys``、``writeRoot``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:8653:8966:FUNCTION
+
+.. js:function:: readComposerGuidanceEdits(conversationId)
+
+   实现 ``readComposerGuidanceEdits`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``231``—``235`` 行。
+
+   **参数**
+
+   ``conversationId``
+      Conversation 的公共 UUID。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``Object.values(entry?.guidanceEdits || {}).filter((value) => value?.guidanceId && value?.execution?.executionId && String(value.execution.conversationId || '') === String(conversat…``。
+
+   **主要协作调用**：``getConversationEntry``、``readRoot``、``Object.values(entry?.guidanceEdits || {}).filter``、``Object.values``。
+
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:9010:10166:FUNCTION
+
+.. js:function:: saveComposerGuidanceEdit(conversationId, execution, guidance)
+
+   保存与 ``Composer Guidance Edit`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``237``—``258`` 行。
+
+   **参数**
+
+   ``conversationId``
+      Conversation 的公共 UUID。
+
+   ``execution``
+      调用方传入的 ``execution`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``guidance``
+      调用方传入的 ``guidance`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``entry.guidanceEdits[key]``、``receipt``。
+
+   **主要协作调用**：``String``、``readRoot``、``getConversationEntry``、``sanitizeAttachments``、``writeRoot``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:10211:10773:FUNCTION
+
+.. js:function:: clearComposerGuidanceEdit(conversationId, executionId, guidanceId)
+
+   清空与 ``Composer Guidance Edit`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``260``—``269`` 行。
+
+   **参数**
+
+   ``conversationId``
+      Conversation 的公共 UUID。
+
+   ``executionId``
+      目标对象的公共或运行时标识。
+
+   ``guidanceId``
+      目标对象的公共或运行时标识。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+   **主要协作调用**：``readRoot``、``getConversationEntry``、``Object.keys``、``writeRoot``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:10823:11446:FUNCTION
 
 .. js:function:: moveComposerConversationDrafts(fromConversationId, toConversationId)
 
    实现 ``moveComposerConversationDrafts`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``190``—``205`` 行。
+   **性质**：同步函数；导出 API；源码第 ``271``—``286`` 行。
 
    **参数**
 
@@ -350,13 +484,13 @@ src/features/chat/composer/draftStore 模块
 
    **主要协作调用**：``conversationKey``、``readRoot``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:7018:7265:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11486:11745:FUNCTION
 
 .. js:function:: saveComposerSnapshot({ conversationId, mode = 'normal', messageId = null, content = '', attachments = [], roleName = nul…)
 
    保存与 ``Composer Snapshot`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``207``—``219`` 行。
+   **性质**：同步函数；导出 API；源码第 ``288``—``300`` 行。
 
    **参数**
 
@@ -374,7 +508,7 @@ src/features/chat/composer/draftStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1876:1940:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1924:1988:FUNCTION
 
 .. rubric:: ``attachments .filter callback @ 61``
 
@@ -397,7 +531,7 @@ src/features/chat/composer/draftStore 模块
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1955:2263:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2004:2320:FUNCTION
 
 .. rubric:: ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 62``
 
@@ -422,7 +556,7 @@ src/features/chat/composer/draftStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2021:2226:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2072:2281:FUNCTION
 
 .. rubric:: ``keys.forEach callback @ 64``
 
@@ -445,7 +579,7 @@ src/features/chat/composer/draftStore 模块
 
 **主要协作调用**：``cloneJsonSafe``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2281:2321:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2339:2379:FUNCTION
 
 .. rubric:: ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map((item) => { const next = {};… callback @ 71``
 
@@ -465,3 +599,26 @@ src/features/chat/composer/draftStore 模块
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:8810:8961:FUNCTION
+
+.. rubric:: ``Object.values(entry?.guidanceEdits || {}).filter callback @ 233``
+
+.. code-block:: javascript
+
+   Object.values(entry?.guidanceEdits || {}).filter callback @ 233(value)
+
+作为 ``Object.values(entry?.guidanceEdits || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``233``—``234`` 行；所属函数 ``readComposerGuidanceEdits``。
+
+**参数**
+
+``value``
+   待读取、转换或校验的值。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``String``。

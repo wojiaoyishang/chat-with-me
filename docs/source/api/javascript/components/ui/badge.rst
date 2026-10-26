@@ -37,7 +37,7 @@ src/components/ui/badge 模块
 
    **参数**
 
-   ``{ className, variant, asChild = false, ...props }``（类型 ``React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }``）
+   ``{ className, variant, asChild = false, ...props }`` （类型 ``React.ComponentProps<"span"> & VariantProps<typeof badgeVariants> & { asChild?: boolean }``）
       调用方传入的 ``className, variant, asChild = false, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

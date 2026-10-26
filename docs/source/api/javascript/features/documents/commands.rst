@@ -15,7 +15,7 @@ src/features/documents/commands 模块
 
 * **源码文件**：``src/features/documents/commands.js``
 * **模块标识**：``src/features/documents/commands``
-* **顶层函数/组件/Hook**：2
+* **顶层函数/组件/Hook**：4
 * **类**：0
 * **局部函数与匿名回调**：3
 
@@ -43,10 +43,10 @@ src/features/documents/commands 模块
    ``before``
       调用方传入的 ``before`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``after``（默认值 ``before``）
+   ``after`` （默认值 ``before``）
       调用方传入的 ``after`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``placeholder``（默认值 ``'Text'``）
+   ``placeholder`` （默认值 ``'Text'``）
       调用方传入的 ``placeholder`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -88,6 +88,58 @@ src/features/documents/commands 模块
    **主要协作调用**：``view.state.doc.lineAt``、``view.state.sliceDoc(first.from, last.to).split``、``view.state.sliceDoc``、``lines.every``、``lines.map((line) => (remove ? line.slice(prefix.length) : prefix + line)).join``、``lines.map``、``view.dispatch``、``view.focus``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/documents/commands.js:2331:2935:FUNCTION
+
+.. js:function:: insertTodoList(view, placeholder)
+
+   实现 ``insertTodoList`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``51``—``65`` 行。
+
+   **参数**
+
+   ``view``
+      调用方传入的 ``view`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``placeholder`` （默认值 ``'第一周'``）
+      调用方传入的 ``placeholder`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+   **副作用**
+
+   * 更新 React 或全局 Store 状态。
+
+   **主要协作调用**：``view.state.doc.lineAt``、``line.text.trim``、``prefixLines``、``/^\s*/.exec``、``view.dispatch``、``view.focus``。
+
+.. CWM-AST-FUNCTION src/features/documents/commands.js:2935:3743:FUNCTION
+
+.. js:function:: insertStudyBlock(view, directive)
+
+   实现 ``insertStudyBlock`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``67``—``84`` 行。
+
+   **参数**
+
+   ``view``
+      调用方传入的 ``view`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``directive``
+      调用方传入的 ``directive`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+   **副作用**
+
+   * 更新 React 或全局 Store 状态。
+
+   **主要协作调用**：``view.state.sliceDoc``、``view.dispatch``、``view.focus``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------

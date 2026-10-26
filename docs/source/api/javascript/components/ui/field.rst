@@ -37,7 +37,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"fieldset">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"fieldset">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -56,7 +56,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, variant = "legend", ...props }``（类型 ``React.ComponentProps<"legend"> & { variant?: "legend" | "label" }``）
+   ``{ className, variant = "legend", ...props }`` （类型 ``React.ComponentProps<"legend"> & { variant?: "legend" | "label" }``）
       调用方传入的 ``className, variant = "legend", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -75,7 +75,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -94,7 +94,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, orientation = "vertical", ...props }``（类型 ``React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>``）
+   ``{ className, orientation = "vertical", ...props }`` （类型 ``React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>``）
       调用方传入的 ``className, orientation = "vertical", ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -113,7 +113,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -132,7 +132,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<typeof Label>``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<typeof Label>``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -151,7 +151,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"div">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"div">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -170,7 +170,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, ...props }``（类型 ``React.ComponentProps<"p">``）
+   ``{ className, ...props }`` （类型 ``React.ComponentProps<"p">``）
       调用方传入的 ``className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -189,7 +189,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ children, className, ...props }``（类型 ``React.ComponentProps<"div"> & { children?: React.ReactNode }``）
+   ``{ children, className, ...props }`` （类型 ``React.ComponentProps<"div"> & { children?: React.ReactNode }``）
       调用方传入的 ``children, className, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -208,7 +208,7 @@ src/components/ui/field 模块
 
    **参数**
 
-   ``{ className, children, errors, ...props }``（类型 ``React.ComponentProps<"div"> & { errors?: Array<{ message?: string } | undefined> }``）
+   ``{ className, children, errors, ...props }`` （类型 ``React.ComponentProps<"div"> & { errors?: Array<{ message?: string } | undefined> }``）
       调用方传入的 ``className, children, errors, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

@@ -25,7 +25,7 @@ import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import WorkflowSubgraphSetup from "./WorkflowSubgraphSetup.jsx";
 import { workflowStatusLabels } from "./workflowStatus.js";
-import { workflowPhaseLabels } from "./workflowMetrics.js";
+import RunObservation from "../tasks/RunObservation.jsx";
 import WorkflowNodeBadge from "./WorkflowNodeBadge.jsx";
 
 export default function WorkflowNode({ data, selected }) {
@@ -279,50 +279,12 @@ export default function WorkflowNode({ data, selected }) {
       {status && (
         <div className="workflow-node-state">
           <span>{workflowStatusLabels[status] || status}</span>
-          {runtime.nodeProgress && (
-            <span>
-              已处理{runtime.nodeProgress.unit || "项目"}：
-              {runtime.nodeProgress.processed ?? 0}
-              {runtime.nodeProgress.total != null
-                ? `/${runtime.nodeProgress.total}`
-                : ""}
-            </span>
-          )}
-          {runtime.nodeProgress?.total > 0 &&
-            Number.isFinite(runtime.nodeProgress.percent) && (
-              <progress
-                max="100"
-                value={runtime.nodeProgress.percent}
-                aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
-              />
-            )}
         </div>
       )}
-      {runtime.telemetry && (
-        <div className="workflow-node-state">
-          {runtime.telemetry.phase && (
-            <span>
-              {workflowPhaseLabels[runtime.telemetry.phase] ||
-                runtime.telemetry.phase}
-            </span>
-          )}
-          {Number.isFinite(runtime.telemetry.activeRequests) && (
-            <span>存在连接数：{runtime.telemetry.activeRequests}</span>
-          )}
-        </div>
-      )}
+      <RunObservation observation={data.observation} scopeId={`${subgraph ? "subgraph" : "node"}:${subgraph ? node.id : runtime.runtimeId || node.id}`} view="summary" compact />
       {runtime.outputPreview?.summary && (
         <p className="workflow-output-summary">
           {runtime.outputPreview.summary}
-        </p>
-      )}
-      {(runtime.nodeProgress?.currentItem?.preview ||
-        runtime.progressMessage ||
-        runtime.nodeProgress?.message) && (
-        <p className="workflow-output-summary" role="status">
-          {runtime.nodeProgress?.currentItem?.preview ||
-            runtime.progressMessage ||
-            runtime.nodeProgress?.message}
         </p>
       )}
     </div>

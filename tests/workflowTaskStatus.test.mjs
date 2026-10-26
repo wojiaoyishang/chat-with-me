@@ -28,6 +28,9 @@ async function loadCard() {
                 builder.onResolve({ filter: /^@\/features\/tasks\/useTaskStore\.js$/ }, () => ({
                     path: path.resolve('src/features/tasks/useTaskStore.js'),
                 }));
+                builder.onResolve({ filter: /^@\/(config\.js|lib\/apiClient\.js)$/ }, (args) => ({
+                    path: path.resolve('src', args.path.slice(2)),
+                }));
                 builder.onResolve({ filter: /^(\.\/|@\/)/ }, (args) => {
                     if (!args.importer.endsWith('CardBlock.jsx')) return null;
                     if (args.path === '@/features/workflows/WorkflowTaskStatus.jsx') return {
@@ -74,9 +77,14 @@ test('workflow task card follows the live task and opens its own detail URL', as
         assert.equal(card?.dataset.workflowTaskStatus, 'queued');
         assert.match(card.textContent, /图文混合直接知识提取.*排队中/);
 
-        await act(async () => useTaskStore.getState().merge([{ taskId: id, title: '图文混合直接知识提取', status: 'running', revision: 3 }]));
+        await act(async () => useTaskStore.getState().merge([{ taskId: id, title: '图文混合直接知识提取', status: 'running', revision: 3,
+            observation: { version: 1, revision: 1, scopes: { task: { kind: 'task', title: '任务', components: [
+                { id: 'count', type: 'indicator', title: '已提取观点', value: 12, unit: '条' },
+            ] } } },
+        }]));
         assert.equal(card.dataset.workflowTaskStatus, 'running');
         assert.match(card.textContent, /运行中/);
+        assert.match(card.textContent, /已提取观点12 条/);
 
         await act(async () => document.querySelector('[data-workflow-task-id] button').click());
         assert.equal(locations.at(-1), `/tasks?taskId=${encodeURIComponent(id)}`);

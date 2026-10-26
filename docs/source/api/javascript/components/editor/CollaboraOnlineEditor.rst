@@ -17,7 +17,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 * **模块标识**：``src/components/editor/CollaboraOnlineEditor``
 * **顶层函数/组件/Hook**：0
 * **类**：0
-* **局部函数与匿名回调**：12
+* **局部函数与匿名回调**：17
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:358:4639:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:358:6791:FUNCTION
 
 .. rubric:: ``forwardRef callback @ 14``
 
@@ -39,7 +39,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 实现 ``forwardRef`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``14``—``148`` 行。
+**性质**：同步局部函数；源码第 ``14``—``189`` 行。
 
 **参数**
 
@@ -58,21 +58,21 @@ src/components/editor/CollaboraOnlineEditor 模块
 * 注册事件、DOM 或运行时订阅。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``useState``、``useTranslation``、``useRef``、``useMemo``、``useCallback``、``useImperativeHandle``、``useEffect``。
+**主要协作调用**：``useState``、``useTranslation``、``useRef``、``useMemo``、``useCallback``、``useEffect``、``useImperativeHandle``。
 
-**内部回调数量**：9。这些回调也会在本页逐项说明。
+**内部回调数量**：11。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:921:1130:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1008:1217:FUNCTION
 
-.. rubric:: ``useMemo callback @ 25``
+.. rubric:: ``useMemo callback @ 27``
 
 .. code-block:: javascript
 
-   useMemo callback @ 25()
+   useMemo callback @ 27()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``25``—``32`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``27``—``34`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -84,7 +84,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``console.warn``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1200:1278:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1287:1411:FUNCTION
 
 .. rubric:: ``handleIframeLoad``
 
@@ -94,7 +94,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 处理 ``Iframe Load`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``35``—``38`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``37``—``41`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -106,7 +106,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``setIframeLoaded``、``setStatus``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1335:1379:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1468:1512:FUNCTION
 
 .. rubric:: ``handleIframeError``
 
@@ -116,7 +116,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 处理 ``Iframe Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``41``—``43`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``44``—``46`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -128,7 +128,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``setStatus``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1420:1620:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1553:1753:FUNCTION
 
 .. rubric:: ``handleRetry``
 
@@ -138,7 +138,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 处理 ``Retry`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``46``—``51`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``49``—``54`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -154,17 +154,17 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``setStatus``、``setIframeLoaded``、``document.getElementById``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1690:2177:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:1823:2310:FUNCTION
 
-.. rubric:: ``useCallback callback @ 54``
+.. rubric:: ``useCallback callback @ 57``
 
 .. code-block:: javascript
 
-   useCallback callback @ 54(data)
+   useCallback callback @ 57(data)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``54``—``69`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``57``—``72`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -177,17 +177,65 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``console.warn``、``iframeRef.current?.contentWindow.postMessage``、``JSON.stringify``、``console.error``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:2227:2259:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:2361:3179:FUNCTION
 
-.. rubric:: ``useImperativeHandle callback @ 71``
+.. rubric:: ``useCallback callback @ 74``
 
 .. code-block:: javascript
 
-   useImperativeHandle callback @ 71()
+   useCallback callback @ 74()
 
-封装 ``ImperativeHandle`` 的 React 状态、订阅与生命周期。
+封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``71``—``73`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``74``—``90`` 行；所属函数 ``forwardRef callback @ 14``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``pendingSave.current.promise``、``Promise.reject(new Error('文档编辑器尚未就绪。'))``、``promise``。
+
+**主要协作调用**：``Promise.reject``、``setTimeout``、``post``、``clearTimeout``、``reject``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:2606:2656:FUNCTION
+
+.. rubric:: ``anonymous callback @ 78``
+
+.. code-block:: javascript
+
+   anonymous callback @ 78(done, fail)
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``useCallback callback @ 74``。
+
+**参数**
+
+``done``
+   调用方传入的 ``done`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``fail``
+   调用方传入的 ``fail`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:2693:2806:FUNCTION
+
+.. rubric:: ``setTimeout callback @ 79``
+
+.. code-block:: javascript
+
+   setTimeout callback @ 79()
+
+设置与 ``Timeout`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``79``—``82`` 行；所属函数 ``useCallback callback @ 74``。
 
 **参数**
 
@@ -197,17 +245,83 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:2309:3150:FUNCTION
+**主要协作调用**：``reject``。
 
-.. rubric:: ``useEffect callback @ 76``
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3229:3456:FUNCTION
+
+.. rubric:: ``useEffect callback @ 92``
 
 .. code-block:: javascript
 
-   useEffect callback @ 76()
+   useEffect callback @ 92()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``76``—``101`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``92``—``98`` 行；所属函数 ``forwardRef callback @ 14``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3234:3456:FUNCTION
+
+.. rubric:: ``anonymous callback @ 92``
+
+.. code-block:: javascript
+
+   anonymous callback @ 92()
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``92``—``98`` 行；所属函数 ``useEffect callback @ 92``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``clearTimeout``、``pendingSave.current.reject``。
+
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3503:3526:FUNCTION
+
+.. rubric:: ``useImperativeHandle callback @ 100``
+
+.. code-block:: javascript
+
+   useImperativeHandle callback @ 100()
+
+封装 ``ImperativeHandle`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``forwardRef callback @ 14``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3582:5310:FUNCTION
+
+.. rubric:: ``useEffect callback @ 103``
+
+.. code-block:: javascript
+
+   useEffect callback @ 103()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``103``—``142`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -226,7 +340,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:2428:2975:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3701:5135:FUNCTION
 
 .. rubric:: ``handleMessage``
 
@@ -236,7 +350,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 处理 ``Message`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``79``—``94`` 行；所属函数 ``useEffect callback @ 76``。
+**性质**：同步局部函数；源码第 ``106``—``135`` 行；所属函数 ``useEffect callback @ 103``。
 
 **参数**
 
@@ -247,19 +361,19 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``JSON.parse``、``post``、``onMessageReceived``、``console.error``。
+**主要协作调用**：``JSON.parse``、``clearTimeout``、``operation.resolve``、``operation.reject``、``post``、``onMessageReceived``、``console.error``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3056:3142:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:5216:5302:FUNCTION
 
-.. rubric:: ``returned callback @ 98``
+.. rubric:: ``returned callback @ 139``
 
 .. code-block:: javascript
 
-   returned callback @ 98()
+   returned callback @ 139()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``98``—``100`` 行；所属函数 ``useEffect callback @ 76``。
+**性质**：同步局部函数；源码第 ``139``—``141`` 行；所属函数 ``useEffect callback @ 103``。
 
 **参数**
 
@@ -275,7 +389,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3261:3386:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:5413:5538:FUNCTION
 
 .. rubric:: ``LoadingScreen``
 
@@ -285,7 +399,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 实现 ``LoadingScreen`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``103``—``108`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``144``—``149`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 
@@ -297,7 +411,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:3422:3669:FUNCTION
+.. CWM-AST-FUNCTION src/components/editor/CollaboraOnlineEditor.jsx:5574:5821:FUNCTION
 
 .. rubric:: ``LoadingFailedScreen``
 
@@ -307,7 +421,7 @@ src/components/editor/CollaboraOnlineEditor 模块
 
 实现 ``LoadingFailedScreen`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``110``—``118`` 行；所属函数 ``forwardRef callback @ 14``。
+**性质**：同步局部函数；源码第 ``151``—``159`` 行；所属函数 ``forwardRef callback @ 14``。
 
 **参数**
 

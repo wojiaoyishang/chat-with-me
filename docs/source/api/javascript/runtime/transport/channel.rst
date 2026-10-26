@@ -90,7 +90,7 @@ src/runtime/transport/channel 模块
    ``envelope``
       调用方传入的 ``envelope`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{queue = true}``（默认值 ``{}``）
+   ``{queue = true}`` （默认值 ``{}``）
       调用方传入的 ``queue = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

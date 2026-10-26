@@ -1,5 +1,4 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
-import { aggregateWorkflowTelemetry } from "./workflowMetrics.js";
 import {
   workflowLeafIds,
   projectWorkflowRegions,
@@ -1521,19 +1520,6 @@ export function workflowRuntimeForGraph(
       namePath: descendants
         .find((state) => state.namePath)
         ?.namePath.slice(0, nodePath.length),
-      usage: {
-        totalTokens: descendants.reduce(
-          (total, state) =>
-            total +
-            Number(
-              state.usage?.totalTokens ??
-                state.usage?.total_tokens ??
-                state.usage?.total ??
-                0,
-            ),
-          0,
-        ),
-      },
       startedAt: descendants
         .map((state) => state.startedAt)
         .filter(Boolean)
@@ -1552,21 +1538,7 @@ export function workflowRuntimeForGraph(
         .map((state) => state.error)
         .join("；"),
       children: descendants,
-      telemetry: aggregateWorkflowTelemetry(descendants),
       activeCount: count(["running"]),
-      nodeProgress: {
-        processed: count(["completed", "succeeded", "skipped"]),
-        total,
-        unit: "节点",
-        percent: total
-          ? (count(["completed", "succeeded", "skipped"]) * 100) / total
-          : 0,
-      },
-      progressMessage: descendants
-        .filter((value) => value.status === "running")
-        .map((value) => value.progressMessage || value.message)
-        .filter(Boolean)
-        .join("；"),
     };
   }
   return local;

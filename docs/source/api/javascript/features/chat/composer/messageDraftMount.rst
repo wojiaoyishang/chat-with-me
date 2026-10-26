@@ -54,7 +54,7 @@ src/features/chat/composer/messageDraftMount 模块
    ``message``
       调用方传入的 ``message`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``key``（默认值 ``MESSAGE_DRAFT_COMPONENT_KEY``）
+   ``key`` （默认值 ``MESSAGE_DRAFT_COMPONENT_KEY``）
       调用方传入的 ``key`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -142,7 +142,7 @@ src/features/chat/composer/messageDraftMount 模块
 
    **参数**
 
-   ``...drafts``（剩余参数）
+   ``...drafts`` （剩余参数）
       调用方传入的 ``drafts`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

@@ -21,7 +21,7 @@
    * - :doc:`src/components/editor/CollaboraOnlineEditor </api/javascript/components/editor/CollaboraOnlineEditor>`
      - 0
      - 0
-     - 12
+     - 17
      - ``src/components/editor/CollaboraOnlineEditor.jsx``
    * - :doc:`src/components/files/FileManager </api/javascript/components/files/FileManager>`
      - 1
@@ -29,9 +29,9 @@
      - 35
      - ``src/components/files/FileManager.jsx``
    * - :doc:`src/components/files/FileUploadProgress </api/javascript/components/files/FileUploadProgress>`
-     - 1
+     - 2
      - 0
-     - 1
+     - 8
      - ``src/components/files/FileUploadProgress.jsx``
    * - :doc:`src/components/files/uploadPolicy </api/javascript/components/files/uploadPolicy>`
      - 1
@@ -43,16 +43,31 @@
      - 0
      - 16
      - ``src/components/markdown/CodeBlock.jsx``
-   * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
-     - 16
+   * - :doc:`src/components/markdown/DocumentTaskControls </api/javascript/components/markdown/DocumentTaskControls>`
+     - 2
      - 0
-     - 46
+     - 1
+     - ``src/components/markdown/DocumentTaskControls.jsx``
+   * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
+     - 17
+     - 0
+     - 51
      - ``src/components/markdown/MarkdownRenderer.jsx``
    * - :doc:`src/components/markdown/ResourceImage </api/javascript/components/markdown/ResourceImage>`
      - 1
      - 0
-     - 1
+     - 5
      - ``src/components/markdown/ResourceImage.jsx``
+   * - :doc:`src/components/markdown/ResourceVideo </api/javascript/components/markdown/ResourceVideo>`
+     - 2
+     - 0
+     - 7
+     - ``src/components/markdown/ResourceVideo.jsx``
+   * - :doc:`src/components/markdown/StudyVisuals </api/javascript/components/markdown/StudyVisuals>`
+     - 5
+     - 0
+     - 1
+     - ``src/components/markdown/StudyVisuals.jsx``
    * - :doc:`src/components/markdown/card-block/CardBlock </api/javascript/components/markdown/card-block/CardBlock>`
      - 1
      - 0
@@ -83,6 +98,11 @@
      - 0
      - 2
      - ``src/components/markdown/card-block/blocks/ErrorBlock.jsx``
+   * - :doc:`src/components/markdown/card-block/blocks/HistorySnapshotBlock </api/javascript/components/markdown/card-block/blocks/HistorySnapshotBlock>`
+     - 2
+     - 0
+     - 3
+     - ``src/components/markdown/card-block/blocks/HistorySnapshotBlock.jsx``
    * - :doc:`src/components/markdown/card-block/blocks/HtmlBlock </api/javascript/components/markdown/card-block/blocks/HtmlBlock>`
      - 0
      - 0
@@ -116,7 +136,7 @@
    * - :doc:`src/components/markdown/card-block/blocks/ToolLogBlock </api/javascript/components/markdown/card-block/blocks/ToolLogBlock>`
      - 5
      - 0
-     - 20
+     - 23
      - ``src/components/markdown/card-block/blocks/ToolLogBlock.jsx``
    * - :doc:`src/components/markdown/card-block/blocks/useFollowOutputScroll </api/javascript/components/markdown/card-block/blocks/useFollowOutputScroll>`
      - 2
@@ -168,6 +188,11 @@
      - 0
      - 19
      - ``src/components/markdown/card-block/status/StatusWidget.jsx``
+   * - :doc:`src/components/markdown/card-block/status/StickyStatusHeader </api/javascript/components/markdown/card-block/status/StickyStatusHeader>`
+     - 1
+     - 0
+     - 4
+     - ``src/components/markdown/card-block/status/StickyStatusHeader.jsx``
    * - :doc:`src/components/markdown/card-block/status/ToolCallingRightStatus </api/javascript/components/markdown/card-block/status/ToolCallingRightStatus>`
      - 0
      - 0
@@ -178,6 +203,11 @@
      - 0
      - 1
      - ``src/components/markdown/card-block/status/progressUtils.js``
+   * - :doc:`src/components/markdown/card-block/status/toolLogReferences </api/javascript/components/markdown/card-block/status/toolLogReferences>`
+     - 1
+     - 0
+     - 2
+     - ``src/components/markdown/card-block/status/toolLogReferences.js``
    * - :doc:`src/components/markdown/card-block/useExpandedState </api/javascript/components/markdown/card-block/useExpandedState>`
      - 1
      - 0
@@ -198,11 +228,46 @@
      - 0
      - 51
      - ``src/components/markdown/card-block/widget/WidgetHost.jsx``
+   * - :doc:`src/components/markdown/documentCardSpec </api/javascript/components/markdown/documentCardSpec>`
+     - 10
+     - 0
+     - 5
+     - ``src/components/markdown/documentCardSpec.js``
+   * - :doc:`src/components/markdown/markdownMediaUrl </api/javascript/components/markdown/markdownMediaUrl>`
+     - 1
+     - 0
+     - 1
+     - ``src/components/markdown/markdownMediaUrl.js``
+   * - :doc:`src/components/markdown/rehypeDocumentTasks </api/javascript/components/markdown/rehypeDocumentTasks>`
+     - 5
+     - 0
+     - 7
+     - ``src/components/markdown/rehypeDocumentTasks.js``
+   * - :doc:`src/components/markdown/remarkCollapseExecutionStatuses </api/javascript/components/markdown/remarkCollapseExecutionStatuses>`
+     - 4
+     - 0
+     - 4
+     - ``src/components/markdown/remarkCollapseExecutionStatuses.js``
+   * - :doc:`src/components/markdown/remarkCwmLinks </api/javascript/components/markdown/remarkCwmLinks>`
+     - 3
+     - 0
+     - 1
+     - ``src/components/markdown/remarkCwmLinks.js``
    * - :doc:`src/components/markdown/remarkDirectiveToComponent </api/javascript/components/markdown/remarkDirectiveToComponent>`
      - 7
      - 0
      - 8
      - ``src/components/markdown/remarkDirectiveToComponent.js``
+   * - :doc:`src/components/markdown/remarkStudyDirectives </api/javascript/components/markdown/remarkStudyDirectives>`
+     - 3
+     - 0
+     - 9
+     - ``src/components/markdown/remarkStudyDirectives.js``
+   * - :doc:`src/components/markdown/remarkVideoDirective </api/javascript/components/markdown/remarkVideoDirective>`
+     - 4
+     - 0
+     - 4
+     - ``src/components/markdown/remarkVideoDirective.js``
    * - :doc:`src/components/markdown/replacementProtocol </api/javascript/components/markdown/replacementProtocol>`
      - 10
      - 0
@@ -223,36 +288,71 @@
      - 0
      - 10
      - ``src/components/setting/AccountSecurity.jsx``
-   * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 54
+   * - :doc:`src/components/setting/ComfyUISettings </api/javascript/components/setting/ComfyUISettings>`
+     - 4
      - 0
-     - 302
+     - 77
+     - ``src/components/setting/ComfyUISettings.jsx``
+   * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
+     - 43
+     - 0
+     - 289
      - ``src/components/setting/DynamicSettings.jsx``
+   * - :doc:`src/components/setting/JsonConfigEditor </api/javascript/components/setting/JsonConfigEditor>`
+     - 0
+     - 0
+     - 14
+     - ``src/components/setting/JsonConfigEditor.jsx``
+   * - :doc:`src/components/setting/KnowledgeDatabaseSettings </api/javascript/components/setting/KnowledgeDatabaseSettings>`
+     - 4
+     - 0
+     - 32
+     - ``src/components/setting/KnowledgeDatabaseSettings.jsx``
    * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
      - 1
      - 0
      - 14
      - ``src/components/setting/OrderedOptionsEditor.jsx``
+   * - :doc:`src/components/setting/TempCacheCleanup </api/javascript/components/setting/TempCacheCleanup>`
+     - 3
+     - 0
+     - 12
+     - ``src/components/setting/TempCacheCleanup.jsx``
    * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
      - 1
      - 0
      - 10
      - ``src/components/setting/UserProfileCard.jsx``
+   * - :doc:`src/components/setting/jsonEditorValidation </api/javascript/components/setting/jsonEditorValidation>`
+     - 0
+     - 0
+     - 0
+     - ``src/components/setting/jsonEditorValidation.js``
+   * - :doc:`src/components/sidebar/ConversationForkDialog </api/javascript/components/sidebar/ConversationForkDialog>`
+     - 1
+     - 0
+     - 8
+     - ``src/components/sidebar/ConversationForkDialog.jsx``
    * - :doc:`src/components/sidebar/ConversationsList </api/javascript/components/sidebar/ConversationsList>`
      - 11
      - 0
-     - 62
+     - 74
      - ``src/components/sidebar/ConversationsList.jsx``
    * - :doc:`src/components/sidebar/Sidebar </api/javascript/components/sidebar/Sidebar>`
      - 1
      - 0
-     - 23
+     - 31
      - ``src/components/sidebar/Sidebar.jsx``
    * - :doc:`src/components/sidebar/sidebarRegistry </api/javascript/components/sidebar/sidebarRegistry>`
      - 2
      - 0
      - 2
      - ``src/components/sidebar/sidebarRegistry.js``
+   * - :doc:`src/components/sidebar/useConversationFork </api/javascript/components/sidebar/useConversationFork>`
+     - 1
+     - 0
+     - 10
+     - ``src/components/sidebar/useConversationFork.js``
    * - :doc:`src/components/ui/ButtonContentWrapper </api/javascript/components/ui/ButtonContentWrapper>`
      - 1
      - 0
@@ -263,15 +363,25 @@
      - 0
      - 3
      - ``src/components/ui/DeleteConfirmDialog.tsx``
+   * - :doc:`src/components/ui/MultilineEditor </api/javascript/components/ui/MultilineEditor>`
+     - 0
+     - 0
+     - 12
+     - ``src/components/ui/MultilineEditor.jsx``
    * - :doc:`src/components/ui/ThreeDotLoading </api/javascript/components/ui/ThreeDotLoading>`
      - 1
      - 0
      - 0
      - ``src/components/ui/ThreeDotLoading.jsx``
+   * - :doc:`src/components/ui/accordion </api/javascript/components/ui/accordion>`
+     - 4
+     - 0
+     - 0
+     - ``src/components/ui/accordion.tsx``
    * - :doc:`src/components/ui/alert-dialog </api/javascript/components/ui/alert-dialog>`
      - 12
      - 0
-     - 2
+     - 3
      - ``src/components/ui/alert-dialog.tsx``
    * - :doc:`src/components/ui/avatar </api/javascript/components/ui/avatar>`
      - 3
@@ -301,7 +411,7 @@
    * - :doc:`src/components/ui/dialog </api/javascript/components/ui/dialog>`
      - 10
      - 0
-     - 2
+     - 7
      - ``src/components/ui/dialog.tsx``
    * - :doc:`src/components/ui/dropdown-menu </api/javascript/components/ui/dropdown-menu>`
      - 15
@@ -368,11 +478,21 @@
      - 0
      - 0
      - ``src/components/ui/switch.tsx``
+   * - :doc:`src/components/ui/textarea </api/javascript/components/ui/textarea>`
+     - 1
+     - 0
+     - 0
+     - ``src/components/ui/textarea.tsx``
    * - :doc:`src/components/ui/tooltip </api/javascript/components/ui/tooltip>`
      - 4
      - 0
      - 0
      - ``src/components/ui/tooltip.tsx``
+   * - :doc:`src/components/ui/useConfirmation </api/javascript/components/ui/useConfirmation>`
+     - 1
+     - 0
+     - 8
+     - ``src/components/ui/useConfirmation.jsx``
    * - :doc:`src/components/window/FloatingDockWindow </api/javascript/components/window/FloatingDockWindow>`
      - 4
      - 0
@@ -394,14 +514,18 @@
    /api/javascript/components/files/FileUploadProgress
    /api/javascript/components/files/uploadPolicy
    /api/javascript/components/markdown/CodeBlock
+   /api/javascript/components/markdown/DocumentTaskControls
    /api/javascript/components/markdown/MarkdownRenderer
    /api/javascript/components/markdown/ResourceImage
+   /api/javascript/components/markdown/ResourceVideo
+   /api/javascript/components/markdown/StudyVisuals
    /api/javascript/components/markdown/card-block/CardBlock
    /api/javascript/components/markdown/card-block/agent/AgentBody
    /api/javascript/components/markdown/card-block/agent/AgentHeader
    /api/javascript/components/markdown/card-block/agent/AgentWidget
    /api/javascript/components/markdown/card-block/agent/agentContent
    /api/javascript/components/markdown/card-block/blocks/ErrorBlock
+   /api/javascript/components/markdown/card-block/blocks/HistorySnapshotBlock
    /api/javascript/components/markdown/card-block/blocks/HtmlBlock
    /api/javascript/components/markdown/card-block/blocks/MarkdownBlock
    /api/javascript/components/markdown/card-block/blocks/OutputToolbar
@@ -419,26 +543,44 @@
    /api/javascript/components/markdown/card-block/status/StatusBody
    /api/javascript/components/markdown/card-block/status/StatusHeader
    /api/javascript/components/markdown/card-block/status/StatusWidget
+   /api/javascript/components/markdown/card-block/status/StickyStatusHeader
    /api/javascript/components/markdown/card-block/status/ToolCallingRightStatus
    /api/javascript/components/markdown/card-block/status/progressUtils
+   /api/javascript/components/markdown/card-block/status/toolLogReferences
    /api/javascript/components/markdown/card-block/useExpandedState
    /api/javascript/components/markdown/card-block/utils
    /api/javascript/components/markdown/card-block/widget/CanvasCardDeck
    /api/javascript/components/markdown/card-block/widget/WidgetHost
+   /api/javascript/components/markdown/documentCardSpec
+   /api/javascript/components/markdown/markdownMediaUrl
+   /api/javascript/components/markdown/rehypeDocumentTasks
+   /api/javascript/components/markdown/remarkCollapseExecutionStatuses
+   /api/javascript/components/markdown/remarkCwmLinks
    /api/javascript/components/markdown/remarkDirectiveToComponent
+   /api/javascript/components/markdown/remarkStudyDirectives
+   /api/javascript/components/markdown/remarkVideoDirective
    /api/javascript/components/markdown/replacementProtocol
    /api/javascript/components/modal/UniversalModalHost
    /api/javascript/components/modal/universalModal
    /api/javascript/components/setting/AccountSecurity
+   /api/javascript/components/setting/ComfyUISettings
    /api/javascript/components/setting/DynamicSettings
+   /api/javascript/components/setting/JsonConfigEditor
+   /api/javascript/components/setting/KnowledgeDatabaseSettings
    /api/javascript/components/setting/OrderedOptionsEditor
+   /api/javascript/components/setting/TempCacheCleanup
    /api/javascript/components/setting/UserProfileCard
+   /api/javascript/components/setting/jsonEditorValidation
+   /api/javascript/components/sidebar/ConversationForkDialog
    /api/javascript/components/sidebar/ConversationsList
    /api/javascript/components/sidebar/Sidebar
    /api/javascript/components/sidebar/sidebarRegistry
+   /api/javascript/components/sidebar/useConversationFork
    /api/javascript/components/ui/ButtonContentWrapper
    /api/javascript/components/ui/DeleteConfirmDialog
+   /api/javascript/components/ui/MultilineEditor
    /api/javascript/components/ui/ThreeDotLoading
+   /api/javascript/components/ui/accordion
    /api/javascript/components/ui/alert-dialog
    /api/javascript/components/ui/avatar
    /api/javascript/components/ui/badge
@@ -459,7 +601,9 @@
    /api/javascript/components/ui/slider
    /api/javascript/components/ui/sonner
    /api/javascript/components/ui/switch
+   /api/javascript/components/ui/textarea
    /api/javascript/components/ui/tooltip
+   /api/javascript/components/ui/useConfirmation
    /api/javascript/components/window/FloatingDockWindow
    /api/javascript/components/window/index
 

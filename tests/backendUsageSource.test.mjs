@@ -7,10 +7,11 @@ import { JSDOM } from 'jsdom';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
     '../../../Python/Chat-With-Me-Backend/application/management_pages');
-const [source, motion, template] = await Promise.all([
+const [source, motion, template, observation] = await Promise.all([
     readFile(path.join(root, 'static/management-source.js'), 'utf8'),
     readFile(path.join(root, 'static/page-motion.js'), 'utf8'),
     readFile(path.join(root, 'templates/management.html'), 'utf8'),
+    readFile(path.join(root, 'static/observation-components.js'), 'utf8'),
 ]);
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
 
@@ -31,11 +32,14 @@ async function taskPage(t, calls, extra = {}) {
     dom.window.fetch = async (url) => {
         const pathname = new URL(String(url), dom.window.location.origin).pathname;
         const data = pathname.endsWith('/definitions') ? { definitions: [] }
-            : pathname.endsWith('/details') ? { task, revision, modelCalls: calls, ...extra }
+            : pathname.endsWith('/details') ? { task, revision, ...extra, observation: { version: 1, revision, scopes: { task: { kind: 'task', title: '用量展示', components: [
+                { id: 'usage', type: 'model-usage', title: '模型用量', summary: {}, rows: calls.map((call, index) => ({ id: call.id ?? `call-${index}`, ...call })), stages: [] },
+                ...(extra.observationComponents || []),
+            ] } } } }
                 : { tasks: [task] };
         return { ok: true, json: async () => ({ success: true, data }) };
     };
-    dom.window.eval(`${motion}\n${source}`);
+    dom.window.eval(`${motion}\n${observation}\n${source}`);
     const cells = () => [...dom.window.document.querySelectorAll('#detail table tbody tr')]
         .map((row) => row.lastElementChild);
     for (let attempt = 0; attempt < 20 && cells().length !== calls.length; attempt += 1) await settle();
@@ -49,11 +53,11 @@ async function taskPage(t, calls, extra = {}) {
 
 test('task model usage renders field provenance and exposes its meaning without object strings', async (t) => {
     const { cells } = await taskPage(t, [{
-        callId: 'provider-call', model: 'deepseek-flash',
+        id: 'provider-call', model: 'deepseek-flash',
         usage: { inputTokens: 2874, outputTokens: 5648, totalTokens: 8522,
             provenance: { inputTokens: 'provider', outputTokens: 'provider', totalTokens: 'derived', cachedTokens: 'provider' } },
     }, {
-        callId: 'estimated-call', usage: { provenance: { inputTokens: 'provider', outputTokens: 'estimated', totalTokens: 'derived' } },
+        id: 'estimated-call', usage: { provenance: { inputTokens: 'provider', outputTokens: 'estimated', totalTokens: 'derived' } },
     }, {
         usage: { provenance: { inputTokens: 'provider', outputTokens: 'provider', totalTokens: 'provider' } },
     }, {
@@ -72,7 +76,7 @@ test('task model usage renders field provenance and exposes its meaning without 
     for (const cell of cells()) assert.doesNotMatch(cell.textContent, /\[object Object\]/);
 });
 
-test('empty or malformed provenance falls back to textual source and safely handles missing values', async (t) => {
+test('empty or malformed provenance stays unknown and sources are safely inserted as text', async (t) => {
     const { cells } = await taskPage(t, [
         { usage: { provenance: {}, source: 'provider' } },
         { usage: { provenance: { inputTokens: { unexpected: true } } }, usageSource: 'estimated' },
@@ -84,16 +88,16 @@ test('empty or malformed provenance falls back to textual source and safely hand
         { usageSource: '__proto__' },
     ]);
     assert.deepEqual(cells().slice(0, 6).map((cell) => cell.textContent),
-        ['接口返回', '本地估算', '由调用方提供', '汇总计算', '未知', '未知']);
+        ['未知', '未知', '未知', '未知', '未知', '未知']);
     assert.equal(cells()[6].querySelector('img'), null);
     assert.match(cells()[6].textContent, /<img src=x onerror=alert\(1\)>/);
-    assert.equal(cells()[7].textContent, '__proto__');
+    assert.equal(cells()[7].textContent, '未知');
     assert.doesNotMatch(cells().map((cell) => cell.textContent).join(''), /\[object Object\]/);
 });
 
 test('opened usage explanation stays open after task details refresh', async (t) => {
     const { cells, refresh } = await taskPage(t, [{
-        callId: 'same-call', usage: { provenance: { inputTokens: 'provider', totalTokens: 'derived' } },
+        id: 'same-call', usage: { provenance: { inputTokens: 'provider', totalTokens: 'derived' } },
     }]);
     cells()[0].querySelector('details').open = true;
     await refresh();
@@ -101,17 +105,17 @@ test('opened usage explanation stays open after task details refresh', async (t)
 });
 
 test('task dashboard displays current pending responses and refreshes to zero', async (t) => {
-    const metrics = { activeRequests: 2, totalRequests: 7, peakActiveRequests: 2 };
-    const { dom, refresh } = await taskPage(t, [{ callId: 'probe', usage: {} }], {
-        runtime: { workflowMetrics: metrics },
+    const metrics = { id: 'requests', type: 'request-activity', title: '外部请求', active: 2, total: 7, peak: 2, description: '当前尚未结束的外部请求；不含空闲连接' };
+    const { dom, refresh } = await taskPage(t, [{ id: 'probe', usage: {} }], {
+        observationComponents: [metrics],
     });
-    const tiles = () => [...dom.window.document.querySelectorAll('.detail-stats > div')];
+    const tiles = () => [...dom.window.document.querySelectorAll('.observation-indicator')];
     const connections = () => tiles().find((node) => node.textContent.includes('存在连接数'));
     assert.ok(connections(), dom.window.document.querySelector('#detail').textContent);
     assert.match(connections().textContent, /存在连接数2/);
-    assert.match(connections().textContent, /不含空闲连接/);
+    assert.match(dom.window.document.querySelector('#detail').textContent, /不含空闲连接/);
     assert.equal(tiles().some((node) => node.textContent.includes('GPU')), false);
-    metrics.activeRequests = 0;
+    metrics.active = 0;
     await refresh();
     assert.match(connections().textContent, /存在连接数0/);
 });

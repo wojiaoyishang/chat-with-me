@@ -102,7 +102,7 @@ Bound the visible tool nodes while keeping the current position in view.
    ``total``
       调用方传入的 ``total`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``limit``（默认值 ``6``）
+   ``limit`` （默认值 ``6``）
       调用方传入的 ``limit`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

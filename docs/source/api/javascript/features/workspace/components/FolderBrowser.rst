@@ -138,10 +138,10 @@ src/features/workspace/components/FolderBrowser 模块
 
 **参数**
 
-``nextRootId``（默认值 ``rootId``）
+``nextRootId`` （默认值 ``rootId``）
    目标对象的公共或运行时标识。
 
-``nextPath``（默认值 ``currentPath``）
+``nextPath`` （默认值 ``currentPath``）
    调用方传入的 ``nextPath`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

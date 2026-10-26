@@ -13,6 +13,7 @@
    add_event
    add_surface
    add_widget
+   observation_components
    model_settings
    http_auth
    user_management

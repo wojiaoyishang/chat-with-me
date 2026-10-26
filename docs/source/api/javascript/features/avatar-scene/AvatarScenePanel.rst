@@ -177,7 +177,7 @@ Non-modal scene host leaves the chat composer available for typing.
 ``event``
    语义事件名或 EventEnvelope。
 
-``payload``（默认值 ``{}``）
+``payload`` （默认值 ``{}``）
    事件或业务操作的结构化载荷。
 
 **返回值**

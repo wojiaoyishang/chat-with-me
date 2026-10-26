@@ -97,7 +97,7 @@ src/features/chat/page/hooks/useFileUpload 模块
 ``files``
    调用方传入的 ``files`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``items``（默认值 ``[]``）
+``items`` （默认值 ``[]``）
    待渲染、筛选或合并的数据项数组。
 
 **返回值**

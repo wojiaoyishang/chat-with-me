@@ -37,7 +37,7 @@ src/components/ui/sonner 模块
 
    **参数**
 
-   ``{ ...props }``（类型 ``ToasterProps``）
+   ``{ ...props }`` （类型 ``ToasterProps``）
       调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

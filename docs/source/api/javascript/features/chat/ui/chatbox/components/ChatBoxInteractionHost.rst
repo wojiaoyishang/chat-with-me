@@ -75,13 +75,13 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:1213:2317:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:1213:2679:FUNCTION
 
 .. js:function:: normalizeApprovalItems(data)
 
    规范化与 ``Approval Items`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``35``—``61`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``35``—``64`` 行。
 
    **参数**
 
@@ -90,19 +90,19 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``source.map((item, index) => ({ itemId: item?.itemId || \x60t${index}\x60, toolName: item?.toolName || data?.approvalToolNames?.[index] || data?.toolNames?.[index] || 'Tool', callPreview…``、``[{ itemId: '', toolName: fallbackNames.join('、') || 'Tool', callPreview: data?.toolCallContent || '', callIndex: 0, status: 'pending', decision: null, scope: 'once', groupType: da…``。
+   根据执行分支返回结果；代表性返回表达式为 ``source.map((item, index) => ({ itemId: item?.itemId || \x60t${index}\x60, toolName: item?.toolName || item?.tool_name || data?.approvalToolNames?.[index] || data?.toolNames?.[index] ||…``、``[{ itemId: '', toolName: fallbackNames.join('、') || 'Tool', displayName: (data?.approvalDisplayNames || data?.displayNames || fallbackNames).join('、') || 'Tool', callPreview: data…``。
 
-   **主要协作调用**：``Array.isArray``、``source.map``、``fallbackNames.join``。
+   **主要协作调用**：``Array.isArray``、``source.map``、``fallbackNames.join``、``(data?.approvalDisplayNames || data?.displayNames || fallbackNames).join``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:2339:2657:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:2701:3019:FUNCTION
 
 .. js:function:: CallSummary({value})
 
    渲染 ``CallSummary`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``63``—``75`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``66``—``78`` 行。
 
    **参数**
 
@@ -115,13 +115,13 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **主要协作调用**：``String(value || '').replace(/\s+/g, ' ').trim``、``String(value || '').replace``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:2683:4451:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:3045:4813:FUNCTION
 
 .. js:function:: ApprovalActions({item, submitting, resolve, t})
 
    渲染 ``ApprovalActions`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``77``—``122`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``80``—``125`` 行。
 
    **参数**
 
@@ -136,13 +136,13 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:4481:5068:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:4843:5430:FUNCTION
 
 .. js:function:: ApprovalStatusBadge({item, t})
 
    渲染 ``ApprovalStatusBadge`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``124``—``141`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``127``—``144`` 行。
 
    **参数**
 
@@ -155,13 +155,13 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **主要协作调用**：``t``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5102:12904:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5464:13275:FUNCTION
 
 .. js:function:: ToolApprovalInteraction({interaction, onDismiss})
 
    渲染 ``ToolApprovalInteraction`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``143``—``284`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``146``—``287`` 行。
 
    **参数**
 
@@ -180,13 +180,13 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13007:15233:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13378:15604:FUNCTION
 
 .. js:function:: ChatBoxInteractionHost({conversationId})
 
    渲染 ``ChatBoxInteractionHost`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``288``—``340`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``291``—``343`` 行。
 
    **参数**
 
@@ -260,7 +260,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``interactionRenderers.get``、``interactionRenderers.delete``、``notifyRegistryChanged``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:1362:1933:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:1362:2185:FUNCTION
 
 .. rubric:: ``source.map callback @ 38``
 
@@ -270,7 +270,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 作为 ``source.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``38``—``47`` 行；所属函数 ``normalizeApprovalItems``。
+**性质**：同步局部函数；源码第 ``38``—``49`` 行；所属函数 ``normalizeApprovalItems``。
 
 **参数**
 
@@ -286,17 +286,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``Number.isFinite``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:2956:2990:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:3318:3352:FUNCTION
 
-.. rubric:: ``onClick callback @ 85``
+.. rubric:: ``onClick callback @ 88``
 
 .. code-block:: javascript
 
-   onClick callback @ 85()
+   onClick callback @ 88()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``ApprovalActions``。
+**性质**：同步局部函数；源码第 ``88``—``88`` 行；所属函数 ``ApprovalActions``。
 
 **参数**
 
@@ -308,17 +308,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``resolve``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:3293:3328:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:3655:3690:FUNCTION
 
-.. rubric:: ``onClick callback @ 95``
+.. rubric:: ``onClick callback @ 98``
 
 .. code-block:: javascript
 
-   onClick callback @ 95()
+   onClick callback @ 98()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``95``—``95`` 行；所属函数 ``ApprovalActions``。
+**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``ApprovalActions``。
 
 **参数**
 
@@ -330,17 +330,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``resolve``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:3729:3779:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:4091:4141:FUNCTION
 
-.. rubric:: ``onClick callback @ 106``
+.. rubric:: ``onClick callback @ 109``
 
 .. code-block:: javascript
 
-   onClick callback @ 106()
+   onClick callback @ 109()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``106``—``106`` 行；所属函数 ``ApprovalActions``。
+**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``ApprovalActions``。
 
 **参数**
 
@@ -352,17 +352,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``resolve``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:4159:4210:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:4521:4572:FUNCTION
 
-.. rubric:: ``onClick callback @ 115``
+.. rubric:: ``onClick callback @ 118``
 
 .. code-block:: javascript
 
-   onClick callback @ 115()
+   onClick callback @ 118()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``ApprovalActions``。
+**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``ApprovalActions``。
 
 **参数**
 
@@ -374,35 +374,15 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``resolve``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5224:5239:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5586:5601:FUNCTION
 
-.. rubric:: ``useState callback @ 145``
+.. rubric:: ``useState callback @ 148``
 
 .. code-block:: javascript
 
-   useState callback @ 145()
+   useState callback @ 148()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``145``—``145`` 行；所属函数 ``ToolApprovalInteraction``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5367:5401:FUNCTION
-
-.. rubric:: ``useMemo callback @ 148``
-
-.. code-block:: javascript
-
-   useMemo callback @ 148()
-
-封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
 **性质**：同步局部函数；源码第 ``148``—``148`` 行；所属函数 ``ToolApprovalInteraction``。
 
@@ -414,19 +394,39 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``normalizeApprovalItems``。
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5729:5763:FUNCTION
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5450:5483:FUNCTION
-
-.. rubric:: ``items.filter callback @ 149``
+.. rubric:: ``useMemo callback @ 151``
 
 .. code-block:: javascript
 
-   items.filter callback @ 149(item)
+   useMemo callback @ 151()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``ToolApprovalInteraction``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``normalizeApprovalItems``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5812:5845:FUNCTION
+
+.. rubric:: ``items.filter callback @ 152``
+
+.. code-block:: javascript
+
+   items.filter callback @ 152(item)
 
 作为 ``items.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``149``—``149`` 行；所属函数 ``ToolApprovalInteraction``。
+**性质**：同步局部函数；源码第 ``152``—``152`` 行；所属函数 ``ToolApprovalInteraction``。
 
 **参数**
 
@@ -437,17 +437,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:5825:7038:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:6187:7400:FUNCTION
 
-.. rubric:: ``useCallback callback @ 155``
+.. rubric:: ``useCallback callback @ 158``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 155(itemId, decision, scope)
+   async useCallback callback @ 158(itemId, decision, scope)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``155``—``186`` 行；所属函数 ``ToolApprovalInteraction``。
+**性质**：异步局部函数；源码第 ``158``—``189`` 行；所属函数 ``ToolApprovalInteraction``。
 
 **参数**
 
@@ -457,7 +457,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 ``decision``
    调用方传入的 ``decision`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-``scope``（默认值 ``'once'``）
+``scope`` （默认值 ``'once'``）
    调用方传入的 ``scope`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
@@ -472,17 +472,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:6021:6061:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:6383:6423:FUNCTION
 
-.. rubric:: ``setSubmittingIds callback @ 158``
+.. rubric:: ``setSubmittingIds callback @ 161``
 
 .. code-block:: javascript
 
-   setSubmittingIds callback @ 158(prev)
+   setSubmittingIds callback @ 161(prev)
 
 设置与 ``Submitting Ids`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``158``—``158`` 行；所属函数 ``useCallback callback @ 155``。
+**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``useCallback callback @ 158``。
 
 **参数**
 
@@ -495,17 +495,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``new Set(prev).add``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:6880:7020:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:7242:7382:FUNCTION
 
-.. rubric:: ``setSubmittingIds callback @ 180``
+.. rubric:: ``setSubmittingIds callback @ 183``
 
 .. code-block:: javascript
 
-   setSubmittingIds callback @ 180(prev)
+   setSubmittingIds callback @ 183(prev)
 
 设置与 ``Submitting Ids`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``180``—``184`` 行；所属函数 ``useCallback callback @ 155``。
+**性质**：同步局部函数；源码第 ``183``—``187`` 行；所属函数 ``useCallback callback @ 158``。
 
 **参数**
 
@@ -518,17 +518,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``next.delete``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:10157:12804:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:10525:13175:FUNCTION
 
-.. rubric:: ``items.map callback @ 239``
+.. rubric:: ``items.map callback @ 242``
 
 .. code-block:: javascript
 
-   items.map callback @ 239(item, index)
+   items.map callback @ 242(item, index)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``239``—``278`` 行；所属函数 ``ToolApprovalInteraction``。
+**性质**：同步局部函数；源码第 ``242``—``281`` 行；所属函数 ``ToolApprovalInteraction``。
 
 **参数**
 
@@ -544,17 +544,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``submittingIds.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13171:13256:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13542:13627:FUNCTION
 
-.. rubric:: ``useCallback callback @ 292``
+.. rubric:: ``useCallback callback @ 295``
 
 .. code-block:: javascript
 
-   useCallback callback @ 292(id)
+   useCallback callback @ 295(id)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``292``—``294`` 行；所属函数 ``ChatBoxInteractionHost``。
+**性质**：同步局部函数；源码第 ``295``—``297`` 行；所属函数 ``ChatBoxInteractionHost``。
 
 **参数**
 
@@ -569,17 +569,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13205:13248:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13576:13619:FUNCTION
 
-.. rubric:: ``setInteractions callback @ 293``
+.. rubric:: ``setInteractions callback @ 296``
 
 .. code-block:: javascript
 
-   setInteractions callback @ 293(prev)
+   setInteractions callback @ 296(prev)
 
 设置与 ``Interactions`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``useCallback callback @ 292``。
+**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``useCallback callback @ 295``。
 
 **参数**
 
@@ -594,17 +594,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13225:13247:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13596:13618:FUNCTION
 
-.. rubric:: ``prev.filter callback @ 293``
+.. rubric:: ``prev.filter callback @ 296``
 
 .. code-block:: javascript
 
-   prev.filter callback @ 293(item)
+   prev.filter callback @ 296(item)
 
 作为 ``prev.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``setInteractions callback @ 293``。
+**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``setInteractions callback @ 296``。
 
 **参数**
 
@@ -615,17 +615,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13278:13460:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13649:13831:FUNCTION
 
-.. rubric:: ``useEffect callback @ 296``
+.. rubric:: ``useEffect callback @ 299``
 
 .. code-block:: javascript
 
-   useEffect callback @ 296()
+   useEffect callback @ 299()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``296``—``300`` 行；所属函数 ``ChatBoxInteractionHost``。
+**性质**：同步局部函数；源码第 ``299``—``303`` 行；所属函数 ``ChatBoxInteractionHost``。
 
 **参数**
 
@@ -639,7 +639,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13310:13355:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13681:13726:FUNCTION
 
 .. rubric:: ``listener``
 
@@ -649,7 +649,7 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 实现 ``listener`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``297``—``297`` 行；所属函数 ``useEffect callback @ 296``。
+**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``useEffect callback @ 299``。
 
 **参数**
 
@@ -663,17 +663,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13336:13354:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13707:13725:FUNCTION
 
-.. rubric:: ``setRegistryVersion callback @ 297``
+.. rubric:: ``setRegistryVersion callback @ 300``
 
 .. code-block:: javascript
 
-   setRegistryVersion callback @ 297(value)
+   setRegistryVersion callback @ 300(value)
 
 设置与 ``Registry Version`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``297``—``297`` 行；所属函数 ``listener``。
+**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``listener``。
 
 **参数**
 
@@ -684,17 +684,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13412:13453:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13783:13824:FUNCTION
 
-.. rubric:: ``returned callback @ 299``
+.. rubric:: ``returned callback @ 302``
 
 .. code-block:: javascript
 
-   returned callback @ 299()
+   returned callback @ 302()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``299``—``299`` 行；所属函数 ``useEffect callback @ 296``。
+**性质**：同步局部函数；源码第 ``302``—``302`` 行；所属函数 ``useEffect callback @ 299``。
 
 **参数**
 
@@ -706,17 +706,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``registryListeners.delete``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13482:13524:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13853:13895:FUNCTION
 
-.. rubric:: ``useEffect callback @ 302``
+.. rubric:: ``useEffect callback @ 305``
 
 .. code-block:: javascript
 
-   useEffect callback @ 302()
+   useEffect callback @ 305()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``302``—``304`` 行；所属函数 ``ChatBoxInteractionHost``。
+**性质**：同步局部函数；源码第 ``305``—``307`` 行；所属函数 ``ChatBoxInteractionHost``。
 
 **参数**
 
@@ -728,17 +728,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``setInteractions``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13560:14403:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13931:14774:FUNCTION
 
-.. rubric:: ``useEffect callback @ 306``
+.. rubric:: ``useEffect callback @ 309``
 
 .. code-block:: javascript
 
-   useEffect callback @ 306()
+   useEffect callback @ 309()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``306``—``323`` 行；所属函数 ``ChatBoxInteractionHost``。
+**性质**：同步局部函数；源码第 ``309``—``326`` 行；所属函数 ``ChatBoxInteractionHost``。
 
 **参数**
 
@@ -756,17 +756,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13621:14402:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13992:14773:FUNCTION
 
-.. rubric:: ``onEvent({event: 'interaction.*', conversationId}).then callback @ 306``
+.. rubric:: ``onEvent({event: 'interaction.*', conversationId}).then callback @ 309``
 
 .. code-block:: javascript
 
-   onEvent({event: 'interaction.*', conversationId}).then callback @ 306({event, payload})
+   onEvent({event: 'interaction.*', conversationId}).then callback @ 309({event, payload})
 
 处理 ``onEvent({event: 'interaction.*', conversationId}).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``306``—``323`` 行；所属函数 ``useEffect callback @ 306``。
+**性质**：同步局部函数；源码第 ``309``—``326`` 行；所属函数 ``useEffect callback @ 309``。
 
 **参数**
 
@@ -781,17 +781,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13810:13939:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14181:14310:FUNCTION
 
-.. rubric:: ``setInteractions callback @ 310``
+.. rubric:: ``setInteractions callback @ 313``
 
 .. code-block:: javascript
 
-   setInteractions callback @ 310(prev)
+   setInteractions callback @ 313(prev)
 
 设置与 ``Interactions`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``310``—``313`` 行；所属函数 ``onEvent({event: 'interaction.*', conversationId}).then callback @ 306``。
+**性质**：同步局部函数；源码第 ``313``—``316`` 行；所属函数 ``onEvent({event: 'interaction.*', conversationId}).then callback @ 309``。
 
 **参数**
 
@@ -806,17 +806,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:13851:13879:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14222:14250:FUNCTION
 
-.. rubric:: ``prev.filter callback @ 311``
+.. rubric:: ``prev.filter callback @ 314``
 
 .. code-block:: javascript
 
-   prev.filter callback @ 311(item)
+   prev.filter callback @ 314(item)
 
 作为 ``prev.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``setInteractions callback @ 310``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``setInteractions callback @ 313``。
 
 **参数**
 
@@ -827,17 +827,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14100:14191:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14471:14562:FUNCTION
 
-.. rubric:: ``setInteractions callback @ 317``
+.. rubric:: ``setInteractions callback @ 320``
 
 .. code-block:: javascript
 
-   setInteractions callback @ 317(prev)
+   setInteractions callback @ 320(prev)
 
 设置与 ``Interactions`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``317``—``317`` 行；所属函数 ``onEvent({event: 'interaction.*', conversationId}).then callback @ 306``。
+**性质**：同步局部函数；源码第 ``320``—``320`` 行；所属函数 ``onEvent({event: 'interaction.*', conversationId}).then callback @ 309``。
 
 **参数**
 
@@ -852,17 +852,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14117:14190:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14488:14561:FUNCTION
 
-.. rubric:: ``prev.map callback @ 317``
+.. rubric:: ``prev.map callback @ 320``
 
 .. code-block:: javascript
 
-   prev.map callback @ 317(item)
+   prev.map callback @ 320(item)
 
 作为 ``prev.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``317``—``317`` 行；所属函数 ``setInteractions callback @ 317``。
+**性质**：同步局部函数；源码第 ``320``—``320`` 行；所属函数 ``setInteractions callback @ 320``。
 
 **参数**
 
@@ -873,17 +873,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14462:14532:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14833:14903:FUNCTION
 
-.. rubric:: ``useMemo callback @ 325``
+.. rubric:: ``useMemo callback @ 328``
 
 .. code-block:: javascript
 
-   useMemo callback @ 325()
+   useMemo callback @ 328()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``325``—``325`` 行；所属函数 ``ChatBoxInteractionHost``。
+**性质**：同步局部函数；源码第 ``328``—``328`` 行；所属函数 ``ChatBoxInteractionHost``。
 
 **参数**
 
@@ -897,17 +897,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14488:14531:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14859:14902:FUNCTION
 
-.. rubric:: ``interactions.filter callback @ 325``
+.. rubric:: ``interactions.filter callback @ 328``
 
 .. code-block:: javascript
 
-   interactions.filter callback @ 325(item)
+   interactions.filter callback @ 328(item)
 
 作为 ``interactions.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``325``—``325`` 行；所属函数 ``useMemo callback @ 325``。
+**性质**：同步局部函数；源码第 ``328``—``328`` 行；所属函数 ``useMemo callback @ 328``。
 
 **参数**
 
@@ -920,17 +920,17 @@ Register an interaction renderer displayed above ChatBox. New interactive prompt
 
 **主要协作调用**：``interactionRenderers.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:14900:15188:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/ChatBoxInteractionHost.jsx:15271:15559:FUNCTION
 
-.. rubric:: ``visible.map callback @ 331``
+.. rubric:: ``visible.map callback @ 334``
 
 .. code-block:: javascript
 
-   visible.map callback @ 331(interaction)
+   visible.map callback @ 334(interaction)
 
 作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``331``—``336`` 行；所属函数 ``ChatBoxInteractionHost``。
+**性质**：同步局部函数；源码第 ``334``—``339`` 行；所属函数 ``ChatBoxInteractionHost``。
 
 **参数**
 

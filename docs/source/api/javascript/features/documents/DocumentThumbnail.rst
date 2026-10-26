@@ -27,13 +27,13 @@ src/features/documents/DocumentThumbnail 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentThumbnail.jsx:194:2226:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentThumbnail.jsx:194:2343:FUNCTION
 
 .. js:function:: DocumentThumbnail({ documentId, content })
 
    渲染 ``DocumentThumbnail`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``5``—``51`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``53`` 行。
 
    **参数**
 
@@ -145,17 +145,17 @@ src/features/documents/DocumentThumbnail 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/documents/DocumentThumbnail.jsx:1906:2054:FUNCTION
+.. CWM-AST-FUNCTION src/features/documents/DocumentThumbnail.jsx:2023:2171:FUNCTION
 
-.. rubric:: ``[85, 95, 75, 90, 60].map callback @ 43``
+.. rubric:: ``[85, 95, 75, 90, 60].map callback @ 45``
 
 .. code-block:: javascript
 
-   [85, 95, 75, 90, 60].map callback @ 43(width)
+   [85, 95, 75, 90, 60].map callback @ 45(width)
 
 作为 ``[85, 95, 75, 90, 60].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``43``—``45`` 行；所属函数 ``DocumentThumbnail``。
+**性质**：同步局部函数；源码第 ``45``—``47`` 行；所属函数 ``DocumentThumbnail``。
 
 **参数**
 

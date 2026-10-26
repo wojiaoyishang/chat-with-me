@@ -37,7 +37,7 @@ src/components/ui/DeleteConfirmDialog 模块
 
    **参数**
 
-   ``{ open, onOpenChange, isDeleting = false, title, description, cancelText, confirmText, onConfirm, }``（类型 ``DeleteConfirmDialogProps``）
+   ``{ open, onOpenChange, isDeleting = false, title, description, cancelText, confirmText, onConfirm, }`` （类型 ``DeleteConfirmDialogProps``）
       调用方传入的 ``open, onOpenChange, isDeleting = false, title, description, cancelText, confirmText, onConfirm,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -65,7 +65,7 @@ src/components/ui/DeleteConfirmDialog 模块
 
 **参数**
 
-``open``（类型 ``boolean``）
+``open`` （类型 ``boolean``）
    调用方传入的 ``open`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

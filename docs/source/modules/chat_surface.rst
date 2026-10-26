@@ -165,7 +165,7 @@ guidance 若在强制提交前到达则优先处理。前端不实现这套判�
 不得隐式抢占。补充消息立即以用户消息变体显示，后端 ``guidancePrompts`` 再把“等待工具调用完成 / 等待模型响应”
 投影在补充气泡组下方。
 
-Execution Window 绑定当前 Execution 的 Assistant ``messageId``。该消息离开当前 ``messagesOrder``（Branch 切换、Retry/Regenerate、
+Execution Window 绑定当前 Execution 的 Assistant ``messageId``。该消息离开当前 ``messagesOrder`` （Branch 切换、Retry/Regenerate、
 Edit/Fork 新路径、删除等）时窗口自动关闭。
 
 Execution Window 的 Tool Calling 与执行日志在 V42 合并成一条按发生时间排序的执行时间线；用户补充、模型/Runtime 活动与

@@ -126,37 +126,37 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **主要协作调用**：``classifyCwmUrl``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1871:3891:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:1871:4200:FUNCTION
 
 .. js:function:: resolveCwmUrl(value, { download = false })
 
    解析并确定与 ``Cwm Url`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``49``—``103`` 行。
+   **性质**：同步函数；导出 API；源码第 ``49``—``106`` 行。
 
    **参数**
 
    ``value``
       待读取、转换或校验的值。
 
-   ``{ download = false }``（默认值 ``{}``）
+   ``{ download = false }`` （默认值 ``{}``）
       调用方传入的 ``download = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``''``、``segments[1] === 'preview' ? \x60${base}/upload/preview/${id}\x60 : \x60${base}/upload/${id}\x60``、``\x60${base}/public/${encodeSegments(segments)}\x60``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``''``、``segments[1] === 'preview' ? \x60${base}/upload/preview/${id}\x60 : \x60${base}/upload/${id}\x60``、``\x60${base}/document/${encodeURIComponent(segments[0])}/revisions/${segments[2]}/content\x60``。
 
    **主要协作调用**：``value.trim``、``raw.toLowerCase().startsWith``、``raw.toLowerCase``、``/[?#]/.test``、``/^cwm:\/\/([a-z]+)(?:\/(.*))?$/i.exec``、``match[1].toLowerCase``、``decodeSegments``、``segments.some``、``String(BASE_BACKEND_URL || '').replace``、``String``、``IDENTIFIER_RE.test``、``encodeURIComponent``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:3927:4034:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:4236:4343:FUNCTION
 
 .. js:function:: resolveResourceUrl(value)
 
    解析并确定与 ``Resource Url`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``105``—``108`` 行。
+   **性质**：同步函数；导出 API；源码第 ``108``—``111`` 行。
 
    **参数**
 
@@ -169,13 +169,13 @@ Resolve the canonical cwm:// resource scheme to a browser URL. Returns null for 
 
    **主要协作调用**：``resolveCwmUrl``。
 
-.. CWM-AST-FUNCTION src/lib/virtualUrl.js:4077:4257:FUNCTION
+.. CWM-AST-FUNCTION src/lib/virtualUrl.js:4386:4566:FUNCTION
 
 .. js:function:: artifactPreviewVirtualUrl(serverId)
 
    实现 ``artifactPreviewVirtualUrl`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``110``—``114`` 行。
+   **性质**：同步函数；导出 API；源码第 ``113``—``117`` 行。
 
    **参数**
 

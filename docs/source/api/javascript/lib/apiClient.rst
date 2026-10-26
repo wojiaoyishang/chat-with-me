@@ -45,7 +45,7 @@ src/lib/apiClient 模块
 
       **参数**
 
-      ``message``（默认值 ``'Authentication required'``）
+      ``message`` （默认值 ``'Authentication required'``）
          调用方传入的 ``message`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**

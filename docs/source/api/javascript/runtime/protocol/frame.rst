@@ -88,7 +88,7 @@ src/runtime/protocol/frame 模块
    ``field``
       调用方传入的 ``field`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``required``（默认值 ``false``）
+   ``required`` （默认值 ``false``）
       调用方传入的 ``required`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -180,7 +180,7 @@ src/runtime/protocol/frame 模块
    ``header``
       调用方传入的 ``header`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``body``（默认值 ``null``）
+   ``body`` （默认值 ``null``）
       媒体帧原始二进制 Body。
 
    **返回值**

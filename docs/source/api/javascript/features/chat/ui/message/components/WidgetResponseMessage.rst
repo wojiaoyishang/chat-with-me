@@ -61,7 +61,7 @@ src/features/chat/ui/message/components/WidgetResponseMessage 模块
    ``value``
       待读取、转换或校验的值。
 
-   ``max``（默认值 ``120``）
+   ``max`` （默认值 ``120``）
       调用方传入的 ``max`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**

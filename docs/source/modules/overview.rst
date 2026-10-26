@@ -29,6 +29,12 @@
    * - 修改卡片
      - ``components/markdown/card-block/widget``
      - :doc:`widget_runtime`
+   * - 修改任务、工作流节点指标或用量展示
+     - ``features/tasks/RunObservation``、共享观测 renderer
+     - :doc:`../architecture/workflow_tasks`、:doc:`../development/observation_components`
+   * - 修改工作流节点菜单或添加交互
+     - ``features/workflows``、后端 NodeSpec.menu_path
+     - :doc:`../architecture/workflow_tasks`
 
 完整 API
 --------------------------------------------------------------------------------

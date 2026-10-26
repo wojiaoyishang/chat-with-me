@@ -22,24 +22,24 @@ src/features/chat/ui/message/components/MessageActions 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``./MessagePaginator.jsx``、``./MessageTools.jsx``。
+``react``、``./MessagePaginator.jsx``、``./MessageTools.jsx``、``../utils/messageBadgesModel.js``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageActions.jsx:166:4477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageActions.jsx:237:4732:FUNCTION
 
-.. rubric:: ``memo callback @ 5``
+.. rubric:: ``memo callback @ 6``
 
 .. code-block:: javascript
 
-   memo callback @ 5({ msg, msgId, conversationId, messages, onSwitchMessage, switchingMessageId, setSwitchingMessageId,…)
+   memo callback @ 6({ msg, msgId, conversationId, messages, onSwitchMessage, switchingMessageId, setSwitchingMessageId,…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``5``—``113`` 行。
+**性质**：同步局部函数；源码第 ``6``—``116`` 行。
 
 **参数**
 
@@ -50,11 +50,11 @@ src/features/chat/ui/message/components/MessageActions 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <div data-message-action-area="true" className="flex w-full min-w-0 items-center justify-between gap-3 mt-1 min-h-[2rem] transition-all duration-300" > <div className="flex min-…``、``( <div data-message-action-area="true" className="flex w-full min-w-0 items-center justify-end mt-1 min-h-[2rem] pr-12 transition-all duration-300" > <div className="ml-auto flex…``、``( <div data-message-action-area="true" className="flex w-full min-w-0 items-center justify-start mt-1 min-h-[2rem] pl-2 lg:pl-10 transition-all duration-300" > <div className="fle…``。
 
-**主要协作调用**：``Array.isArray``、``renderTools``、``renderPaginator``。
+**主要协作调用**：``Array.isArray``、``normalizeMessageBadges``、``renderTools``、``renderPaginator``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageActions.jsx:1576:2237:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageActions.jsx:1767:2428:FUNCTION
 
 .. rubric:: ``renderPaginator``
 
@@ -64,7 +64,7 @@ src/features/chat/ui/message/components/MessageActions 模块
 
 渲染与 ``Paginator`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``31``—``50`` 行；所属函数 ``memo callback @ 5``。
+**性质**：同步局部函数；源码第 ``33``—``52`` 行；所属函数 ``memo callback @ 6``。
 
 **参数**
 
@@ -74,7 +74,7 @@ src/features/chat/ui/message/components/MessageActions 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="shrink-0"> <MessagePaginator msg={msg} msgId={msgId} conversationId={conversationId} messages={messages} isRight={isRight} onSwitchMessage={onSwitchMessage} swit…``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageActions.jsx:2263:2872:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageActions.jsx:2454:3127:FUNCTION
 
 .. rubric:: ``renderTools``
 
@@ -84,11 +84,11 @@ src/features/chat/ui/message/components/MessageActions 模块
 
 渲染与 ``Tools`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``52``—``68`` 行；所属函数 ``memo callback @ 5``。
+**性质**：同步局部函数；源码第 ``54``—``71`` 行；所属函数 ``memo callback @ 6``。
 
 **参数**
 
-``extraClassName``（默认值 ``''``）
+``extraClassName`` （默认值 ``''``）
    调用方传入的 ``extraClassName`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**

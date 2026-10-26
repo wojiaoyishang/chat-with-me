@@ -127,10 +127,10 @@ src/features/chat/speech/textMatching 模块
 
    **参数**
 
-   ``segments``（默认值 ``[]``）
+   ``segments`` （默认值 ``[]``）
       调用方传入的 ``segments`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``locator``（默认值 ``{}``）
+   ``locator`` （默认值 ``{}``）
       调用方传入的 ``locator`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
@@ -151,13 +151,13 @@ src/features/chat/speech/textMatching 模块
 
    **参数**
 
-   ``segments``（默认值 ``[]``）
+   ``segments`` （默认值 ``[]``）
       调用方传入的 ``segments`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``locator``（默认值 ``{}``）
+   ``locator`` （默认值 ``{}``）
       调用方传入的 ``locator`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``fallback``（默认值 ``null``）
+   ``fallback`` （默认值 ``null``）
       调用方传入的 ``fallback`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
