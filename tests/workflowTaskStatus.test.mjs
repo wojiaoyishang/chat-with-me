@@ -59,7 +59,7 @@ test('workflow task card follows the live task and opens its own detail URL', as
         return null;
     };
     const id = 'job/图文-1';
-    const content = JSON.stringify({ taskId: id, title: '图文混合直接知识提取', status: 'queued', revision: 2, kind: 'knowledge.workflow' });
+    const content = JSON.stringify({ taskId: id, title: '图文混合直接知识提取', status: 'queued', revision: 2, kind: 'workflow.run' });
     const render = async (props = {}) => act(async () => root.render(
         React.createElement(MemoryRouter, { initialEntries: ['/chat'] },
             React.createElement(React.Fragment, null,

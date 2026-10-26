@@ -86,7 +86,7 @@ test('export IDs meet the strict integer contract and oversized exports are neve
 
 test('batch export retains selections across pages and opens the queued task without downloading a blob', async t => {
     const requests = [], downloads = [], blobRequests = [];
-    const task = { taskId: 'story-export-1', kind: 'story.export', status: 'queued', revision: 1, title: '导出 2 个故事' };
+    const task = { taskId: 'story-export-1', kind: 'workflow.run', status: 'queued', revision: 1, title: '导出 2 个故事' };
     const ui = await setup(t, {
         get: async (_url, options) => pageData(options.params.page),
         post: async (...args) => { requests.push(args); return task; },
@@ -128,7 +128,7 @@ test('only the export submission is locked and a rapid double click submits once
     assert.equal(requests.length, 1);
     assert.equal(ui.button('批量导出').disabled, true);
     assert.deepEqual(globalThis.__storiesToasts, []);
-    await act(async () => { pending.resolve({ taskId: 'story-export-delayed', kind: 'story.export', status: 'running', revision: 2 }); });
+    await act(async () => { pending.resolve({ taskId: 'story-export-delayed', kind: 'workflow.run', status: 'running', revision: 2 }); });
     assert.equal(ui.button('批量导出').disabled, false);
     assert.equal(useTaskStore.getState().selectedId, 'story-export-delayed');
 });
@@ -138,7 +138,7 @@ test('failed submission retains selected stories and can be retried', async t =>
     const ui = await setup(t, { post: async () => {
         requests++;
         if (requests === 1) throw new Error('无法连接到后台');
-        return { taskId: 'story-export-retry', kind: 'story.export', status: 'queued', revision: 1 };
+        return { taskId: 'story-export-retry', kind: 'workflow.run', status: 'queued', revision: 1 };
     } });
     await ui.render();
     await ui.click(ui.container.querySelector('[aria-label="选择本页故事"]'));

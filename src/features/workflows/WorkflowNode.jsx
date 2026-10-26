@@ -20,6 +20,7 @@ import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import WorkflowSubgraphSetup from "./WorkflowSubgraphSetup.jsx";
 import { workflowStatusLabels } from "./workflowStatus.js";
+import { workflowPhaseLabels } from "./workflowMetrics.js";
 
 export default function WorkflowNode({ data, selected }) {
   const { node, definition, runtime = {}, readOnly } = data;
@@ -210,8 +211,10 @@ export default function WorkflowNode({ data, selected }) {
           {runtime.nodeProgress && (
             <span>
               已处理{runtime.nodeProgress.unit || "项目"}：
-              {runtime.nodeProgress.processed ?? 0}/
-              {runtime.nodeProgress.total ?? 0}
+              {runtime.nodeProgress.processed ?? 0}
+              {runtime.nodeProgress.total != null
+                ? `/${runtime.nodeProgress.total}`
+                : ""}
             </span>
           )}
           {runtime.nodeProgress?.total > 0 &&
@@ -222,6 +225,19 @@ export default function WorkflowNode({ data, selected }) {
                 aria-label={`已处理${runtime.nodeProgress.unit || "项目"}`}
               />
             )}
+        </div>
+      )}
+      {runtime.telemetry && (
+        <div className="workflow-node-state">
+          {runtime.telemetry.phase && (
+            <span>
+              {workflowPhaseLabels[runtime.telemetry.phase] ||
+                runtime.telemetry.phase}
+            </span>
+          )}
+          {Number.isFinite(runtime.telemetry.activeRequests) && (
+            <span>存在连接数：{runtime.telemetry.activeRequests}</span>
+          )}
         </div>
       )}
       {runtime.outputPreview?.summary && (

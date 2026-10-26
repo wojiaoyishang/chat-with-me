@@ -15,9 +15,22 @@ import {
   workflowInputFields,
   workflowRuntimeForGraph,
   workflowSourceKeys,
+  workflowUsesKnowledge,
   wrapWorkflowSubgraph,
   SUBGRAPH_CANVAS_DEFINITION,
 } from "../src/features/workflows/workflowModel.js";
+
+test("knowledge controls use declared effects recursively instead of assuming every workflow writes knowledge", () => {
+  const catalog = [
+    { kind: "export", effects: ["document.export", "attachment.create"] },
+    { kind: "write", effects: ["knowledge.write"] },
+  ];
+  const graph = { nodes: [{ kind: "subgraph", subgraph: { graph: { nodes: [{ kind: "export" }] } } }] };
+  assert.equal(workflowUsesKnowledge(graph, catalog), false);
+  graph.nodes[0].subgraph.graph.nodes.push({ kind: "write" });
+  assert.equal(workflowUsesKnowledge(graph, catalog), true);
+  assert.equal(workflowUsesKnowledge(graph, []), false);
+});
 
 const definitions = [
   {

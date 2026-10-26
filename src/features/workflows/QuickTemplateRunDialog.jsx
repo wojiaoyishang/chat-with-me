@@ -16,6 +16,7 @@ import {
   clone,
   workflowInputFields,
   workflowValueMissing,
+  workflowUsesKnowledge,
 } from "./workflowModel.js";
 import "./workflow.css";
 
@@ -35,6 +36,7 @@ export default function QuickTemplateRunDialog({
   const [definitions, setDefinitions] = useState(request.catalog?.nodes || []);
   const [templateId, setTemplateId] = useState(request.templateId || "");
   const [template, setTemplate] = useState(null);
+  const usesKnowledge = workflowUsesKnowledge(template?.graph, definitions);
   const [fields, setFields] = useState([]);
   const [values, setValues] = useState({});
   const [title, setTitle] = useState("");
@@ -51,6 +53,9 @@ export default function QuickTemplateRunDialog({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const alive = useRef(true);
+  useEffect(() => {
+    if (!usesKnowledge) setInvalid(false);
+  }, [usesKnowledge]);
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -163,7 +168,7 @@ export default function QuickTemplateRunDialog({
           : { templateId: template.id, templateRevision: template.revision }),
         inputValues: values,
         title: title.trim() || template.title,
-        permissions,
+        permissions: usesKnowledge ? permissions : {},
       };
       const result = await (onSubmit
         ? onSubmit(payload)
@@ -308,23 +313,25 @@ export default function QuickTemplateRunDialog({
                           该模板没有显式输入，使用预设值执行。
                         </p>
                       )}
-                      <details className="rounded-lg border p-3">
-                        <summary className="cursor-pointer text-sm font-medium">
-                          生成知识的归属与共享
-                        </summary>
-                        <div className="mt-3">
-                          <JsonConfigEditor
-                            label="本次知识权限"
-                            value={permissions}
-                            schema={permissionsSchema}
-                            readOnly={busy}
-                            onChange={setPermissions}
-                            onStateChange={(state) =>
-                              setInvalid(state.valid === false)
-                            }
-                          />
-                        </div>
-                      </details>
+                      {usesKnowledge && (
+                        <details className="rounded-lg border p-3">
+                          <summary className="cursor-pointer text-sm font-medium">
+                            生成知识的归属与共享
+                          </summary>
+                          <div className="mt-3">
+                            <JsonConfigEditor
+                              label="本次知识权限"
+                              value={permissions}
+                              schema={permissionsSchema}
+                              readOnly={busy}
+                              onChange={setPermissions}
+                              onStateChange={(state) =>
+                                setInvalid(state.valid === false)
+                              }
+                            />
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </>
                 )

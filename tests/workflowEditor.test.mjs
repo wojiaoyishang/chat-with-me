@@ -111,6 +111,7 @@ const catalog = {
     {
       kind: "extract",
       version: 1,
+      effects: ["knowledge.write"],
       title: "知识提取",
       description: "提取知识",
       display: {
@@ -1102,6 +1103,7 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
         taskId: "existing-task",
         status: "completed",
         parameters: { graph },
+        runtime: { workflowMetrics: { activeRequests: 2, totalRequests: 5, peakActiveRequests: 2 } },
         workflowNodes: {
           sg_input: {
             status: "completed",
@@ -1113,6 +1115,7 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
             nodePath: ["group", "extract-1"],
             namePath: ["并行增强", "知识提取"],
             progressMessage: "正在处理：九月十二日的日记",
+            telemetry: { activeRequests: 2, totalRequests: 5, phase: "external_execution", downloadedBytes: 2048 },
           },
         },
       },
@@ -1127,6 +1130,8 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
       document.querySelector(".workflow-inspector").textContent,
       /九月十二日/,
     );
+    assert.match(document.querySelector(".workflow-inspector").textContent, /存在连接数/);
+    assert.match(document.querySelector(".workflow-node-state").parentElement.textContent, /存在连接数：2/);
     assert.equal(
       button("查看节点完整输出"),
       undefined,
@@ -1135,6 +1140,8 @@ test("monitor summarizes active subgraph leaves and reads outputs using the comp
     await click(button("展开子图"), app.dom);
     assert.equal(globalThis.workflowUITest.flow.nodes.length, 2);
     await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    assert.match(document.querySelector(".workflow-inspector").textContent, /远端执行/);
+    assert.match(document.querySelector(".workflow-inspector").textContent, /2\.0 KB/);
     await click(button("查看节点完整输出"), app.dom);
     assert.ok(
       app.calls.some((call) => call.url.includes("/nodes/sg_extract/output?")),
@@ -2718,7 +2725,7 @@ test("quick template form preserves document revision and knowledge permissions"
     title: "文档提取模板",
     description: "根据文档提取知识",
     revision: 3,
-    graph: { version: 2, nodes: [], edges: [], settings: {} },
+    graph: { version: 2, nodes: [{ id: "extract", kind: "extract", version: 1, config: {}, inputs: {} }], edges: [], settings: {} },
     inputFields: [
       {
         key: "document",
@@ -2869,10 +2876,40 @@ test("built-in workflow stays selected in the editor and quick runs submit its g
     assert.equal(payload.templateId, undefined);
     assert.equal(payload.inputValues.text, "默认内容");
     assert.equal(payload.title, builtin.title);
-    assert.deepEqual(payload.permissions, {
-      sharingMembers: [],
-      includeSources: true,
-    });
+    assert.deepEqual(payload.permissions, {});
+  } finally {
+    await quick.close();
+  }
+});
+
+test("document-only workflows hide knowledge policy controls in editor and quick run", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.push({
+    kind: "document_export_source", version: 1, category: "source",
+    effects: ["document.read", "document.export", "attachment.create"],
+    display: { title: "文档导出快照" },
+    configSchema: { type: "object", properties: { documentId: { type: "string", default: "doc-1" } } },
+    inputs: [], outputs: [],
+  });
+  const graph = { version: 3, nodes: [{ id: "source", kind: "document_export_source", version: 1, config: { documentId: "doc-1" }, inputs: {}, position: { x: 0, y: 0 } }], edges: [], settings: {}, variables: {} };
+  const editor = await environment({}, { catalog: custom, graph });
+  try {
+    await click(button("全局设置"), editor.dom);
+    assert.doesNotMatch(document.querySelector(".workflow-inspector").textContent, /生成知识的归属与共享/);
+    assert.match(document.querySelector(".workflow-inspector").textContent, /模板共享成员/);
+    await click(button("直接开始任务"), editor.dom);
+    const run = editor.calls.find((call) => call.url === "/tasks/workflows/run" && call.method === "post");
+    assert.deepEqual(run.payload.permissions, {});
+  } finally {
+    await editor.close();
+  }
+  const template = { id: "export-template", title: "导出文档", revision: 1, graph };
+  const quick = await environment({ templateId: template.id }, { catalog: custom, template, component: "src/features/workflows/QuickTemplateRunDialog.jsx" });
+  try {
+    assert.doesNotMatch(document.querySelector("[role=dialog]").textContent, /生成知识的归属与共享/);
+    await click(button("创建并开始"), quick.dom);
+    const run = quick.calls.find((call) => call.url === "/tasks/workflows/run" && call.method === "post");
+    assert.deepEqual(run.payload.permissions, {});
   } finally {
     await quick.close();
   }

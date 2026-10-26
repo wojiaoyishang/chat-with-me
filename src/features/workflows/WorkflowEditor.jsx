@@ -84,6 +84,7 @@ import {
   wrapWorkflowSubgraph,
   unwrapWorkflowSubgraph,
   workflowSourceKeys,
+  workflowUsesKnowledge,
 } from "./workflowModel.js";
 import WorkflowSubgraphPanel from "./WorkflowSubgraphPanel.jsx";
 import WorkflowInterfaceNode from "./WorkflowInterfaceNode.jsx";
@@ -198,6 +199,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
     ],
   );
   const graph = workflowGraphAtPath(rootGraph, graphPath) || rootGraph;
+  const usesKnowledge = workflowUsesKnowledge(rootGraph, catalog.nodes);
   const graphPathKey = graphPath.join("/");
   const graphContext = useMemo(
     () => workflowGraphContext(rootGraph, graphPath),
@@ -301,6 +303,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       ),
     [],
   );
+  useEffect(() => {
+    if (!usesKnowledge) validity("permissions", true);
+  }, [usesKnowledge, validity]);
   useEffect(() => {
     alive.current = true;
     return () => {
@@ -1392,7 +1397,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         const response = await workflowApi.run({
           graph: current.graph,
           title: current.title.trim(),
-          permissions: current.permissions,
+          permissions: usesKnowledge ? current.permissions : {},
           ...(template && !dirty
             ? { templateId: template.id, templateRevision: template.revision }
             : {}),
@@ -2433,18 +2438,20 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                           changeGraph({ ...graph, settings })
                         }
                       />
-                      <JsonConfigEditor
-                        label="生成知识的归属与共享"
-                        schema={catalog.permissionsSchema || {}}
-                        value={permissions}
-                        readOnly={Boolean(busy || pendingPlacement)}
-                        onStateChange={(state) =>
-                          validity("permissions", state.valid !== false)
-                        }
-                        onChange={(values) =>
-                          changeDraft({ ...draft, permissions: values })
-                        }
-                      />
+                      {usesKnowledge && (
+                        <JsonConfigEditor
+                          label="生成知识的归属与共享"
+                          schema={catalog.permissionsSchema || {}}
+                          value={permissions}
+                          readOnly={Boolean(busy || pendingPlacement)}
+                          onStateChange={(state) =>
+                            validity("permissions", state.valid !== false)
+                          }
+                          onChange={(values) =>
+                            changeDraft({ ...draft, permissions: values })
+                          }
+                        />
+                      )}
                       <JsonConfigEditor
                         label="模板共享成员"
                         schema={catalog.templateSharingSchema || {}}

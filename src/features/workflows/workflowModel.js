@@ -1,6 +1,17 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
+import { aggregateWorkflowTelemetry } from "./workflowMetrics.js";
 export const clone = (value) =>
   value === undefined ? undefined : JSON.parse(JSON.stringify(value));
+
+/** Knowledge policy controls follow trusted node effects, including subgraphs. */
+export function workflowUsesKnowledge(graph, definitions = []) {
+  return (graph?.nodes || []).some((node) =>
+    node.kind === "subgraph"
+      ? workflowUsesKnowledge(node.subgraph?.graph, definitions)
+      : (definitions.find((definition) => definition.kind === node.kind)?.effects || [])
+          .some((effect) => effect.startsWith("knowledge.")),
+  );
+}
 export const SUBGRAPH_CANVAS_DEFINITION = Object.freeze({
   kind: "subgraph",
   version: 1,
@@ -1406,6 +1417,7 @@ export function workflowRuntimeForGraph(
         .map((state) => state.error)
         .join("；"),
       children: descendants,
+      telemetry: aggregateWorkflowTelemetry(descendants),
       activeCount: count(["running"]),
       nodeProgress: {
         processed: count(["completed", "succeeded", "skipped"]),

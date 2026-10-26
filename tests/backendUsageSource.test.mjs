@@ -14,7 +14,7 @@ const [source, motion, template] = await Promise.all([
 ]);
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
 
-async function taskPage(t, calls) {
+async function taskPage(t, calls, extra = {}) {
     const html = template
         .replace('{{ config | tojson }}', JSON.stringify({ kind: 'tasks', apiBase: '/api' }))
         .replace('{{ stylesheet | safe }}', '')
@@ -24,14 +24,14 @@ async function taskPage(t, calls) {
         runScripts: 'outside-only', pretendToBeVisual: true,
     });
     t.after(() => dom.window.close());
-    const task = { taskId: 'usage-task', kind: 'knowledge.workflow', title: '用量展示测试', status: 'completed' };
+    const task = { taskId: 'usage-task', kind: 'workflow.run', title: '用量展示测试', status: 'completed' };
     let revision = 0;
     dom.window.matchMedia = () => ({ matches: false });
     dom.window.HTMLElement.prototype.scrollIntoView = () => {};
     dom.window.fetch = async (url) => {
         const pathname = new URL(String(url), dom.window.location.origin).pathname;
         const data = pathname.endsWith('/definitions') ? { definitions: [] }
-            : pathname.endsWith('/details') ? { task, revision, modelCalls: calls }
+            : pathname.endsWith('/details') ? { task, revision, modelCalls: calls, ...extra }
                 : { tasks: [task] };
         return { ok: true, json: async () => ({ success: true, data }) };
     };
@@ -98,4 +98,20 @@ test('opened usage explanation stays open after task details refresh', async (t)
     cells()[0].querySelector('details').open = true;
     await refresh();
     assert.equal(cells()[0].querySelector('details').open, true);
+});
+
+test('task dashboard displays current pending responses and refreshes to zero', async (t) => {
+    const metrics = { activeRequests: 2, totalRequests: 7, peakActiveRequests: 2 };
+    const { dom, refresh } = await taskPage(t, [{ callId: 'probe', usage: {} }], {
+        runtime: { workflowMetrics: metrics },
+    });
+    const tiles = () => [...dom.window.document.querySelectorAll('.detail-stats > div')];
+    const connections = () => tiles().find((node) => node.textContent.includes('存在连接数'));
+    assert.ok(connections(), dom.window.document.querySelector('#detail').textContent);
+    assert.match(connections().textContent, /存在连接数2/);
+    assert.match(connections().textContent, /不含空闲连接/);
+    assert.equal(tiles().some((node) => node.textContent.includes('GPU')), false);
+    metrics.activeRequests = 0;
+    await refresh();
+    assert.match(connections().textContent, /存在连接数0/);
 });

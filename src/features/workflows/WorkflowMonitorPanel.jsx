@@ -6,6 +6,7 @@ import { workflowApi } from "./workflowApi.js";
 import { workflowStatusLabels } from "./workflowStatus.js";
 import { workflowElapsedSeconds, workflowTokens } from "./workflowMetrics.js";
 import WorkflowLogViewer from "./WorkflowLogViewer.jsx";
+import WorkflowTelemetryStats from "./WorkflowTelemetryStats.jsx";
 
 const printable = (value) =>
   typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -86,7 +87,9 @@ export default function WorkflowMonitorPanel({
           </div>
           <div>
             <small>进度</small>
-            <strong>{task?.progress ?? 0}%</strong>
+            <strong>
+              {task?.progress == null ? "未知" : `${task.progress}%`}
+            </strong>
           </div>
           <div>
             <small>总 Token</small>
@@ -101,6 +104,7 @@ export default function WorkflowMonitorPanel({
             <strong>{Math.round(workflowElapsedSeconds(task))} 秒</strong>
           </div>
         </div>
+        <WorkflowTelemetryStats value={task} />
       </section>
       <WorkflowLogViewer
         taskId={taskId}
@@ -186,8 +190,10 @@ export default function WorkflowMonitorPanel({
                 <div>
                   <small>已处理{runtime.nodeProgress.unit || "项目"}</small>
                   <strong>
-                    {runtime.nodeProgress.processed ?? 0}/
-                    {runtime.nodeProgress.total ?? 0}
+                    {runtime.nodeProgress.processed ?? 0}
+                    {runtime.nodeProgress.total != null
+                      ? `/${runtime.nodeProgress.total}`
+                      : ""}
                   </strong>
                   {runtime.nodeProgress.total > 0 &&
                     Number.isFinite(runtime.nodeProgress.percent) && (
@@ -201,6 +207,7 @@ export default function WorkflowMonitorPanel({
                 </div>
               )}
             </div>
+            <WorkflowTelemetryStats value={runtime} />
             {runtime.error && (
               <p role="alert" className="break-words text-sm text-destructive">
                 {runtime.error}
