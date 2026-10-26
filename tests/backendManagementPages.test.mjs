@@ -1373,7 +1373,7 @@ test("late operation permissions cannot mutate a newer menu after the old reques
   assert.equal(document.querySelector('[data-action="node-edit"]').hidden,true);
 });
 
-test("knowledge icon drawers preserve inspection, tools and Escape focus without replacing the canvas", async (t) => {
+test("knowledge page keeps its permanent right inspector and original graph controls", async (t) => {
   const node={id:"drawer-node",name:"Drawer node",label:"Event",properties:{}};
   const {dom,document}=await page("knowledge", (url) => {
     if(url.includes("/overview")) return {nodes:1,relationships:0,labels:["Event"]};
@@ -1381,22 +1381,11 @@ test("knowledge icon drawers preserve inspection, tools and Escape focus without
     return {nodes:[node],total:1};
   });
   t.after(()=>dom.window.close());
-  const drawer=document.getElementById("knowledge-drawer"), canvas=document.getElementById("knowledge-canvas");
-  assert.equal(drawer.hidden,true);
-  assert.equal(document.querySelectorAll(".knowledge-rail-button").length,4);
-  const filters=document.querySelector('.knowledge-rail-button[aria-label="图谱筛选"]');
-  filters.click();
-  assert.equal(drawer.hidden,false);
-  assert.equal(filters.getAttribute("aria-expanded"),"true");
-  assert.ok(drawer.contains(document.getElementById("filter")));
-  document.querySelector('.knowledge-rail-button[aria-label="画布工具"]').click();
-  assert.equal(document.getElementById("knowledge-panel-canvas").hidden,false);
-  assert.ok(drawer.contains(document.getElementById("graph-fit")));
-  assert.equal(document.getElementById("knowledge-canvas"),canvas);
-  drawer.dispatchEvent(new dom.window.KeyboardEvent("keydown",{key:"Escape",bubbles:true,cancelable:true}));
-  assert.equal(drawer.hidden,true);
-  assert.equal(document.activeElement.getAttribute("aria-label"),"画布工具");
+  assert.equal(document.getElementById("knowledge-drawer"), null);
+  assert.equal(document.querySelector(".knowledge-icon-rail"), null);
+  assert.equal(document.getElementById("detail").parentElement.className, "content-grid");
+  assert.ok(document.querySelector(".graph-panel .graph-toolbar #graph-fit"));
+  assert.ok(document.querySelector(".search-row #filter"));
   document.querySelector('[data-node-id="drawer-node"]').dispatchEvent(new dom.window.MouseEvent("click",{bubbles:true})); await settle();
-  assert.equal(document.getElementById("knowledge-panel-details").hidden,false);
   assert.match(document.getElementById("detail").textContent,/Drawer node/);
 });

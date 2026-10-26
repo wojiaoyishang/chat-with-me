@@ -2374,7 +2374,6 @@ test("unified search shows all results on focus and treats empty or whitespace q
   assert.equal(document.querySelector("#search-dropdown").hidden, false);
   assert.equal(document.querySelectorAll("#list .list-item").length, 2);
   document.querySelector("#graph-caption").click();
-  document.querySelector('.knowledge-rail-button[aria-label="图谱筛选"]').click();
   const filter = document.querySelector("#filter");
   filter.value = "接口";
   filter.dispatchEvent(new dom.window.Event("change", { bubbles: true }));

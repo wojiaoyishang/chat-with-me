@@ -105,7 +105,7 @@ import WorkflowCanvas from "./WorkflowCanvas.jsx";
 import WorkflowEdge from "./WorkflowEdge.jsx";
 import WorkflowContextMenu from "./WorkflowContextMenu.jsx";
 import WorkflowNodePicker from "./WorkflowNodePicker.jsx";
-import WorkflowPalette from "./WorkflowPalette.jsx";
+import WorkflowSidebar from "./WorkflowSidebar.jsx";
 import WorkflowNode from "./WorkflowNode.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
 import WorkflowMonitorPanel from "./WorkflowMonitorPanel.jsx";
@@ -252,6 +252,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [panel, setPanel] = useState("node");
   const [monitorView, setMonitorView] = useState("overview");
   const [mobilePane, setMobilePane] = useState("canvas");
+  const [sidebarPane, setSidebarPane] = useState(null);
   const [menu, setMenu] = useState(null);
   const [picker, setPicker] = useState(null);
   const [pendingPlacement, setPendingPlacement] = useState(null);
@@ -1625,7 +1626,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         onEscapeKeyDown={(event) => {
           event.preventDefault();
           if (pendingPlacement) setPendingPlacement(null);
-          else if (!confirmation && !menu && !picker) close();
+          else if (!confirmation && !menu && !picker) {
+            if (sidebarPane) setSidebarPane(null);
+            else close();
+          }
         }}
       >
         <header className="workflow-header">
@@ -1690,7 +1694,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             aria-label="工作流编辑区域"
           >
             {[
-              ...(!readOnly ? [["palette", "工作流设置"]] : []),
+              ...(!readOnly ? [["sidebar", "工作流设置"]] : []),
               ["canvas", "流程画布"],
               ["config", readOnly ? "执行详情" : "节点信息"],
             ].map(([key, label]) => (
@@ -1698,7 +1702,11 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 type="button"
                 key={key}
                 aria-current={mobilePane === key ? "page" : undefined}
-                onClick={() => setMobilePane(key)}
+                onClick={() => {
+                  setMobilePane(key);
+                  if (key === "sidebar" && !sidebarPane)
+                    setSidebarPane("templates");
+                }}
               >
                 {label}
               </button>
@@ -1732,8 +1740,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             className={`workflow-workspace mobile-${mobilePane} ${readOnly ? "is-monitor" : ""}`}
           >
             {!readOnly && (
-              <WorkflowPalette
-                controls={
+              <WorkflowSidebar
+                active={sidebarPane}
+                onActiveChange={setSidebarPane}
+                templates={
                   <>
                     <label className="workflow-label">工作流模板</label>
                     <WorkflowSelect
@@ -1778,56 +1788,60 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                         )}
                       </div>
                     )}
-                    <div className="mt-3 flex gap-2">
-                      <input
-                        ref={importFileRef}
-                        type="file"
-                        accept="application/json,.json"
-                        className="hidden"
-                        aria-label="导入工作流 JSON 文件"
-                        onChange={(event) => void importWorkflow(event)}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={Boolean(busy || pendingPlacement)}
-                        onClick={() => importFileRef.current?.click()}
-                      >
-                        导入 JSON
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={Boolean(busy || pendingPlacement)}
-                        onClick={exportWorkflow}
-                      >
-                        导出 JSON
-                      </Button>
-                    </div>
-                    <div className="my-4 space-y-2">
-                      <label className="workflow-label">模板 / 任务名称</label>
-                      <Input
-                        aria-label="工作流名称"
-                        value={title}
-                        disabled={Boolean(busy || pendingPlacement)}
-                        onChange={(event) =>
-                          changeDraft({ ...draft, title: event.target.value })
-                        }
-                      />
-                      <MultilineEditor
-                        label="模板说明"
-                        value={description}
-                        rows={3}
-                        disabled={Boolean(busy || pendingPlacement)}
-                        onChange={(event) =>
-                          changeDraft({
-                            ...draft,
-                            description: event.target.value,
-                          })
-                        }
-                      />
-                    </div>
                   </>
+                }
+                transfer={
+                  <div className="flex flex-wrap gap-2">
+                    <input
+                      ref={importFileRef}
+                      type="file"
+                      accept="application/json,.json"
+                      className="hidden"
+                      aria-label="导入工作流 JSON 文件"
+                      onChange={(event) => void importWorkflow(event)}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={Boolean(busy || pendingPlacement)}
+                      onClick={() => importFileRef.current?.click()}
+                    >
+                      导入 JSON
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={Boolean(busy || pendingPlacement)}
+                      onClick={exportWorkflow}
+                    >
+                      导出 JSON
+                    </Button>
+                  </div>
+                }
+                details={
+                  <div className="space-y-2">
+                    <label className="workflow-label">模板 / 任务名称</label>
+                    <Input
+                      aria-label="工作流名称"
+                      value={title}
+                      disabled={Boolean(busy || pendingPlacement)}
+                      onChange={(event) =>
+                        changeDraft({ ...draft, title: event.target.value })
+                      }
+                    />
+                    <MultilineEditor
+                      label="模板说明"
+                      value={description}
+                      rows={3}
+                      disabled={Boolean(busy || pendingPlacement)}
+                      onChange={(event) =>
+                        changeDraft({
+                          ...draft,
+                          description: event.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 }
               />
             )}

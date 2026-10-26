@@ -43,8 +43,6 @@ pages["source_only_knowledge"] = pages["current_knowledge"].replace(
     + "\\n"
     + (_ROOT / "static" / "graph-ordered-layout.js").read_text(encoding="utf-8")
     + "\\n"
-    + (_ROOT / "static" / "knowledge-sidebar.js").read_text(encoding="utf-8")
-    + "\\n"
     + (_ROOT / "static" / "page-dialogs.js").read_text(encoding="utf-8")
     + "\\n"
     + (_ROOT / "static" / "management-source.js").read_text(encoding="utf-8"),

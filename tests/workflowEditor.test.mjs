@@ -1073,6 +1073,9 @@ test("default built-in template is displayed once in the three-preset selector",
   const app = await environment({}, { catalog: custom, empty: true });
   try {
     assert.equal(globalThis.workflowUITest.flow.nodes.length, 0);
+    assert.equal(document.querySelector(".workflow-sidebar-drawer").hidden, true);
+    await click(document.querySelector('[aria-label="模板预设"]'), app.dom);
+    assert.equal(document.querySelector(".workflow-sidebar-drawer").hidden, false);
     const select = document.querySelector(
       '[data-select-label="选择工作流模板"]',
     ).nextElementSibling;
