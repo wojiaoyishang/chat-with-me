@@ -120,16 +120,21 @@ export default function WorkflowNode({ data, selected }) {
           isOutput={data.isOutput}
         />
       </div>
-      {definition?.display?.subtitle && (
-        <p className="workflow-node-id">{definition.display.subtitle}</p>
-      )}
-      {subgraph && data.parallelInfo?.containsParallel && (
-        <span
-          className="workflow-subgraph-parallel-note"
-          title="子图内部包含可并行分支；进入子图查看具体范围。"
-        >
-          ∥ 内部包含并行
-        </span>
+      {(definition?.display?.subtitle ||
+        (subgraph && data.parallelInfo?.containsParallel)) && (
+        <div className="workflow-node-meta">
+          {definition?.display?.subtitle && (
+            <p className="workflow-node-id">{definition.display.subtitle}</p>
+          )}
+          {subgraph && data.parallelInfo?.containsParallel && (
+            <span
+              className="workflow-subgraph-parallel-note"
+              title="子图内部包含可并行分支；进入子图查看具体范围。"
+            >
+              ∥ 内部包含并行
+            </span>
+          )}
+        </div>
       )}
       {subgraph?.initialized === false && !data.monitor ? (
         <WorkflowSubgraphSetup

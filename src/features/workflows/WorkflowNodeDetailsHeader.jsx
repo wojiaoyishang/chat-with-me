@@ -30,15 +30,21 @@ export default function WorkflowNodeDetailsHeader({
           <h3 className="font-semibold">
             {definition?.display?.title || node.name || node.kind}
           </h3>
-          <p className="text-xs text-muted-foreground">
-            {definition?.display?.subtitle}
-          </p>
+          <div className="workflow-node-details-meta">
+            {definition?.display?.subtitle && (
+              <p className="text-xs text-muted-foreground">
+                {definition.display.subtitle}
+              </p>
+            )}
+            {node.kind === "subgraph" && parallelInfo?.containsParallel && (
+              <span className="workflow-subgraph-parallel-note">
+                ∥ 内部包含并行
+              </span>
+            )}
+          </div>
         </div>
         <WorkflowNodeBadge {...{ node, definition, number, isOutput }} />
       </div>
-      {node.kind === "subgraph" && parallelInfo?.containsParallel && (
-        <span className="workflow-subgraph-parallel-note">∥ 内部包含并行</span>
-      )}
       <div className="workflow-node-stable-id">
         <code aria-label="节点 ID">{node.id}</code>
         <button

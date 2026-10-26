@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { RotateCcw, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -42,68 +42,82 @@ export default function WorkflowRegionControl({ region, onChange, disabled }) {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="workflow-region-popover w-80"
+        className="workflow-region-popover"
+        sideOffset={8}
+        aria-label="区域并发设置"
         onPointerDown={stop}
         onClick={stop}
         onDoubleClick={stop}
       >
-        <div className="space-y-3">
-          <div className="font-medium">区域并发设置</div>
-          <p className="text-xs text-muted-foreground">
-            限制这 {region.nodeIds.length} 个节点同时运行的数量。1
-            表示每次只运行一个节点，连线依赖保持生效。
-          </p>
-          <label className="block space-y-2 text-sm">
-            <span>最大并发节点数</span>
+        <header className="workflow-region-popover-header">
+          <span className="workflow-region-popover-icon" aria-hidden="true">
+            <SlidersHorizontal />
+          </span>
+          <div>
+            <h4>区域并发设置</h4>
+            <p>{region.nodeIds.length} 个节点 · 按连线依赖执行</p>
+          </div>
+        </header>
+        <div className="workflow-region-popover-body">
+          <label className="workflow-region-field">
+            <span>
+              <strong>最大并发节点数</strong>
+              <small>1–16，设为 1 时逐个执行</small>
+            </span>
             <Input
+              className="workflow-region-input"
               type="number"
               min="1"
               max="16"
               step="1"
               value={value}
               aria-label="区域最大并发节点数"
+              aria-invalid={!valid}
               onChange={(event) => setValue(event.target.value)}
             />
           </label>
-          <p className="text-xs text-muted-foreground">
-            上级上限 {region.inheritedLimit ?? region.limit}
-            。全局、子图和所有重叠区域的限制同时生效；不改变 Worker
-            数量或节点内部请求并发。
+          <div className="workflow-region-inherited">
+            <span>上级并发上限</span>
+            <strong>{region.inheritedLimit ?? region.limit}</strong>
+          </div>
+          <p className="workflow-region-help">
+            全局、子图和重叠区域的限制同时生效。
           </p>
           {region.partialLimits && (
-            <p className="text-xs text-muted-foreground">
+            <p className="workflow-region-help">
               部分成员另受其他执行区域限制。
             </p>
           )}
           {!valid && (
-            <p role="alert" className="text-xs text-destructive">
+            <p role="alert" className="workflow-region-error">
               请输入 1–16 的整数。
             </p>
           )}
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={disabled}
-              onClick={() => {
-                onChange(region, null);
-                setOpen(false);
-              }}
-            >
-              继承上级
-            </Button>
-            <Button
-              size="sm"
-              disabled={disabled || !valid}
-              onClick={() => {
-                onChange(region, maximum);
-                setOpen(false);
-              }}
-            >
-              应用
-            </Button>
-          </div>
         </div>
+        <footer className="workflow-region-popover-footer">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={disabled}
+            onClick={() => {
+              onChange(region, null);
+              setOpen(false);
+            }}
+          >
+            <RotateCcw aria-hidden="true" />
+            继承上级
+          </Button>
+          <Button
+            size="sm"
+            disabled={disabled || !valid}
+            onClick={() => {
+              onChange(region, maximum);
+              setOpen(false);
+            }}
+          >
+            应用
+          </Button>
+        </footer>
       </PopoverContent>
     </Popover>
   );
