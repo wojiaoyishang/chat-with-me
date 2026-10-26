@@ -35,6 +35,7 @@ export const eventMatchesPattern = (pattern, event) => {
 };
 
 export const EventName = Object.freeze({
+    TOOL_CATALOG_CHANGED: 'tool.catalog.changed',
     PROTOCOL_REPLY: 'protocol.reply',
     PROTOCOL_ERROR: 'protocol.error',
     TRANSPORT_CONNECTED: 'transport.connected',

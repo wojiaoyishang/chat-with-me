@@ -296,7 +296,7 @@
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
      - 43
      - 0
-     - 289
+     - 292
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/JsonConfigEditor </api/javascript/components/setting/JsonConfigEditor>`
      - 0
@@ -308,6 +308,11 @@
      - 0
      - 32
      - ``src/components/setting/KnowledgeDatabaseSettings.jsx``
+   * - :doc:`src/components/setting/MCPSettings </api/javascript/components/setting/MCPSettings>`
+     - 5
+     - 0
+     - 88
+     - ``src/components/setting/MCPSettings.jsx``
    * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
      - 1
      - 0
@@ -567,6 +572,7 @@
    /api/javascript/components/setting/DynamicSettings
    /api/javascript/components/setting/JsonConfigEditor
    /api/javascript/components/setting/KnowledgeDatabaseSettings
+   /api/javascript/components/setting/MCPSettings
    /api/javascript/components/setting/OrderedOptionsEditor
    /api/javascript/components/setting/TempCacheCleanup
    /api/javascript/components/setting/UserProfileCard

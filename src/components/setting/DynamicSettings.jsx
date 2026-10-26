@@ -2470,6 +2470,19 @@ function UserManagementItem() {
     }, [refreshAll]);
 
     useEffect(() => {
+        let active = true;
+        const unsubscribe = onEvent({ event: 'tool.catalog.changed' }).then(async () => {
+            try {
+                const tools = await apiClient.get(apiEndpoint.ADMIN_TOOL_CATALOG_ENDPOINT);
+                if (active) setCatalog(Array.isArray(tools) ? tools : []);
+            } catch (error) {
+                if (active) toast.error(error.message || '刷新工具目录失败。');
+            }
+        });
+        return () => { active = false; unsubscribe(); };
+    }, []);
+
+    useEffect(() => {
         if (!selectedUser) {
             setEditForm(null);
             setRules([]);

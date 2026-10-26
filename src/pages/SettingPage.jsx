@@ -49,6 +49,7 @@ import { WORKFLOW_EDGE_ANIMATION_SETTING_KEY, DEFAULT_WORKFLOW_EDGE_ANIMATION } 
 import { artifactPreviewVirtualUrl, resolveResourceUrl } from '@/lib/virtualUrl.js';
 
 const ComfyUISettings = React.lazy(() => import('@/components/setting/ComfyUISettings.jsx'));
+const MCPSettings = React.lazy(() => import('@/components/setting/MCPSettings.jsx'));
 
 // ==================== 界面设置通用项 ====================
 const InterfaceSettingItem = ({ title, description, checked, onCheckedChange, badge }) => (
@@ -246,7 +247,7 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
     const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
 
     const isDynamicTab = !['account', 'interface', 'notifications'].includes(activeTab);
-    const hasUnsavedChanges = isDynamicTab && !['knowledge-databases', 'comfyui'].includes(dynamicConfig?.component) && !isConfigPristine;
+    const hasUnsavedChanges = isDynamicTab && !['knowledge-databases', 'comfyui', 'mcp'].includes(dynamicConfig?.component) && !isConfigPristine;
 
     // ==================== 加载动态 Tabs 列表 ====================
     const loadDynamicTabs = useCallback(
@@ -391,6 +392,15 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
         });
         return () => unsubscribe();
     }, [activeTab, cloneData, isConfigPristine, open]);
+
+    useEffect(() => {
+        if (!open || activeTab !== 'default-tool-permissions') return undefined;
+        const unsubscribe = onEvent({ event: 'tool.catalog.changed' }).then(() => {
+            if (isConfigPristine) void loadDynamicConfig(activeTab);
+            else toast.info('工具目录已更新，请重新加载后再保存。');
+        });
+        return () => unsubscribe();
+    }, [activeTab, isConfigPristine, loadDynamicConfig, open]);
 
     // ==================== Tab 切换 ====================
     const handleTabChange = useCallback(
@@ -868,6 +878,13 @@ const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
 
         if (dynamicConfig.component === 'comfyui') {
             return <React.Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">正在加载 ComfyUI 设置…</div>}><ComfyUISettings config={dynamicConfig} onTask={(taskId) => {
+                closeSettings();
+                navigate(`/tasks?taskId=${encodeURIComponent(taskId)}`);
+            }} /></React.Suspense>;
+        }
+
+        if (dynamicConfig.component === 'mcp') {
+            return <React.Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">正在加载 MCP 设置…</div>}><MCPSettings config={dynamicConfig} onTask={(taskId) => {
                 closeSettings();
                 navigate(`/tasks?taskId=${encodeURIComponent(taskId)}`);
             }} /></React.Suspense>;

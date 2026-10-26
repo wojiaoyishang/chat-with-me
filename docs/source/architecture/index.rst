@@ -17,6 +17,7 @@
    surfaces
    rendering_widgets
    workflow_tasks
+   mcp_settings
    voice_runtime
    realtime_voice
    turn_admission

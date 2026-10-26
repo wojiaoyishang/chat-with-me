@@ -233,6 +233,8 @@ function ChatBox({
         () => readComposerDraft({ conversationId, mode: 'normal' })?.content || '',
     );
     const [toolsStatus, setToolsStatus] = useState({});
+    const [toolCatalogRevision, setToolCatalogRevision] = useState(0);
+    const configuredToolsConversationRef = useRef(null);
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
     const [conversationToolDefaults, setConversationToolDefaults] = useState({});
     const [conversationToolsDialogOpen, setConversationToolsDialogOpen] = useState(false);
@@ -2245,6 +2247,13 @@ function ChatBox({
         };
     }, [conversationId]);
 
+    useEffect(() => {
+        const refresh = () => setToolCatalogRevision((value) => value + 1);
+        const unsubscribe = onEvent({ event: 'tool.catalog.changed' }).then(refresh);
+        window.addEventListener('focus', refresh);
+        return () => { unsubscribe(); window.removeEventListener('focus', refresh); };
+    }, []);
+
     // 加载工具配置。conversationId 变化时重新读取服务器权威的会话工具权限；
     // 新对话尚无 conversationId 时读取用户级默认权限。
     useEffect(() => {
@@ -2254,24 +2263,31 @@ function ChatBox({
         }
 
         let cancelled = false;
-        setToolsLoadedStatus(0);
+        const conversationKey = conversationId || '__new_conversation__';
+        const catalogOnly = configuredToolsConversationRef.current === conversationKey;
+        if (!catalogOnly) setToolsLoadedStatus(0);
         apiClient
             .get(apiEndpoint.CHATBOX_ENDPOINT, {
                 params: conversationId ? { conversationId } : undefined,
             })
             .then((data) => {
                 if (cancelled) return;
-                chatboxSetup(data);
+                chatboxSetup(catalogOnly ? {
+                    extra_tools: data.extra_tools,
+                    toolPermissions: data.toolPermissions,
+                    ignoreAttachmentTools: data.ignoreAttachmentTools,
+                } : data);
+                configuredToolsConversationRef.current = conversationKey;
                 setToolsLoadedStatus(2);
             })
             .catch(() => {
-                if (!cancelled) setToolsLoadedStatus(3);
+                if (!cancelled && !catalogOnly) setToolsLoadedStatus(3);
             });
 
         return () => {
             cancelled = true;
         };
-    }, [chatboxSetup, conversationId]);
+    }, [chatboxSetup, conversationId, toolCatalogRevision]);
 
     // 监听事件广播
     useEffect(() => {

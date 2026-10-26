@@ -3,7 +3,7 @@ src/components/markdown/replacementProtocol 模块
 
 .. js:module:: src/components/markdown/replacementProtocol
 
-Keep card replacement controls as Markdown block boundaries. Streaming can concatenate a completed marker directly with a heading, e.g. \x60{{cardReplace id=42:11}}# Title\x60. Without an explicit line break Markdown parses both pieces into the same block, allowing the rendered card to overlap or inherit heading layout. This normalizer isolates complete markers w…
+Keep card replacement controls as Markdown block boundaries. Streaming can concatenate a completed marker directly with a heading, e.g. \`{{cardReplace id=42:11}}# Title\`. Without an explicit line break Markdown parses both pieces into the same block, allowing the rendered card to overlap or inherit heading layout. This normalizer isolates complete markers w…
 
 .. note::
 

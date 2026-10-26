@@ -331,7 +331,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 6
      - 0
-     - 189
+     - 193
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -928,6 +928,11 @@
      - 0
      - 15
      - ``src/features/knowledge/selectedNodeViewportFollow.js``
+   * - :doc:`src/features/mcp/settingsModel </api/javascript/features/mcp/settingsModel>`
+     - 5
+     - 0
+     - 5
+     - ``src/features/mcp/settingsModel.js``
    * - :doc:`src/features/message-map/MessageHistoryMapButton </api/javascript/features/message-map/MessageHistoryMapButton>`
      - 0
      - 0
@@ -1511,6 +1516,7 @@
    /api/javascript/features/knowledge/graphSettings
    /api/javascript/features/knowledge/orderedGraphLayout
    /api/javascript/features/knowledge/selectedNodeViewportFollow
+   /api/javascript/features/mcp/settingsModel
    /api/javascript/features/message-map/MessageHistoryMapButton
    /api/javascript/features/message-map/MessageHistoryMapPage
    /api/javascript/features/message-map/MessageMapSearch
