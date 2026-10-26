@@ -26,6 +26,7 @@ import {
   Maximize2,
   Pencil,
   Play,
+  Plus,
   Redo2,
   Save,
   Trash2,
@@ -85,6 +86,7 @@ import {
   wrapWorkflowSubgraph,
   unwrapWorkflowSubgraph,
   workflowUsesKnowledge,
+  workflowNodeNumbers,
 } from "./workflowModel.js";
 import WorkflowSubgraphPanel from "./WorkflowSubgraphPanel.jsx";
 import WorkflowInterfaceNode from "./WorkflowInterfaceNode.jsx";
@@ -250,7 +252,6 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   const [panel, setPanel] = useState("node");
   const [monitorView, setMonitorView] = useState("overview");
   const [mobilePane, setMobilePane] = useState("canvas");
-  const [search, setSearch] = useState("");
   const [menu, setMenu] = useState(null);
   const [picker, setPicker] = useState(null);
   const [pendingPlacement, setPendingPlacement] = useState(null);
@@ -364,8 +365,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             loadedTask?.parameters?.graph ||
               builtinTemplate?.graph ||
               loadedTemplate?.graph ||
-              definitions.defaultGraph ||
-              definitions.standardGraph,
+              normalizeGraph(undefined, definitions.settingsDefaults),
             definitions.nodes,
             definitions.settingsDefaults,
           ),
@@ -724,6 +724,28 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       onChanged,
     ],
   );
+  const nodeNumbers = useMemo(
+    () => workflowNodeNumbers(rootGraph),
+    [rootGraph],
+  );
+  const toggleOutput = useCallback(
+    (id, enabled) =>
+      changeGraph((current) => ({
+        ...current,
+        outputNodes: enabled
+          ? [...new Set([...(current.outputNodes || []), id])]
+          : (current.outputNodes || []).filter((key) => key !== id),
+      })),
+    [changeGraph],
+  );
+  const nodeMenu = useCallback(
+    (event, id) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      select([id]);
+      openMenu(event, { nodeId: id, x: rect.left, y: rect.bottom + 4 });
+    },
+    [openMenu, select],
+  );
   const nodes = useMemo(
     () => [
       ...graph.nodes.map((node) => ({
@@ -735,6 +757,8 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           id: node.id,
           kind: node.kind,
           node,
+          number: nodeNumbers[node.id],
+          onMenu: nodeMenu,
           definition: effectiveWorkflowDefinition(
             node,
             catalogNode(catalog.nodes, node, graph, new Set(), graphContext),
@@ -746,13 +770,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           readOnly: readOnly || Boolean(busy || pendingPlacement),
           monitor: readOnly,
           isOutput: (graph.outputNodes || []).includes(node.id),
-          onToggleOutput: (id, enabled) =>
-            changeGraph({
-              ...graph,
-              outputNodes: enabled
-                ? [...new Set([...(graph.outputNodes || []), id])]
-                : (graph.outputNodes || []).filter((key) => key !== id),
-            }),
+          onToggleOutput: toggleOutput,
           interactionDisabled: Boolean(busy || pendingPlacement),
           onValue,
           onBinding,
@@ -799,7 +817,9 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
       templates,
       catalog.builtinTemplates,
       interfaceProjection.nodes,
-      changeGraph,
+      nodeNumbers,
+      nodeMenu,
+      toggleOutput,
     ],
   );
   const edges = useMemo(
@@ -827,6 +847,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
 
   const selectedNode = graph.nodes.find((node) => node.id === selected);
+  const menuNode = graph.nodes.find((node) => node.id === menu?.nodeId);
   const selectedInterface = parseWorkflowInterfaceId(selected);
   const selectedInterfaceEntry =
     selectedInterface &&
@@ -1459,8 +1480,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         graph: initializeGraph(
           builtin?.graph ||
             loaded?.graph ||
-            catalog.defaultGraph ||
-            catalog.standardGraph,
+            normalizeGraph(undefined, catalog.settingsDefaults),
           catalog.nodes,
           catalog.settingsDefaults,
         ),
@@ -1670,7 +1690,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             aria-label="工作流编辑区域"
           >
             {[
-              ...(!readOnly ? [["palette", "节点库"]] : []),
+              ...(!readOnly ? [["palette", "工作流设置"]] : []),
               ["canvas", "流程画布"],
               ["config", readOnly ? "执行详情" : "节点信息"],
             ].map(([key, label]) => (
@@ -1713,37 +1733,16 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
           >
             {!readOnly && (
               <WorkflowPalette
-                categories={paletteCategories}
-                nodes={paletteDefinitions}
-                search={search}
-                onSearch={setSearch}
-                onAdd={addNode}
-                disabled={Boolean(busy || pendingPlacement)}
                 controls={
                   <>
                     <label className="workflow-label">工作流模板</label>
                     <WorkflowSelect
                       label="选择工作流模板"
-                      value={
-                        builtinTemplateId ||
-                        template?.id ||
-                        catalog.standardTemplateId ||
-                        ""
-                      }
+                      value={builtinTemplateId || template?.id || ""}
                       disabled={Boolean(busy || pendingPlacement)}
                       onChange={(id) => void loadTemplate(id)}
                       options={[
-                        ...((catalog.builtinTemplates || []).some(
-                          (item) => item.id === catalog.standardTemplateId,
-                        )
-                          ? []
-                          : [
-                              {
-                                value: "",
-                                label:
-                                  catalog.standardGraphTitle || "标准提取流程",
-                              },
-                            ]),
+                        { value: "", label: "空白工作流" },
                         ...(catalog.builtinTemplates || []).map((item) => ({
                           value: item.id,
                           label: item.title,
@@ -2164,6 +2163,21 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                 </div>
               )}
               <div className="workflow-canvas-tools">
+                {!readOnly && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="添加工作流节点"
+                    title="搜索并添加节点"
+                    disabled={Boolean(busy || pendingPlacement)}
+                    onClick={(event) => {
+                      const rect = event.currentTarget.getBoundingClientRect();
+                      openPicker({ x: rect.left, y: rect.bottom + 4 });
+                    }}
+                  >
+                    <Plus className="size-4" />
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="icon"
@@ -2249,7 +2263,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
               </div>
               {!nodes.length && (
                 <div className="workflow-canvas-empty">
-                  从左侧添加数据、处理和输出节点。
+                  右键画布，添加输入、处理或输出节点。
                 </div>
               )}
               {!readOnly && (
@@ -2275,6 +2289,25 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       node.kind === "subgraph" &&
                       node.subgraph.initialized !== false,
                   )}
+                  categories={paletteCategories}
+                  definitions={paletteDefinitions}
+                  onAddNode={(definition) => {
+                    addNode(
+                      definition,
+                      flow.screenToFlowPosition({ x: menu.x, y: menu.y }),
+                    );
+                    setMenu(null);
+                  }}
+                  output={{
+                    available: Boolean(
+                      menuNode &&
+                      catalogNode(catalog.nodes, menuNode)?.publicOutput,
+                    ),
+                    selected: (graph.outputNodes || []).includes(menu?.nodeId),
+                  }}
+                  onToggleOutput={(enabled) =>
+                    toggleOutput(menu.nodeId, enabled)
+                  }
                   onAdd={() => openPicker({ x: menu.x, y: menu.y })}
                   onPortMode={(mode) => {
                     if (menu?.port)

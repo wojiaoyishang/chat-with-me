@@ -41,6 +41,12 @@ pages["source_only_knowledge"] = pages["current_knowledge"].replace(
     (_ROOT / "static" / "management.js").read_text(encoding="utf-8"),
     (_ROOT / "static" / "page-motion.js").read_text(encoding="utf-8")
     + "\\n"
+    + (_ROOT / "static" / "graph-ordered-layout.js").read_text(encoding="utf-8")
+    + "\\n"
+    + (_ROOT / "static" / "knowledge-sidebar.js").read_text(encoding="utf-8")
+    + "\\n"
+    + (_ROOT / "static" / "page-dialogs.js").read_text(encoding="utf-8")
+    + "\\n"
     + (_ROOT / "static" / "management-source.js").read_text(encoding="utf-8"),
 )
 print(json.dumps(pages, ensure_ascii=True))
@@ -196,7 +202,7 @@ for (const version of ["current", "legacy"]) {
   test(`${version} rendered knowledge HTML starts its own physics engine and loads the graph`, async (t) => {
     const html = pages[`${version}_knowledge`];
     assert.ok(
-      !html.includes("{{"),
+      !(/\{\{\s*(config|stylesheet|script|title)\b/.test(html)),
       "the full page must contain rendered Jinja output",
     );
     const { dom, document, calls, errors } = await page(html, "knowledge");

@@ -15,6 +15,9 @@ import {
   XCircle,
   Hash,
   ToggleLeft,
+  MoreHorizontal,
+  PackageCheck,
+  PackagePlus,
 } from "lucide-react";
 import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
@@ -27,6 +30,13 @@ export default function WorkflowNode({ data, selected }) {
   const status = data.status;
   const subgraph = node.kind === "subgraph" ? node.subgraph : null;
   const category = nodeCategory(definition);
+  const role =
+    definition?.source || category === "source"
+      ? "input"
+      : category === "sink" || data.isOutput
+        ? "output"
+        : "process";
+  const roleLabel = { input: "输入", output: "输出", process: "处理" }[role];
   const refresh = useUpdateNodeInternals();
   const inlineSignature = Object.keys(node.inputs || {})
     .filter((key) => node.inputs[key]?.type === "literal")
@@ -58,6 +68,48 @@ export default function WorkflowNode({ data, selected }) {
     <div
       className={`workflow-node category-${category} ${subgraph ? "is-subgraph" : ""} ${selected ? "is-selected" : ""} ${status ? `status-${status}` : ""}`}
     >
+      <span
+        className={`workflow-node-badge role-${role}`}
+        title={`节点 ID：${node.id}`}
+      >
+        <b>#{data.number}</b>
+        <span>{roleLabel}</span>
+      </span>
+      <div
+        className="workflow-node-actions nodrag nopan"
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        {definition?.publicOutput && (
+          <button
+            type="button"
+            className={`workflow-product-toggle ${data.isOutput ? "is-active" : ""}`}
+            aria-label="收集此节点产物"
+            aria-pressed={Boolean(data.isOutput)}
+            disabled={readOnly}
+            title={data.isOutput ? "已收集产物，点击取消" : "收集此节点产物"}
+            onClick={(event) => {
+              event.stopPropagation();
+              data.onToggleOutput?.(node.id, !data.isOutput);
+            }}
+          >
+            {data.isOutput ? <PackageCheck /> : <PackagePlus />}
+          </button>
+        )}
+        {!data.monitor && (
+          <button
+            type="button"
+            aria-label="节点更多操作"
+            title="节点更多操作"
+            disabled={readOnly}
+            onClick={(event) => {
+              event.stopPropagation();
+              data.onMenu?.(event, node.id);
+            }}
+          >
+            <MoreHorizontal />
+          </button>
+        )}
+      </div>
       <div className="workflow-node-title">
         <Icon className="size-4 text-primary" />
         <strong title={node.name || definition?.display?.title}>
@@ -117,23 +169,6 @@ export default function WorkflowNode({ data, selected }) {
             )}
           </div>
         )
-      )}
-      {definition?.publicOutput && (
-        <label
-          className="nodrag flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground"
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          <input
-            type="checkbox"
-            aria-label="作为产物输出"
-            checked={Boolean(data.isOutput)}
-            disabled={readOnly}
-            onChange={(event) =>
-              data.onToggleOutput?.(node.id, event.target.checked)
-            }
-          />
-          作为产物输出
-        </label>
       )}
       {definition?.source && (
         <div

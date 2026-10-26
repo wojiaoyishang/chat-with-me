@@ -170,6 +170,31 @@ export function nodeCategory(definition) {
   return definition?.category || "";
 }
 
+/** Short canvas labels never replace the real IDs used for runtime bindings. */
+export function workflowNodeNumbers(graph) {
+  const numbers = {};
+  let next = 1;
+  const visit = (current) => {
+    for (const node of current?.nodes || []) {
+      numbers[node.id] = next++;
+      if (node.subgraph?.graph) visit(node.subgraph.graph);
+    }
+  };
+  visit(graph);
+  return numbers;
+}
+
+export function workflowNodeGroups(categories = [], definitions = []) {
+  const groups = categories.map((category) => ({ ...category, nodes: [] }));
+  for (const definition of definitions.filter((node) => !node.hidden)) {
+    const id = nodeCategory(definition) || "process";
+    let group = groups.find((item) => item.id === id);
+    if (!group) groups.push((group = { id, title: "其他节点", nodes: [] }));
+    group.nodes.push(definition);
+  }
+  return groups.filter((group) => group.nodes.length);
+}
+
 /** Repeated ports use stable item IDs; their order belongs to configuration. */
 export function workflowRepeatedItems(node, definition) {
   const repeated = definition?.repeatedInputs;

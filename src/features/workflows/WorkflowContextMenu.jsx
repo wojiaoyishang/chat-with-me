@@ -9,7 +9,10 @@ import {
   Group,
   Ungroup,
   FolderOpen,
+  Search,
+  PackageCheck,
 } from "lucide-react";
+import { workflowNodeGroups } from "./workflowModel.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +21,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 
 export default function WorkflowContextMenu({
@@ -36,6 +43,11 @@ export default function WorkflowContextMenu({
   onEnter,
   isSubgraph,
   isInterface,
+  categories,
+  definitions,
+  onAddNode,
+  output,
+  onToggleOutput,
 }) {
   if (!menu) return null;
   return (
@@ -53,7 +65,9 @@ export default function WorkflowContextMenu({
           style={{ left: menu.x, top: menu.y }}
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" sideOffset={0}>
+      <DropdownMenuContent align="start" sideOffset={0} onEscapeKeyDown={(event) => {
+        event.preventDefault(); event.stopPropagation(); onClose();
+      }}>
         {menu.port ? (
           <>
             <DropdownMenuLabel>{menu.port.display?.title}</DropdownMenuLabel>
@@ -69,13 +83,51 @@ export default function WorkflowContextMenu({
         ) : (
           <>
             {!menu.nodeId && !menu.edgeId && (
-              <DropdownMenuItem onSelect={onAdd}>
-                <Plus />
-                添加节点
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuLabel>添加节点</DropdownMenuLabel>
+                {workflowNodeGroups(categories, definitions).map((group) => (
+                  <DropdownMenuSub key={group.id}>
+                    <DropdownMenuSubTrigger>
+                      <Plus />
+                      {group.title}
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent className="workflow-add-submenu">
+                      {group.nodes.map((definition) => (
+                        <DropdownMenuItem
+                          key={definition.kind}
+                          onSelect={() => onAddNode(definition)}
+                          title={definition.display?.description}
+                        >
+                          <span className="workflow-menu-node-label">
+                            <span>{definition.display?.title}</span>
+                            <small>{definition.display?.subtitle}</small>
+                          </span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                ))}
+                <DropdownMenuItem onSelect={onAdd}>
+                  <Search />
+                  搜索节点…
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
             )}
             {menu.nodeId && (
               <>
+                {output?.available && (
+                  <>
+                    <DropdownMenuCheckboxItem
+                      checked={output.selected}
+                      onCheckedChange={onToggleOutput}
+                    >
+                      <PackageCheck />
+                      收集此节点产物
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 {!isInterface && (
                   <DropdownMenuItem onSelect={onGroup}>
                     <Group />

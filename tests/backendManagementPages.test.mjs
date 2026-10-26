@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { JSDOM } from "jsdom";
 
 const root = path.resolve(
@@ -10,20 +11,18 @@ const root = path.resolve(
   "../../../Python/Chat-With-Me-Backend/application/management_pages",
 );
 const script = await readFile(path.join(root, "static/management.js"), "utf8");
-const template = await readFile(
-  path.join(root, "templates/management.html"),
-  "utf8",
-);
+const pages = JSON.parse(execFileSync(path.join(root, "../../.venv/Scripts/python.exe"), ["-c", `
+import json
+from application.management_pages import _ENV
+print(json.dumps({kind: _ENV.get_template("management.html").render(kind=kind,title=kind,config={"kind":kind,"apiBase":"/api"},stylesheet="",script="") for kind in ("tasks","knowledge")}))
+`], {cwd: path.join(root,"../.."),encoding:"utf8"}));
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20));
 async function page(
   kind,
   responder,
   { mobile = false, reducedMotion = false, animate = false, quickTimeout = false, databases } = {},
 ) {
-  const html = template
-    .replace("{{ config | tojson }}", JSON.stringify({ kind, apiBase: "/api" }))
-    .replace("{{ stylesheet | safe }}", "")
-    .replace("{{ script | safe }}", "");
+  const html = pages[kind];
   const dom = new JSDOM(html, {
     url: `http://localhost/api/${kind}/page`,
     runScripts: "outside-only",
@@ -1326,10 +1325,15 @@ test("delete menu keeps confirmation and removes only the clicked knowledge afte
     if(url.endsWith('/nodes/root'))return{node,kind:'knowledge',relationGroups:[]};
     return{nodes:deleted?[]:[node],total:deleted?0:1};
   });t.after(()=>dom.window.close());
-  dom.window.confirm=()=>false;await openNodeAction(dom,document,'root','node-delete');
+  dom.window.confirm=()=>{throw new Error("browser confirm must not be used");};
+  await openNodeAction(dom,document,'root','node-delete');
+  assert.match(document.querySelector('.page-confirm-dialog').textContent, /删除知识节点/);
+  document.querySelector('.page-confirm-dialog .secondary').click(); await settle();
   assert.equal(calls.some(c=>c.method==='DELETE'),false);
   assert.ok(document.querySelector('.knowledge-node[data-node-id="root"]'));
-  dom.window.confirm=()=>true;await openNodeAction(dom,document,'root','node-delete');
+  await openNodeAction(dom,document,'root','node-delete');
+  assert.equal(calls.filter(c=>c.method==='DELETE').length,0);
+  document.querySelector('.page-confirm-dialog .danger').click(); await settle();
   assert.equal(calls.filter(c=>c.method==='DELETE').length,1);
   assert.equal(document.querySelector('.knowledge-node[data-node-id="root"]'),null);
 });
@@ -1367,4 +1371,32 @@ test("late operation permissions cannot mutate a newer menu after the old reques
   release({nodeId:'root',canWrite:true,canManage:true,canDelete:true});await settle();
   assert.equal(document.querySelector('.graph-context-menu').dataset.nodeId,'other');
   assert.equal(document.querySelector('[data-action="node-edit"]').hidden,true);
+});
+
+test("knowledge icon drawers preserve inspection, tools and Escape focus without replacing the canvas", async (t) => {
+  const node={id:"drawer-node",name:"Drawer node",label:"Event",properties:{}};
+  const {dom,document}=await page("knowledge", (url) => {
+    if(url.includes("/overview")) return {nodes:1,relationships:0,labels:["Event"]};
+    if(url.endsWith("/nodes/drawer-node")) return {node,kind:"knowledge",relationGroups:[]};
+    return {nodes:[node],total:1};
+  });
+  t.after(()=>dom.window.close());
+  const drawer=document.getElementById("knowledge-drawer"), canvas=document.getElementById("knowledge-canvas");
+  assert.equal(drawer.hidden,true);
+  assert.equal(document.querySelectorAll(".knowledge-rail-button").length,4);
+  const filters=document.querySelector('.knowledge-rail-button[aria-label="图谱筛选"]');
+  filters.click();
+  assert.equal(drawer.hidden,false);
+  assert.equal(filters.getAttribute("aria-expanded"),"true");
+  assert.ok(drawer.contains(document.getElementById("filter")));
+  document.querySelector('.knowledge-rail-button[aria-label="画布工具"]').click();
+  assert.equal(document.getElementById("knowledge-panel-canvas").hidden,false);
+  assert.ok(drawer.contains(document.getElementById("graph-fit")));
+  assert.equal(document.getElementById("knowledge-canvas"),canvas);
+  drawer.dispatchEvent(new dom.window.KeyboardEvent("keydown",{key:"Escape",bubbles:true,cancelable:true}));
+  assert.equal(drawer.hidden,true);
+  assert.equal(document.activeElement.getAttribute("aria-label"),"画布工具");
+  document.querySelector('[data-node-id="drawer-node"]').dispatchEvent(new dom.window.MouseEvent("click",{bubbles:true})); await settle();
+  assert.equal(document.getElementById("knowledge-panel-details").hidden,false);
+  assert.match(document.getElementById("detail").textContent,/Drawer node/);
 });

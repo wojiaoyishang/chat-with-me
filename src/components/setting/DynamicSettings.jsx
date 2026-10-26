@@ -1,3 +1,4 @@
+import { useConfirmation } from '@/components/ui/useConfirmation.jsx';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import {applyBulkToolPermissionMode, deduplicateToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
@@ -1921,6 +1922,7 @@ function WorkspaceAclDialog({ workspace, open, onOpenChange, onChanged }) {
 }
 
 function WorkspaceManagementItem() {
+    const [confirmAction, confirmationDialog] = useConfirmation();
     const { t } = useTranslation();
     const [agents, setAgents] = useState([]);
     const [workspaces, setWorkspaces] = useState([]);
@@ -1985,13 +1987,13 @@ function WorkspaceManagementItem() {
     };
 
     const revokeAgent = async (agent) => {
-        if (
-            !agent?.id ||
-            !window.confirm(
-                `撤销设备“${agent.builtin ? t('workspace_backend_connection') : agent.name || agent.id}”吗？撤销后该设备必须重新注册。`,
-            )
-        )
-            return;
+        if (!agent?.id) return;
+        const accepted = await confirmAction({
+            title: '撤销远程设备',
+            description: `撤销设备“${agent.builtin ? t('workspace_backend_connection') : agent.name || agent.id}”吗？撤销后该设备必须重新注册。`,
+            confirmText: '撤销设备',
+        });
+        if (!accepted) return;
         try {
             await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/agents/${encodeURIComponent(agent.id)}`);
             await refresh();
@@ -2016,6 +2018,7 @@ function WorkspaceManagementItem() {
 
     return (
         <SettingRow fullWidth className="border-b border-black/10 last:border-b-0 dark:border-white/15">
+            {confirmationDialog}
             <div className="w-full space-y-4">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
@@ -2413,6 +2416,7 @@ function UserToolAccessEditor({ catalog, rules, setRules }) {
 }
 
 function UserManagementItem() {
+    const [confirmAction, confirmationDialog] = useConfirmation();
     const currentUser = useUserStore((state) => state.user);
     const [users, setUsers] = useState([]);
     const [catalog, setCatalog] = useState([]);
@@ -2533,9 +2537,11 @@ function UserManagementItem() {
 
     const deleteSelected = useCallback(async () => {
         if (!selectedUser || isSelf) return;
-        const confirmed = window.confirm(
-            `确定永久删除用户“${selectedUser.username}”吗？\n\n如果该用户已有会话或故事等持久数据，服务器会拒绝删除；这类账户请使用“禁用账户”。`,
-        );
+        const confirmed = await confirmAction({
+            title: '永久删除用户',
+            description: `确定永久删除用户“${selectedUser.username}”吗？\n\n如果该用户已有会话或故事等持久数据，服务器会拒绝删除；这类账户请使用“禁用账户”。`,
+            confirmText: '永久删除',
+        });
         if (!confirmed) return;
         setSaving(true);
         try {
@@ -2547,7 +2553,7 @@ function UserManagementItem() {
         } finally {
             setSaving(false);
         }
-    }, [selectedUser, isSelf, refreshUsers]);
+    }, [selectedUser, isSelf, refreshUsers, confirmAction]);
 
     if (loading) {
         return (
@@ -2561,6 +2567,7 @@ function UserManagementItem() {
 
     return (
         <SettingRow fullWidth className="border-b-0">
+            {confirmationDialog}
             <div className="grid w-full min-h-[420px] grid-cols-1 gap-4 md:grid-cols-[190px_minmax(0,1fr)]">
                 <div className="rounded-xl border border-black/10 bg-black/[0.015] p-2 dark:border-white/10 dark:bg-white/[0.03]">
                     <div className="mb-2 flex items-center justify-between px-1">

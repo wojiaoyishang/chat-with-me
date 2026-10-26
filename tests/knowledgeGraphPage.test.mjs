@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import {execFileSync} from "node:child_process";
 import { JSDOM } from "jsdom";
 import { orderedTimeGraph } from './fixtures/orderedTimeV2.mjs';
 import { backendOrderedTimeRegion } from './fixtures/orderedTimeV2BackendRegion.mjs';
@@ -13,10 +14,10 @@ const root = path.resolve(
   "../../../Python/Chat-With-Me-Backend/application/management_pages",
 );
 const script = await readFile(path.join(root, "static/management.js"), "utf8");
-const template = await readFile(
-  path.join(root, "templates/management.html"),
-  "utf8",
-);
+const template = execFileSync(path.join(root,"../../.venv/Scripts/python.exe"),["-c",`
+from application.management_pages import _ENV
+print(_ENV.get_template("management.html").render(kind="knowledge",title="知识库",config={"kind":"knowledge","apiBase":"/api"},stylesheet="",script=""))
+`],{cwd:path.join(root,"../.."),encoding:"utf8",env:{...process.env,PYTHONIOENCODING:"utf-8"}});
 const settle = (ms = 35) => new Promise((resolve) => setTimeout(resolve, ms));
 const nodes = [
   {
@@ -61,11 +62,7 @@ async function page(
     observeVisibility = false,
   } = {},
 ) {
-  const config = JSON.stringify({ kind: "knowledge", apiBase: "/api" });
-  const html = template
-    .replace("{{ config | tojson }}", config)
-    .replace("{{ stylesheet | safe }}", "")
-    .replace("{{ script | safe }}", "");
+  const html = template;
   const dom = new JSDOM(html, {
     url: `http://localhost/api/knowledge/page${conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : ""}${databaseId ? `${conversationId ? "&" : "?"}databaseId=${encodeURIComponent(databaseId)}` : ""}`,
     runScripts: "outside-only",
@@ -2259,6 +2256,8 @@ test("successful database deletion clears undo so locally hidden history cannot 
   await settle();
   openNodeMenu(dom, document, "node-2"); await settle();
   document.querySelector('[data-action="node-delete"]').click(); await settle();
+  assert.equal(calls.some((call) => call.method === "DELETE"), false);
+  document.querySelector('.page-confirm-dialog .danger').click(); await settle();
   assert.ok(calls.some((call) => call.method === "DELETE"));
   assert.equal(document.querySelector('[data-node-id="node-2"]'), null);
   assert.equal(document.querySelector("#graph-undo").disabled, true);
@@ -2375,6 +2374,7 @@ test("unified search shows all results on focus and treats empty or whitespace q
   assert.equal(document.querySelector("#search-dropdown").hidden, false);
   assert.equal(document.querySelectorAll("#list .list-item").length, 2);
   document.querySelector("#graph-caption").click();
+  document.querySelector('.knowledge-rail-button[aria-label="图谱筛选"]').click();
   const filter = document.querySelector("#filter");
   filter.value = "接口";
   filter.dispatchEvent(new dom.window.Event("change", { bubbles: true }));

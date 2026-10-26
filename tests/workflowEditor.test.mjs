@@ -241,6 +241,8 @@ const catalog = {
 };
 
 async function environment(request = {}, options = {}) {
+  const fixtureTemplate = !options.empty && !options.component && !request.taskId && !request.templateId;
+  if (fixtureTemplate) request = { ...request, templateId: "built-in:test-fixture" };
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost/tasks",
     pretendToBeVisual: true,
@@ -288,6 +290,9 @@ async function environment(request = {}, options = {}) {
           definitions.builtinTemplates = structuredClone(
             options.builtinTemplates,
           );
+        if (fixtureTemplate) definitions.builtinTemplates = [...(definitions.builtinTemplates || []), {
+          id: "built-in:test-fixture", title: "测试流程", graph: definitions.standardGraph,
+        }];
         return definitions;
       }
       if (url === "/tasks/workflows/templates")
@@ -516,7 +521,7 @@ async function environment(request = {}, options = {}) {
                   "export const AlertDialog=({open,children})=>open?children:null;export const AlertDialogContent=({children,...props})=><section {...props}>{children}</section>;export const AlertDialogDescription=({children})=><p>{children}</p>;export const AlertDialogFooter=({children})=><footer>{children}</footer>;export const AlertDialogHeader=({children})=><header>{children}</header>;export const AlertDialogTitle=({children})=><h3>{children}</h3>;";
               else if (requested.endsWith("/dropdown-menu"))
                 contents =
-                  "export const DropdownMenu=({open,children})=>open?children:null;export const DropdownMenuTrigger=({children})=>children;export const DropdownMenuContent=({children})=><div>{children}</div>;export const DropdownMenuItem=({children,onSelect,...props})=><button onClick={onSelect} {...props}>{children}</button>;export const DropdownMenuLabel=({children})=><div>{children}</div>;export const DropdownMenuSeparator=()=>null;export const DropdownMenuShortcut=({children})=><small>{children}</small>;";
+                  "export const DropdownMenu=({open,children})=>open?children:null;export const DropdownMenuTrigger=({children})=>children;export const DropdownMenuContent=({children})=><div>{children}</div>;export const DropdownMenuItem=({children,onSelect,...props})=><button onClick={onSelect} {...props}>{children}</button>;export const DropdownMenuLabel=({children})=><div>{children}</div>;export const DropdownMenuSeparator=()=>null;export const DropdownMenuShortcut=({children})=><small>{children}</small>;export const DropdownMenuSub=({children})=><div>{children}</div>;export const DropdownMenuSubTrigger=({children})=><button>{children}</button>;export const DropdownMenuSubContent=({children,...props})=><div {...props}>{children}</div>;export const DropdownMenuCheckboxItem=({children,checked,onCheckedChange})=><button role='menuitemcheckbox' aria-checked={checked} onClick={()=>onCheckedChange(!checked)}>{children}</button>;";
               return { loader: "jsx", contents };
             },
           );
@@ -556,6 +561,11 @@ const button = (text) =>
   [...document.querySelectorAll("button")].find(
     (node) => node.textContent.trim() === text,
   );
+
+async function menuNode(app, title) {
+  await act(() => globalThis.workflowUITest.flow.onPaneContextMenu(new app.dom.window.MouseEvent("contextmenu", { clientX: 350, clientY: 260 })));
+  return [...document.querySelectorAll(".workflow-menu-node-label")].find((node) => node.firstElementChild.textContent === title)?.closest("button");
+}
 
 test("ordered content ports update the canvas, preserve links during reorder, and undo removal", async () => {
   const custom = structuredClone(catalog);
@@ -785,16 +795,13 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
     },
   );
   try {
-    const paletteButton = (title) =>
-      [...document.querySelectorAll(".workflow-palette-node")].find(
-        (node) => node.querySelector("strong")?.textContent === title,
-      );
+    const paletteButton = (title) => menuNode(app, title);
     assert.equal(
-      paletteButton("输入参数"),
+      await paletteButton("输入参数"),
       undefined,
       "root palette excludes interface constructors",
     );
-    await click(paletteButton("子图"), app.dom);
+    await click(await paletteButton("子图"), app.dom);
     let group = globalThis.workflowUITest.flow.nodes.find(
       (node) => node.data.kind === "subgraph",
     );
@@ -845,8 +852,8 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
       app.dom,
     );
     await click(button("进入子图"), app.dom);
-    assert.ok(paletteButton("输入参数"));
-    await click(paletteButton("知识提取"), app.dom);
+    assert.ok(await paletteButton("输入参数"));
+    await click(await paletteButton("知识提取"), app.dom);
     const childId = globalThis.workflowUITest.flow.nodes.find(
       (node) => node.data.kind === "extract",
     ).id;
@@ -854,7 +861,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
       globalThis.workflowUITest.flow.nodes.find(
         (node) => node.data.direction === direction,
       ).id;
-    await click(paletteButton("输入参数"), app.dom);
+    await click(await paletteButton("输入参数"), app.dom);
     await act(() =>
       globalThis.workflowUITest.flow.onConnect({
         source: capsuleId("inputs"),
@@ -884,7 +891,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
         { id: capsuleId("inputs"), position: { x: -150, y: 75 } },
       ),
     );
-    await click(paletteButton("输出参数"), app.dom);
+    await click(await paletteButton("输出参数"), app.dom);
     await act(() =>
       globalThis.workflowUITest.flow.onConnect({
         source: childId,
@@ -920,7 +927,7 @@ test("explicit subgraph nodes expose internal parameter pills, synchronize ports
     );
     assert.equal(group.data.definition.inputs[0].display.title, "待处理资料");
     assert.equal(group.data.definition.outputs[0].type, "extracted");
-    assert.equal(paletteButton("输入参数"), undefined);
+    assert.equal(await paletteButton("输入参数"), undefined);
   } finally {
     await app.close();
   }
@@ -935,9 +942,7 @@ test("copying a saved template initializes the same subgraph only after confirma
   };
   const app = await environment({}, { template: reusable });
   try {
-    const palette = [
-      ...document.querySelectorAll(".workflow-palette-node"),
-    ].find((node) => node.querySelector("strong")?.textContent === "子图");
+    const palette = await menuNode(app, "子图");
     await click(palette, app.dom);
     let group = globalThis.workflowUITest.flow.nodes.find(
       (node) => node.data.kind === "subgraph",
@@ -1019,9 +1024,7 @@ test("failed subgraph template loading keeps the pending node available for retr
   );
   try {
     await click(
-      [...document.querySelectorAll(".workflow-palette-node")].find(
-        (node) => node.querySelector("strong")?.textContent === "子图",
-      ),
+      await menuNode(app, "子图"),
       app.dom,
     );
     const pending = globalThis.workflowUITest.flow.nodes.at(-1).data.node;
@@ -1067,16 +1070,17 @@ test("default built-in template is displayed once in the three-preset selector",
       graph: custom.standardGraph,
     },
   ];
-  const app = await environment({}, { catalog: custom });
+  const app = await environment({}, { catalog: custom, empty: true });
   try {
+    assert.equal(globalThis.workflowUITest.flow.nodes.length, 0);
     const select = document.querySelector(
       '[data-select-label="选择工作流模板"]',
     ).nextElementSibling;
     assert.deepEqual(
       [...select.options].map((option) => option.textContent),
-      ["资料知识提取", "知识图谱导出", "知识图谱导入"],
+      ["空白工作流", "资料知识提取", "知识图谱导出", "知识图谱导入"],
     );
-    assert.equal(select.value, "built-in:main");
+    assert.equal(select.value, "_none");
   } finally {
     await app.close();
   }
@@ -1965,10 +1969,8 @@ test("unknown workflow nodes and settings render from catalog metadata without k
   };
   const app = await environment({}, { catalog: custom });
   try {
-    assert.match(
-      document.querySelector(".workflow-palette").textContent,
-      /自定义输入/,
-    );
+    await menuNode(app, "预约时间");
+    assert.ok(button("自定义输入"));
     assert.match(
       document.querySelector('[data-node="clock-1"]').textContent,
       /时间戳/,
@@ -1998,8 +2000,8 @@ test("unknown workflow nodes and settings render from catalog metadata without k
       rendered.textContent,
       /过时|HiddenImplementation|epoch-seconds/,
     );
-    const palette = document.querySelector(".workflow-palette-node");
-    assert.match(palette.textContent, /后端声明的节点说明/);
+    const palette = await menuNode(app, "预约时间");
+    assert.match(palette.title, /后端声明的节点说明/);
     assert.doesNotMatch(palette.textContent, /过时|HiddenImplementation/);
     assert.equal(document.querySelector('[aria-label="预约时间"]').value, "42");
     await input(
@@ -3137,7 +3139,7 @@ test("blank canvas context action and double click open pinned searchable node p
         }),
       ),
     );
-    await click(button("添加节点"), app.dom);
+    await click(button("搜索节点…"), app.dom);
     await input(
       document.querySelector('[aria-label="搜索可添加节点"]'),
       "TextInput",
