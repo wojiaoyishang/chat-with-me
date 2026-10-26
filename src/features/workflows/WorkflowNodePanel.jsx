@@ -39,6 +39,7 @@ export default function WorkflowNodePanel({
   onGraphChange,
   onValidity,
   disabled,
+  nodeHeader,
 }) {
   const definition = useMemo(
     () =>
@@ -138,10 +139,14 @@ export default function WorkflowNodePanel({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <h3 className="font-semibold">{definition.display?.title}</h3>
-        <p className="text-xs text-muted-foreground">
-          {definition.display?.subtitle}
-        </p>
+        {nodeHeader || (
+          <>
+            <h3 className="font-semibold">{definition.display?.title}</h3>
+            <p className="text-xs text-muted-foreground">
+              {definition.display?.subtitle}
+            </p>
+          </>
+        )}
         <label className="workflow-label">节点名称</label>
         <Input
           aria-label="节点名称"
@@ -149,7 +154,7 @@ export default function WorkflowNodePanel({
           disabled={disabled}
           onChange={(event) => update({ name: event.target.value })}
         />
-        {definition.source && (
+        {definition.source && !nodeHeader && (
           <div className="space-y-1">
             <label className="workflow-label">输入标识（自动生成）</label>
             <Input

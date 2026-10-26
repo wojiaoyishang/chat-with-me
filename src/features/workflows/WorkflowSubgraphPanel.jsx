@@ -29,6 +29,7 @@ export default function WorkflowSubgraphPanel({
   onSaveTemplate,
   onUpdateTemplate,
   parentInterface = {},
+  nodeHeader,
 }) {
   const subgraph = node.subgraph;
   const inner = subgraph.graph;
@@ -278,6 +279,7 @@ export default function WorkflowSubgraphPanel({
   if (subgraph.initialized === false)
     return (
       <div className="space-y-3">
+        {nodeHeader}
         <h3 className="font-semibold">子图待配置</h3>
         <p className="text-sm text-muted-foreground">
           请在画布中的子图节点选择“新建子图”或“复制模板”，并手动确认。
@@ -288,7 +290,7 @@ export default function WorkflowSubgraphPanel({
   return (
     <div className="space-y-5">
       <section className="space-y-3">
-        <h3 className="font-semibold">子图设置</h3>
+        {nodeHeader || <h3 className="font-semibold">子图设置</h3>}
         <Input
           aria-label="节点名称"
           value={node.name || ""}

@@ -6,7 +6,10 @@ import React, { act, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 test("workflow icon drawers preserve draft controls across switches and restore focus on close", async () => {
-  const dom = new JSDOM('<div id="root"></div>', { url: "http://localhost" });
+  const dom = new JSDOM(
+    '<div id="root"></div><button id="outside">画布</button>',
+    { url: "http://localhost" },
+  );
   for (const key of ["window", "document", "HTMLElement", "Element", "Node"])
     Object.defineProperty(globalThis, key, {
       configurable: true,
@@ -81,6 +84,55 @@ test("workflow icon drawers preserve draft controls across switches and restore 
       "名称与说明",
     );
     assert.equal(document.querySelector(".workflow-palette-node"), null);
+    const templateIcon = document.querySelector('[aria-label="模板预设"]');
+    const outside = document.getElementById("outside");
+    outside.focus();
+    await act(() =>
+      templateIcon.dispatchEvent(
+        new dom.window.MouseEvent("mouseover", { bubbles: true }),
+      ),
+    );
+    assert.equal(drawer.hidden, false);
+    assert.equal(
+      document.activeElement,
+      outside,
+      "hover must not take focus away from the canvas",
+    );
+    const nameIcon = document.querySelector('[aria-label="名称与说明"]');
+    await act(() =>
+      nameIcon.dispatchEvent(
+        new dom.window.MouseEvent("mouseover", { bubbles: true }),
+      ),
+    );
+    assert.equal(name.closest(".workflow-sidebar-content").hidden, false);
+    assert.equal(document.activeElement, outside);
+    await click("模板预设");
+    const select = document.querySelector('[aria-label="模板"]');
+    select.setAttribute("aria-controls", "template-options");
+    const popup = document.createElement("div");
+    popup.id = "template-options";
+    popup.tabIndex = -1;
+    document.body.append(popup);
+    await act(() => popup.focus());
+    assert.equal(
+      drawer.hidden,
+      false,
+      "an owned select portal remains inside the drawer",
+    );
+    await act(() => outside.focus());
+    assert.equal(drawer.hidden, true);
+    assert.equal(
+      document.activeElement,
+      outside,
+      "outside focus must not jump back to a rail icon",
+    );
+    await click("模板预设");
+    await act(() =>
+      outside.dispatchEvent(
+        new dom.window.MouseEvent("pointerdown", { bubbles: true }),
+      ),
+    );
+    assert.equal(drawer.hidden, true);
   } finally {
     await act(() => root.unmount());
     dom.window.close();

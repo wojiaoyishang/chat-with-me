@@ -18,6 +18,7 @@ export default function WorkflowMonitorPanel({
   stages = [],
   onOpenLogs,
   onEnterSubgraph,
+  nodeHeader,
 }) {
   const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -115,12 +116,16 @@ export default function WorkflowMonitorPanel({
       {node ? (
         <>
           <section className="space-y-3 border-t pt-4">
-            <h3 className="font-semibold">
-              {node.name || definition?.display?.title}
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              {definition?.display?.subtitle}
-            </p>
+            {nodeHeader || (
+              <>
+                <h3 className="font-semibold">
+                  {node.name || definition?.display?.title}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {definition?.display?.subtitle}
+                </p>
+              </>
+            )}
             {runtime.namePath?.length > 1 && (
               <p className="text-xs text-muted-foreground">
                 位置：{runtime.namePath.join(" › ")}

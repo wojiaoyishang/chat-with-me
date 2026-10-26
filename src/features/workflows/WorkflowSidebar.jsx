@@ -17,18 +17,56 @@ export default function WorkflowSidebar({
 }) {
   const id = useId();
   const heading = useRef(null);
+  const root = useRef(null);
+  const restoreFocus = useRef(true);
+  const focusOnOpen = useRef(true);
   const buttons = useRef({});
   const previous = useRef(null);
   const current = sections.find((section) => section.id === active);
   useEffect(() => {
-    if (current) heading.current?.focus({ preventScroll: true });
-    else if (previous.current)
+    if (current) {
+      if (focusOnOpen.current) heading.current?.focus({ preventScroll: true });
+    } else if (previous.current && restoreFocus.current)
       buttons.current[previous.current]?.focus({ preventScroll: true });
+    restoreFocus.current = true;
+    focusOnOpen.current = true;
     previous.current = current?.id;
   }, [current]);
+  useEffect(() => {
+    if (!current) return;
+    // ARIA-owned popups (e.g. the template select's portal) belong to the drawer.
+    const inside = (target) => {
+      if (!(target instanceof Node)) return false;
+      const element = root.current;
+      if (!element || element.contains(target)) return true;
+      return [...element.querySelectorAll("[aria-controls], [aria-owns]")].some(
+        (trigger) =>
+          [
+            trigger.getAttribute("aria-controls"),
+            trigger.getAttribute("aria-owns"),
+          ]
+            .filter(Boolean)
+            .flatMap((value) => value.split(/\s+/))
+            .some((id) =>
+              element.ownerDocument.getElementById(id)?.contains(target),
+            ),
+      );
+    };
+    const dismiss = (event) => {
+      if (inside(event.target)) return;
+      restoreFocus.current = false;
+      onActiveChange(null);
+    };
+    document.addEventListener("pointerdown", dismiss, true);
+    document.addEventListener("focusin", dismiss, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss, true);
+      document.removeEventListener("focusin", dismiss, true);
+    };
+  }, [current, onActiveChange]);
   const contents = { templates, details, transfer };
   return (
-    <aside className="workflow-sidebar" aria-label="工作流设置">
+    <aside ref={root} className="workflow-sidebar" aria-label="工作流设置">
       <nav className="workflow-sidebar-rail" aria-label="工作流侧边栏">
         {sections.map((section) => {
           const { id: key, title, Icon } = section;
@@ -44,7 +82,19 @@ export default function WorkflowSidebar({
               aria-expanded={active === key}
               aria-controls={`${id}-${key}`}
               className={active === key ? "is-active" : ""}
-              onClick={() => onActiveChange(active === key ? null : key)}
+              onMouseEnter={() => {
+                if (active === key) return;
+                focusOnOpen.current = root.current?.contains(
+                  document.activeElement,
+                );
+                onActiveChange(key);
+              }}
+              onClick={() => {
+                focusOnOpen.current = true;
+                onActiveChange(key);
+                if (active === key)
+                  heading.current?.focus({ preventScroll: true });
+              }}
             >
               <Icon aria-hidden="true" />
             </button>

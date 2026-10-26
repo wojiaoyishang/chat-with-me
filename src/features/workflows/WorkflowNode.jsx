@@ -18,25 +18,21 @@ import {
   MoreHorizontal,
   PackageCheck,
   PackagePlus,
+  ArrowUpRight,
+  Save,
 } from "lucide-react";
 import { nodeCategory, sourceNodeValue } from "./workflowModel.js";
 import WorkflowDataField from "./WorkflowDataField.jsx";
 import WorkflowSubgraphSetup from "./WorkflowSubgraphSetup.jsx";
 import { workflowStatusLabels } from "./workflowStatus.js";
 import { workflowPhaseLabels } from "./workflowMetrics.js";
+import WorkflowNodeBadge from "./WorkflowNodeBadge.jsx";
 
 export default function WorkflowNode({ data, selected }) {
   const { node, definition, runtime = {}, readOnly } = data;
   const status = data.status;
   const subgraph = node.kind === "subgraph" ? node.subgraph : null;
   const category = nodeCategory(definition);
-  const role =
-    definition?.source || category === "source"
-      ? "input"
-      : category === "sink" || data.isOutput
-        ? "output"
-        : "process";
-  const roleLabel = { input: "输入", output: "输出", process: "处理" }[role];
   const refresh = useUpdateNodeInternals();
   const inlineSignature = Object.keys(node.inputs || {})
     .filter((key) => node.inputs[key]?.type === "literal")
@@ -68,13 +64,6 @@ export default function WorkflowNode({ data, selected }) {
     <div
       className={`workflow-node category-${category} ${subgraph ? "is-subgraph" : ""} ${selected ? "is-selected" : ""} ${status ? `status-${status}` : ""}`}
     >
-      <span
-        className={`workflow-node-badge role-${role}`}
-        title={`节点 ID：${node.id}`}
-      >
-        <b>#{data.number}</b>
-        <span>{roleLabel}</span>
-      </span>
       <div
         className="workflow-node-actions nodrag nopan"
         onPointerDown={(event) => event.stopPropagation()}
@@ -110,16 +99,26 @@ export default function WorkflowNode({ data, selected }) {
           </button>
         )}
       </div>
-      <div className="workflow-node-title">
-        <Icon className="size-4 text-primary" />
-        <strong title={node.name || definition?.display?.title}>
-          {node.name || definition?.display?.title}
-        </strong>
-        {status === "running" && <Loader2 className="size-3 animate-spin" />}
-        {["completed", "succeeded"].includes(status) && (
-          <Check className="size-3 text-emerald-600" />
-        )}
-        {status === "failed" && <XCircle className="size-3 text-destructive" />}
+      <div className="workflow-node-header">
+        <div className="workflow-node-title">
+          <Icon className="size-4 text-primary" />
+          <strong title={node.name || definition?.display?.title}>
+            {node.name || definition?.display?.title}
+          </strong>
+          {status === "running" && <Loader2 className="size-3 animate-spin" />}
+          {["completed", "succeeded"].includes(status) && (
+            <Check className="size-3 text-emerald-600" />
+          )}
+          {status === "failed" && (
+            <XCircle className="size-3 text-destructive" />
+          )}
+        </div>
+        <WorkflowNodeBadge
+          node={node}
+          definition={definition}
+          number={data.number}
+          isOutput={data.isOutput}
+        />
       </div>
       {definition?.display?.subtitle && (
         <p className="workflow-node-id">{definition.display.subtitle}</p>
@@ -143,30 +142,37 @@ export default function WorkflowNode({ data, selected }) {
             {runtime.activeCount > 0 && (
               <span>正在运行 {runtime.activeCount} 个节点</span>
             )}
-            <button
-              className="nodrag"
-              type="button"
-              disabled={data.interactionDisabled}
-              onClick={(event) => {
-                event.stopPropagation();
-                data.onEnter?.(node.id);
-              }}
+            <div
+              className="workflow-subgraph-actions nodrag nopan"
+              onPointerDown={(event) => event.stopPropagation()}
             >
-              {data.monitor ? "展开子图" : "进入子图"}
-            </button>
-            {!data.monitor && (
               <button
-                className="nodrag"
+                className="workflow-subgraph-enter"
                 type="button"
                 disabled={data.interactionDisabled}
                 onClick={(event) => {
                   event.stopPropagation();
-                  data.onSaveSubgraphTemplate?.(node.id);
+                  data.onEnter?.(node.id);
                 }}
               >
-                保存模板
+                <ArrowUpRight aria-hidden="true" />
+                {data.monitor ? "展开子图" : "进入子图"}
               </button>
-            )}
+              {!data.monitor && (
+                <button
+                  className="workflow-subgraph-save"
+                  type="button"
+                  disabled={data.interactionDisabled}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    data.onSaveSubgraphTemplate?.(node.id);
+                  }}
+                >
+                  <Save aria-hidden="true" />
+                  保存模板
+                </button>
+              )}
+            </div>
           </div>
         )
       )}

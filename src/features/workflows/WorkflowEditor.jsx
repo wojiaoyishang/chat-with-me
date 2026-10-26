@@ -107,6 +107,7 @@ import WorkflowContextMenu from "./WorkflowContextMenu.jsx";
 import WorkflowNodePicker from "./WorkflowNodePicker.jsx";
 import WorkflowSidebar from "./WorkflowSidebar.jsx";
 import WorkflowNode from "./WorkflowNode.jsx";
+import WorkflowNodeDetailsHeader from "./WorkflowNodeDetailsHeader.jsx";
 import WorkflowNodePanel from "./WorkflowNodePanel.jsx";
 import WorkflowMonitorPanel from "./WorkflowMonitorPanel.jsx";
 import WorkflowLogViewer from "./WorkflowLogViewer.jsx";
@@ -848,6 +849,29 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
   );
 
   const selectedNode = graph.nodes.find((node) => node.id === selected);
+  const selectedDefinition =
+    selectedNode &&
+    effectiveWorkflowDefinition(
+      selectedNode,
+      catalogNode(catalog.nodes, selectedNode, graph, new Set(), graphContext),
+    );
+  const nodeHeader = selectedNode && (
+    <WorkflowNodeDetailsHeader
+      key={selectedNode.id}
+      node={selectedNode}
+      definition={selectedDefinition}
+      number={nodeNumbers[selectedNode.id]}
+      isOutput={(graph.outputNodes || []).includes(selectedNode.id)}
+      disabled={Boolean(busy || pendingPlacement)}
+      readOnly={readOnly}
+      onLocate={() => {
+        setFocusRequest({ id: selectedNode.id });
+        setMobilePane("canvas");
+      }}
+      onMenu={(event) => nodeMenu(event, selectedNode.id)}
+      onToggleOutput={(enabled) => toggleOutput(selectedNode.id, enabled)}
+    />
+  );
   const menuNode = graph.nodes.find((node) => node.id === menu?.nodeId);
   const selectedInterface = parseWorkflowInterfaceId(selected);
   const selectedInterfaceEntry =
@@ -2362,21 +2386,10 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
             <aside className="workflow-inspector pretty-scrollbar">
               {readOnly ? (
                 <WorkflowMonitorPanel
+                  nodeHeader={nodeHeader}
                   task={task}
                   node={selectedNode}
-                  definition={
-                    selectedNode &&
-                    effectiveWorkflowDefinition(
-                      selectedNode,
-                      catalogNode(
-                        catalog.nodes,
-                        selectedNode,
-                        graph,
-                        new Set(),
-                        graphContext,
-                      ),
-                    )
-                  }
+                  definition={selectedDefinition}
                   runtime={runtimeNodes[selected] || {}}
                   onEnterSubgraph={() => enterSubgraph(selected)}
                   stages={runtimeStages}
@@ -2439,6 +2452,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       />
                     ) : selectedNode?.kind === "subgraph" ? (
                       <WorkflowSubgraphPanel
+                        nodeHeader={nodeHeader}
                         key={`${graphPathKey}/${selectedNode.id}`}
                         graph={graph}
                         node={selectedNode}
@@ -2462,6 +2476,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
                       />
                     ) : selectedNode ? (
                       <WorkflowNodePanel
+                        nodeHeader={nodeHeader}
                         key={selectedNode.id}
                         graph={graph}
                         node={selectedNode}

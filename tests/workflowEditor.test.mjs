@@ -1089,6 +1089,29 @@ test("default built-in template is displayed once in the three-preset selector",
   }
 });
 
+test("inspector shares node identity and product state with the canvas", async () => {
+  const custom = structuredClone(catalog);
+  custom.nodes.find((node) => node.kind === "extract").publicOutput = true;
+  const app = await environment({}, { catalog: custom });
+  try {
+    await click(document.querySelector('[data-node="extract-1"]'), app.dom);
+    const inspector = document.querySelector(".workflow-inspector");
+    const canvasNode = document.querySelector('[data-node="extract-1"]');
+    assert.equal(inspector.querySelector(".workflow-node-badge").textContent, canvasNode.querySelector(".workflow-node-badge").textContent);
+    assert.equal(inspector.querySelector('[aria-label="节点 ID"]').textContent, "extract-1");
+    let copiedId;
+    document.execCommand = () => { copiedId = document.activeElement.value; return true; };
+    await click(inspector.querySelector('[aria-label="复制节点 ID"]'), app.dom);
+    assert.equal(copiedId, "extract-1");
+    await click(inspector.querySelector('[aria-label="收集此节点产物"]'), app.dom);
+    assert.ok(inspector.querySelector(".workflow-node-badge.role-output"));
+    assert.ok(canvasNode.querySelector(".workflow-node-badge.role-output"));
+    assert.equal(globalThis.workflowUITest.flow.nodes.find((node) => node.id === "extract-1").data.isOutput, true);
+    await click(inspector.querySelector('[aria-label="收集此节点产物"]'), app.dom);
+    assert.ok(canvasNode.querySelector(".workflow-node-badge.role-process"));
+  } finally { await app.close(); }
+});
+
 test("monitor summarizes active subgraph leaves and reads outputs using the compiled leaf ID", async () => {
   const graph = {
     version: 3,
