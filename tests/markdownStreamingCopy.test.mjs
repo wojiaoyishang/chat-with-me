@@ -82,6 +82,33 @@ test('quoted completed blocks also retain interactive copy controls across messa
         assert.ok(host.querySelector('.copy-button') === button);
         await act(async () => button.click());
         assert.deepEqual(copied, ['quoted code']);
+        await render(`${source}Tail 2`, { msg: { readonly: false }, isStreaming: false });
+        assert.equal(host.querySelector('.copy-button'), button, 'completion keeps the quote ancestor and copied state');
+        assert.equal(button.getAttribute('aria-label'), '已复制');
+    });
+});
+
+test('completion preserves the native video, paragraph, list and table DOM identities', async () => {
+    await withRenderer(async (host, render) => {
+        const source = '![Demo](https://example.invalid/demo.mp4){type=video}\n\n- Stable list\n\n| Name | Value |\n| --- | --- |\n| A | 1 |\n\n';
+        await render(`${source}Tail 1`, { msg: { readonly: true } });
+        const video = host.querySelector('video');
+        const paragraph = video.closest('p');
+        const list = host.querySelector('ul');
+        const table = host.querySelector('table');
+        video.currentTime = 12.5;
+        video.volume = 0.4;
+        await render(`${source}Tail 2`, { msg: { readonly: true } });
+        await render(`${source}Tail 2`, { msg: { readonly: false }, messageContextState: { label: 'updated' } });
+        assert.equal(host.querySelector('video'), video);
+        assert.equal(video.isConnected, true);
+        assert.equal(video.currentTime, 12.5);
+        assert.equal(video.volume, 0.4);
+        assert.equal(video.closest('p'), paragraph);
+        assert.equal(host.querySelector('ul'), list);
+        assert.equal(host.querySelector('table'), table);
+        await render(source.replace('demo.mp4', 'another.mp4'), { msg: { readonly: false } });
+        assert.notEqual(host.querySelector('video'), video, 'a genuinely different media source creates its own player');
     });
 });
 

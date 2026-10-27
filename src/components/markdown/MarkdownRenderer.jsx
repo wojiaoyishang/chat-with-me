@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useId, useMemo, useRef } from 'react';
+import React, { createContext, memo, useContext, useEffect, useId, useMemo, useRef } from 'react';
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -345,7 +345,25 @@ const MarkdownCode = ({ className, children, isCodeBlock, ...props }) => {
     return <CodeBlock codeString={String(children || '').replace(/\n$/, '')} language={language} />;
 };
 
-const createComponents = ({
+// Renderers below are pure element factories. React sees only the stable host
+// components, while current permissions, task source and replacements flow via
+// context. Changing readonly at stream completion must not remount a video (or
+// an ancestor paragraph/list/card) with the same source.
+const MarkdownRenderersContext = createContext(null);
+const stableRendererHosts = new Map();
+const getStableRendererHost = (name) => {
+    if (!stableRendererHosts.has(name)) {
+        const RendererHost = (props) => {
+            const renderers = useContext(MarkdownRenderersContext);
+            return renderers?.[name]?.(props) ?? null;
+        };
+        RendererHost.displayName = `Markdown(${name})`;
+        stableRendererHosts.set(name, RendererHost);
+    }
+    return stableRendererHosts.get(name);
+};
+
+const createElementRenderers = ({
     contextId = '',
     conversationId = null,
     replacementRef,
@@ -368,7 +386,7 @@ const createComponents = ({
 
     const renderNestedMarkdown = (nestedContent, extra = {}) => {
         return (
-            <MarkdownRendererInner
+            <MarkdownRenderer
                 contextId={contextId}
                 content={nestedContent}
                 replacement={getCurrentReplacement()}
@@ -387,13 +405,13 @@ const createComponents = ({
 
     const cardComponents = cardSpec ? Object.fromEntries(cardSpec.directives.map(({ name, kind }) => [
         name,
-        kind === 'session' ? StudySession :
-            kind === 'section' ? StudySection :
+        kind === 'session' ? (props) => <StudySession {...props} /> :
+            kind === 'section' ? (props) => <StudySection {...props} /> :
                 (props) => <StudyCard {...props} kind={kind || name.slice('study-'.length)} iconSymbols={cardSpec.iconSymbols} />,
     ])) : {};
 
     return {
-        ...(cardSpec ? { 'study-outline': StudyOutline, ...cardComponents } : {}),
+        ...(cardSpec ? { 'study-outline': (props) => <StudyOutline {...props} />, ...cardComponents } : {}),
         p: ({ children }) => <p className="my-2">{children}</p>,
 
         ul: ({ children, className }) => <ul className={`list-disc pl-5 my-2 ${renderSurface === 'document' && onTaskToggle ? `cwm-document-todo-list ${className || ''}` : ''}`}>{children}</ul>,
@@ -681,8 +699,8 @@ function MarkdownRendererInner({
         return getVisitedKey(visitedIds);
     }, [visitedIds]);
 
-    const components = useMemo(() => {
-        return createComponents({
+    const elementRenderers = useMemo(() => {
+        return createElementRenderers({
             contextId,
             conversationId,
             replacementRef,
@@ -716,6 +734,10 @@ function MarkdownRendererInner({
         taskSourceContent,
         cardSpec,
     ]);
+
+    const components = useMemo(() => Object.fromEntries(
+        Object.keys(elementRenderers).map((name) => [name, getStableRendererHost(name)]),
+    ), [elementRenderers]);
 
     const processedContent = useMemo(() => {
         const preprocessed = preprocessContent(content);
@@ -775,6 +797,7 @@ function MarkdownRendererInner({
     }
 
     const markdown = (
+        <MarkdownRenderersContext.Provider value={elementRenderers}>
         <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
             rehypePlugins={[
@@ -797,6 +820,7 @@ function MarkdownRendererInner({
         >
             {processedContent}
         </ReactMarkdown>
+        </MarkdownRenderersContext.Provider>
     );
     return documentSurface ? (
         <div className="cwm-document-card-surface">
