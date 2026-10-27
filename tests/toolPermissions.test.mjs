@@ -12,6 +12,7 @@ import {
     collectToolPermissions,
     deduplicateToolPermissionGroups,
     deduplicateToolPermissionItems,
+    getToolDisplayName,
     getToolPermissionKey,
     readToolPermission,
 } from '../src/features/tools/toolPermissions.js';
@@ -29,6 +30,14 @@ test('default permission bulk changes use stable keys and preserve restricted to
     assert.deepEqual(applyBulkToolPermissionMode(denied, tools, 'allow'), {
         'task.read': 'allow', 'knowledge.write': 'allow', 'system.fixed': 'allow',
     });
+});
+
+test('catalog display text is independent of callable and permission identities', () => {
+    const entry = {name: 'raw.remote.call', text: '自定义检索', title: 'Remote search', permissionKey: 'mcp.service.search'};
+    assert.equal(getToolDisplayName(entry), '自定义检索');
+    assert.equal(getToolPermissionKey(entry), 'mcp.service.search');
+    assert.equal(getToolDisplayName({name: 'raw.remote.call', title: 'Remote search'}), 'Remote search');
+    assert.equal(getToolDisplayName({name: 'raw.remote.call', text: ' '}), 'raw.remote.call');
 });
 
 const readTools = ['background_job_get', 'background_job_wait', 'background_job_list'].map(name => ({
@@ -185,6 +194,35 @@ test('composer task-effect control updates stable nested state and emits the sta
         assert.equal(latest.extra_tools.background_effects['knowledge.write'], 'deny');
         assert.equal(document.querySelectorAll('input[type="checkbox"]').length, 0);
     } finally {await ui.close();}
+});
+
+test('conversation and composer render server labels literally without client translation collisions', async () => {
+    const group = {type: 'group', name: 'custom_service', text: 'delete', description: 'confirm', children: [
+        {type: 'tool', name: 'raw.remote.call', text: 'search', description: 'cancel', permissionKey: 'mcp.service.search', default: 'ask'},
+    ]};
+    const remoteText = new Set(['delete', 'confirm', 'search', 'cancel']);
+    const translated = (key, fallback) => remoteText.has(key) ? `WRONG_${key}` : translate(key, fallback);
+    const dialog = await mount(Dialog, {open: true, onOpenChange: () => {}, toolsConfig: [group], t: translated});
+    try {
+        await click(button('delete'));
+        assert.match(document.body.textContent, /search/);
+        assert.match(document.body.textContent, /confirm/);
+        assert.doesNotMatch(document.querySelector('section').textContent, /WRONG_/);
+    } finally {await dialog.close();}
+    const changes = [];
+    function Menu() {
+        const [toolsStatus, setToolsStatus] = React.useState({extra_tools: {}});
+        return useExtraToolsMenuItems({toolsStatus, setToolsStatus, t: translated,
+            onToolPermissionChange: (key, mode) => changes.push([key, mode]),
+        })([group]);
+    }
+    const menu = await mount(Menu);
+    try {
+        assert.doesNotMatch(document.body.textContent, /WRONG_/);
+        assert.ok([...document.querySelectorAll('span')].some(node => node.textContent === 'delete'));
+        await click(document.querySelector('[aria-label="search：拒绝"]'));
+        assert.deepEqual(changes, [['mcp.service.search', 'deny']]);
+    } finally {await menu.close();}
 });
 
 test('business approval displays the backend label and resolves the original item identity', async () => {

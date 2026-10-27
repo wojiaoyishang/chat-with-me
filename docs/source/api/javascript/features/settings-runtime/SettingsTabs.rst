@@ -27,7 +27,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:233:4942:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:236:5035:FUNCTION
 
 .. js:function:: SettingsTabs({ item, renderPane })
 
@@ -58,7 +58,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:604:757:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:616:774:FUNCTION
 
 .. rubric:: ``useMemo callback @ 14``
 
@@ -82,7 +82,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:669:756:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:683:773:FUNCTION
 
 .. rubric:: ``(Array.isArray(item.tabs) ? item.tabs : []).map callback @ 15``
 
@@ -105,7 +105,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:848:891:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:870:913:FUNCTION
 
 .. rubric:: ``tabs.find callback @ 23``
 
@@ -128,7 +128,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1014:1042:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1039:1067:FUNCTION
 
 .. rubric:: ``tabs.some callback @ 26``
 
@@ -149,7 +149,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1124:1169:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1152:1197:FUNCTION
 
 .. rubric:: ``tabs.every callback @ 29``
 
@@ -172,7 +172,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1195:1210:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1224:1239:FUNCTION
 
 .. rubric:: ``tabs.map callback @ 30``
 
@@ -193,7 +193,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1247:1362:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1277:1396:FUNCTION
 
 .. rubric:: ``useEffect callback @ 31``
 
@@ -217,7 +217,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1271:1350:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1302:1382:FUNCTION
 
 .. rubric:: ``setSelected callback @ 32``
 
@@ -242,7 +242,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1300:1327:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1332:1359:FUNCTION
 
 .. rubric:: ``tabs.some callback @ 33``
 
@@ -263,7 +263,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1396:1795:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1431:1843:FUNCTION
 
 .. rubric:: ``useEffect callback @ 36``
 
@@ -291,7 +291,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1486:1658:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1524:1703:FUNCTION
 
 .. rubric:: ``reveal``
 
@@ -314,7 +314,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``pane.contains``、``setSelected``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1728:1790:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:1775:1837:FUNCTION
 
 .. rubric:: ``returned callback @ 48``
 
@@ -336,7 +336,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``node.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:2116:2215:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:2176:2278:FUNCTION
 
 .. rubric:: ``select``
 
@@ -366,7 +366,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``setSelected``、``buttons.current.get(id)?.focus``、``buttons.current.get``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:2231:2641:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:2295:2717:FUNCTION
 
 .. rubric:: ``move``
 
@@ -392,7 +392,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``["ArrowLeft", "ArrowRight", "Home", "End"].includes``、``event.preventDefault``、``event.stopPropagation``、``select``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3093:4191:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3161:4261:FUNCTION
 
 .. rubric:: ``tabs.map callback @ 90``
 
@@ -420,7 +420,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3171:3306:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3242:3380:FUNCTION
 
 .. rubric:: ``ref callback @ 93``
 
@@ -443,7 +443,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``buttons.current.set``、``buttons.current.delete``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3670:3690:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3753:3773:FUNCTION
 
 .. rubric:: ``onClick callback @ 105``
 
@@ -465,7 +465,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``select``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3715:3744:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:3799:3828:FUNCTION
 
 .. rubric:: ``onKeyDown callback @ 106``
 
@@ -488,7 +488,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``move``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:4223:4918:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:4295:5008:FUNCTION
 
 .. rubric:: ``tabs.map callback @ 116``
 
@@ -513,7 +513,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:4285:4410:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:4360:4488:FUNCTION
 
 .. rubric:: ``ref callback @ 119``
 

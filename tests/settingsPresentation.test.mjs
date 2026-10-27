@@ -10,13 +10,13 @@ test('card is a visual container with the same nested defaults and validation as
     assert.deepEqual(validateFields(fields, { section: { title: '' } }), { 'section.title': '名称不能为空。' });
 });
 
-test('group cards and profile summaries render data and share ordinary actions', async () => {
+test('explicit cards and plain profile summaries render data and share ordinary actions', async () => {
     const ui = await mount([
         { type: 'profile-summary', avatar: ref('form.photo'), title: ref('form.name'), subtitle: ref('form.email'), meta: [{ label: '编号', value: ref('form.id') }], actions: [{ id: 'inspect', label: '查看', endpoint: '/inspect', method: 'GET' }] },
-        { type: 'group', text: '界面显示', description: '仅影响当前设备', icon: 'palette', children: [{ type: 'switch', name: 'compact', text: '紧凑显示', default: false }] },
+        { type: 'card', text: '界面显示', description: '仅影响当前设备', icon: 'palette', children: [{ type: 'switch', name: 'compact', text: '紧凑显示', default: false }] },
     ], {}, async () => ({}), {}, { photo: 'cwm://artifact/profile', name: '测试用户', email: 'user@example.test', id: 7 });
     try {
-        assert.equal(document.querySelectorAll('[data-slot="card"]').length, 2);
+        assert.equal(document.querySelectorAll('[data-slot="card"]').length, 1);
         assert.match(document.body.textContent, /测试用户.*user@example.test.*编号.*7/s);
         assert.equal(document.querySelector('img').getAttribute('src'), 'cwm://artifact/profile');
         assert.match(document.body.textContent, /界面显示.*仅影响当前设备/s);
@@ -31,6 +31,7 @@ test('resource cards retain column information and explicit tables remain availa
     const first = await mount([resource({ columns })], rows);
     try {
         assert.equal(document.querySelectorAll('article').length, 1);
+        assert.equal(document.querySelectorAll('[data-slot="card"]').length, 0);
         assert.equal(document.querySelector('table'), null);
         assert.match(document.querySelector('article').textContent, /示例连接.*状态.*当前连接/s);
     } finally { await first.close(); }
@@ -42,7 +43,7 @@ test('resource cards retain column information and explicit tables remain availa
 });
 
 test('plain groups retain readable single-row preferences without an outer card', async () => {
-    const ui = await mount([{ type: 'group', variant: 'plain', text: '消息提醒', children: [{ type: 'switch', name: ['type.example'], text: '完成提醒', description: '有结果时通知', density: 'compact', default: true }] }]);
+    const ui = await mount([{ type: 'group', text: '消息提醒', children: [{ type: 'switch', name: ['type.example'], text: '完成提醒', description: '有结果时通知', density: 'compact', default: true }] }]);
     try {
         assert.equal(document.querySelector('[data-slot="card"]'), null);
         assert.match(document.body.textContent, /完成提醒.*有结果时通知/s);

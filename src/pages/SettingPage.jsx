@@ -55,6 +55,25 @@ import { apiEndpoint } from "@/config.js";
 const WINDOW_SIZE_KEY = "cwm:settings-window-size:v1";
 const DEFAULT_SIZE = { width: 1080, height: 760 };
 const CLIENT_ICONS = { layout: Layout, server: Server, bell: Bell };
+
+/** Backend icons are optional resources; a failed icon must not break navigation. */
+function SettingsNavigationIcon({ preview, icon }) {
+  const Icon = icon;
+  const source = preview ? resolveResourceUrl(preview) : "";
+  const [failedSource, setFailedSource] = useState(null);
+  return source && failedSource !== source ? (
+    <img
+      alt=""
+      src={source}
+      className="size-4 shrink-0"
+      onError={() => setFailedSource(source)}
+      onLoad={() => setFailedSource(null)}
+    />
+  ) : (
+    <Icon className="size-4 shrink-0" aria-hidden="true" />
+  );
+}
+
 const clampWindow = (value) => ({
   width: Math.min(
     Math.max(320, window.innerWidth - 24),
@@ -416,7 +435,6 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   if (!open) return null;
   const isClient = section === "client";
   const visibleTabs = isClient ? CLIENT_SETTINGS_TABS : tabs;
-  const selectedTab = visibleTabs.find((tab) => tab.id === selectedId);
   const currentDescription = loadedPageKey === pageKey ? description : null;
   const visibleOptions = currentDescription?.search
     ? filterClientSettingsOptions(currentDescription.options, filterQuery)
@@ -429,14 +447,11 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     (!isClient && catalogLoading && !tabs.length);
   const visibleError =
     pageError || (!isClient && !tabs.length ? catalogError : "");
-  const PageIcon =
-    CLIENT_ICONS[currentDescription?.icon || selectedTab?.icon] ||
-    (isClient ? Monitor : Settings);
   const retry = () =>
     selectedId ? loadPage(selectedId, section) : loadCatalog();
   return (
     <div
-      className="fixed inset-0 z-[50] flex items-center justify-center bg-slate-950/35 p-2 backdrop-blur-sm sm:p-5"
+      className="fixed inset-0 z-[50] flex items-center justify-center bg-black/40 p-2 sm:p-5"
       onClick={(event) => {
         if (event.target === event.currentTarget) void close();
       }}
@@ -445,22 +460,19 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         role="dialog"
         aria-modal="true"
         aria-label="设置"
-        className="relative flex max-h-full max-w-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-background shadow-2xl"
+        className="relative flex max-h-full max-w-full flex-col overflow-hidden rounded-lg border bg-background shadow-lg"
         style={
           fullscreen || isMobile ? { width: "100%", height: "100%" } : size
         }
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary">
+            <span className="flex shrink-0 items-center justify-center text-muted-foreground">
               <Settings className="size-5" />
             </span>
             <div>
               <h2 className="text-base font-semibold tracking-tight">设置</h2>
-              <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
-                让界面与连接更适合你的使用习惯
-              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -492,11 +504,11 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
             </Button>
           </div>
         </header>
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2">
           <div
             role="tablist"
             aria-label="设置范围"
-            className="inline-flex w-full rounded-xl bg-muted/65 p-1 sm:w-auto"
+            className="inline-flex w-full rounded-lg bg-muted p-1 sm:w-auto"
           >
             {[
               { id: "client", label: "前端设置", Icon: Monitor },
@@ -534,7 +546,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                   onClick={() => {
                     void selectSection(id);
                   }}
-                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition sm:flex-none ${section === id ? "bg-background text-foreground shadow-sm ring-1 ring-border/60" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition sm:flex-none ${section === id ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
                 >
                   <Icon className="size-4 shrink-0" />
                   {label}
@@ -557,7 +569,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         <div className={`flex min-h-0 flex-1 ${isMobile ? "flex-col" : ""}`}>
           <nav
             aria-label={isClient ? "前端设置页面" : "后端设置页面"}
-            className={`shrink-0 border-border/70 bg-muted/20 ${isMobile ? "flex gap-1 overflow-x-auto border-b p-2" : "flex w-56 flex-col border-r p-3"}`}
+            className={`shrink-0 border-border/70 bg-background ${isMobile ? "flex gap-1 overflow-x-auto border-b p-2" : "flex w-52 flex-col border-r p-2"}`}
           >
             {!isMobile && (
               <p className="px-3 pb-3 pt-2 text-[11px] font-medium tracking-wider text-muted-foreground">
@@ -608,20 +620,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                     key={tab.id}
                     aria-current={selectedId === tab.id ? "page" : undefined}
                     title={tab.description || tab.name || tab.title}
-                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${isMobile ? "shrink-0 whitespace-nowrap" : "w-full"} ${selectedId === tab.id ? "bg-background font-medium text-foreground shadow-sm ring-1 ring-border/70" : "text-muted-foreground hover:bg-background/65 hover:text-foreground"}`}
+                    className={`group flex items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition ${isMobile ? "shrink-0 whitespace-nowrap" : "w-full"} ${selectedId === tab.id ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"}`}
                     onClick={() => {
                       void selectPage(tab.id);
                     }}
                   >
-                    {tab.preview ? (
-                      <img
-                        alt=""
-                        src={resolveResourceUrl(tab.preview)}
-                        className="size-4 shrink-0"
-                      />
-                    ) : (
-                      <Icon className="size-4 shrink-0" />
-                    )}
+                    <SettingsNavigationIcon preview={tab.preview} icon={Icon} />
                     <span className="min-w-0 flex-1 truncate">
                       {tab.name || tab.title}
                     </span>
@@ -633,7 +637,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
               })}
             </div>
             {!isMobile && (
-              <div className="mx-1 mt-4 rounded-xl border border-border/65 bg-background/70 p-3">
+              <div className="mx-1 mt-3 border-t px-2 pt-3 pb-1">
                 <div className="mb-1 flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
                   <Server className="size-3" />
                   当前连接
@@ -655,9 +659,9 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
               id="settings-page-panel"
               role="tabpanel"
               aria-labelledby={`settings-section-${section}`}
-              className="@container/settings min-h-0 flex-1 overflow-y-auto bg-muted/20 p-4 sm:p-6 lg:p-8"
+              className="@container/settings min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
             >
-              <div className="mx-auto w-full max-w-5xl space-y-6">
+              <div className="w-full space-y-4">
                 {isLoading ? (
                   <div className="flex min-h-52 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
                     <Loader2 className="size-5 animate-spin" />
@@ -687,34 +691,6 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                   </div>
                 ) : currentDescription ? (
                   <>
-                    <div className="flex items-start gap-3.5">
-                      <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card text-muted-foreground shadow-sm">
-                        {selectedTab?.preview ? (
-                          <img
-                            alt=""
-                            src={resolveResourceUrl(selectedTab.preview)}
-                            className="size-5"
-                          />
-                        ) : (
-                          <PageIcon className="size-5" />
-                        )}
-                      </span>
-                      <div className="min-w-0 pt-0.5">
-                        <p className="mb-1 text-[10px] font-medium tracking-wider text-muted-foreground">
-                          {isClient
-                            ? "前端设置 · 仅此浏览器"
-                            : `后端设置 · ${connection.title}`}
-                        </p>
-                        <h3 className="text-xl font-semibold tracking-tight">
-                          {currentDescription.title}
-                        </h3>
-                        {currentDescription.description && (
-                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                            {currentDescription.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
                     {Object.entries(fieldErrors).map(([name, message]) => (
                       <p
                         key={name}
@@ -737,7 +713,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                           onChange={(event) =>
                             setFilterQuery(event.target.value)
                           }
-                          className="h-10 rounded-xl bg-background pl-9"
+                          className="h-9 bg-background pl-9"
                         />
                       </div>
                     )}
@@ -746,8 +722,8 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                       config={visibleOptions}
                       className={
                         currentDescription.layout?.columns === 2
-                          ? "grid items-start gap-5 space-y-0! @3xl/settings:grid-cols-2"
-                          : "space-y-5"
+                          ? "grid items-start gap-x-8 gap-y-5 space-y-0! @3xl/settings:grid-cols-2"
+                          : "space-y-4"
                       }
                       initialValues={values}
                       onChange={(next) => {

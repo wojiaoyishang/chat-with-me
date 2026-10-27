@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
-import {collectToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode as normalizeMode, readToolPermission} from '../toolPermissions.js';
+import {collectToolPermissionGroups, getToolDisplayName, getToolPermissionKey, normalizeToolPermissionMode as normalizeMode, readToolPermission} from '../toolPermissions.js';
 
 const toolAllowedModes = (tool) => Array.isArray(tool?.allowedModes) && tool.allowedModes.length > 0
     ? tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map(mode => String(mode).toLowerCase())
@@ -64,17 +64,17 @@ const ConversationToolsDialog = ({
     const visibleGroups = useMemo(() => groups.map((group) => {
         const sourceTools = group.tools || [];
         if (!normalizedQuery) return {...group, sourceTools};
-        const groupMatches = String(t(group.name) || group.name).toLowerCase().includes(normalizedQuery);
+        const groupMatches = [group.name, group.id, group.description].filter(Boolean).join(' ').toLowerCase().includes(normalizedQuery);
         return {
             ...group,
             sourceTools,
             tools: groupMatches
                 ? sourceTools
-                : sourceTools.filter((tool) => [getToolPermissionKey(tool), tool.name, t(tool.text || tool.name), tool.description]
+                : sourceTools.filter((tool) => [getToolPermissionKey(tool), tool.name, getToolDisplayName(tool), tool.description]
                     .filter(Boolean)
                     .some(value => String(value).toLowerCase().includes(normalizedQuery))),
         };
-    }).filter(group => group.tools.length > 0), [groups, normalizedQuery, t]);
+    }).filter(group => group.tools.length > 0), [groups, normalizedQuery]);
 
     const permissionCounts = allTools.reduce((counts, tool) => {
         const mode = normalizeMode(draft[getToolPermissionKey(tool)], 'ask');
@@ -303,7 +303,7 @@ const ConversationToolsDialog = ({
                                             aria-expanded={isExpanded}
                                         >
                                             <ChevronDown className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
-                                            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">{t(group.name)}</span>
+                                            <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">{group.name}</span>
                                         </button>
                                         <div className="flex shrink-0 items-center gap-1">
                                             <button
@@ -311,7 +311,7 @@ const ConversationToolsDialog = ({
                                                 disabled={controlsDisabled || batchableTools(mutableSourceTools, 'allow').length === 0 || allAllowed}
                                                 onClick={() => applyGroupPermission({...group, sourceTools}, 'allow')}
                                                 title={t('allow_toolset_all', '将此工具集的所有可修改工具设为允许')}
-                                                aria-label={`${t(group.name)}：${t('allow_toolset_all', '将此工具集的所有可修改工具设为允许')}`}
+                                                aria-label={`${group.name}：${t('allow_toolset_all', '将此工具集的所有可修改工具设为允许')}`}
                                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-emerald-600 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-40"
                                             >
                                                 <ShieldCheck className="h-3.5 w-3.5"/>
@@ -322,7 +322,7 @@ const ConversationToolsDialog = ({
                                                 disabled={controlsDisabled || batchableTools(mutableSourceTools, 'ask').length === 0 || allAsked}
                                                 onClick={() => applyGroupPermission({...group, sourceTools}, 'ask')}
                                                 title={t('ask_toolset_all', '将此工具集的所有可修改工具设为询问')}
-                                                aria-label={`${t(group.name)}：${t('ask_toolset_all', '将此工具集的所有可修改工具设为询问')}`}
+                                                aria-label={`${group.name}：${t('ask_toolset_all', '将此工具集的所有可修改工具设为询问')}`}
                                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-amber-600 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-40"
                                             >
                                                 <CircleHelp className="h-3.5 w-3.5"/>
@@ -333,7 +333,7 @@ const ConversationToolsDialog = ({
                                                 disabled={controlsDisabled || batchableTools(mutableSourceTools, 'deny').length === 0 || allDenied}
                                                 onClick={() => applyGroupPermission({...group, sourceTools}, 'deny')}
                                                 title={t('deny_toolset_all', '将此工具集的所有可修改工具设为拒绝')}
-                                                aria-label={`${t(group.name)}：${t('deny_toolset_all', '将此工具集的所有可修改工具设为拒绝')}`}
+                                                aria-label={`${group.name}：${t('deny_toolset_all', '将此工具集的所有可修改工具设为拒绝')}`}
                                                 className="inline-flex cursor-pointer items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-medium text-rose-600 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40"
                                             >
                                                 <ShieldX className="h-3.5 w-3.5"/>
@@ -341,7 +341,7 @@ const ConversationToolsDialog = ({
                                             </button>
                                         </div>
                                     </div>
-                                    {group.description && <div className="border-t border-gray-100 px-3 py-2 text-xs leading-5 text-gray-500">{t(group.description)}</div>}
+                                    {group.description && <div className="border-t border-gray-100 px-3 py-2 text-xs leading-5 text-gray-500">{group.description}</div>}
                                     {isExpanded && (
                                         <div className="divide-y divide-gray-100">
                                             {group.tools.map((tool) => {
@@ -350,11 +350,11 @@ const ConversationToolsDialog = ({
                                                     <div key={getToolPermissionKey(tool)} className="flex gap-3 px-3 py-3">
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center gap-1.5 text-sm font-medium text-gray-800">
-                                                                <span className="truncate">{t(tool.text || tool.name)}</span>
+                                                                <span className="truncate">{getToolDisplayName(tool)}</span>
                                                                 {tool.locked && <LockKeyhole className="h-3.5 w-3.5 shrink-0 text-gray-400"/>}
                                                             </div>
                                                             <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">{getToolPermissionKey(tool)}</div>
-                                                            {tool.description && <div className="mt-1 text-xs leading-5 text-gray-500">{t(tool.description)}</div>}
+                                                            {tool.description && <div className="mt-1 text-xs leading-5 text-gray-500">{tool.description}</div>}
                                                         </div>
                                                         {tool.locked ? (
                                                             <div className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[11px] font-medium ${
@@ -375,7 +375,9 @@ const ConversationToolsDialog = ({
                                                                     ['allow', ShieldCheck, t('tool_permission_allow', '允许'), 'emerald'],
                                                                     ['ask', CircleHelp, t('tool_permission_ask', '询问'), 'amber'],
                                                                     ['deny', ShieldX, t('tool_permission_deny', '拒绝'), 'rose'],
-                                                                ]).filter(([value]) => toolAllowedModes(tool).includes(value)).map(([value, Icon, label, tone]) => (
+                                                                ]).filter(([value]) => toolAllowedModes(tool).includes(value)).map((option) => {
+                                                                    const [value, Icon, label, tone] = option;
+                                                                    return (
                                                                     <button
                                                                         key={value}
                                                                         type="button"
@@ -392,7 +394,8 @@ const ConversationToolsDialog = ({
                                                                         <Icon className="h-3 w-3"/>
                                                                         {label}
                                                                     </button>
-                                                                ))}
+                                                                    );
+                                                                })}
                                                             </div>
                                                         )}
                                                     </div>

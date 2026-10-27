@@ -31,17 +31,16 @@ const preference = (key, text, tips, defaultValue = true) => ({
   default: defaultValue,
   storage: { key },
 });
-const group = (text, description, icon, children) => ({
+const group = (text, icon, children) => ({
   type: "group",
   text,
-  description,
   icon,
   children,
 });
 
 function interfaceOptions() {
   return [
-    group("对话列表", "让侧栏的信息密度更适合你的阅读习惯。", "palette", [
+    group("对话列表", "palette", [
       preference(
         "CompactConversationList",
         "紧凑显示对话列表",
@@ -54,7 +53,7 @@ function interfaceOptions() {
         "在会话列表中显示最近更新时间。",
       ),
     ]),
-    group("聊天与执行窗口", "整理消息和工具状态，保持正文简洁。", "settings", [
+    group("聊天与执行窗口", "settings", [
       preference(
         "ShowQuickUserMessageNavigator",
         "用户消息快速导航",
@@ -74,7 +73,6 @@ function interfaceOptions() {
     ]),
     group(
       "图谱与工作流",
-      "这些显示偏好不会改变后台任务的执行方式。",
       "sparkles",
       [
         preference(
@@ -99,7 +97,7 @@ function interfaceOptions() {
         ),
       ],
     ),
-    group("场景调试", "只影响当前浏览器中的调试控件。", "terminal", [
+    group("场景调试", "terminal", [
       preference(
         "RobotDebugEnabled",
         "机器人调试",

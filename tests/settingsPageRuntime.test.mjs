@@ -172,7 +172,7 @@ test("the settings shell loads its declared catalog and page URL then saves decl
 test("missing manifest settings capability is visible and never calls a legacy endpoint", async () => {
   const ui = await mountSettingsPage(() => [], null);
   try {
-    assert.match(document.body.textContent, /仅此浏览器/);
+    assert.ok(document.querySelector('[aria-label="紧凑显示对话列表"]'));
     assert.equal(settingsUI.calls.length, 0);
     await click(document.querySelector('[role="tab"][aria-label="后端设置"]'));
     assert.match(document.body.textContent, /没有提供设置功能/);
@@ -238,7 +238,8 @@ test("a delayed descriptor response cannot replace the subsequently selected pag
         : {
             ...page,
             id: "other",
-            title: "正确页面",
+            title: "正确页面元数据",
+            options: [{ type: "heading", text: "正确页面" }, ...page.options],
             save: undefined,
             saveMode: "actions",
           },
@@ -246,11 +247,48 @@ test("a delayed descriptor response cannot replace the subsequently selected pag
   try {
     await click(document.querySelector('[role="tab"][aria-label="后端设置"]'));
     await click(button("另一个页面"));
-    await act(async () => release({ ...page, title: "过期页面" }));
+    await act(async () => release({ ...page, title: "过期页面元数据", options: [{ type: "heading", text: "过期页面" }, ...page.options] }));
     assert.match(document.body.textContent, /正确页面/);
     assert.doesNotMatch(document.body.textContent, /过期页面/);
     assert.equal(button("应用配置"), undefined);
   } finally {
     await ui.close();
   }
+});
+
+
+test("page metadata never inserts a body header and explicit components render once", async () => {
+  const ui = await mountSettingsPage((_method, url) => url === "/custom/settings-index" ? catalog : {
+    ...page,
+    title: "仅用于导航的元数据标题",
+    description: "不应自动插入正文的元数据说明",
+    options: [{ type: "heading", text: "页面作者的标题", description: "页面作者的说明" }, ...page.options],
+  });
+  try {
+    await click(document.querySelector('[role="tab"][aria-label="后端设置"]'));
+    const body = document.querySelector('#settings-page-panel');
+    assert.equal(body.querySelectorAll('h3').length, 1);
+    assert.equal(body.querySelector('h3').textContent, '页面作者的标题');
+    assert.doesNotMatch(body.textContent, /仅用于导航|不应自动插入/);
+    assert.equal(body.textContent.split('页面作者的说明').length - 1, 1);
+    assert.equal(document.querySelector('[aria-label="自定义字段"]').value, '服务器初值');
+  } finally { await ui.close(); }
+});
+
+test("a failed backend navigation icon falls back without changing the selected page", async () => {
+  const ui = await mountSettingsPage((_method, url) => url === "/custom/settings-index"
+    ? [{ ...catalog[0], preview: '/public/unavailable.svg' }]
+    : page);
+  try {
+    await click(document.querySelector('[role="tab"][aria-label="后端设置"]'));
+    const navigation = button('插件提供的设置');
+    assert.ok(navigation.querySelector('img'));
+    await act(async () => navigation.querySelector('img').dispatchEvent(new window.Event('error')));
+    assert.equal(navigation.querySelector('img'), null);
+    assert.ok(navigation.querySelector('svg'));
+    assert.equal(navigation.getAttribute('aria-current'), 'page');
+    assert.equal(document.querySelector('[aria-label="自定义字段"]').value, '服务器初值');
+    await edit(document.querySelector('[aria-label="自定义字段"]'), '图标失败后仍可编辑');
+    assert.equal(button('应用配置').disabled, false);
+  } finally { await ui.close(); }
 });

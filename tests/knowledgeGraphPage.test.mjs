@@ -2215,6 +2215,10 @@ test("canvas undo restores hidden nodes and clear, while duplicate expansions ad
 test("canvas undo shortcuts preserve text editing and ignore unrelated page focus and open dialogs", async (t) => {
   const { dom, document } = await page();
   t.after(() => dom.window.close());
+  await waitForGraphCondition(
+    () => document.querySelector("#knowledge-canvas").getAttribute("aria-busy") === "false",
+    "initial canvas paint before testing undo shortcuts",
+  );
   document.querySelector('[data-node-id="node-1"]').dispatchEvent(new dom.window.MouseEvent("dblclick", { bubbles: true }));
   await settle();
   const shortcut = (target) => {

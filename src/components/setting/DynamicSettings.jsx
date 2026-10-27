@@ -230,7 +230,7 @@ function SettingRow({
     required = false,
 }) {
     if (fullWidth) {
-        return <div className={`w-full px-4 py-4 sm:px-5 ${className || ''}`}>
+        return <div className={`w-full py-3 ${className || ''}`}>
             {text && <div className="mb-2.5 flex items-center gap-2 text-sm font-medium"><span>{text}</span><TipWrapper tips={tips} />{required && <span className="text-destructive">*</span>}</div>}
             {children}
         </div>;
@@ -238,7 +238,7 @@ function SettingRow({
 
     return (
         <div
-            className={`cwm-settings-row ${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between ${density === 'compact' ? 'min-h-[48px]' : 'min-h-[58px]'} gap-x-5 gap-y-3 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : density === 'compact' ? 'px-1 py-3' : 'px-4 py-4 sm:px-5'}`}
+            className={`cwm-settings-row ${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between ${density === 'compact' ? 'min-h-[44px]' : 'min-h-[48px]'} gap-x-5 gap-y-2 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : density === 'compact' ? 'py-2.5' : 'py-3'}`}
         >
             <div className="min-w-0 max-w-full flex-1" style={{ flexBasis: 'max-content' }}>
                 <div className="flex items-center gap-1.5">
@@ -440,7 +440,7 @@ const SortableCard = memo(
                 ref={setCardNodeRef}
                 data-setting-entry-id={stableId}
                 style={style}
-                className={`mb-3 sm:mb-4 border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-sm transition-colors ${
+                className={`mb-3 border rounded-lg overflow-hidden bg-card transition-colors ${
                     duplicate ? 'border-red-500 dark:border-red-500' : 'border-[#e1e4e8] dark:border-[#3a3f45]'
                 }`}
             >
@@ -1879,7 +1879,8 @@ function GroupItem({ item, path }) {
         title: resolveValue(item.text || item.title || item.name, scope),
         description: resolveValue(item.description, scope),
         icon: item.icon || 'settings',
-        variant: item.variant,
+        variant: item.type === 'card' ? 'card' : item.variant,
+        bodyClassName: item.type === 'card' || item.variant === 'card' ? 'px-4' : undefined,
     };
     const hasRadios = item.children?.some((c) => c.type === 'radio');
     if (hasRadios) {
@@ -1892,7 +1893,7 @@ function GroupItem({ item, path }) {
         return (
             <SettingsSection {...sectionProps}>
                 <RadioGroup
-                    className="flex flex-wrap gap-x-5 gap-y-2 px-4 py-4 sm:px-5"
+                    className="flex flex-wrap gap-x-5 gap-y-2 py-3"
                     value={selectedRadio}
                     onValueChange={(v) => update(path, v)}
                 >
@@ -1907,11 +1908,12 @@ function GroupItem({ item, path }) {
         );
     }
     const hasCheckboxes = item.children?.some((c) => c.type === 'checkbox');
+    const hasContainers = item.children?.some((child) => ['card', 'group', 'resource', 'async-operation', 'tabs'].includes(child.type));
     return (
         <SettingsSection {...sectionProps}>
-            <div className={hasCheckboxes ? 'flex flex-wrap gap-x-5 gap-y-2 px-4 py-4 sm:px-5' : 'divide-y divide-border/55'}>
+            <div className={hasCheckboxes ? 'flex flex-wrap gap-x-5 gap-y-2 py-3' : hasContainers ? 'space-y-4' : 'divide-y divide-border/55'}>
                 {item.children?.map((child, index) => (
-                    <div key={child.id || `${child.name || child.type || 'field'}:${index}`} className={['card', 'group', 'resource', 'async-operation'].includes(child.type) ? 'p-3 sm:p-4' : item.variant === 'plain' ? 'transition-colors hover:bg-muted/15' : undefined}><SettingItemRenderer item={child} path={[...path, ...pathParts(child.name)]} /></div>
+                    <div key={child.id || `${child.name || child.type || 'field'}:${index}`}><SettingItemRenderer item={child} path={[...path, ...pathParts(child.name)]} /></div>
                 ))}
             </div>
         </SettingsSection>
@@ -1922,14 +1924,14 @@ function GroupItem({ item, path }) {
 function HeadingItem({ item }) {
     const hasText = item.text && item.text.trim() !== '';
     if (!hasText) {
-        return <div className="h-px bg-[#e1e4e8] dark:bg-[#3a3f45] mx-3 sm:mx-4 my-2" />;
+        return <div role="separator" className="h-px bg-border" />;
     }
     return (
-        <div className="flex items-center gap-3 px-1 pb-0.5 pt-2">
-            <span className="text-sm font-semibold text-foreground">
+        <div className="space-y-1">
+            <h3 className="text-base font-semibold text-foreground">
                 {item.text}
-            </span>
-            {item.description && <span className="text-xs leading-5 text-muted-foreground">{item.description}</span>}
+            </h3>
+            {item.description && <p className="text-sm leading-5 text-muted-foreground">{item.description}</p>}
         </div>
     );
 }

@@ -85,7 +85,7 @@ export default function SettingsTabs({ item, renderPane }) {
       <div
         role="tablist"
         aria-label={item.ariaLabel || item.text || "设置标签页"}
-        className="flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-border/70 bg-muted/35 p-1"
+        className="flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-lg bg-muted p-1"
       >
         {tabs.map((tab, index) => (
           <Button
@@ -104,7 +104,7 @@ export default function SettingsTabs({ item, renderPane }) {
             size="sm"
             onClick={() => select(tab.id)}
             onKeyDown={(event) => move(event, index)}
-            className={`h-9 shrink-0 gap-2 rounded-lg px-3 text-sm font-medium transition ${active === tab.id ? "bg-background text-foreground shadow-sm ring-1 ring-border/60 hover:bg-background" : "text-muted-foreground hover:text-foreground"}`}
+            className={`h-9 shrink-0 gap-2 rounded-md px-3 text-sm font-medium transition ${active === tab.id ? "bg-background text-foreground shadow-sm hover:bg-background" : "text-muted-foreground hover:text-foreground"}`}
           >
             {tab.icon && (
               <SettingsIcon icon={tab.icon} framed={false} className="size-4" />

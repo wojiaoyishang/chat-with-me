@@ -2,6 +2,10 @@ const MODES = ['allow', 'ask', 'deny'];
 
 export const getToolPermissionKey = (tool) => tool?.permissionKey || tool?.name;
 
+// Catalog labels are final server-owned text, never client translation keys.
+export const getToolDisplayName = (tool, fallback = '工具') =>
+    [tool?.text, tool?.title, tool?.name].find(value => typeof value === 'string' && value.trim()) || fallback;
+
 export const applyBulkToolPermissionMode = (permissions = {}, tools = [], mode) => {
     const next = {...permissions};
     if (!MODES.includes(mode)) return next;
@@ -75,7 +79,7 @@ export const collectToolPermissionGroups = (items = []) => {
             if (item.type === 'group') {
                 const next = group || {
                     id: item.name || item.text || `group-${groups.length}`,
-                    name: item.text || item.name || 'tools',
+                    name: getToolDisplayName(item),
                     description: item.description,
                     tools: [],
                 };
@@ -84,7 +88,7 @@ export const collectToolPermissionGroups = (items = []) => {
             } else if (item.type === 'tool' && getToolPermissionKey(item)) {
                 let target = group || groups.find(entry => entry.id === '__other__');
                 if (!target) {
-                    target = {id: '__other__', name: 'other_tools', tools: []};
+                    target = {id: '__other__', name: '其他工具', tools: []};
                     groups.push(target);
                 }
                 target.tools.push(item);

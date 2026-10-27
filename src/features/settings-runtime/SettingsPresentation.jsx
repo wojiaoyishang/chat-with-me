@@ -12,28 +12,28 @@ const ICONS = {
 };
 
 /** Icon names are presentation vocabulary; pages never select a business renderer. */
-export function SettingsIcon({ icon = 'settings', className = 'size-4', framed = true }) {
+export function SettingsIcon({ icon = 'settings', className = 'size-4', framed = false }) {
     const Icon = ICONS[icon] || Settings2;
     const content = typeof icon === 'string' && /^(?:cwm:\/\/|https?:\/\/|\/)/.test(icon)
         ? <img src={resolveResourceUrl(icon)} alt="" className={`${className} object-contain`} />
         : <Icon className={className} aria-hidden="true" />;
-    return framed ? <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary ring-1 ring-inset ring-primary/5">{content}</span> : content;
+    return framed ? <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">{content}</span> : content;
 }
 
-/** Shared visual shell for local preferences and backend-authored settings. */
+/** Groups provide structure only. A card surface is an explicit author choice. */
 export function SettingsSection({ title, description, icon, actions, children, variant, className = '', bodyClassName = '' }) {
-    if (variant === 'plain') return <section className={`space-y-3 ${className}`}>
+    if (variant !== 'card') return <section className={`min-w-0 space-y-3 ${className}`}>
         {(title || description || actions) && <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>{title && <h3 className="text-xs font-semibold tracking-wide text-muted-foreground">{title}</h3>}{description && <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>}</div>{actions}
+            <div className="min-w-0 flex-1">{title && <h3 className="text-sm font-semibold">{title}</h3>}{description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}</div>{actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
         </div>}
         <div className={bodyClassName}>{children}</div>
     </section>;
-    return <Card className={`h-fit min-w-0 gap-0 overflow-hidden rounded-2xl border-border/75 bg-card py-0 shadow-sm shadow-black/[0.02] ${className}`}>
-        {(title || description || actions) && <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 border-b border-border/60 bg-muted/15 px-4 py-3.5 sm:px-5">
+    return <Card className={`h-fit min-w-0 gap-0 overflow-hidden rounded-lg border-border bg-card py-0 shadow-none ${className}`}>
+        {(title || description || actions) && <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
             <div className="flex min-w-0 flex-1 items-start gap-3">
-                {icon && <SettingsIcon icon={icon} />}
-                <div className="min-w-0 py-0.5">
-                    {title && <CardTitle className="text-sm leading-5 sm:text-[15px]">{title}</CardTitle>}
+                {icon && <SettingsIcon icon={icon} className="mt-0.5 size-4 text-muted-foreground" />}
+                <div className="min-w-0">
+                    {title && <CardTitle className="text-sm leading-5">{title}</CardTitle>}
                     {description && <CardDescription className="mt-1 max-w-prose text-xs leading-[1.6]">{description}</CardDescription>}
                 </div>
             </div>

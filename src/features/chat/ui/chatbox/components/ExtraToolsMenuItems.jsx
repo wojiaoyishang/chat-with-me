@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {setLocalSetting} from '@/lib/tools.jsx';
-import {getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
+import {getToolDisplayName, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 
 import {
     collectTogglePaths,
@@ -91,13 +91,15 @@ export const useExtraToolsMenuItems = ({
 
     const renderMenuItems = useCallback((items, parentPath = []) => {
         return items.map((item, index) => {
+            const itemLabel = item.type === 'group' || item.type === 'tool'
+                ? getToolDisplayName(item) : t(item.text || '');
             if (item.type === 'label') {
                 return (
                     <DropdownMenuLabel
                         key={`label-${index}`}
                         className={`px-2 py-1.5 text-sm font-semibold ${item.disabled ? 'text-gray-400 cursor-not-allowed' : ''}`}
                     >
-                        {t(item.text)}
+                        {itemLabel}
                     </DropdownMenuLabel>
                 );
             }
@@ -141,7 +143,7 @@ export const useExtraToolsMenuItems = ({
                                 }`}
                             >
                                 {item.iconData && renderIcon(item.iconType, item.iconData)}
-                                <span className={MENU_ITEM_TEXT_CLASS} title={t(item.text)}>{t(item.text)}</span>
+                                <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
                                 <ChevronDown
                                     className={`ml-2 h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                                 />
@@ -187,7 +189,7 @@ export const useExtraToolsMenuItems = ({
                             }`}
                         >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span className={MENU_ITEM_TEXT_CLASS} title={t(item.text)}>{t(item.text)}</span>
+                            <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent
                             side={subMenuSide}
@@ -265,7 +267,7 @@ export const useExtraToolsMenuItems = ({
                     >
                         <div className="flex min-w-0 items-center gap-2">
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span className={`${MENU_ITEM_TEXT_CLASS} text-sm text-gray-700`} title={t(item.text)}>{t(item.text)}</span>
+                            <span className={`${MENU_ITEM_TEXT_CLASS} text-sm text-gray-700`} title={itemLabel}>{itemLabel}</span>
                             {isPending && (
                                 <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-[10px] text-blue-500" title={t('conversation_tools_syncing', '正在同步工具状态…')}>
                                     <LoaderCircle className="h-3.5 w-3.5 animate-spin"/>
@@ -281,14 +283,15 @@ export const useExtraToolsMenuItems = ({
                             </div>
                         ) : (
                             <div className={`mt-1.5 grid rounded-lg bg-gray-100 p-0.5 ${modes.length === 2 ? 'grid-cols-2' : modes.length === 1 ? 'grid-cols-1' : 'grid-cols-3'}`}>
-                                {modes.map(({value, label, Icon}) => {
+                                {modes.map((option) => {
+                                    const {value, label, Icon} = option;
                                     const selected = currentMode === value;
                                     return (
                                         <button
                                             key={value}
                                             type="button"
                                             title={label}
-                                            aria-label={`${t(item.text)}：${label}`}
+                                            aria-label={`${itemLabel}：${label}`}
                                             aria-pressed={selected}
                                             onClick={(event) => setMode(event, value)}
                                             className={`flex h-7 min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md px-1.5 text-[11px] transition disabled:cursor-not-allowed ${
@@ -335,7 +338,7 @@ export const useExtraToolsMenuItems = ({
                         disabled={isDisabled}
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
-                        <span className={MENU_ITEM_TEXT_CLASS} title={t(item.text)}>{t(item.text)}</span>
+                        <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
                         {!isDisabled && isChecked && <Check className="ml-2 w-4 h-4 shrink-0 text-blue-500"/>}
                     </DropdownMenuItem>
                 );
@@ -404,7 +407,7 @@ export const useExtraToolsMenuItems = ({
                                 }`}
                             >
                                 {item.iconData && renderIcon(item.iconType, item.iconData)}
-                                <span className={MENU_ITEM_TEXT_CLASS} title={t(item.text)}>{t(item.text)}</span>
+                                <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
                                 {selectedText && (
                                     <span className="ml-2 max-w-[5.5rem] shrink-0 truncate text-xs text-gray-400" title={selectedText}>
                                         {selectedText}
@@ -439,7 +442,7 @@ export const useExtraToolsMenuItems = ({
                             }`}
                         >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
-                            <span className={MENU_ITEM_TEXT_CLASS} title={t(item.text)}>{t(item.text)}</span>
+                            <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent
                             side={subMenuSide}
@@ -468,7 +471,7 @@ export const useExtraToolsMenuItems = ({
                         className={isMobileMenu ? MOBILE_ACCORDION_ITEM_CLASS : "flex items-center px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100"}
                     >
                         {item.iconData && renderIcon(item.iconType, item.iconData)}
-                        <span className={MENU_ITEM_TEXT_CLASS} title={t(item.text)}>{t(item.text)}</span>
+                        <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
                     </DropdownMenuItem>
                 );
             }

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Plus, RefreshCw, ExternalLink, Trash2, CircleUserRound, Inbox } from 'lucide-react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { ChevronDown, Loader2, Plus, RefreshCw, ExternalLink, Trash2, CircleUserRound, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { cloneData, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
@@ -83,7 +83,7 @@ export function OperationStatus({ operation, context }) {
 }
 
 export function ActionsNode({ item, context }) {
-    return <div className="flex flex-wrap items-start gap-2.5 px-4 py-3 sm:px-5">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />)}</div>;
+    return <div className="flex flex-wrap items-start gap-2 py-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />)}</div>;
 }
 
 /** A backend-authored summary remains presentation data, not an account page. */
@@ -93,9 +93,9 @@ export function ProfileSummaryNode({ item, context }) {
     const subtitle = resolveValue(item.subtitle, scope);
     const description = resolveValue(item.description, scope);
     const avatar = resolveValue(item.avatar, scope);
-    return <SettingsSection className="overflow-visible" bodyClassName="p-5 sm:p-6">
+    return <SettingsSection className="overflow-visible" variant={item.variant} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-primary/10 bg-primary/8 text-2xl font-semibold text-primary shadow-sm">
+            <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-lg font-semibold">
                 {avatar ? <img src={resolveResourceUrl(avatar)} alt="" className="size-full object-cover" /> : title ? String(title).slice(0, 1) : <CircleUserRound className="size-8" />}
             </div>
             <div className="min-w-0 flex-1">
@@ -156,7 +156,7 @@ export function AsyncOperationNode({ item, context }) {
     const status = getValue(data, item.watch?.statusPath || 'status');
     const phase = getValue(data, item.phasePath || 'phase');
     const label = item.statusLabels?.[status] || item.phaseLabels?.[phase];
-    return <SettingsSection title={item.text} description={item.description} icon={item.icon || 'settings'} bodyClassName="space-y-4 p-4 sm:p-5">
+    return <SettingsSection title={item.text} description={item.description} variant={item.variant} bodyClassName={item.variant === 'card' ? 'space-y-3 p-4' : 'space-y-3'}>
         {label && <p className="text-sm">{operation?.error && data === sourceData ? '上次记录：' : ''}{label}</p>}
         {phase && item.phaseLabels?.[phase] && <p className="text-xs text-muted-foreground">{item.phaseLabels[phase]}</p>}
         {operation && <OperationStatus operation={operation} context={context} />}
@@ -219,28 +219,67 @@ export function SecretMapNode({ item, value = EMPTY_MAP, onChange, context }) {
 
 export function MatrixNode({ item, value = {}, onChange, context }) {
     const [query, setQuery] = useState('');
+    const [expanded, setExpanded] = useState(() => new Set(item.groups?.length ? [String(item.groups[0].id)] : []));
+    const instanceId = useId();
     const confirming = useRef(false);
     const allRows = resolveValue(item.rows, { form: context.values, item: context.item }) || [];
     const columns = item.columns || [];
-    const rows = allRows.filter((row) => `${row.label || ''} ${row.id || ''} ${row.description || ''}`.toLowerCase().includes(query.toLowerCase()));
+    const keyword = query.trim().toLowerCase();
+    const groupDefinitions = Array.isArray(item.groups) ? item.groups : [];
+    const grouped = groupDefinitions.length > 0;
+    const groupMap = new Map(groupDefinitions.map((group) => [String(group.id), { ...group, id: String(group.id), rows: [] }]));
+    for (const row of allRows) {
+        const id = row.group == null ? '' : String(row.group);
+        if (!groupMap.has(id)) groupMap.set(id, { id, label: id || '其他', rows: [] });
+        groupMap.get(id).rows.push(row);
+    }
+    const visibleGroups = [...groupMap.values()].map((group) => {
+        const matchesGroup = grouped && `${group.label || ''} ${group.description || ''}`.toLowerCase().includes(keyword);
+        return { ...group, sourceRows: group.rows, rows: group.rows.filter((row) => !keyword || matchesGroup || `${row.label || ''} ${row.id || ''} ${row.description || ''}`.toLowerCase().includes(keyword)) };
+    }).filter((group) => group.rows.length);
+    const gridStyle = { gridTemplateColumns: `minmax(0,1fr) repeat(${columns.length}, minmax(2.75rem,4rem))` };
     const setRow = (row, next, current = value) => {
-        if (row.disabled || (row.allowedValues && !row.allowedValues.includes(next))) return current;
+        if (context.disabled || row.disabled || (row.allowedValues && !row.allowedValues.includes(next))) return current;
         return { ...current, [row.id]: next };
     };
-    const bulk = async (action) => {
+    const bulk = async (action, { rows = allRows, applyGlobalSet = true } = {}) => {
         if (context.disabled || confirming.current) return;
         confirming.current = true;
         try {
             if (action.confirm && !(await context.confirm(action.confirm))) return;
             let next = { ...value };
-            for (const row of allRows) next = setRow(row, action.value, next);
+            for (const row of rows) next = setRow(row, action.value, next);
             onChange(next);
-            for (const [path, updated] of Object.entries(action.set || {})) context.update(path.split('.'), resolveValue(updated, { form: context.values, item: context.item, parentItem: context.parentItem }));
+            // Only the page-level batch may update defaults for future entries.
+            // A group batch changes existing row values within that group only.
+            if (applyGlobalSet) for (const [path, updated] of Object.entries(action.set || {})) context.update(path.split('.'), resolveValue(updated, { form: context.values, item: context.item, parentItem: context.parentItem }));
         } finally { confirming.current = false; }
     };
-    return <SettingsSection title={item.text} description={item.description || item.tips} icon={item.icon || 'shield'} bodyClassName="space-y-4 p-4 sm:p-5">
-        <div className="flex flex-wrap gap-2"><Input className="min-w-40 flex-1 rounded-xl bg-muted/15" aria-label={item.searchLabel || '搜索选项'} placeholder={item.searchPlaceholder || '搜索选项'} value={query} onChange={(event) => setQuery(event.target.value)} />{(item.bulkActions || []).map((action) => <Button type="button" size="sm" variant="outline" key={action.label} disabled={context.disabled} onClick={() => { void bulk(action); }}>{action.label}</Button>)}</div>
-        <div className="max-h-96 overflow-auto rounded-xl border border-border/60"><table className="w-full text-sm"><thead className="sticky top-0 z-10 bg-muted/90 text-xs text-muted-foreground backdrop-blur"><tr><th className="p-2 text-left">{item.rowLabel || '项目'}</th>{columns.map((column) => <th key={column.value} className="px-2 py-2 text-center font-medium">{column.label}</th>)}</tr></thead><tbody>{rows.map((row) => <tr key={row.id} className="border-t"><td className="max-w-96 p-2"><div className="font-medium">{row.label || row.id}</div>{row.description && <p className="text-xs text-muted-foreground">{row.description}</p>}</td>{columns.map((column) => <td className="p-2 text-center" key={column.value}><Checkbox aria-label={`${row.label || row.id} ${column.label}`} checked={(value[row.id] ?? row.value) === column.value} disabled={context.disabled || row.disabled || (row.allowedValues && !row.allowedValues.includes(column.value))} onCheckedChange={() => onChange(setRow(row, column.value))} /></td>)}</tr>)}</tbody></table></div>
+    const renderRows = (rows) => <div className="divide-y">
+        <div aria-hidden="true" className="grid items-center gap-2 py-2 text-xs text-muted-foreground" style={gridStyle}><span>{item.rowLabel || '项目'}</span>{columns.map((column) => <span className="text-center" key={column.value}>{column.label}</span>)}</div>
+        {rows.map((row) => <RadioGroup key={row.id} value={String(value[row.id] ?? row.value ?? '')} disabled={context.disabled || row.disabled} aria-label={row.label || row.id} onValueChange={(next) => { const column = columns.find((entry) => String(entry.value) === next); if (column) onChange(setRow(row, column.value)); }} className="grid items-center gap-2 py-2.5" style={gridStyle}>
+            <div className="min-w-0 pr-2"><div className="text-sm font-medium">{row.label || row.id}</div>{row.description && <p className="mt-0.5 truncate text-xs leading-5 text-muted-foreground" title={row.description}>{row.description}</p>}</div>
+            {columns.map((column) => <span className="flex justify-center" key={column.value}><RadioGroupItem value={String(column.value)} aria-label={`${row.label || row.id} ${column.label}`} disabled={context.disabled || row.disabled || (row.allowedValues && !row.allowedValues.includes(column.value))} /></span>)}
+        </RadioGroup>)}
+    </div>;
+    return <SettingsSection title={item.text} description={item.description || item.tips} variant={item.variant} bodyClassName={item.variant === 'card' ? 'space-y-3 p-4' : 'space-y-3'}>
+        <div className="flex flex-wrap items-center gap-2"><Input className="h-9 min-w-40 flex-1" aria-label={item.searchLabel || '搜索选项'} placeholder={item.searchPlaceholder || '搜索选项'} value={query} onChange={(event) => setQuery(event.target.value)} />{(item.bulkActions || []).map((action) => <Button type="button" size="sm" variant="outline" key={action.label} disabled={context.disabled} onClick={() => { void bulk(action); }}>{action.label}</Button>)}</div>
+        <div className="min-w-0">
+            {!visibleGroups.length ? <p className="py-6 text-center text-sm text-muted-foreground">{item.emptyText || '没有匹配的选项'}</p> : grouped ? visibleGroups.map((group) => {
+                const open = Boolean(keyword) || expanded.has(group.id);
+                const regionId = `${instanceId}-${encodeURIComponent(group.id)}`;
+                return <section key={group.id} className="border-b" data-matrix-group={group.id}>
+                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2">
+                        <Button type="button" variant="ghost" aria-expanded={open} aria-controls={regionId} aria-disabled={Boolean(keyword) || undefined} className="h-auto min-w-0 flex-1 justify-start gap-2 rounded-none px-0 py-1 text-left hover:bg-transparent" onClick={() => { if (keyword) return; setExpanded((previous) => { const next = new Set(previous); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; }); }}>
+                            <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? '' : '-rotate-90'}`} />
+                            <span className="min-w-0 truncate text-sm font-medium">{group.label || group.id}</span><span className="shrink-0 text-xs font-normal tabular-nums text-muted-foreground">{keyword ? `${group.rows.length} / ${group.sourceRows.length}` : group.rows.length}</span>
+                        </Button>
+                        {group.bulkActions?.length > 0 && <div className="flex shrink-0 flex-wrap items-center gap-1">{group.bulkActions.map((action, index) => <Button key={action.id || action.value || index} type="button" size="sm" variant="outline" className="h-7 px-2 text-xs" aria-label={`${group.label || group.id} ${action.label}`} title={`${action.label}：作用于本组全部 ${group.sourceRows.length} 项，遵循锁定与可选范围`} disabled={context.disabled || !group.sourceRows.some((row) => !row.disabled && (!row.allowedValues || row.allowedValues.includes(action.value)))} onClick={() => { void bulk(action, { rows: group.sourceRows, applyGlobalSet: false }); }}>{action.label}</Button>)}</div>}
+                    </div>
+                    {open && <div id={regionId} className="pb-2 pl-6">{renderRows(group.rows)}</div>}
+                </section>;
+            }) : renderRows(allRows.filter((row) => !keyword || `${row.label || ''} ${row.id || ''} ${row.description || ''}`.toLowerCase().includes(keyword)))}
+        </div>
     </SettingsSection>;
 }
 
@@ -343,7 +382,7 @@ export function ResourceNode({ item, context, renderFields }) {
         const scope = { form: context.values, item: record, parentItem: context.item };
         if (!matchesCondition(action.when || action.showWhen, scope)) return null;
         return action.kind === 'edit'
-            ? <Button key={action.id || index} type="button" size="sm" variant="outline" className="rounded-xl" disabled={context.disabled || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}>{action.label || '编辑'}</Button>
+            ? <Button key={action.id || index} type="button" size="sm" variant="outline" className="rounded-md" disabled={context.disabled || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}>{action.label || '编辑'}</Button>
             : <ActionButton key={action.id || index} action={action} context={context} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />;
     })}</div>;
     const columns = item.columns || [];
@@ -355,40 +394,40 @@ export function ResourceNode({ item, context, renderFields }) {
         const title = getValue(record, item.titleField || 'title', getValue(record, item.keyField || 'id'));
         const description = item.descriptionField && getValue(record, item.descriptionField);
         const properties = columns.filter(column => column.key !== (item.titleField || 'title') && column.key !== item.descriptionField);
-        return <article className="min-w-0 overflow-hidden rounded-xl border border-border/70 bg-background transition-shadow hover:shadow-sm" key={getValue(record, item.keyField || 'id', index)}>
+        return <article className="min-w-0 overflow-hidden rounded-lg border bg-card" key={getValue(record, item.keyField || 'id', index)}>
             <div className="p-4">
                 <div className="flex min-w-0 items-start gap-3">
-                    <SettingsIcon icon={item.recordIcon || item.icon || 'folder'} />
+                    {(item.recordIcon || item.icon) && <SettingsIcon icon={item.recordIcon || item.icon} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
                     <div className="min-w-0 flex-1">
                         <h4 className="break-words text-sm font-semibold leading-5">{displayValue(title)}</h4>
                         {description && <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">{displayValue(description)}</p>}
                         {item.badges?.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{item.badges.map((badge) => <Badge key={badge.field} variant="secondary" className="rounded-md text-[11px] font-medium">{badge.label ? `${badge.label}：` : ''}{valueText(record, badge)}</Badge>)}</div>}
                     </div>
                 </div>
-                {properties.length > 0 && <dl className="mt-4 grid grid-cols-1 gap-x-5 gap-y-3 rounded-xl bg-muted/35 px-3 py-3 sm:grid-cols-2">{properties.map(column => <div key={column.key} className="min-w-0"><dt className="text-[11px] leading-4 text-muted-foreground">{column.label}</dt><dd className="mt-1 break-words text-xs font-medium leading-5">{valueText(record, column)}</dd></div>)}</dl>}
+                {properties.length > 0 && <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">{properties.map(column => <div key={column.key} className="min-w-0"><dt className="text-[11px] leading-4 text-muted-foreground">{column.label}</dt><dd className="mt-1 break-words text-xs font-medium leading-5">{valueText(record, column)}</dd></div>)}</dl>}
             </div>
-            {item.actions?.length > 0 && <div className="border-t border-border/55 bg-muted/10 px-4 py-3">{actionsFor(record)}</div>}
+            {item.actions?.length > 0 && <div className="border-t px-4 py-2.5">{actionsFor(record)}</div>}
         </article>;
     })}</div>;
     const resourceActions = <>
-        <Button type="button" variant="ghost" size="icon" className="size-8 rounded-lg text-muted-foreground" aria-label="刷新列表" onClick={() => { void load(); }}><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} /></Button>
-        {item.create && item.editor && <Button type="button" size="sm" className="rounded-xl" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
+        <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="刷新列表" onClick={() => { void load(); }}><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} /></Button>
+        {item.create && item.editor && <Button type="button" size="sm" className="rounded-md" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
     </>;
-    return <SettingsSection title={<span className="flex items-center gap-2.5">{item.text || item.title}<Badge variant="secondary" className="rounded-md px-1.5 text-[10px] tabular-nums">{rows.length}</Badge></span>} description={item.description} icon={item.icon || 'folder'} actions={resourceActions} bodyClassName="p-3 sm:p-4">
+    return <SettingsSection title={<span className="flex items-center gap-2">{item.text || item.title}<span className="text-xs font-normal tabular-nums text-muted-foreground">{rows.length} 项</span></span>} description={item.description} variant={item.variant} actions={resourceActions} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>
         {error && <p role="alert" className="mb-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
-        {loading && !rows.length ? <div className="flex min-h-36 flex-col items-center justify-center gap-3 rounded-xl bg-muted/20 py-8 text-sm text-muted-foreground"><Loader2 className="size-5 animate-spin" />正在加载…</div>
-            : !rows.length ? <div className="flex min-h-40 flex-col items-center justify-center gap-3 rounded-xl border border-dashed bg-muted/15 p-6 text-center"><span className="rounded-2xl bg-muted p-3 text-muted-foreground/70"><Inbox className="size-6" /></span><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
+        {loading && !rows.length ? <div className="flex min-h-24 items-center justify-center gap-2 py-6 text-sm text-muted-foreground"><Loader2 className="size-5 animate-spin" />正在加载…</div>
+            : !rows.length ? <div className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center"><Inbox className="size-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
                 : item.display === 'table' && columns.length ? <div className="overflow-auto rounded-xl border border-border/70"><table className="w-full text-left text-sm"><thead className="bg-muted/40 text-xs text-muted-foreground"><tr>{columns.map(column => <th key={column.key} className="px-4 py-3 font-medium">{column.label}</th>)}<th className="px-4 py-3 font-medium">操作</th></tr></thead><tbody>{rows.map((record, index) => <tr key={getValue(record, item.keyField || 'id', index)} className="border-t border-border/55 transition-colors hover:bg-muted/15">{columns.map(column => <td key={column.key} className="max-w-sm break-words px-4 py-3 text-sm">{valueText(record, column)}</td>)}<td className="px-4 py-3">{actionsFor(record)}</td></tr>)}</tbody></table></div>
                     : renderCards()}
         <Dialog open={Boolean(editor)} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
-            <DialogContent className="flex max-h-[90dvh] w-[min(60rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[60rem]">
-                <DialogHeader className="shrink-0 border-b border-border/60 bg-muted/20 px-5 py-5 pr-14 sm:px-6"><DialogTitle className="text-base">{formatValue((!editor?.record && item.editor?.createTitle) || item.editor?.title || '编辑', { item: editor?.record, form: editor?.values })}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{item.editor?.description || '修改后保存，配置由当前后端提供。'}</DialogDescription></DialogHeader>
-                <div ref={editorScope} className="min-h-0 flex-1 space-y-4 overflow-auto bg-muted/15 px-4 py-5 sm:px-6">
+            <DialogContent className="flex max-h-[90dvh] w-[min(60rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[60rem]">
+                <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{formatValue((!editor?.record && item.editor?.createTitle) || item.editor?.title || '编辑', { item: editor?.record, form: editor?.values })}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{item.editor?.description}</DialogDescription></DialogHeader>
+                <div ref={editorScope} className="min-h-0 flex-1 space-y-4 overflow-auto p-4">
                     {editorError && <p role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive">{editorError}</p>}
                     {Object.entries(fieldErrors).map(([field, message]) => <p className="text-xs text-destructive" key={field}>{field}：{message}</p>)}
                     {editorBusy ? <p className="flex min-h-28 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />正在读取详情…</p> : editor && renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor`, item: editor.record, disabled: context.disabled, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}
                 </div>
-                <DialogFooter className="shrink-0 border-t border-border/60 bg-background px-5 py-4 sm:px-6"><Button type="button" variant="outline" className="rounded-xl" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-xl" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch((cause) => setEditorError(cause.message)); }}>保存</Button>}</DialogFooter>
+                <DialogFooter className="shrink-0 border-t bg-background px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-md" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch((cause) => setEditorError(cause.message)); }}>保存</Button>}</DialogFooter>
             </DialogContent>
         </Dialog>
     </SettingsSection>;
@@ -397,5 +436,5 @@ export function ResourceNode({ item, context, renderFields }) {
 export function DescriptorDialog({ descriptor, context, renderFields, onClose }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
     useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
-    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-h-[90dvh] w-[min(50rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-[50rem]"><DialogHeader className="shrink-0 border-b border-border/60 bg-muted/20 px-5 py-5 pr-14"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description || '服务器提供的内容'}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto bg-muted/15 p-5">{descriptor && renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</div><DialogFooter className="shrink-0 border-t border-border/60 px-5 py-4"><Button type="button" variant="outline" className="rounded-xl" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
+    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-h-[90dvh] w-[min(50rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[50rem]"><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
 }

@@ -971,7 +971,7 @@
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
      - 13
      - 0
-     - 102
+     - 115
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/SettingsPresentation </api/javascript/features/settings-runtime/SettingsPresentation>`
      - 2
@@ -1084,9 +1084,9 @@
      - 54
      - ``src/features/tools/components/ConversationToolsDialog.jsx``
    * - :doc:`src/features/tools/toolPermissions </api/javascript/features/tools/toolPermissions>`
-     - 10
+     - 11
      - 0
-     - 23
+     - 24
      - ``src/features/tools/toolPermissions.js``
    * - :doc:`src/features/workflows/QuickTemplateRunDialog </api/javascript/features/workflows/QuickTemplateRunDialog>`
      - 1

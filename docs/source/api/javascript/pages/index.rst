@@ -39,9 +39,9 @@
      - 6
      - ``src/pages/LoginPage.jsx``
    * - :doc:`src/pages/SettingPage </api/javascript/pages/SettingPage>`
-     - 2
+     - 3
      - 0
-     - 75
+     - 76
      - ``src/pages/SettingPage.jsx``
 
 .. toctree::
