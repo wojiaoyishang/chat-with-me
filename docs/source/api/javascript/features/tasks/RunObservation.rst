@@ -22,12 +22,12 @@ React and the backend task page mount the same observation component tree.
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@/lib/apiClient.js``、``@/config.js``、``./observation-components.js``。
+``react``、``@/lib/apiClient.js``、``@/lib/virtualUrl.js``、``./observation-components.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:189:1209:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:199:1227:FUNCTION
 
 .. js:function:: RunObservation({ observation, scopeId = "task", taskId, view = "detail", compact = false })
 
@@ -57,7 +57,7 @@ React and the backend task page mount the same observation component tree.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:465:617:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:475:627:FUNCTION
 
 .. rubric:: ``useEffect callback @ 10``
 
@@ -81,7 +81,7 @@ React and the backend task page mount the same observation component tree.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:548:612:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:558:622:FUNCTION
 
 .. rubric:: ``returned callback @ 12``
 
@@ -103,7 +103,7 @@ React and the backend task page mount the same observation component tree.
 
 **主要协作调用**：``renderer.current?.dispose``。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:636:1057:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:646:1075:FUNCTION
 
 .. rubric:: ``useEffect callback @ 14``
 
@@ -131,7 +131,7 @@ React and the backend task page mount the same observation component tree.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:744:807:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:754:825:FUNCTION
 
 .. rubric:: ``artifactUrl``
 
@@ -152,9 +152,9 @@ React and the backend task page mount the same observation component tree.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``encodeURIComponent``。
+**主要协作调用**：``resolveResourceUrl``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:824:1044:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:842:1062:FUNCTION
 
 .. rubric:: ``loadRows``
 

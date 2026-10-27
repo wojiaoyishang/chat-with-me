@@ -67,7 +67,7 @@ async function mount(t, Component, props) {
     let unmounted = false;
     const render = (next) => act(async () => root.render(React.createElement(Component, next)));
     const unmount = async () => {if (!unmounted) {await act(async () => root.unmount()); unmounted = true;}};
-    t.after(async () => {await unmount(); dom.window.close(); delete globalThis.__guidanceHarness;});
+    t.after(async () => {await unmount(); dom.window.close(); delete globalThis.window; delete globalThis.document; delete globalThis.HTMLElement; delete globalThis.__guidanceHarness;});
     await render(props);
     return {
         state, render, unmount,

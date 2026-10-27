@@ -22,18 +22,18 @@ src/features/notification/systemNotifications 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``sonner``、``@/lib/tools.jsx``。
+``sonner``、``@/lib/tools.jsx``、``../../runtime/backend/connection.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:544:630:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:639:725:FUNCTION
 
 .. js:function:: permission()
 
    实现 ``permission`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``12``—``12`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``13``—``13`` 行。
 
    **参数**
 
@@ -43,13 +43,13 @@ src/features/notification/systemNotifications 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:670:787:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:765:882:FUNCTION
 
 .. js:function:: systemNotificationState()
 
    实现 ``systemNotificationState`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``16`` 行。
+   **性质**：同步函数；导出 API；源码第 ``14``—``17`` 行。
 
    **参数**
 
@@ -61,13 +61,13 @@ src/features/notification/systemNotifications 模块
 
    **主要协作调用**：``permission``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:833:995:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:928:1090:FUNCTION
 
 .. js:function:: setSystemNotificationsEnabled(enabled)
 
    设置与 ``System Notifications Enabled`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``17``—``20`` 行。
+   **性质**：同步函数；导出 API；源码第 ``18``—``21`` 行。
 
    **参数**
 
@@ -84,13 +84,13 @@ src/features/notification/systemNotifications 模块
 
    **主要协作调用**：``setLocalSetting``、``Boolean``、``window.dispatchEvent``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:1047:2286:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:1142:2381:FUNCTION
 
 .. js:function:: requestSystemNotificationPermission({ automatic = false })
 
    实现 ``requestSystemNotificationPermission`` 对应的前端处理。
 
-   **性质**：异步函数；导出 API；源码第 ``21``—``49`` 行。
+   **性质**：异步函数；导出 API；源码第 ``22``—``50`` 行。
 
    **参数**
 
@@ -109,13 +109,13 @@ src/features/notification/systemNotifications 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2334:2838:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2429:2933:FUNCTION
 
 .. js:function:: isNotificationConversationOpen(conversationId)
 
    判断与 ``Notification Conversation Open`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``51``—``63`` 行。
+   **性质**：同步函数；导出 API；源码第 ``52``—``64`` 行。
 
    **参数**
 
@@ -134,13 +134,13 @@ src/features/notification/systemNotifications 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2882:3082:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2977:3196:FUNCTION
 
 .. js:function:: updateNotificationPresence(state)
 
    更新与 ``Notification Presence`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``65``—``71`` 行。
+   **性质**：同步函数；导出 API；源码第 ``66``—``72`` 行。
 
    **参数**
 
@@ -155,15 +155,15 @@ src/features/notification/systemNotifications 模块
 
    * 读取或修改浏览器持久化状态。
 
-   **主要协作调用**：``localStorage.setItem``、``JSON.stringify``、``Date.now``。
+   **主要协作调用**：``localStorage.setItem``、``backendStorageKey``、``JSON.stringify``、``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3125:3297:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3239:3430:FUNCTION
 
 .. js:function:: removeNotificationPresence()
 
    移除与 ``Notification Presence`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``72``—``78`` 行。
+   **性质**：同步函数；导出 API；源码第 ``73``—``79`` 行。
 
    **参数**
 
@@ -177,15 +177,15 @@ src/features/notification/systemNotifications 模块
 
    * 读取或修改浏览器持久化状态。
 
-   **主要协作调用**：``localStorage.removeItem``。
+   **主要协作调用**：``localStorage.removeItem``、``backendStorageKey``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3342:3816:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3475:3968:FUNCTION
 
 .. js:function:: hasForegroundNotificationTab()
 
    实现 ``hasForegroundNotificationTab`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``79``—``94`` 行。
+   **性质**：同步函数；导出 API；源码第 ``80``—``95`` 行。
 
    **参数**
 
@@ -193,23 +193,23 @@ src/features/notification/systemNotifications 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``Object.keys(localStorage) .filter((key) => key.startsWith(PRESENCE)) .some((key) => { try { const value = JSON.parse(localStorage.getItem(key)); return Date.now() - value.updatedA…``、``false``。
+   根据执行分支返回结果；代表性返回表达式为 ``Object.keys(localStorage) .filter((key) => key.startsWith(backendStorageKey(PRESENCE))) .some((key) => { try { const value = JSON.parse(localStorage.getItem(key)); return Date.now…``、``false``。
 
    **副作用**
 
    * 读取或修改浏览器持久化状态。
 
-   **主要协作调用**：``Object.keys(localStorage) .filter((key) => key.startsWith(PRESENCE)) .some``、``Object.keys(localStorage) .filter``、``Object.keys``。
+   **主要协作调用**：``Object.keys(localStorage) .filter((key) => key.startsWith(backendStorageKey(PRESENCE))) .some``、``Object.keys(localStorage) .filter``、``Object.keys``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3862:6687:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:4014:6906:FUNCTION
 
 .. js:function:: showWidgetSystemNotification(notification, onOpen)
 
    实现 ``showWidgetSystemNotification`` 对应的前端处理。
 
-   **性质**：异步函数；导出 API；源码第 ``96``—``155`` 行。
+   **性质**：异步函数；导出 API；源码第 ``97``—``156`` 行。
 
    **参数**
 
@@ -237,17 +237,17 @@ src/features/notification/systemNotifications 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:1166:2193:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:1261:2288:FUNCTION
 
-.. rubric:: ``anonymous callback @ 23``
+.. rubric:: ``anonymous callback @ 24``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 23()
+   async anonymous callback @ 24()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``23``—``45`` 行；所属函数 ``requestSystemNotificationPermission``。
+**性质**：异步局部函数；源码第 ``24``—``46`` 行；所属函数 ``requestSystemNotificationPermission``。
 
 **参数**
 
@@ -263,17 +263,17 @@ src/features/notification/systemNotifications 模块
 
 **主要协作调用**：``permission``、``getLocalSetting``、``setLocalSetting``、``Notification.requestPermission``、``toast.warning``、``toast.info``、``setSystemNotificationsEnabled``、``window.dispatchEvent``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2205:2252:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2300:2347:FUNCTION
 
-.. rubric:: ``(async () => { if (permission() === 'unsupported') return 'unsupported'; if (permission() === 'default' && (!automatic… callback @ 45``
+.. rubric:: ``(async () => { if (permission() === 'unsupported') return 'unsupported'; if (permission() === 'default' && (!automatic… callback @ 46``
 
 .. code-block:: javascript
 
-   (async () => { if (permission() === 'unsupported') return 'unsupported'; if (permission() === 'default' && (!automatic… callback @ 45()
+   (async () => { if (permission() === 'unsupported') return 'unsupported'; if (permission() === 'default' && (!automatic… callback @ 46()
 
 实现 ``(async () => { if (permission() === 'unsupported') return 'unsupported'; if (permission() === 'default' && (!automatic…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``45``—``47`` 行；所属函数 ``requestSystemNotificationPermission``。
+**性质**：同步局部函数；源码第 ``46``—``48`` 行；所属函数 ``requestSystemNotificationPermission``。
 
 **参数**
 
@@ -283,17 +283,17 @@ src/features/notification/systemNotifications 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2489:2834:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:2584:2929:FUNCTION
 
-.. rubric:: ``Array.from(document.querySelectorAll('[data-notification-conversation-id]')).some callback @ 53``
+.. rubric:: ``Array.from(document.querySelectorAll('[data-notification-conversation-id]')).some callback @ 54``
 
 .. code-block:: javascript
 
-   Array.from(document.querySelectorAll('[data-notification-conversation-id]')).some callback @ 53(element)
+   Array.from(document.querySelectorAll('[data-notification-conversation-id]')).some callback @ 54(element)
 
 作为 ``Array.from(document.querySelectorAll('[data-notification-conversation-id]')).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``53``—``62`` 行；所属函数 ``isNotificationConversationOpen``。
+**性质**：同步局部函数；源码第 ``54``—``63`` 行；所属函数 ``isNotificationConversationOpen``。
 
 **参数**
 
@@ -306,17 +306,17 @@ src/features/notification/systemNotifications 模块
 
 **主要协作调用**：``element.getBoundingClientRect``、``element.closest``、``getComputedStyle``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3422:3455:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3555:3607:FUNCTION
 
-.. rubric:: ``Object.keys(localStorage) .filter callback @ 82``
+.. rubric:: ``Object.keys(localStorage) .filter callback @ 83``
 
 .. code-block:: javascript
 
-   Object.keys(localStorage) .filter callback @ 82(key)
+   Object.keys(localStorage) .filter callback @ 83(key)
 
 作为 ``Object.keys(localStorage) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``hasForegroundNotificationTab``。
+**性质**：同步局部函数；源码第 ``83``—``83`` 行；所属函数 ``hasForegroundNotificationTab``。
 
 **参数**
 
@@ -327,19 +327,19 @@ src/features/notification/systemNotifications 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``key.startsWith``。
+**主要协作调用**：``key.startsWith``、``backendStorageKey``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3475:3770:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:3627:3922:FUNCTION
 
-.. rubric:: ``Object.keys(localStorage) .filter((key) => key.startsWith(PRESENCE)) .some callback @ 83``
+.. rubric:: ``Object.keys(localStorage) .filter((key) => key.startsWith(backendStorageKey(PRESENCE))) .some callback @ 84``
 
 .. code-block:: javascript
 
-   Object.keys(localStorage) .filter((key) => key.startsWith(PRESENCE)) .some callback @ 83(key)
+   Object.keys(localStorage) .filter((key) => key.startsWith(backendStorageKey(PRESENCE))) .some callback @ 84(key)
 
-作为 ``Object.keys(localStorage) .filter((key) => key.startsWith(PRESENCE)) .some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``Object.keys(localStorage) .filter((key) => key.startsWith(backendStorageKey(PRESENCE))) .some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``83``—``90`` 行；所属函数 ``hasForegroundNotificationTab``。
+**性质**：同步局部函数；源码第 ``84``—``91`` 行；所属函数 ``hasForegroundNotificationTab``。
 
 **参数**
 
@@ -356,7 +356,7 @@ src/features/notification/systemNotifications 模块
 
 **主要协作调用**：``JSON.parse``、``localStorage.getItem``、``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:4087:6545:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:4239:6764:FUNCTION
 
 .. rubric:: ``present``
 
@@ -366,7 +366,7 @@ src/features/notification/systemNotifications 模块
 
 实现 ``present`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``100``—``152`` 行；所属函数 ``showWidgetSystemNotification``。
+**性质**：异步局部函数；源码第 ``101``—``153`` 行；所属函数 ``showWidgetSystemNotification``。
 
 **参数**
 
@@ -380,21 +380,21 @@ src/features/notification/systemNotifications 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``getLocalSetting``、``Number``、``hasForegroundNotificationTab``、``encodeURIComponent``、``target.searchParams.set``、``navigator.serviceWorker.register``、``Promise.race``、``registration.showNotification``、``Object.entries({ ...delivered, [notification.id]: notification.revision }).slice``、``Object.entries``、``setLocalSetting``、``Object.fromEntries``。
+**主要协作调用**：``getLocalSetting``、``backendStorageKey``、``Number``、``hasForegroundNotificationTab``、``encodeURIComponent``、``target.searchParams.set``、``getBackendConnection``、``navigator.serviceWorker.register``、``Promise.race``、``registration.showNotification``、``Object.entries({ ...delivered, [notification.id]: notification.revision }).slice``、``Object.entries``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:5320:5435:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:5520:5635:FUNCTION
 
-.. rubric:: ``anonymous callback @ 123``
+.. rubric:: ``anonymous callback @ 124``
 
 .. code-block:: javascript
 
-   anonymous callback @ 123(_, reject)
+   anonymous callback @ 124(_, reject)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``123``—``124`` 行；所属函数 ``present``。
+**性质**：同步局部函数；源码第 ``124``—``125`` 行；所属函数 ``present``。
 
 **参数**
 
@@ -412,17 +412,17 @@ src/features/notification/systemNotifications 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:5374:5428:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:5574:5628:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 124``
+.. rubric:: ``setTimeout callback @ 125``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 124()
+   setTimeout callback @ 125()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``124``—``124`` 行；所属函数 ``anonymous callback @ 123``。
+**性质**：同步局部函数；源码第 ``125``—``125`` 行；所属函数 ``anonymous callback @ 124``。
 
 **参数**
 
@@ -434,17 +434,17 @@ src/features/notification/systemNotifications 模块
 
 **主要协作调用**：``reject``。
 
-.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:6120:6260:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/systemNotifications.js:6320:6460:FUNCTION
 
-.. rubric:: ``anonymous callback @ 140``
+.. rubric:: ``anonymous callback @ 141``
 
 .. code-block:: javascript
 
-   anonymous callback @ 140()
+   anonymous callback @ 141()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``140``—``144`` 行；所属函数 ``present``。
+**性质**：同步局部函数；源码第 ``141``—``145`` 行；所属函数 ``present``。
 
 **参数**
 

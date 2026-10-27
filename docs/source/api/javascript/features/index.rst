@@ -61,7 +61,7 @@
    * - :doc:`src/features/chat/composer/draftStore </api/javascript/features/chat/composer/draftStore>`
      - 23
      - 0
-     - 5
+     - 6
      - ``src/features/chat/composer/draftStore.js``
    * - :doc:`src/features/chat/composer/messageDraftMount </api/javascript/features/chat/composer/messageDraftMount>`
      - 6
@@ -633,21 +633,6 @@
      - 0
      - 1
      - ``src/features/chat/widgets/WidgetPresentationContext.jsx``
-   * - :doc:`src/features/comfyui/BindingDefaultEditor </api/javascript/features/comfyui/BindingDefaultEditor>`
-     - 1
-     - 0
-     - 7
-     - ``src/features/comfyui/BindingDefaultEditor.jsx``
-   * - :doc:`src/features/comfyui/ComfyGraphDialog </api/javascript/features/comfyui/ComfyGraphDialog>`
-     - 1
-     - 0
-     - 1
-     - ``src/features/comfyui/ComfyGraphDialog.jsx``
-   * - :doc:`src/features/comfyui/ComfyParameterSummary </api/javascript/features/comfyui/ComfyParameterSummary>`
-     - 1
-     - 0
-     - 4
-     - ``src/features/comfyui/ComfyParameterSummary.jsx``
    * - :doc:`src/features/comfyui/ComfyRunDialog </api/javascript/features/comfyui/ComfyRunDialog>`
      - 1
      - 0
@@ -658,25 +643,15 @@
      - 0
      - 1
      - ``src/features/comfyui/ComfyRunResult.jsx``
-   * - :doc:`src/features/comfyui/ComfyUpdateReport </api/javascript/features/comfyui/ComfyUpdateReport>`
-     - 1
-     - 0
-     - 1
-     - ``src/features/comfyui/ComfyUpdateReport.jsx``
-   * - :doc:`src/features/comfyui/ComfyWorkflowPicker </api/javascript/features/comfyui/ComfyWorkflowPicker>`
-     - 3
-     - 0
-     - 83
-     - ``src/features/comfyui/ComfyWorkflowPicker.jsx``
    * - :doc:`src/features/comfyui/bindingModel </api/javascript/features/comfyui/bindingModel>`
      - 8
      - 0
      - 14
      - ``src/features/comfyui/bindingModel.js``
    * - :doc:`src/features/comfyui/graphModel </api/javascript/features/comfyui/graphModel>`
-     - 14
+     - 12
      - 0
-     - 29
+     - 17
      - ``src/features/comfyui/graphModel.js``
    * - :doc:`src/features/comfyui/importModel </api/javascript/features/comfyui/importModel>`
      - 3
@@ -689,9 +664,9 @@
      - 0
      - ``src/features/comfyui/runModel.js``
    * - :doc:`src/features/comfyui/scopeModel </api/javascript/features/comfyui/scopeModel>`
-     - 5
      - 0
-     - 8
+     - 0
+     - 0
      - ``src/features/comfyui/scopeModel.js``
    * - :doc:`src/features/documents/DocumentCollaborators </api/javascript/features/documents/DocumentCollaborators>`
      - 2
@@ -791,7 +766,7 @@
    * - :doc:`src/features/documents/useCollaborativeDocument </api/javascript/features/documents/useCollaborativeDocument>`
      - 1
      - 0
-     - 28
+     - 29
      - ``src/features/documents/useCollaborativeDocument.js``
    * - :doc:`src/features/execution/ExecutionGuidanceAction </api/javascript/features/execution/ExecutionGuidanceAction>`
      - 1
@@ -928,11 +903,6 @@
      - 0
      - 15
      - ``src/features/knowledge/selectedNodeViewportFollow.js``
-   * - :doc:`src/features/mcp/settingsModel </api/javascript/features/mcp/settingsModel>`
-     - 5
-     - 0
-     - 5
-     - ``src/features/mcp/settingsModel.js``
    * - :doc:`src/features/message-map/MessageHistoryMapButton </api/javascript/features/message-map/MessageHistoryMapButton>`
      - 0
      - 0
@@ -968,11 +938,6 @@
      - 0
      - 68
      - ``src/features/notification/NotificationHost.jsx``
-   * - :doc:`src/features/notification/NotificationSettings </api/javascript/features/notification/NotificationSettings>`
-     - 1
-     - 0
-     - 20
-     - ``src/features/notification/NotificationSettings.jsx``
    * - :doc:`src/features/notification/NotificationToast </api/javascript/features/notification/NotificationToast>`
      - 1
      - 0
@@ -998,6 +963,36 @@
      - 0
      - 0
      - ``src/features/notification/widgetNotificationPolicy.js``
+   * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
+     - 12
+     - 0
+     - 96
+     - ``src/features/settings-runtime/GenericNodes.jsx``
+   * - :doc:`src/features/settings-runtime/extensions </api/javascript/features/settings-runtime/extensions>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/settings-runtime/extensions.jsx``
+   * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
+     - 12
+     - 0
+     - 10
+     - ``src/features/settings-runtime/model.js``
+   * - :doc:`src/features/settings-runtime/registry </api/javascript/features/settings-runtime/registry>`
+     - 2
+     - 0
+     - 1
+     - ``src/features/settings-runtime/registry.js``
+   * - :doc:`src/features/settings-runtime/useActionExecutor </api/javascript/features/settings-runtime/useActionExecutor>`
+     - 3
+     - 0
+     - 12
+     - ``src/features/settings-runtime/useActionExecutor.js``
+   * - :doc:`src/features/settings-runtime/validation </api/javascript/features/settings-runtime/validation>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/settings-runtime/validation.js``
    * - :doc:`src/features/story/StoriesPage </api/javascript/features/story/StoriesPage>`
      - 2
      - 0
@@ -1046,7 +1041,7 @@
    * - :doc:`src/features/tasks/BackendManagementPage </api/javascript/features/tasks/BackendManagementPage>`
      - 1
      - 0
-     - 19
+     - 25
      - ``src/features/tasks/BackendManagementPage.jsx``
    * - :doc:`src/features/tasks/RunObservation </api/javascript/features/tasks/RunObservation>`
      - 1
@@ -1457,13 +1452,8 @@
    /api/javascript/features/chat/voice/index
    /api/javascript/features/chat/voice/useRealtimeVoiceConversation
    /api/javascript/features/chat/widgets/WidgetPresentationContext
-   /api/javascript/features/comfyui/BindingDefaultEditor
-   /api/javascript/features/comfyui/ComfyGraphDialog
-   /api/javascript/features/comfyui/ComfyParameterSummary
    /api/javascript/features/comfyui/ComfyRunDialog
    /api/javascript/features/comfyui/ComfyRunResult
-   /api/javascript/features/comfyui/ComfyUpdateReport
-   /api/javascript/features/comfyui/ComfyWorkflowPicker
    /api/javascript/features/comfyui/bindingModel
    /api/javascript/features/comfyui/graphModel
    /api/javascript/features/comfyui/importModel
@@ -1516,7 +1506,6 @@
    /api/javascript/features/knowledge/graphSettings
    /api/javascript/features/knowledge/orderedGraphLayout
    /api/javascript/features/knowledge/selectedNodeViewportFollow
-   /api/javascript/features/mcp/settingsModel
    /api/javascript/features/message-map/MessageHistoryMapButton
    /api/javascript/features/message-map/MessageHistoryMapPage
    /api/javascript/features/message-map/MessageMapSearch
@@ -1524,12 +1513,17 @@
    /api/javascript/features/message-map/useMessageMapSearch
    /api/javascript/features/notification/NotificationCenter
    /api/javascript/features/notification/NotificationHost
-   /api/javascript/features/notification/NotificationSettings
    /api/javascript/features/notification/NotificationToast
    /api/javascript/features/notification/notificationRegistry
    /api/javascript/features/notification/systemNotifications
    /api/javascript/features/notification/useNotificationStore
    /api/javascript/features/notification/widgetNotificationPolicy
+   /api/javascript/features/settings-runtime/GenericNodes
+   /api/javascript/features/settings-runtime/extensions
+   /api/javascript/features/settings-runtime/model
+   /api/javascript/features/settings-runtime/registry
+   /api/javascript/features/settings-runtime/useActionExecutor
+   /api/javascript/features/settings-runtime/validation
    /api/javascript/features/story/StoriesPage
    /api/javascript/features/story/StoryCard
    /api/javascript/features/story/StoryReader

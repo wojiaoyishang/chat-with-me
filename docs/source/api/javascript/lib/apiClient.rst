@@ -17,12 +17,12 @@ src/lib/apiClient 模块
 * **模块标识**：``src/lib/apiClient``
 * **顶层函数/组件/Hook**：3
 * **类**：1
-* **局部函数与匿名回调**：4
+* **局部函数与匿名回调**：7
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``axios``、``@/config.js``。
+``axios``、``@/config.js``、``../runtime/backend/connection.js``。
 
 类
 --------------------------------------------------------------------------------
@@ -31,17 +31,17 @@ src/lib/apiClient 模块
 
    封装 ``AuthRedirectError`` 的状态和方法。
 
-   **性质**：导出类；源码第 ``11`` 行。
+   **性质**：导出类；源码第 ``21`` 行。
 
    .. rubric:: 方法
 
-   .. CWM-AST-FUNCTION src/lib/apiClient.js:255:442:FUNCTION
+   .. CWM-AST-FUNCTION src/lib/apiClient.js:685:872:FUNCTION
 
    .. js:method:: constructor(message)
 
       初始化类实例并建立运行状态。
 
-      **性质**：同步函数；导出 API；源码第 ``12``—``17`` 行。
+      **性质**：同步函数；导出 API；源码第 ``22``—``27`` 行。
 
       **参数**
 
@@ -57,13 +57,13 @@ src/lib/apiClient 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:480:561:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:910:991:FUNCTION
 
 .. js:function:: isAuthRedirectError(error)
 
    判断与 ``Auth Redirect Error`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``20``—``20`` 行。
+   **性质**：同步函数；导出 API；源码第 ``30``—``30`` 行。
 
    **参数**
 
@@ -76,13 +76,13 @@ src/lib/apiClient 模块
 
    **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:587:979:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1017:1409:FUNCTION
 
 .. js:function:: redirectToLogin()
 
    实现 ``redirectToLogin`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``22``—``30`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``32``—``40`` 行。
 
    **参数**
 
@@ -98,13 +98,13 @@ src/lib/apiClient 模块
 
    **主要协作调用**：``encodeURIComponent``、``window.location.replace``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1008:1093:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1438:1551:FUNCTION
 
 .. js:function:: rejectUnauthorized()
 
    实现 ``rejectUnauthorized`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``32``—``35`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``42``—``46`` 行。
 
    **参数**
 
@@ -114,24 +114,46 @@ src/lib/apiClient 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``Promise.reject(new AuthRedirectError())``。
 
-   **主要协作调用**：``redirectToLogin``、``Promise.reject``。
+   **主要协作调用**：``setConnectionToken``、``redirectToLogin``、``Promise.reject``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1184:1334:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:488:635:FUNCTION
 
-.. rubric:: ``apiClient.interceptors.request.use callback @ 39``
+.. rubric:: ``subscribeBackend callback @ 15``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.request.use callback @ 39(config)
+   subscribeBackend callback @ 15()
+
+订阅与 ``Backend`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``15``—``19`` 行。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``isCurrentConnection``、``request.controller.abort``。
+
+.. CWM-AST-FUNCTION src/lib/apiClient.js:1642:2972:FUNCTION
+
+.. rubric:: ``apiClient.interceptors.request.use callback @ 50``
+
+.. code-block:: javascript
+
+   apiClient.interceptors.request.use callback @ 50(config)
 
 实现 ``apiClient.interceptors.request.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``39``—``42`` 行。
+**性质**：同步局部函数；源码第 ``50``—``77`` 行。
 
 **参数**
 
@@ -142,17 +164,69 @@ src/lib/apiClient 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``config``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1335:1372:FUNCTION
+**副作用**
 
-.. rubric:: ``apiClient.interceptors.request.use callback @ 43``
+* 注册事件、DOM 或运行时订阅。
+
+**主要协作调用**：``getBackendConnection``、``backendApiUrl``、``requests.add``、``controller.abort``、``signal.addEventListener``、``getConnectionToken``、``getResourceTicket``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/lib/apiClient.js:2120:2145:FUNCTION
+
+.. rubric:: ``abort``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.request.use callback @ 43(error)
+   abort()
+
+实现 ``abort`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``61``—``61`` 行；所属函数 ``apiClient.interceptors.request.use callback @ 50``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``controller.abort``。
+
+.. CWM-AST-FUNCTION src/lib/apiClient.js:2257:2306:FUNCTION
+
+.. rubric:: ``anonymous callback @ 63``
+
+.. code-block:: javascript
+
+   anonymous callback @ 63()
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``apiClient.interceptors.request.use callback @ 50``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``signal.removeEventListener``。
+
+.. CWM-AST-FUNCTION src/lib/apiClient.js:2973:3010:FUNCTION
+
+.. rubric:: ``apiClient.interceptors.request.use callback @ 78``
+
+.. code-block:: javascript
+
+   apiClient.interceptors.request.use callback @ 78(error)
 
 实现 ``apiClient.interceptors.request.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``43``—``43`` 行。
+**性质**：同步局部函数；源码第 ``78``—``78`` 行。
 
 **参数**
 
@@ -165,17 +239,17 @@ src/lib/apiClient 模块
 
 **主要协作调用**：``Promise.reject``。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1414:1930:FUNCTION
+.. CWM-AST-FUNCTION src/lib/apiClient.js:3052:4068:FUNCTION
 
-.. rubric:: ``apiClient.interceptors.response.use callback @ 47``
+.. rubric:: ``apiClient.interceptors.response.use callback @ 82``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.response.use callback @ 47(response)
+   apiClient.interceptors.response.use callback @ 82(response)
 
 实现 ``apiClient.interceptors.response.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``47``—``63`` 行。
+**性质**：同步局部函数；源码第 ``82``—``104`` 行。
 
 **参数**
 
@@ -186,21 +260,26 @@ src/lib/apiClient 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``response``、``rejectUnauthorized()``、``data``。
 
-**显式抛出**：``error``。
+**副作用**
 
-**主要协作调用**：``rejectUnauthorized``。
+* 发起 HTTP 请求或访问外部服务。
+* 注册事件、DOM 或运行时订阅。
 
-.. CWM-AST-FUNCTION src/lib/apiClient.js:1931:2304:FUNCTION
+**显式抛出**：``new axios.CanceledError('Backend changed')``、``error``。
 
-.. rubric:: ``apiClient.interceptors.response.use callback @ 64``
+**主要协作调用**：``requests.delete``、``request.unsubscribe``、``isCurrentConnection``、``rejectUnauthorized``、``setConnectionToken``、``setResourceTicket``、``setConnectionUserId``。
+
+.. CWM-AST-FUNCTION src/lib/apiClient.js:4069:4701:FUNCTION
+
+.. rubric:: ``apiClient.interceptors.response.use callback @ 105``
 
 .. code-block:: javascript
 
-   apiClient.interceptors.response.use callback @ 64(error)
+   apiClient.interceptors.response.use callback @ 105(error)
 
 实现 ``apiClient.interceptors.response.use`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``64``—``72`` 行。
+**性质**：同步局部函数；源码第 ``105``—``116`` 行。
 
 **参数**
 
@@ -209,6 +288,11 @@ src/lib/apiClient 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``rejectUnauthorized()``、``Promise.reject(error)``。
+根据执行分支返回结果；代表性返回表达式为 ``Promise.reject(new axios.CanceledError('Backend changed'))``、``rejectUnauthorized()``、``Promise.reject(error)``。
 
-**主要协作调用**：``rejectUnauthorized``、``Promise.reject``。
+**副作用**
+
+* 发起 HTTP 请求或访问外部服务。
+* 注册事件、DOM 或运行时订阅。
+
+**主要协作调用**：``requests.delete``、``request.unsubscribe``、``isCurrentConnection``、``Promise.reject``、``rejectUnauthorized``。

@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
+import { DynamicSettings } from './helpers/settingsRuntimeHarness.mjs';
 import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY as key, KNOWLEDGE_GRAPH_PHYSICS_ANIMATION_SETTING_KEY as physicsKey } from '../src/features/knowledge/graphSettings.js';
 import {
     WORKFLOW_EDGE_ANIMATION_SETTING_KEY as workflowKey,
@@ -13,8 +14,7 @@ import {
 } from '../src/features/workflows/workflowSettings.js';
 
 await build({
-    stdin: { contents: `export {default as Settings} from './src/pages/SettingPage.jsx';
-        export {default as Management} from './src/features/tasks/BackendManagementPage.jsx';
+    stdin: { contents: `export {default as Management} from './src/features/tasks/BackendManagementPage.jsx';
         export {default as Graph} from './src/features/chat/ui/message/components/KnowledgeGraphViewer.jsx';
         export {setLocalSetting,getLocalSetting} from './src/lib/tools.jsx';`, resolveDir: process.cwd() },
     outfile: 'temp/graph-animation-settings-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', loader: { '.css': 'empty' },
@@ -31,7 +31,7 @@ await build({
                 const graph={options,preferences:[],physicsPreferences:[],setData(){},setPhysics(value){this.physicsPreferences.push(value);this.options.onPhysicsChange?.(value)},setEdgeAnimation(value){this.preferences.push(value)},destroy(){this.destroyed=true}};
                 globalThis.graphPreferencesTest.instances.push(graph);options.onReady();return graph;}`;
             else if (name === '@/context/LazyVisibility.jsx') contents = 'export default ({children})=>children;';
-            else if (name === '@/lib/apiClient.js' || name === '@/lib/apiClient') contents = 'export default {get:async()=>[]};export const isAuthRedirectError=()=>false;';
+            else if (name === '@/lib/apiClient.js' || name === '@/lib/apiClient') contents = 'export default {get:async()=>[],post:async()=>({pageTicket:"page",resourceTicket:"resource"})};export const isAuthRedirectError=()=>false;';
             else if (name === '@/config.js') contents = 'export const BASE_BACKEND_URL="/api";export const apiEndpoint={SETTING_TABS_ENDPOINT:"/settings"};';
             else if (name === '@/context/userContext.jsx') contents = 'const setUser=()=>{};export const useUserStore=()=>({setUser});';
             else if (name === '@/context/useEventStore.jsx') contents = 'export const onEvent=()=>({then:()=>()=>{}});';
@@ -53,13 +53,16 @@ await build({
         });
     } }],
 });
-const { Settings, Management, Graph, setLocalSetting, getLocalSetting } = await import('../temp/graph-animation-settings-test.mjs');
+const { Management, Graph, setLocalSetting, getLocalSetting } = await import('../temp/graph-animation-settings-test.mjs');
+const fields = [[key, '知识图谱关系动画'], [physicsKey, '知识图谱节点动画'], [workflowKey, '工作流连线动画']].map(([name, text]) => ({ type: 'switch', name, text, default: true, storage: { key: name } }));
+const client = { read: async name => getLocalSetting(name), write: async (name, value) => setLocalSetting(name, value), invoke: async () => {}, subscribe: () => () => {} };
+const Settings = () => React.createElement(DynamicSettings, { config: fields, runtimeContext: { client } });
 
 async function workspace(t, storedValue) {
     const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/knowledge', pretendToBeVisual: true });
     const globals = ['window','document','localStorage','CustomEvent','IS_REACT_ACT_ENVIRONMENT','graphPreferencesTest'];
     const previous = new Map(globals.map(name => [name,Object.getOwnPropertyDescriptor(globalThis,name)]));
-    Object.assign(globalThis, { window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,CustomEvent:dom.window.CustomEvent,IS_REACT_ACT_ENVIRONMENT:true,graphPreferencesTest:{instances:[]} });
+    Object.assign(globalThis, { window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,CustomEvent:dom.window.CustomEvent,IS_REACT_ACT_ENVIRONMENT:true,graphPreferencesTest:{instances:[]},settingsUI:{errors:[]} });
     dom.window.matchMedia = () => ({ matches:false });
     if (storedValue !== undefined) setLocalSetting(key,storedValue);
     const root=createRoot(document.getElementById('root')), registrations = new Map();
@@ -69,7 +72,7 @@ async function workspace(t, storedValue) {
     await render();
     const sent=[], frame=document.querySelector('iframe');
     frame.contentWindow.postMessage=(data,origin)=>sent.push({data,origin});
-    const ready=async(origin='http://localhost',source=frame.contentWindow)=>act(async()=>window.dispatchEvent(new dom.window.MessageEvent('message',{origin,source,data:{type:'cwm.knowledge-ready'}})));
+    const ready=async(origin='http://localhost',source=frame.contentWindow)=>act(async()=>window.dispatchEvent(new dom.window.MessageEvent('message',{origin,source,data:{type:'cwm.knowledge-ready',clientChannel:new URL(frame.src).searchParams.get('client_channel')}})));
     t.after(async()=>{await act(async()=>root.unmount());dom.window.close();for(const [name,descriptor] of previous)descriptor?Object.defineProperty(globalThis,name,descriptor):delete globalThis[name];});
     return {dom,render,frame,sent,ready,instances:globalThis.graphPreferencesTest.instances,registrations};
 }
@@ -77,12 +80,11 @@ async function workspace(t, storedValue) {
 test('default-on interface toggle persists and updates an existing chat graph and knowledge iframe without remounting',async t=>{
     const ui=await workspace(t);const instance=ui.instances[0];
     assert.equal(instance.options.edgeAnimation,true);assert.equal(ui.registrations.get('nvlInstance'),instance);
-    await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
-    const toggle=document.querySelector('[role="switch"][aria-label="知识图谱关系动画"]');assert.equal(toggle.getAttribute('aria-checked'),'true');
+    const toggle=document.querySelector('[aria-label="知识图谱关系动画"]');assert.equal(toggle.checked,true);
     await act(async()=>ui.frame.dispatchEvent(new ui.dom.window.Event('load')));
     assert.deepEqual(ui.sent.at(-1),{data:{type:'cwm.graph-preferences',edgeAnimation:true,physicsAnimation:true},origin:'http://localhost'});
     await act(async()=>toggle.click());
-    assert.equal(getLocalSetting(key),false);assert.equal(toggle.getAttribute('aria-checked'),'false');
+    assert.equal(getLocalSetting(key),false);assert.equal(toggle.checked,false);
     assert.equal(ui.instances.length,1);assert.equal(instance.preferences.at(-1),false);assert.equal(document.querySelector('iframe'),ui.frame);
     assert.deepEqual(ui.sent.at(-1),{data:{type:'cwm.graph-preferences',edgeAnimation:false,physicsAnimation:true},origin:'http://localhost'});
     await act(async()=>toggle.click());assert.equal(getLocalSetting(key),true);assert.equal(instance.preferences.at(-1),true);assert.equal(ui.instances.length,1);
@@ -108,16 +110,14 @@ test('cross-tab preference changes update chat and knowledge controls without re
 test('workflow connection animation is enabled by default and its interface toggle persists',async t=>{
     const ui=await workspace(t);
     assert.equal(DEFAULT_WORKFLOW_EDGE_ANIMATION,true);
-    await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
-    const toggle=document.querySelector('[role="switch"][aria-label="工作流连线动画"]');
-    assert.equal(toggle.getAttribute('aria-checked'),'true');
+    const toggle=document.querySelector('[aria-label="工作流连线动画"]');
+    assert.equal(toggle.checked,true);
     await act(async()=>toggle.click());
     assert.equal(getLocalSetting(workflowKey),false);
-    assert.equal(toggle.getAttribute('aria-checked'),'false');
+    assert.equal(toggle.checked,false);
     await ui.render(false);
     await ui.render();
-    await act(async()=>[...document.querySelectorAll('button')].find(button=>button.textContent==='Settings.Interface').click());
-    assert.equal(document.querySelector('[role="switch"][aria-label="工作流连线动画"]').getAttribute('aria-checked'),'false');
+    assert.equal(document.querySelector('[aria-label="工作流连线动画"]').checked,false);
 });
 
 
@@ -125,7 +125,7 @@ test('node physics uses tools local settings across chat, trusted iframe message
     const ui = await workspace(t), instance = ui.instances[0];
     assert.equal(instance.physicsPreferences.at(-1), true);
     const notify = (enabled, source = ui.frame.contentWindow, origin = 'http://localhost') => window.dispatchEvent(new ui.dom.window.MessageEvent('message', {
-        source, origin, data: {type:'cwm.graph-physics-change', enabled},
+        source, origin, data: {type:'cwm.graph-physics-change', enabled,clientChannel:new URL(ui.frame.src).searchParams.get('client_channel')},
     }));
     await act(async()=>{ notify(false, window); notify(false, ui.frame.contentWindow, 'https://untrusted.invalid'); });
     assert.equal(getLocalSetting(physicsKey, true), true, 'untrusted events cannot alter persisted preferences');

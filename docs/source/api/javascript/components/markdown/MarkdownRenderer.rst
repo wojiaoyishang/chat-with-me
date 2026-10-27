@@ -22,18 +22,18 @@ src/components/markdown/MarkdownRenderer 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-markdown``、``remark-gfm``、``remark-math``、``remark-directive``、``rehype-katex``、``./remarkDirectiveToComponent.js``、``./remarkCollapseExecutionStatuses.js``、``./remarkCwmLinks.js``、``./remarkVideoDirective.js``、``./remarkStudyDirectives.js``、``./rehypeDocumentTasks.js``、``./DocumentTaskControls.jsx``、``./StudyVisuals.jsx``、``./documentCardSpec.js``、``./CodeBlock.jsx``、``./MarkdownContent.css``、``./card-block/CardBlock.jsx``、``@/features/execution/ExecutionStatusGroup.jsx``、``./card-block/agent/agentContent.js``、``@/features/chat/speech/frontendFeedback.js``、``@/features/chat/ui/message/components/ReplacementContextBadge.jsx``、``./replacementProtocol.js``、``katex/dist/katex.min.css``、``@/lib/virtualUrl.js``、``@/lib/resourceDownload.js``、``./ResourceImage.jsx``、``./ResourceVideo.jsx``、``sonner``、``@/components/modal/universalModal.js``。
+``react``、``react-markdown``、``remark-gfm``、``remark-math``、``remark-directive``、``rehype-katex``、``./remarkDirectiveToComponent.js``、``./remarkCollapseExecutionStatuses.js``、``./remarkCwmLinks.js``、``./remarkVideoDirective.js``、``./remarkStudyDirectives.js``、``./rehypeDocumentTasks.js``、``./DocumentTaskControls.jsx``、``./StudyVisuals.jsx``、``./documentCardSpec.js``、``./CodeBlock.jsx``、``./MarkdownContent.css``、``./card-block/CardBlock.jsx``、``@/features/execution/ExecutionStatusGroup.jsx``、``./card-block/agent/agentContent.js``、``@/features/chat/speech/frontendFeedback.js``、``@/features/chat/ui/message/components/ReplacementContextBadge.jsx``、``./replacementProtocol.js``、``katex/dist/katex.min.css``、``@/lib/virtualUrl.js``、``../../runtime/backend/connection.js``、``@/lib/resourceDownload.js``、``./ResourceImage.jsx``、``./ResourceVideo.jsx``、``sonner``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:2542:2692:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:2620:2770:FUNCTION
 
 .. js:function:: getVisitedKey(visitedIds)
 
    读取与 ``Visited Key`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``49``—``55`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``50``—``56`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``Array.isArray``、``visitedIds.join``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:2722:2961:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:2800:3039:FUNCTION
 
 .. js:function:: allowCustomScheme(uri, key, node)
 
    实现 ``allowCustomScheme`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``57``—``62`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``58``—``63`` 行。
 
    **参数**
 
@@ -71,13 +71,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``isUniversalModalLink``、``resolveCwmUrl``、``defaultUrlTransform``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:2991:3243:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:3069:3321:FUNCTION
 
 .. js:function:: preprocessContent(text)
 
    实现 ``preprocessContent`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``64``—``72`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``65``—``73`` 行。
 
    **参数**
 
@@ -90,13 +90,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``normalizeCardReplaceBlockBoundaries(text) .replace(/\\\[/g, '$$$') .replace(/\\\]/g, '$$$') .replace(/\\\(/g, '$') .rep…``、``normalizeCardReplaceBlockBoundaries(text) .replace(/\\\[/g, '$$$') .replace(/\\\]/g, '$$$') .replace``、``normalizeCardReplaceBlockBoundaries(text) .replace(/\\\[/g, '$$$') .replace``、``normalizeCardReplaceBlockBoundaries(text) .replace``、``normalizeCardReplaceBlockBoundaries``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:3364:4049:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:3442:4127:FUNCTION
 
 .. js:function:: stripDanglingStreamingCardToken(content)
 
    实现 ``stripDanglingStreamingCardToken`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``76``—``93`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``77``—``94`` 行。
 
    **参数**
 
@@ -111,13 +111,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4074:4159:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4152:4237:FUNCTION
 
 .. js:function:: toSafeString(value)
 
    实现 ``toSafeString`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``95``—``97`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``96``—``98`` 行。
 
    **参数**
 
@@ -130,13 +130,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4252:4339:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4330:4417:FUNCTION
 
 .. js:function:: normalizeCopyText(content)
 
    规范化与 ``Copy Text`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``101``—``103`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``102``—``104`` 行。
 
    **参数**
 
@@ -149,13 +149,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``normalizeLineBreaks(content).replace``、``normalizeLineBreaks``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4640:4791:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4718:4869:FUNCTION
 
 .. js:function:: stripCopyTypeMarker(content)
 
    实现 ``stripCopyTypeMarker`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``121``—``124`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``122``—``125`` 行。
 
    **参数**
 
@@ -168,13 +168,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``parseReplacementProtocol``、``normalizeLineBreaks``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4839:5828:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:4917:5906:FUNCTION
 
 .. js:function:: extractCopyTextFromReplacementValue(value, seenObjects)
 
    提取与 ``Copy Text From Replacement Value`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``126``—``167`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``127``—``168`` 行。
 
    **参数**
 
@@ -192,13 +192,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:5870:7740:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:5948:7818:FUNCTION
 
 .. js:function:: normalizeReplacementCopyEntry(replacement, id, explicitType, inheritedSnapshot)
 
    规范化与 ``Replacement Copy Entry`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``169``—``219`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``170``—``220`` 行。
 
    **参数**
 
@@ -220,13 +220,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``String``、``Object.prototype.hasOwnProperty.call``、``extractCopyTextFromReplacementValue``、``stripFrontendFeedback``、``parseReplacementProtocol``、``['executionwindowtool', 'workspacetransfer', 'executionstatus', 'escstatus'].includes``、``String(explicitType || entry?.type || protocol.type || '').toLowerCase``、``parseAgentContent``、``stripCopyTypeMarker``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:7771:8016:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:7849:8094:FUNCTION
 
 .. js:function:: isReplaceDirective(directiveName, attributes)
 
    判断与 ``Replace Directive`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``221``—``231`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``222``—``232`` 行。
 
    **参数**
 
@@ -242,13 +242,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``String(attributes.type || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:8050:9620:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:8128:9698:FUNCTION
 
 .. js:function:: replaceCopyDirectives(source, directiveRegex, replacement, options)
 
    替换与 ``Copy Directives`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``233``—``276`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``234``—``277`` 行。
 
    **参数**
 
@@ -272,13 +272,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:9666:10954:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:9744:11032:FUNCTION
 
 .. js:function:: resolveMarkdownCopyContent(content, replacement, options)
 
    解析并确定与 ``Markdown Copy Content`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``278``—``318`` 行。
+   **性质**：同步函数；导出 API；源码第 ``279``—``319`` 行。
 
    **参数**
 
@@ -297,13 +297,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``normalizeLineBreaks``、``stripFrontendFeedback``、``normalizeCopyText``、``source .replace(CARD_REPLACE_BLOCK_DIRECTIVE_RE, '') .replace(CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE, '') .replace``、``source .replace(CARD_REPLACE_BLOCK_DIRECTIVE_RE, '') .replace``、``source .replace``、``replaceCopyDirectives``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11008:11579:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11086:11657:FUNCTION
 
 .. js:function:: createMarkdownCopyContentComponent(copyContent)
 
    创建与 ``Markdown Copy Content Component`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``320``—``336`` 行。
+   **性质**：同步函数；导出 API；源码第 ``321``—``337`` 行。
 
    **参数**
 
@@ -318,13 +318,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11772:12137:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11850:12215:FUNCTION
 
 .. js:function:: MarkdownCode({ className, children, isCodeBlock, ...props })
 
    渲染 ``MarkdownCode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``340``—``345`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``341``—``346`` 行。
 
    **参数**
 
@@ -337,13 +337,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **主要协作调用**：``/\blanguage-([^\s]+)/.exec``、``String(children || '').replace``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12166:25833:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12244:25911:FUNCTION
 
 .. js:function:: createComponents({ contextId = '', conversationId = null, replacementRef, depth = 0, maxDepth = 10, visitedIds = [],…)
 
    创建与 ``Components`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``347``—``642`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``348``—``643`` 行。
 
    **参数**
 
@@ -358,13 +358,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **内部回调数量**：23。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:25834:32107:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:25912:32231:FUNCTION
 
 .. js:function:: MarkdownRendererInner({ resourceBaseUrl = null, extraRehypePlugins = [], contextId = '', conversationId = null, content,…)
 
    渲染 ``MarkdownRendererInner`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``644``—``806`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``645``—``807`` 行。
 
    **参数**
 
@@ -379,13 +379,13 @@ src/components/markdown/MarkdownRenderer 模块
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:32137:32382:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:32261:32506:FUNCTION
 
 .. js:function:: areVisitedIdsEqual(prev, next)
 
    实现 ``areVisitedIdsEqual`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``808``—``817`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``809``—``818`` 行。
 
    **参数**
 
@@ -404,17 +404,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:3758:3878:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:3836:3956:FUNCTION
 
-.. rubric:: ``CARD_REPLACE_TOKEN_NAMES.some callback @ 86``
+.. rubric:: ``CARD_REPLACE_TOKEN_NAMES.some callback @ 87``
 
 .. code-block:: javascript
 
-   CARD_REPLACE_TOKEN_NAMES.some callback @ 86(name)
+   CARD_REPLACE_TOKEN_NAMES.some callback @ 87(name)
 
 作为 ``CARD_REPLACE_TOKEN_NAMES.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``86``—``88`` 行；所属函数 ``stripDanglingStreamingCardToken``。
+**性质**：同步局部函数；源码第 ``87``—``89`` 行；所属函数 ``stripDanglingStreamingCardToken``。
 
 **参数**
 
@@ -427,17 +427,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``name.startsWith``、``tokenBody.startsWith``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:5188:5252:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:5266:5330:FUNCTION
 
-.. rubric:: ``value .map callback @ 141``
+.. rubric:: ``value .map callback @ 142``
 
 .. code-block:: javascript
 
-   value .map callback @ 141(item)
+   value .map callback @ 142(item)
 
 作为 ``value .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``141``—``141`` 行；所属函数 ``extractCopyTextFromReplacementValue``。
+**性质**：同步局部函数；源码第 ``142``—``142`` 行；所属函数 ``extractCopyTextFromReplacementValue``。
 
 **参数**
 
@@ -450,17 +450,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``extractCopyTextFromReplacementValue``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:8248:9615:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:8326:9693:FUNCTION
 
-.. rubric:: ``source.replace callback @ 238``
+.. rubric:: ``source.replace callback @ 239``
 
 .. code-block:: javascript
 
-   source.replace callback @ 238(_match, directiveName, rawAttributes)
+   source.replace callback @ 239(_match, directiveName, rawAttributes)
 
 实现 ``source.replace`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``238``—``275`` 行；所属函数 ``replaceCopyDirectives``。
+**性质**：同步局部函数；源码第 ``239``—``276`` 行；所属函数 ``replaceCopyDirectives``。
 
 **参数**
 
@@ -479,7 +479,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``parseCardReplaceAttributes``、``getCardReplaceIdFromAttributes``、``Boolean``、``Object.prototype.hasOwnProperty.call``、``isReplaceDirective``、``visitedIds.includes``、``console.error``、``normalizeReplacementCopyEntry``、``resolveMarkdownCopyContent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11311:11333:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11389:11411:FUNCTION
 
 .. rubric:: ``getContent``
 
@@ -488,26 +488,6 @@ src/components/markdown/MarkdownRenderer 模块
    getContent()
 
 读取与 ``Content`` 相关的数据或状态。
-
-**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``createMarkdownCopyContentComponent``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11359:11381:FUNCTION
-
-.. rubric:: ``getCopyContent``
-
-.. code-block:: javascript
-
-   getCopyContent()
-
-读取与 ``Copy Content`` 相关的数据或状态。
 
 **性质**：同步局部函数；源码第 ``330``—``330`` 行；所属函数 ``createMarkdownCopyContentComponent``。
 
@@ -519,15 +499,15 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11411:11433:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11437:11459:FUNCTION
 
-.. rubric:: ``getMarkdownContent``
+.. rubric:: ``getCopyContent``
 
 .. code-block:: javascript
 
-   getMarkdownContent()
+   getCopyContent()
 
-读取与 ``Markdown Content`` 相关的数据或状态。
+读取与 ``Copy Content`` 相关的数据或状态。
 
 **性质**：同步局部函数；源码第 ``331``—``331`` 行；所属函数 ``createMarkdownCopyContentComponent``。
 
@@ -539,15 +519,15 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11462:11484:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11489:11511:FUNCTION
 
-.. rubric:: ``getDisplayContent``
+.. rubric:: ``getMarkdownContent``
 
 .. code-block:: javascript
 
-   getDisplayContent()
+   getMarkdownContent()
 
-读取与 ``Display Content`` 相关的数据或状态。
+读取与 ``Markdown Content`` 相关的数据或状态。
 
 **性质**：同步局部函数；源码第 ``332``—``332`` 行；所属函数 ``createMarkdownCopyContentComponent``。
 
@@ -559,15 +539,15 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11503:11525:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11540:11562:FUNCTION
 
-.. rubric:: ``getText``
+.. rubric:: ``getDisplayContent``
 
 .. code-block:: javascript
 
-   getText()
+   getDisplayContent()
 
-读取与 ``Text`` 相关的数据或状态。
+读取与 ``Display Content`` 相关的数据或状态。
 
 **性质**：同步局部函数；源码第 ``333``—``333`` 行；所属函数 ``createMarkdownCopyContentComponent``。
 
@@ -579,15 +559,15 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11545:11567:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11581:11603:FUNCTION
 
-.. rubric:: ``toString``
+.. rubric:: ``getText``
 
 .. code-block:: javascript
 
-   toString()
+   getText()
 
-实现 ``toString`` 对应的前端处理。
+读取与 ``Text`` 相关的数据或状态。
 
 **性质**：同步局部函数；源码第 ``334``—``334`` 行；所属函数 ``createMarkdownCopyContentComponent``。
 
@@ -599,7 +579,27 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12592:12654:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:11623:11645:FUNCTION
+
+.. rubric:: ``toString``
+
+.. code-block:: javascript
+
+   toString()
+
+实现 ``toString`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``335``—``335`` 行；所属函数 ``createMarkdownCopyContentComponent``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12670:12732:FUNCTION
 
 .. rubric:: ``getCurrentReplacement``
 
@@ -609,7 +609,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 读取与 ``Current Replacement`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``364``—``366`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``365``—``367`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -619,7 +619,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``replacementRef?.current || {}``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12691:13409:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:12769:13487:FUNCTION
 
 .. rubric:: ``renderNestedMarkdown``
 
@@ -629,7 +629,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 渲染与 ``Nested Markdown`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``368``—``385`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``369``—``386`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -645,17 +645,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``getCurrentReplacement``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13495:13764:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13573:13842:FUNCTION
 
-.. rubric:: ``cardSpec.directives.map callback @ 387``
+.. rubric:: ``cardSpec.directives.map callback @ 388``
 
 .. code-block:: javascript
 
-   cardSpec.directives.map callback @ 387({ name, kind })
+   cardSpec.directives.map callback @ 388({ name, kind })
 
 作为 ``cardSpec.directives.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``387``—``392`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``388``—``393`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -668,17 +668,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13625:13756:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13703:13834:FUNCTION
 
-.. rubric:: ``anonymous callback @ 391``
+.. rubric:: ``anonymous callback @ 392``
 
 .. code-block:: javascript
 
-   anonymous callback @ 391(props)
+   anonymous callback @ 392(props)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``391``—``391`` 行；所属函数 ``cardSpec.directives.map callback @ 387``。
+**性质**：同步局部函数；源码第 ``392``—``392`` 行；所属函数 ``cardSpec.directives.map callback @ 388``。
 
 **参数**
 
@@ -691,7 +691,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``name.slice``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13884:13937:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13962:14015:FUNCTION
 
 .. rubric:: ``p``
 
@@ -701,7 +701,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``p`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``396``—``396`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``397``—``397`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -712,7 +712,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:13953:14135:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14031:14213:FUNCTION
 
 .. rubric:: ``ul``
 
@@ -722,7 +722,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``ul`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``398``—``398`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``399``—``399`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -733,7 +733,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14151:14336:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14229:14414:FUNCTION
 
 .. rubric:: ``ol``
 
@@ -743,7 +743,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``ol`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``400``—``400`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``401``—``401`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -754,7 +754,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14352:14637:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14430:14715:FUNCTION
 
 .. rubric:: ``li``
 
@@ -764,7 +764,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``li`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``402``—``406`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``403``—``407`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -775,7 +775,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``<li className="my-1">{children}</li>``、``<DocumentTaskListItem className={className} node={node}>{children}</DocumentTaskListItem>``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14720:14818:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14798:14896:FUNCTION
 
 .. rubric:: ``input``
 
@@ -785,7 +785,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``input`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``408``—``408`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``409``—``409`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -796,7 +796,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14855:14975:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14933:15053:FUNCTION
 
 .. rubric:: ``h1``
 
@@ -806,7 +806,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``h1`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``411``—``413`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``412``—``414`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -817,7 +817,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:14991:15089:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15069:15167:FUNCTION
 
 .. rubric:: ``h2``
 
@@ -827,7 +827,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``h2`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``416``—``416`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -838,7 +838,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15105:15201:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15183:15279:FUNCTION
 
 .. rubric:: ``h3``
 
@@ -848,7 +848,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``h3`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``417``—``417`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``418``—``418`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -859,7 +859,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15217:15254:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15295:15332:FUNCTION
 
 .. rubric:: ``hr``
 
@@ -869,7 +869,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``hr`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``419``—``419`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``420``—``420`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -879,7 +879,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15277:15382:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15355:15460:FUNCTION
 
 .. rubric:: ``blockquote``
 
@@ -889,7 +889,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``blockquote`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``421``—``423`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``422``—``424`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -900,7 +900,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15397:16587:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15475:16665:FUNCTION
 
 .. rubric:: ``a``
 
@@ -910,7 +910,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``a`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``425``—``451`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``426``—``452`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -925,17 +925,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15871:16101:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:15949:16179:FUNCTION
 
-.. rubric:: ``anonymous callback @ 435``
+.. rubric:: ``anonymous callback @ 436``
 
 .. code-block:: javascript
 
-   anonymous callback @ 435(event)
+   anonymous callback @ 436(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``435``—``439`` 行；所属函数 ``a``。
+**性质**：同步局部函数；源码第 ``436``—``440`` 行；所属函数 ``a``。
 
 **参数**
 
@@ -948,17 +948,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``openUniversalModalLink``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16193:16421:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16271:16499:FUNCTION
 
-.. rubric:: ``anonymous callback @ 441``
+.. rubric:: ``anonymous callback @ 442``
 
 .. code-block:: javascript
 
-   anonymous callback @ 441(event)
+   anonymous callback @ 442(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``441``—``444`` 行；所属函数 ``a``。
+**性质**：同步局部函数；源码第 ``442``—``445`` 行；所属函数 ``a``。
 
 **参数**
 
@@ -973,17 +973,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16347:16384:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16425:16462:FUNCTION
 
-.. rubric:: ``downloadDocumentResource(href).catch callback @ 443``
+.. rubric:: ``downloadDocumentResource(href).catch callback @ 444``
 
 .. code-block:: javascript
 
-   downloadDocumentResource(href).catch callback @ 443(error)
+   downloadDocumentResource(href).catch callback @ 444(error)
 
 处理 ``downloadDocumentResource(href).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``443``—``443`` 行；所属函数 ``anonymous callback @ 441``。
+**性质**：同步局部函数；源码第 ``444``—``444`` 行；所属函数 ``anonymous callback @ 442``。
 
 **参数**
 
@@ -996,7 +996,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16637:16870:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16715:16948:FUNCTION
 
 .. rubric:: ``table``
 
@@ -1006,7 +1006,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``table`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``455``—``459`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``456``—``460`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -1017,7 +1017,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16887:16931:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16965:17009:FUNCTION
 
 .. rubric:: ``thead``
 
@@ -1026,27 +1026,6 @@ src/components/markdown/MarkdownRenderer 模块
    thead({ children })
 
 实现 ``thead`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``460``—``460`` 行；所属函数 ``createComponents``。
-
-**参数**
-
-``{ children }``
-   调用方传入的 ``children`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:16948:16992:FUNCTION
-
-.. rubric:: ``tbody``
-
-.. code-block:: javascript
-
-   tbody({ children })
-
-实现 ``tbody`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``461``—``461`` 行；所属函数 ``createComponents``。
 
@@ -1059,15 +1038,15 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17006:17044:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17026:17070:FUNCTION
 
-.. rubric:: ``tr``
+.. rubric:: ``tbody``
 
 .. code-block:: javascript
 
-   tr({ children })
+   tbody({ children })
 
-实现 ``tr`` 对应的前端处理。
+实现 ``tbody`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``462``—``462`` 行；所属函数 ``createComponents``。
 
@@ -1080,7 +1059,28 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17058:17117:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17084:17122:FUNCTION
+
+.. rubric:: ``tr``
+
+.. code-block:: javascript
+
+   tr({ children })
+
+实现 ``tr`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``463``—``463`` 行；所属函数 ``createComponents``。
+
+**参数**
+
+``{ children }``
+   调用方传入的 ``children`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17136:17195:FUNCTION
 
 .. rubric:: ``th``
 
@@ -1089,27 +1089,6 @@ src/components/markdown/MarkdownRenderer 模块
    th({ children, style })
 
 实现 ``th`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``463``—``463`` 行；所属函数 ``createComponents``。
-
-**参数**
-
-``{ children, style }``
-   调用方传入的 ``children, style`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17131:17190:FUNCTION
-
-.. rubric:: ``td``
-
-.. code-block:: javascript
-
-   td({ children, style })
-
-实现 ``td`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``464``—``464`` 行；所属函数 ``createComponents``。
 
@@ -1122,7 +1101,28 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17207:17405:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17209:17268:FUNCTION
+
+.. rubric:: ``td``
+
+.. code-block:: javascript
+
+   td({ children, style })
+
+实现 ``td`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``465``—``465`` 行；所属函数 ``createComponents``。
+
+**参数**
+
+``{ children, style }``
+   调用方传入的 ``children, style`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17285:17483:FUNCTION
 
 .. rubric:: ``img``
 
@@ -1132,7 +1132,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``img`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``466``—``468`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``467``—``469`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -1143,7 +1143,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``<ResourceImage key={src} src={src} alt={alt} galleryId={contextId} className={\x60cwm-md-image ${className || ''}\x60} {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17424:17510:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17502:17588:FUNCTION
 
 .. rubric:: ``video``
 
@@ -1153,7 +1153,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``video`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``470``—``470`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``471``—``471`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -1164,7 +1164,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17538:25821:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:17616:25899:FUNCTION
 
 .. rubric:: ``card-replace``
 
@@ -1174,7 +1174,7 @@ src/components/markdown/MarkdownRenderer 模块
 
 实现 ``card-replace`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``472``—``640`` 行；所属函数 ``createComponents``。
+**性质**：同步局部函数；源码第 ``473``—``641`` 行；所属函数 ``createComponents``。
 
 **参数**
 
@@ -1189,17 +1189,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:18544:18818:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:18622:18896:FUNCTION
 
-.. rubric:: ``renderMarkdown callback @ 492``
+.. rubric:: ``renderMarkdown callback @ 493``
 
 .. code-block:: javascript
 
-   renderMarkdown callback @ 492(markdownContent)
+   renderMarkdown callback @ 493(markdownContent)
 
 渲染与 ``Markdown`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``492``—``497`` 行；所属函数 ``card-replace``。
+**性质**：同步局部函数；源码第 ``493``—``498`` 行；所属函数 ``card-replace``。
 
 **参数**
 
@@ -1212,17 +1212,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``renderNestedMarkdown``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:19964:20238:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:20042:20316:FUNCTION
 
-.. rubric:: ``renderMarkdown callback @ 526``
+.. rubric:: ``renderMarkdown callback @ 527``
 
 .. code-block:: javascript
 
-   renderMarkdown callback @ 526(markdownContent)
+   renderMarkdown callback @ 527(markdownContent)
 
 渲染与 ``Markdown`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``526``—``531`` 行；所属函数 ``card-replace``。
+**性质**：同步局部函数；源码第 ``527``—``532`` 行；所属函数 ``card-replace``。
 
 **参数**
 
@@ -1235,17 +1235,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``renderNestedMarkdown``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:21210:21484:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:21288:21562:FUNCTION
 
-.. rubric:: ``renderMarkdown callback @ 554``
+.. rubric:: ``renderMarkdown callback @ 555``
 
 .. code-block:: javascript
 
-   renderMarkdown callback @ 554(markdownContent)
+   renderMarkdown callback @ 555(markdownContent)
 
 渲染与 ``Markdown`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``554``—``559`` 行；所属函数 ``card-replace``。
+**性质**：同步局部函数；源码第 ``555``—``560`` 行；所属函数 ``card-replace``。
 
 **参数**
 
@@ -1258,17 +1258,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``renderNestedMarkdown``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:22246:22282:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:22324:22360:FUNCTION
 
-.. rubric:: ``parsed.filter callback @ 578``
+.. rubric:: ``parsed.filter callback @ 579``
 
 .. code-block:: javascript
 
-   parsed.filter callback @ 578(value)
+   parsed.filter callback @ 579(value)
 
 作为 ``parsed.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``578``—``578`` 行；所属函数 ``card-replace``。
+**性质**：同步局部函数；源码第 ``579``—``579`` 行；所属函数 ``card-replace``。
 
 **参数**
 
@@ -1279,17 +1279,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:22534:23132:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:22612:23210:FUNCTION
 
-.. rubric:: ``groupedIds.map callback @ 583``
+.. rubric:: ``groupedIds.map callback @ 584``
 
 .. code-block:: javascript
 
-   groupedIds.map callback @ 583(groupedId)
+   groupedIds.map callback @ 584(groupedId)
 
 作为 ``groupedIds.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``583``—``591`` 行；所属函数 ``card-replace``。
+**性质**：同步局部函数；源码第 ``584``—``592`` 行；所属函数 ``card-replace``。
 
 **参数**
 
@@ -1302,17 +1302,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``normalizeReplacementEntry``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:25417:25744:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:25495:25822:FUNCTION
 
-.. rubric:: ``renderMarkdown callback @ 630``
+.. rubric:: ``renderMarkdown callback @ 631``
 
 .. code-block:: javascript
 
-   renderMarkdown callback @ 630(markdownContent)
+   renderMarkdown callback @ 631(markdownContent)
 
 渲染与 ``Markdown`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``630``—``636`` 行；所属函数 ``card-replace``。
+**性质**：同步局部函数；源码第 ``631``—``637`` 行；所属函数 ``card-replace``。
 
 **参数**
 
@@ -1325,17 +1325,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``renderNestedMarkdown``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:27628:27685:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:27706:27763:FUNCTION
 
-.. rubric:: ``useMemo callback @ 679``
+.. rubric:: ``useMemo callback @ 680``
 
 .. code-block:: javascript
 
-   useMemo callback @ 679()
+   useMemo callback @ 680()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``679``—``681`` 行；所属函数 ``MarkdownRendererInner``。
+**性质**：同步局部函数；源码第 ``680``—``682`` 行；所属函数 ``MarkdownRendererInner``。
 
 **参数**
 
@@ -1347,17 +1347,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``getVisitedKey``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:27736:28216:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:27814:28294:FUNCTION
 
-.. rubric:: ``useMemo callback @ 683``
+.. rubric:: ``useMemo callback @ 684``
 
 .. code-block:: javascript
 
-   useMemo callback @ 683()
+   useMemo callback @ 684()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``683``—``701`` 行；所属函数 ``MarkdownRendererInner``。
+**性质**：同步局部函数；源码第 ``684``—``702`` 行；所属函数 ``MarkdownRendererInner``。
 
 **参数**
 
@@ -1369,17 +1369,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``createComponents``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:28612:28835:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:28690:28913:FUNCTION
 
-.. rubric:: ``useMemo callback @ 719``
+.. rubric:: ``useMemo callback @ 720``
 
 .. code-block:: javascript
 
-   useMemo callback @ 719()
+   useMemo callback @ 720()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``719``—``727`` 行；所属函数 ``MarkdownRendererInner``。
+**性质**：同步局部函数；源码第 ``720``—``728`` 行；所属函数 ``MarkdownRendererInner``。
 
 **参数**
 
@@ -1391,17 +1391,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``preprocessContent``、``stripDanglingStreamingCardToken``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:28899:29016:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:28977:29094:FUNCTION
 
-.. rubric:: ``useMemo callback @ 729``
+.. rubric:: ``useMemo callback @ 730``
 
 .. code-block:: javascript
 
-   useMemo callback @ 729()
+   useMemo callback @ 730()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``729``—``733`` 行；所属函数 ``MarkdownRendererInner``。
+**性质**：同步局部函数；源码第 ``730``—``734`` 行；所属函数 ``MarkdownRendererInner``。
 
 **参数**
 
@@ -1413,17 +1413,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``resolveMarkdownCopyContent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:29070:29974:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:29148:30052:FUNCTION
 
-.. rubric:: ``useEffect callback @ 735``
+.. rubric:: ``useEffect callback @ 736``
 
 .. code-block:: javascript
 
-   useEffect callback @ 735()
+   useEffect callback @ 736()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``735``—``763`` 行；所属函数 ``MarkdownRendererInner``。
+**性质**：同步局部函数；源码第 ``736``—``764`` 行；所属函数 ``MarkdownRendererInner``。
 
 **参数**
 
@@ -1437,17 +1437,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:29477:29966:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:29555:30044:FUNCTION
 
-.. rubric:: ``returned callback @ 748``
+.. rubric:: ``returned callback @ 749``
 
 .. code-block:: javascript
 
-   returned callback @ 748()
+   returned callback @ 749()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``748``—``762`` 行；所属函数 ``useEffect callback @ 735``。
+**性质**：同步局部函数；源码第 ``749``—``763`` 行；所属函数 ``useEffect callback @ 736``。
 
 **参数**
 
@@ -1459,17 +1459,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 **主要协作调用**：``msg.getComponent``、``msg.unregisterComponent``。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:31282:31775:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:31360:31899:FUNCTION
 
-.. rubric:: ``urlTransform callback @ 787``
+.. rubric:: ``urlTransform callback @ 788``
 
 .. code-block:: javascript
 
-   urlTransform callback @ 787(uri, key, node)
+   urlTransform callback @ 788(uri, key, node)
 
 实现 ``urlTransform`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``787``—``795`` 行；所属函数 ``MarkdownRendererInner``。
+**性质**：同步局部函数；源码第 ``788``—``796`` 行；所属函数 ``MarkdownRendererInner``。
 
 **参数**
 
@@ -1484,23 +1484,23 @@ src/components/markdown/MarkdownRenderer 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``''``、``resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/')``、``safe``。
+根据执行分支返回结果；代表性返回表达式为 ``''``、``authorizedResourceUrl(resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/'))``、``authorizedResourceUrl(safe)``。
 
-**主要协作调用**：``allowCustomScheme``、``safe?.startsWith``、``safe.slice``、``relative.split('/').some``、``relative.split``、``relative.split('/').map(encodeURIComponent).join``、``relative.split('/').map``。
+**主要协作调用**：``allowCustomScheme``、``safe?.startsWith``、``safe.slice``、``relative.split('/').some``、``relative.split``、``authorizedResourceUrl``、``relative.split('/').map(encodeURIComponent).join``、``relative.split('/').map``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:31558:31597:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:31636:31675:FUNCTION
 
-.. rubric:: ``relative.split('/').some callback @ 791``
+.. rubric:: ``relative.split('/').some callback @ 792``
 
 .. code-block:: javascript
 
-   relative.split('/').some callback @ 791(part)
+   relative.split('/').some callback @ 792(part)
 
 作为 ``relative.split('/').some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``791``—``791`` 行；所属函数 ``urlTransform callback @ 787``。
+**性质**：同步局部函数；源码第 ``792``—``792`` 行；所属函数 ``urlTransform callback @ 788``。
 
 **参数**
 
@@ -1511,17 +1511,17 @@ src/components/markdown/MarkdownRenderer 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:32439:33320:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/MarkdownRenderer.jsx:32563:33444:FUNCTION
 
-.. rubric:: ``memo callback @ 819``
+.. rubric:: ``memo callback @ 820``
 
 .. code-block:: javascript
 
-   memo callback @ 819(prev, next)
+   memo callback @ 820(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``819``—``838`` 行。
+**性质**：同步局部函数；源码第 ``820``—``839`` 行。
 
 **参数**
 

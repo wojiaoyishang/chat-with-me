@@ -16,7 +16,7 @@
    * - :doc:`src/config </api/javascript/config>`
      - 0
      - 0
-     - 0
+     - 2
      - ``src/config.js``
    * - :doc:`src/main </api/javascript/main>`
      - 1

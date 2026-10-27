@@ -1,10 +1,11 @@
 import {create} from 'zustand';
 import {getLocalSetting, setLocalSetting} from '@/lib/tools.jsx';
+import { backendStorageKey } from '../../runtime/backend/connection.js';
 
 export const NOTIFICATION_SUBSCRIPTIONS_KEY = 'notificationSubscriptionsV1';
 
 const readSubscriptions = () => {
-    const value = getLocalSetting(NOTIFICATION_SUBSCRIPTIONS_KEY, {});
+    const value = getLocalSetting(backendStorageKey(NOTIFICATION_SUBSCRIPTIONS_KEY), {});
     return value && typeof value === 'object' ? value : {};
 };
 
@@ -98,7 +99,7 @@ export const useNotificationStore = create((set, get) => ({
                 ...(patch || {}),
             },
         };
-        setLocalSetting(NOTIFICATION_SUBSCRIPTIONS_KEY, subscriptions);
+        setLocalSetting(backendStorageKey(NOTIFICATION_SUBSCRIPTIONS_KEY), subscriptions);
         window.dispatchEvent(new CustomEvent('notification-subscriptions-changed', {detail: subscriptions}));
         return {subscriptions};
     }),

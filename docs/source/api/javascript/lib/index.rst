@@ -16,7 +16,7 @@
    * - :doc:`src/lib/apiClient </api/javascript/lib/apiClient>`
      - 3
      - 1
-     - 4
+     - 7
      - ``src/lib/apiClient.js``
    * - :doc:`src/lib/browserHistoryLayers </api/javascript/lib/browserHistoryLayers>`
      - 10
@@ -49,7 +49,7 @@
      - 0
      - ``src/lib/utils.ts``
    * - :doc:`src/lib/virtualUrl </api/javascript/lib/virtualUrl>`
-     - 8
+     - 9
      - 0
      - 3
      - ``src/lib/virtualUrl.js``

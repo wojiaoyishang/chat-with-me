@@ -18,6 +18,16 @@
      - 0
      - 0
      - ``src/components/ClientText.jsx``
+   * - :doc:`src/components/configuration/NodeGraphField </api/javascript/components/configuration/NodeGraphField>`
+     - 4
+     - 0
+     - 62
+     - ``src/components/configuration/NodeGraphField.jsx``
+   * - :doc:`src/components/configuration/nodeGraphModel </api/javascript/components/configuration/nodeGraphModel>`
+     - 14
+     - 0
+     - 38
+     - ``src/components/configuration/nodeGraphModel.js``
    * - :doc:`src/components/editor/CollaboraOnlineEditor </api/javascript/components/editor/CollaboraOnlineEditor>`
      - 0
      - 0
@@ -283,51 +293,21 @@
      - 0
      - 7
      - ``src/components/modal/universalModal.js``
-   * - :doc:`src/components/setting/AccountSecurity </api/javascript/components/setting/AccountSecurity>`
-     - 1
-     - 0
-     - 10
-     - ``src/components/setting/AccountSecurity.jsx``
-   * - :doc:`src/components/setting/ComfyUISettings </api/javascript/components/setting/ComfyUISettings>`
-     - 4
-     - 0
-     - 77
-     - ``src/components/setting/ComfyUISettings.jsx``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 43
+     - 28
      - 0
-     - 292
+     - 189
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/JsonConfigEditor </api/javascript/components/setting/JsonConfigEditor>`
      - 0
      - 0
      - 14
      - ``src/components/setting/JsonConfigEditor.jsx``
-   * - :doc:`src/components/setting/KnowledgeDatabaseSettings </api/javascript/components/setting/KnowledgeDatabaseSettings>`
-     - 4
-     - 0
-     - 32
-     - ``src/components/setting/KnowledgeDatabaseSettings.jsx``
-   * - :doc:`src/components/setting/MCPSettings </api/javascript/components/setting/MCPSettings>`
-     - 5
-     - 0
-     - 88
-     - ``src/components/setting/MCPSettings.jsx``
    * - :doc:`src/components/setting/OrderedOptionsEditor </api/javascript/components/setting/OrderedOptionsEditor>`
      - 1
      - 0
      - 14
      - ``src/components/setting/OrderedOptionsEditor.jsx``
-   * - :doc:`src/components/setting/TempCacheCleanup </api/javascript/components/setting/TempCacheCleanup>`
-     - 3
-     - 0
-     - 12
-     - ``src/components/setting/TempCacheCleanup.jsx``
-   * - :doc:`src/components/setting/UserProfileCard </api/javascript/components/setting/UserProfileCard>`
-     - 1
-     - 0
-     - 10
-     - ``src/components/setting/UserProfileCard.jsx``
    * - :doc:`src/components/setting/jsonEditorValidation </api/javascript/components/setting/jsonEditorValidation>`
      - 0
      - 0
@@ -514,6 +494,8 @@
    :maxdepth: 1
 
    /api/javascript/components/ClientText
+   /api/javascript/components/configuration/NodeGraphField
+   /api/javascript/components/configuration/nodeGraphModel
    /api/javascript/components/editor/CollaboraOnlineEditor
    /api/javascript/components/files/FileManager
    /api/javascript/components/files/FileUploadProgress
@@ -567,15 +549,9 @@
    /api/javascript/components/markdown/replacementProtocol
    /api/javascript/components/modal/UniversalModalHost
    /api/javascript/components/modal/universalModal
-   /api/javascript/components/setting/AccountSecurity
-   /api/javascript/components/setting/ComfyUISettings
    /api/javascript/components/setting/DynamicSettings
    /api/javascript/components/setting/JsonConfigEditor
-   /api/javascript/components/setting/KnowledgeDatabaseSettings
-   /api/javascript/components/setting/MCPSettings
    /api/javascript/components/setting/OrderedOptionsEditor
-   /api/javascript/components/setting/TempCacheCleanup
-   /api/javascript/components/setting/UserProfileCard
    /api/javascript/components/setting/jsonEditorValidation
    /api/javascript/components/sidebar/ConversationForkDialog
    /api/javascript/components/sidebar/ConversationsList

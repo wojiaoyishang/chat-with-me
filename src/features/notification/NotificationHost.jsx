@@ -266,13 +266,15 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
 
     useEffect(() => {
         const handleChange = (event) => {
-            if (event.key?.startsWith('widgetNotificationTabPresence:')) return;
+            if (event.key?.includes('widgetNotificationTabPresence:')) return;
             reloadSubscriptions();
         };
         window.addEventListener('notification-subscriptions-changed', handleChange);
+        window.addEventListener('chat-local-setting-change', handleChange);
         window.addEventListener('storage', handleChange);
         return () => {
             window.removeEventListener('notification-subscriptions-changed', handleChange);
+            window.removeEventListener('chat-local-setting-change', handleChange);
             window.removeEventListener('storage', handleChange);
         };
     }, [reloadSubscriptions]);

@@ -16,6 +16,7 @@ import MessageHistoryMapPage from '@/features/message-map/MessageHistoryMapPage.
 import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
 import { subscribeBrowserRoutePop } from '@/lib/browserHistoryLayers.js';
 import ImageViewer from '@/features/images/ImageViewer.jsx';
+import BackendBootstrapGate from '@/runtime/backend/BackendBootstrapGate.jsx';
 
 const router = createBrowserRouter([
     {
@@ -83,6 +84,7 @@ const HistorySynchronizedRouter = () => {
 
 ReactDOM.createRoot(root).render(
     <StrictMode>
+        <BackendBootstrapGate>
         <ContextEvent /> {/* 跨页面事件 */}
         <MyToaster /> {/* 跨页面的吐司组件 */}
         <FatalErrorPopoverElement /> {/* 错误提示 */}
@@ -91,5 +93,6 @@ ReactDOM.createRoot(root).render(
         <WebSocketProvider>
             <HistorySynchronizedRouter />
         </WebSocketProvider>
+        </BackendBootstrapGate>
     </StrictMode>,
 );

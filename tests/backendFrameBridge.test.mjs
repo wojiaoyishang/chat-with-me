@@ -1,0 +1,61 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { JSDOM } from 'jsdom';
+
+const bridge = await readFile(path.resolve(import.meta.dirname, '../../../Python/Chat-With-Me-Backend/application/management_pages/static/client-bridge.js'), 'utf8');
+
+test('cross-origin frame fetches use the exact parent channel without receiving a login token', async (t) => {
+    const config = { apiBase: '', hostOrigin: 'https://client.example', clientChannel: 'frame-channel-123' };
+    const dom = new JSDOM(`<script id="management-config" type="application/json">${JSON.stringify(config)}</script>`, { url: 'https://backend.example/knowledge/page', runScripts: 'outside-only' });
+    t.after(() => dom.window.close());
+    const window = dom.window, sent = [], native = [];
+    const parent = { postMessage: (data, origin) => sent.push({ data, origin }) };
+    Object.defineProperty(window, 'parent', { value: parent });
+    window.fetch = async (...args) => { native.push(args); return new Response('public'); };
+    window.Headers = Headers; window.Request = Request; window.Response = Response;
+    window.eval(bridge);
+    const receive = (data, { origin = config.hostOrigin, source = parent } = {}) => window.dispatchEvent(new window.MessageEvent('message', { source, origin, data: { clientChannel: config.clientChannel, ...data } }));
+    const pending = window.fetch('/knowledge/databases', { method: 'GET' });
+    receive({ type: 'cwm.client-session', resourceTicket: 'read-only-ticket' }, { origin: 'https://evil.example' });
+    await Promise.resolve();
+    assert.equal(sent.filter((item) => item.data.type === 'cwm.client-request').length, 0);
+    receive({ type: 'cwm.client-session', resourceTicket: 'read-only-ticket' });
+    await new Promise((resolve) => setImmediate(resolve));
+    const request = sent.find((item) => item.data.type === 'cwm.client-request');
+    assert.equal(request.origin, config.hostOrigin);
+    assert.equal(request.data.path, '/knowledge/databases');
+    assert.equal(Object.hasOwn(request.data, 'accessToken'), false);
+    assert.equal(Object.hasOwn(request.data, 'Authorization'), false);
+    const body = new TextEncoder().encode(JSON.stringify({ success: true, data: { databases: [] } })).buffer;
+    receive({ type: 'cwm.client-response', requestId: request.data.requestId, status: 200, body, headers: { 'Content-Type': 'application/json' } });
+    assert.deepEqual(await (await pending).json(), { success: true, data: { databases: [] } });
+    const image = window.document.createElement('img'); image.src = '/upload/picture-1'; window.document.body.append(image);
+    const unrelated = window.document.createElement('a'); unrelated.href = '/user/info'; window.document.body.append(unrelated);
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(new URL(image.src).searchParams.get('client_ticket'), 'read-only-ticket');
+    assert.equal(new URL(unrelated.href).searchParams.has('client_ticket'), false);
+    assert.equal(native.length, 0);
+});
+
+test('frame cancellation is forwarded only on its own scoped request channel', async (t) => {
+    const config = { apiBase: '/api', hostOrigin: 'https://client.example', clientChannel: 'second-frame-123' };
+    const dom = new JSDOM(`<script id="management-config" type="application/json">${JSON.stringify(config)}</script>`, { url: 'https://backend.example/api/tasks/page', runScripts: 'outside-only' });
+    t.after(() => dom.window.close());
+    const window = dom.window, sent = [], parent = { postMessage: (data, origin) => sent.push({ data, origin }) };
+    Object.defineProperty(window, 'parent', { value: parent });
+    window.fetch = async () => new Response('external'); window.Headers = Headers; window.Request = Request; window.Response = Response;
+    window.eval(bridge);
+    window.dispatchEvent(new window.MessageEvent('message', { source: parent, origin: config.hostOrigin, data: { type: 'cwm.client-session', clientChannel: config.clientChannel, resourceTicket: 'read-only-ticket' } }));
+    const controller = new window.AbortController();
+    const pending = window.fetch('/api/tasks', { signal: controller.signal });
+    await new Promise((resolve) => setImmediate(resolve));
+    controller.abort();
+    await assert.rejects(pending, /Aborted/);
+    const requests = sent.filter((item) => item.data.type === 'cwm.client-request');
+    const cancelled = sent.find((item) => item.data.type === 'cwm.client-cancel');
+    assert.equal(requests.length, 1);
+    assert.equal(cancelled.data.requestId, requests[0].data.requestId);
+    assert.equal(cancelled.origin, config.hostOrigin);
+});

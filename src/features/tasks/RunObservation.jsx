@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import apiClient from "@/lib/apiClient.js";
-import { BASE_BACKEND_URL } from "@/config.js";
+import { resolveResourceUrl } from "@/lib/virtualUrl.js";
 import Observation from "./observation-components.js";
 
 /** React and the backend task page mount the same observation component tree. */
@@ -14,7 +14,7 @@ export default function RunObservation({ observation, scopeId = "task", taskId, 
   useEffect(() => {
     renderer.current?.update(observation, {
       scopeId, taskId, view, compact,
-      artifactUrl: (id) => `${BASE_BACKEND_URL}/upload/${encodeURIComponent(id)}`,
+      artifactUrl: (id) => resolveResourceUrl(`cwm://artifact/${encodeURIComponent(id)}`),
       loadRows: ({ scope, component, offset, limit }) => apiClient.get(
         `/tasks/${encodeURIComponent(taskId)}/observation/rows?${new URLSearchParams({ scope, component, offset: String(offset), limit: String(limit) })}`,
       ),

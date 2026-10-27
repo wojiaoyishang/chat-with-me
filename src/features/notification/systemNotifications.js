@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { getLocalSetting, setLocalSetting } from '@/lib/tools.jsx';
+import { backendStorageKey, getBackendConnection } from '../../runtime/backend/connection.js';
 
 export const SYSTEM_NOTIFICATION_ENABLED = 'systemNotificationsEnabled';
 const ATTEMPTED = 'notificationPermissionAttempted';
@@ -64,14 +65,14 @@ export const isNotificationConversationOpen = (conversationId) => {
 
 export const updateNotificationPresence = (state) => {
     try {
-        localStorage.setItem(PRESENCE + notificationTabId, JSON.stringify({ ...state, updatedAt: Date.now() }));
+        localStorage.setItem(backendStorageKey(PRESENCE) + notificationTabId, JSON.stringify({ ...state, updatedAt: Date.now() }));
     } catch {
         /* Storage may be unavailable. */
     }
 };
 export const removeNotificationPresence = () => {
     try {
-        localStorage.removeItem(PRESENCE + notificationTabId);
+        localStorage.removeItem(backendStorageKey(PRESENCE) + notificationTabId);
     } catch {
         /* The closed tab will age out if storage is unavailable. */
     }
@@ -79,7 +80,7 @@ export const removeNotificationPresence = () => {
 export const hasForegroundNotificationTab = () => {
     try {
         return Object.keys(localStorage)
-            .filter((key) => key.startsWith(PRESENCE))
+            .filter((key) => key.startsWith(backendStorageKey(PRESENCE)))
             .some((key) => {
                 try {
                     const value = JSON.parse(localStorage.getItem(key));
@@ -98,7 +99,7 @@ export const showWidgetSystemNotification = async (notification, onOpen) => {
     const state = systemNotificationState();
     if (!state.enabled || state.permission !== 'granted') return false;
     const present = async () => {
-        const delivered = getLocalSetting(DELIVERED, {});
+        const delivered = getLocalSetting(backendStorageKey(DELIVERED), {});
         if (Number(delivered[notification.id] || 0) >= Number(notification.revision || 0)) return true;
         if (hasForegroundNotificationTab()) return false;
         try {
@@ -109,7 +110,7 @@ export const showWidgetSystemNotification = async (notification, onOpen) => {
             if (notification.source?.messageId) target.searchParams.set('focusMessage', notification.source.messageId);
             const options = {
                 body: notification.body,
-                tag: `widget:${notification.id}`,
+                tag: `widget:${getBackendConnection().id}:${notification.id}`,
                 data: { ...notification.source, url: target.href },
             };
             let serviceWorkerShown = false;
@@ -144,7 +145,7 @@ export const showWidgetSystemNotification = async (notification, onOpen) => {
                 };
             }
             const entries = Object.entries({ ...delivered, [notification.id]: notification.revision }).slice(-300);
-            setLocalSetting(DELIVERED, Object.fromEntries(entries));
+            setLocalSetting(backendStorageKey(DELIVERED), Object.fromEntries(entries));
             return true;
         } catch {
             return false;

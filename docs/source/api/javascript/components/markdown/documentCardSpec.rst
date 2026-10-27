@@ -22,18 +22,18 @@ src/components/markdown/documentCardSpec 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@/lib/apiClient.js``。
+``react``、``@/lib/apiClient.js``、``../../runtime/backend/connection.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:190:761:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:263:834:FUNCTION
 
 .. js:function:: validSpec(value)
 
    实现 ``validSpec`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``7``—``18`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``8``—``19`` 行。
 
    **参数**
 
@@ -48,13 +48,13 @@ src/components/markdown/documentCardSpec 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:761:922:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:834:1024:FUNCTION
 
 .. js:function:: cachedSpec()
 
    实现 ``cachedSpec`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``20``—``26`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``21``—``27`` 行。
 
    **参数**
 
@@ -62,21 +62,21 @@ src/components/markdown/documentCardSpec 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``validSpec(JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null'))``、``null``。
+   根据执行分支返回结果；代表性返回表达式为 ``validSpec(JSON.parse(sessionStorage.getItem(backendStorageKey(CACHE_KEY, 'shared')) || 'null'))``、``null``。
 
    **副作用**
 
    * 读取或修改浏览器持久化状态。
 
-   **主要协作调用**：``validSpec``、``JSON.parse``、``sessionStorage.getItem``。
+   **主要协作调用**：``validSpec``、``JSON.parse``、``sessionStorage.getItem``、``backendStorageKey``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1077:1150:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1179:1252:FUNCTION
 
 .. js:function:: notify()
 
    实现 ``notify`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``32``—``34`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``33``—``35`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ src/components/markdown/documentCardSpec 模块
 
    **主要协作调用**：``listener``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1150:1607:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1252:1709:FUNCTION
 
 .. js:function:: applyStyle(spec)
 
    应用与 ``Style`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``36``—``46`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``37``—``47`` 行。
 
    **参数**
 
@@ -111,13 +111,13 @@ src/components/markdown/documentCardSpec 模块
 
    **主要协作调用**：``document.querySelector``、``document.createElement``、``style.setAttribute``、``document.head.appendChild``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1652:2369:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1754:2500:FUNCTION
 
 .. js:function:: ensureLoaded()
 
    确保与 ``Loaded`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``50``—``70`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``51``—``71`` 行。
 
    **参数**
 
@@ -136,13 +136,13 @@ src/components/markdown/documentCardSpec 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2369:2497:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2500:2628:FUNCTION
 
 .. js:function:: subscribe(listener)
 
    订阅与 ``subscribe`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``72``—``76`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``73``—``77`` 行。
 
    **参数**
 
@@ -161,13 +161,13 @@ src/components/markdown/documentCardSpec 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2497:2542:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2628:2673:FUNCTION
 
 .. js:function:: snapshot()
 
    实现 ``snapshot`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``78``—``80`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``79``—``81`` 行。
 
    **参数**
 
@@ -177,27 +177,11 @@ src/components/markdown/documentCardSpec 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``current``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2631:2649:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2762:2780:FUNCTION
 
 .. js:function:: serverSnapshot()
 
    实现 ``serverSnapshot`` 对应的前端处理。
-
-   **性质**：同步函数；模块内部入口；源码第 ``83``—``83`` 行。
-
-   **参数**
-
-   无。
-
-   **返回值**
-
-   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2670:2685:FUNCTION
-
-.. js:function:: noSubscribe()
-
-   实现 ``noSubscribe`` 对应的前端处理。
 
    **性质**：同步函数；模块内部入口；源码第 ``84``—``84`` 行。
 
@@ -209,15 +193,31 @@ src/components/markdown/documentCardSpec 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2801:2816:FUNCTION
+
+.. js:function:: noSubscribe()
+
+   实现 ``noSubscribe`` 对应的前端处理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``85``—``85`` 行。
+
+   **参数**
+
+   无。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2686:2886:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2817:3017:FUNCTION
 
 .. js:function:: useDocumentCardSpec(enabled)
 
    封装 ``useDocumentCardSpec`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``86``—``89`` 行。
+   **性质**：同步函数；导出 API；源码第 ``87``—``90`` 行。
 
    **参数**
 
@@ -239,17 +239,17 @@ src/components/markdown/documentCardSpec 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:690:750:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:763:823:FUNCTION
 
-.. rubric:: ``value.directives.filter callback @ 16``
+.. rubric:: ``value.directives.filter callback @ 17``
 
 .. code-block:: javascript
 
-   value.directives.filter callback @ 16(directive)
+   value.directives.filter callback @ 17(directive)
 
 作为 ``value.directives.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``16``—``16`` 行；所属函数 ``validSpec``。
+**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``validSpec``。
 
 **参数**
 
@@ -262,17 +262,17 @@ src/components/markdown/documentCardSpec 模块
 
 **主要协作调用**：``/^study-[a-z-]+$/.test``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1770:2215:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:1872:2346:FUNCTION
 
-.. rubric:: ``apiClient.get('/document/card-spec') .then callback @ 53``
+.. rubric:: ``apiClient.get('/document/card-spec') .then callback @ 54``
 
 .. code-block:: javascript
 
-   apiClient.get('/document/card-spec') .then callback @ 53(response)
+   apiClient.get('/document/card-spec') .then callback @ 54(response)
 
 处理 ``apiClient.get('/document/card-spec') .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``53``—``64`` 行；所属函数 ``ensureLoaded``。
+**性质**：同步局部函数；源码第 ``54``—``65`` 行；所属函数 ``ensureLoaded``。
 
 **参数**
 
@@ -289,19 +289,19 @@ src/components/markdown/documentCardSpec 模块
 
 **显式抛出**：``new Error('文档卡片定义无效')``。
 
-**主要协作调用**：``validSpec``、``sessionStorage.setItem``、``JSON.stringify``、``applyStyle``、``notify``。
+**主要协作调用**：``validSpec``、``sessionStorage.setItem``、``backendStorageKey``、``JSON.stringify``、``applyStyle``、``notify``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2232:2365:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2363:2496:FUNCTION
 
-.. rubric:: ``apiClient.get('/document/card-spec') .then((response) => { const spec = validSpec(response); if (!spec) throw new Error… callback @ 65``
+.. rubric:: ``apiClient.get('/document/card-spec') .then((response) => { const spec = validSpec(response); if (!spec) throw new Error… callback @ 66``
 
 .. code-block:: javascript
 
-   apiClient.get('/document/card-spec') .then((response) => { const spec = validSpec(response); if (!spec) throw new Error… callback @ 65(error)
+   apiClient.get('/document/card-spec') .then((response) => { const spec = validSpec(response); if (!spec) throw new Error… callback @ 66(error)
 
 实现 ``apiClient.get('/document/card-spec') .then((response) => { const spec = validSpec(response); if (!spec) throw new Error…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``65``—``69`` 行；所属函数 ``ensureLoaded``。
+**性质**：同步局部函数；源码第 ``66``—``70`` 行；所属函数 ``ensureLoaded``。
 
 **参数**
 
@@ -314,17 +314,17 @@ src/components/markdown/documentCardSpec 模块
 
 **主要协作调用**：``notify``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2461:2494:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2592:2625:FUNCTION
 
-.. rubric:: ``returned callback @ 75``
+.. rubric:: ``returned callback @ 76``
 
 .. code-block:: javascript
 
-   returned callback @ 75()
+   returned callback @ 76()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``subscribe``。
+**性质**：同步局部函数；源码第 ``76``—``76`` 行；所属函数 ``subscribe``。
 
 **参数**
 
@@ -336,17 +336,17 @@ src/components/markdown/documentCardSpec 模块
 
 **主要协作调用**：``listeners.delete``。
 
-.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2676:2685:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/documentCardSpec.js:2807:2816:FUNCTION
 
-.. rubric:: ``anonymous callback @ 84``
+.. rubric:: ``anonymous callback @ 85``
 
 .. code-block:: javascript
 
-   anonymous callback @ 84()
+   anonymous callback @ 85()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``84``—``84`` 行；所属函数 ``noSubscribe``。
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``noSubscribe``。
 
 **参数**
 

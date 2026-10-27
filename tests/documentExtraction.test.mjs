@@ -74,6 +74,8 @@ async function bundled(entry, outfile) {
                                   ? "export const onEvent=()=>({then:()=>()=>{}});"
                                   : path === "@/lib/clientText.js"
                                     ? 'export const formatLocalTimestamp=(value)=>String(value||"");'
+                                    : path === "@/lib/virtualUrl.js"
+                                      ? "export const resolveResourceUrl=value=>value;"
                                     : path === "@/lib/resourceDownload.js"
                                       ? "export const downloadAttachmentResource=async()=>{};"
                                       : path === "@/components/ui/progress"
@@ -637,6 +639,11 @@ test("backend page source navigation keeps safe revision metadata and checks fra
     navigations = [];
   globalThis.extractionTest = {
     get: async () => ({}),
+    post: async (url, body) => {
+      assert.equal(url, "/client/frame-session");
+      assert.deepEqual(body, { path: "/knowledge/page", clientOrigin: "http://localhost" });
+      return { pageTicket: "page-ticket", resourceTicket: "resource-ticket" };
+    },
     navigate: (value) => navigations.push(value),
   };
   const Component = await bundled(
@@ -652,6 +659,7 @@ test("backend page source navigation keeps safe revision metadata and checks fra
     const frame = document.querySelector("iframe"),
       payload = {
         type: "cwm.open-source",
+        clientChannel: new URL(frame.src).searchParams.get("client_channel"),
         documentId: "doc-1",
         sourceCommit: "c".repeat(40),
         sourceRevision: 7,
@@ -661,6 +669,21 @@ test("backend page source navigation keeps safe revision metadata and checks fra
         origin: "https://evil.invalid",
         source: frame.contentWindow,
         data: payload,
+      }),
+    );
+    assert.deepEqual(navigations, []);
+    window.dispatchEvent(
+      new dom.window.MessageEvent("message", {
+        origin: "http://localhost",
+        source: window,
+        data: payload,
+      }),
+    );
+    window.dispatchEvent(
+      new dom.window.MessageEvent("message", {
+        origin: "http://localhost",
+        source: frame.contentWindow,
+        data: { ...payload, clientChannel: "another-frame" },
       }),
     );
     assert.deepEqual(navigations, []);

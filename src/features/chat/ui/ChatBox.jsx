@@ -8,6 +8,7 @@ import { apiEndpoint } from '@/config.js';
 import apiClient from '@/lib/apiClient';
 import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
 import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
+import { backendStorageKey } from '../../../runtime/backend/connection.js';
 
 import ChatBoxHeader from './ChatBoxHeader';
 import {useConversationMutationGuard} from '../freeze/ConversationFreezeContext.jsx';
@@ -1664,7 +1665,7 @@ function ChatBox({
 
             let savedExtraStatus = {};
             try {
-                const saved = localStorage.getItem('extraToolsConfig');
+                const saved = localStorage.getItem(backendStorageKey('extraToolsConfig'));
                 if (saved) {
                     savedExtraStatus = extractLocalOnlyExtraToolStatus(allExtraTools, JSON.parse(saved));
                 }
@@ -2460,7 +2461,7 @@ function ChatBox({
             toolsStatus.extra_tools || {},
         );
         try {
-            localStorage.setItem('extraToolsConfig', JSON.stringify(localOnlyStatus));
+            localStorage.setItem(backendStorageKey('extraToolsConfig'), JSON.stringify(localOnlyStatus));
         } catch (error) {
             console.error('Failed to save extra_tools status to localStorage:', error);
         }

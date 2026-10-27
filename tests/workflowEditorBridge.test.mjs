@@ -12,7 +12,7 @@ test("task editor authenticates iframe messages and refreshes task data without 
   globalThis.window = dom.window;
   globalThis.document = dom.window.document;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  globalThis.workflowBridgeTest = {};
+  globalThis.workflowBridgeTest = {requests: []};
   await build({
     entryPoints: ["src/features/tasks/BackendManagementPage.jsx"],
     outfile: "temp/workflow-editor-bridge-test.mjs",
@@ -43,7 +43,7 @@ test("task editor authenticates iframe messages and refreshes task data without 
                 "export const Button=({variant,size,...props})=><button {...props}/>;";
             else if (path === "@/lib/apiClient.js")
               contents =
-                'export default {get:async()=>({username:"admin"})};export const isAuthRedirectError=()=>false;';
+                'export default {get:async()=>({username:"admin"}),post:async(path,body)=>{globalThis.workflowBridgeTest.requests.push({path,body});return {pageTicket:"workflow-page-ticket",resourceTicket:"workflow-resource-ticket"};}};export const isAuthRedirectError=()=>false;';
             else if (path === "@/config.js")
               contents = 'export const BASE_BACKEND_URL="/api";';
             else if (path === "@/lib/tools.jsx")
@@ -78,6 +78,15 @@ test("task editor authenticates iframe messages and refreshes task data without 
     });
     const frame = document.querySelector("iframe"),
       frameWindow = frame.contentWindow;
+    const source = new URL(frame.src);
+    const channel = source.searchParams.get('client_channel');
+    assert.ok(channel);
+    assert.equal(source.pathname, '/api/tasks/page');
+    assert.equal(source.searchParams.get('client_origin'), 'http://localhost');
+    assert.equal(source.searchParams.get('client_api_base'), '/api');
+    assert.equal(source.searchParams.get('client_ticket'), 'workflow-page-ticket');
+    assert.deepEqual(globalThis.workflowBridgeTest.requests, [{path: '/client/frame-session', body: {path: '/tasks/page', clientOrigin: 'http://localhost'}}]);
+    const initialSource = frame.getAttribute('src');
     const send = async (
       origin,
       source,
@@ -88,13 +97,14 @@ test("task editor authenticates iframe messages and refreshes task data without 
           new dom.window.MessageEvent("message", {
             origin,
             source,
-            data: { type: "cwm.workflow-editor", ...payload },
+            data: { type: "cwm.workflow-editor", clientChannel: channel, ...payload },
           }),
         );
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
     await send("http://localhost", window);
     await send("https://other.example", frameWindow);
+    await send("http://localhost", frameWindow, {clientChannel: 'other-frame'});
     assert.equal(document.querySelector("[data-workflow-editor]"), null);
     await send("http://localhost", frameWindow);
     assert.ok(document.querySelector("[data-workflow-editor]"));
@@ -115,7 +125,7 @@ test("task editor authenticates iframe messages and refreshes task data without 
     ]);
     assert.equal(document.querySelector("iframe"), frame);
     assert.equal(frame.contentWindow, frameWindow);
-    assert.equal(frame.getAttribute("src"), "/api/tasks/page");
+    assert.equal(frame.getAttribute("src"), initialSource);
     await act(() => globalThis.workflowBridgeTest.editor.onClose());
     await send("http://localhost", frameWindow, { mode: "quick-run" });
     assert.ok(document.querySelector("[data-quick-template-run]"));

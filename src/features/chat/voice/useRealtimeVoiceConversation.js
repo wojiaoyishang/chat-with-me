@@ -6,6 +6,7 @@ import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 import { useWebSocket } from '@/context/WebSocketContext.jsx';
 import { generateUUID } from '@/lib/tools.jsx';
 import { RealtimeVoiceTransport } from '@/runtime/voice/RealtimeVoiceTransport.js';
+import { getBackendConnection, isCurrentConnection } from '../../../runtime/backend/connection.js';
 import {
     createRealtimePcm16kStreamer,
     createSilentWaveformLevels,
@@ -455,6 +456,7 @@ export function useRealtimeVoiceConversation({
 
     const start = useCallback(
         async (config) => {
+            const backendScope = getBackendConnection();
             if (!config?.conversationId || !config?.model) {
                 throw new Error('Realtime voice requires conversationId and model.');
             }
@@ -472,7 +474,8 @@ export function useRealtimeVoiceConversation({
                 await stop({ silent: true });
             }
             const lifecycle = ++lifecycleRef.current;
-            const isCurrent = () => lifecycleRef.current === lifecycle;
+            const isCurrent = () => lifecycleRef.current === lifecycle && isCurrentConnection(backendScope);
+            if (!isCurrent()) return false;
             currentConfigRef.current = config;
             sessionControlConnectionIdRef.current = controlConnectionId;
             applyComposerStatus('disabled', config.conversationId);
@@ -622,6 +625,7 @@ export function useRealtimeVoiceConversation({
                 patchState({ status: 'connecting' });
                 transport = new RealtimeVoiceTransport({
                     ticket: mediaTicket,
+                    backendScope,
                     onEvent: (envelope) => {
                         if (isCurrent() && transportRef.current === transport) handleVoiceEvent(envelope);
                     },

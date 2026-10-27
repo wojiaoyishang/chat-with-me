@@ -14,6 +14,7 @@ import FileUploadProgress from '@/components/files/FileUploadProgress.jsx';
 import { insertUploadedImages, DOCUMENT_IMAGE_UPLOAD_POLICY } from './images.js';
 import { isUploadAllowed } from '@/components/files/uploadPolicy.js';
 import apiClient from '@/lib/apiClient.js';
+import { backendApiUrl } from '../../runtime/backend/connection.js';
 import FileManager from '@/components/files/FileManager.jsx';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { onEvent } from '@/context/useEventStore.jsx';
@@ -761,7 +762,7 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
                     >
                         <div className="mx-auto max-w-3xl">
                             <MarkdownRenderer
-                                resourceBaseUrl={`/api/document/${documentId}/assets/`}
+                                resourceBaseUrl={backendApiUrl(`/document/${encodeURIComponent(documentId)}/assets/`)}
                                 content={preview}
                                 contextId={`document:${documentId}`}
                                 renderSurface="document"

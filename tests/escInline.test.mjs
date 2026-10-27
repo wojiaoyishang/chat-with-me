@@ -1,30 +1,76 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EditorState } from '@codemirror/state';
-import { escDecorations, setEscDrafts, draftPreviewPlugin } from '../src/features/documents/escDecorations.js';
+import { JSDOM } from 'jsdom';
+import { Awareness } from 'y-protocols/awareness';
+import { aiCursorDecorations } from '../src/features/documents/aiCursorDecorations.js';
+import { applyRemoteState, toBase64 } from '../src/features/documents/sync.js';
 
-test('streaming drafts decorate the insertion point without changing stored text', () => {
-    const field = escDecorations(() => {});
-    let state = EditorState.create({doc: 'before after', extensions: [field]});
-    state = state.update({effects: setEscDrafts.of([{displayPosition: 7, text: 'draft\nbody', status: 'streaming'}])}).state;
-    assert.equal(state.doc.toString(), 'before after');
-    let widget;
-    state.field(field).between(0, state.doc.length, (from, to, value) => {assert.equal(from, 7); widget = value.spec.widget;});
-    assert.equal(widget.lineBreaks, 1);
-    state = state.update({changes: {from: 0, insert: 'new '}}).state;
-    state.field(field).between(0, state.doc.length, from => assert.equal(from, 11));
-    state = state.update({effects: setEscDrafts.of([])}).state;
-    assert.equal(state.field(field).size, 0);
-    assert.equal(state.doc.toString(), 'new before after');
+async function cursorEditor(doc) {
+    const dom = new JSDOM('<div id="editor"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
+    const keys = ['window', 'Window', 'document', 'MutationObserver', 'requestAnimationFrame', 'cancelAnimationFrame'];
+    const previous = keys.map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
+    for (const key of keys) globalThis[key] = dom.window[key];
+    const [{ EditorView }, { yCollab }] = await Promise.all([import('@codemirror/view'), import('y-codemirror.next')]);
+    const text = doc.getText('content');
+    const awareness = new Awareness(doc);
+    const [cursorPlugin, theme] = aiCursorDecorations(awareness);
+    const editor = new EditorView({ parent: document.getElementById('editor'), state: EditorState.create({ doc: text.toString(), extensions: [yCollab(text, null), cursorPlugin, theme] }) });
+    const position = index => Y.relativePositionToJSON(Y.createRelativePositionFromTypeIndex(text, index));
+    return { editor, awareness, text, cursorPlugin, setCursor: async (anchor, head) => {
+        awareness.setLocalState({ user: { kind: 'ai', name: 'AI', color: '#6366f1' }, aiCursor: { anchor: position(anchor), head: position(head) } });
+        await Promise.resolve();
+    }, close: () => {
+        editor.destroy(); awareness.destroy(); dom.window.close();
+        for (const [key, descriptor] of previous) descriptor ? Object.defineProperty(globalThis, key, descriptor) : delete globalThis[key];
+    } };
+}
+
+test('streaming AI cursors decorate relative insertion points without storing a virtual draft', async () => {
+    const doc = new Y.Doc(); doc.getText('content').insert(0, 'before after');
+    const ui = await cursorEditor(doc);
+    try {
+        await ui.setCursor(7, 7);
+        assert.equal(ui.editor.state.doc.toString(), 'before after');
+        assert.equal(ui.text.toString(), 'before after');
+        assert.equal(document.querySelector('.cm-ai-caret').getAttribute('aria-label'), 'AI 光标：AI');
+        const locations = () => {
+            const result = [];
+            ui.editor.plugin(ui.cursorPlugin).decorations.between(0, ui.text.length, from => result.push(from));
+            return result;
+        };
+        assert.deepEqual(locations(), [7]);
+        ui.editor.dispatch({ changes: { from: 0, insert: 'new ' } });
+        assert.deepEqual(locations(), [11]);
+        ui.awareness.setLocalState(null); await Promise.resolve();
+        assert.equal(ui.editor.plugin(ui.cursorPlugin).decorations.size, 0);
+        assert.equal(ui.editor.state.doc.toString(), 'new before after');
+        assert.equal(ui.text.toString(), 'new before after');
+    } finally { ui.close(); doc.destroy(); }
 });
-test('rendered draft text gets temporary styling and a cursor without source markers', () => {
-    const tree = {children: [{type:'text', value:'oldDRAFTtail', position:{start:{offset:0},end:{offset:12}}}]};
-    draftPreviewPlugin({ranges:[{from:3,to:8,modelName:'AI'}]})(tree);
-    assert.equal(tree.children[0].value, 'old');
-    assert.equal(tree.children[1].tagName, 'span');
-    assert.equal(tree.children[1].children[0].value, 'DRAFT');
-    assert.equal(tree.children[2].children[0].value, '▏');
-    assert.equal(tree.children[3].value, 'tail');
+test('streamed document updates write once while AI selection and caret remain out of band', async () => {
+    const server = new Y.Doc(); server.getText('content').insert(0, 'oldtail');
+    const doc = new Y.Doc(); applyRemoteState(doc, toBase64(Y.encodeStateAsUpdate(server)));
+    const ui = await cursorEditor(doc);
+    try {
+        let updates = 0; doc.on('update', () => { updates += 1; });
+        server.getText('content').insert(3, 'DRAFT');
+        const update = Y.encodeStateAsUpdate(server, Y.encodeStateVector(doc));
+        // Live edit events and repeated synchronization acknowledgements share
+        // CRDT items and never render a second draft copy.
+        Y.applyUpdate(doc, update, 'document-edit');
+        applyRemoteState(doc, toBase64(update));
+        await ui.setCursor(3, 8);
+        assert.equal(updates, 1);
+        assert.equal(ui.text.toString(), 'oldDRAFTtail');
+        assert.equal(ui.editor.state.doc.toString(), 'oldDRAFTtail');
+        assert.equal(document.querySelector('.cm-ai-selection').textContent, 'DRAFT');
+        assert.equal(document.querySelectorAll('.cm-ai-caret').length, 1);
+        await ui.setCursor(8, 8);
+        assert.equal(document.querySelector('.cm-ai-selection'), null);
+        assert.equal(ui.text.toString(), 'oldDRAFTtail');
+        assert.equal(updates, 1, 'cursor-only presence must never write document text');
+    } finally { ui.close(); doc.destroy(); server.destroy(); }
 });
 
 import * as Y from 'yjs';
@@ -58,15 +104,21 @@ test('user undo follows one ordered stack for local and AI edits', () => {
     undo.destroy(); doc.destroy(); remote.destroy();
 });
 
-import { escDraftData } from '../src/features/documents/escDraftData.js';
-test('HTTP draft responses drop circular transport metadata', () => {
-    const data = {streamId: 'one', text: 'remaining', status: 'streaming', updatedAt: '2026-10-08T00:00:00Z'};
+test('HTTP synchronization persists CRDT content without circular transport metadata', () => {
+    const server = new Y.Doc(); server.getText('content').insert(0, 'remaining');
+    const data = {state: toBase64(Y.encodeStateAsUpdate(server)), revision: 1};
     data._response = {data: {data}};
-    const clean = escDraftData(data);
-    assert.equal(clean.text, 'remaining');
-    assert.equal(clean._response, undefined);
-    assert.doesNotThrow(() => JSON.stringify(clean));
-    assert.deepEqual(clean, escDraftData(clean));
+    const doc = new Y.Doc();
+    try {
+        // useCollaborativeDocument projects data.state into the shared document,
+        // keeping Axios metadata out of the persistent collaboration data.
+        applyRemoteState(doc, data.state);
+        applyRemoteState(doc, data.state);
+        assert.equal(doc.getText('content').toString(), 'remaining');
+        assert.equal(doc.toJSON()._response, undefined);
+        assert.doesNotThrow(() => JSON.stringify(doc.toJSON()));
+        assert.deepEqual(doc.toJSON(), {content: 'remaining'});
+    } finally { doc.destroy(); server.destroy(); }
 });
 
 test('AI marked text participates in ordinary editing and undo', () => {

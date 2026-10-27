@@ -1,3 +1,5 @@
+import { backendStorageKey, getBackendConnection } from '../../../runtime/backend/connection.js';
+
 const STORAGE_KEY = 'cwm:chat-composer-drafts:v2';
 const STORAGE_VERSION = 2;
 const NEW_CONVERSATION_KEY = '__new__';
@@ -18,7 +20,7 @@ const emptyRoot = () => ({version: STORAGE_VERSION, conversations: {}});
 const readRoot = () => {
     if (typeof window === 'undefined') return emptyRoot();
     try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const raw = window.localStorage.getItem(backendStorageKey(STORAGE_KEY));
         if (!raw) return emptyRoot();
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') return emptyRoot();
@@ -36,7 +38,7 @@ const readRoot = () => {
 const writeRoot = (root) => {
     if (typeof window === 'undefined') return;
     try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
+        window.localStorage.setItem(backendStorageKey(STORAGE_KEY), JSON.stringify(root));
     } catch {
         // Draft persistence is best-effort and must never block chat input.
     }
@@ -102,6 +104,7 @@ const getConversationEntry = (root, conversationId, create = false) => {
 
 const readLegacyNormalDraft = (conversationId) => {
     if (typeof window === 'undefined') return null;
+    if (getBackendConnection().id !== 'default') return null;
     try {
         const key = legacyStorageKey(conversationId);
         const content = window.localStorage.getItem(key);
@@ -300,6 +303,6 @@ export const saveComposerSnapshot = ({
 });
 
 export const composerDraftStorageInfo = {
-    storageKey: STORAGE_KEY,
+    get storageKey() { return backendStorageKey(STORAGE_KEY); },
     version: STORAGE_VERSION,
 };

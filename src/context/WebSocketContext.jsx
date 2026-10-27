@@ -12,6 +12,8 @@ import { WEBSOCKET_URL } from '@/config.js';
 import { EventName } from '@/runtime/protocol/events.js';
 import { WebSocketTransport } from '@/runtime/transport/WebSocketTransport.js';
 import { flushRealtimeEvents, getRealtimeTransport, setRealtimeTransport } from '@/runtime/transport/channel.js';
+import { authenticatedSocketUrl } from '../runtime/backend/session.js';
+import { getBackendConnection, isCurrentConnection } from '../runtime/backend/connection.js';
 
 let globalTransport = null;
 let currentRetryFunction = null;
@@ -37,12 +39,13 @@ export const WebSocketProvider = ({ children }) => {
     const initialConnectionRef = useRef(true);
     const mountedRef = useRef(true);
     const reconnectPromptRef = useRef(false);
+    const connectionAttemptRef = useRef(null);
     const [showReconnectPrompt, setShowReconnectPrompt] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [connectionId, setConnectionId] = useState(null);
     const [messages, setMessages] = useState([]);
 
-    const createConnection = async (isRetry = false) => {
+    const openConnection = async (isRetry = false) => {
         if (isRetry && retryingRef.current) throw new Error('A realtime reconnect is already running');
         if (globalTransport?.isOpen) {
             transportRef.current = globalTransport;
@@ -55,8 +58,12 @@ export const WebSocketProvider = ({ children }) => {
         if (isRetry) retryingRef.current = true;
 
         globalTransport?.close(1000, 'Replacing realtime connection');
-        const transport = new WebSocketTransport(WEBSOCKET_URL, {
+        const scope = getBackendConnection();
+        const url = await authenticatedSocketUrl();
+        if (!isCurrentConnection(scope)) throw new Error('Backend changed');
+        const transport = new WebSocketTransport(url || WEBSOCKET_URL, {
             onOpen: () => {
+                if (!isCurrentConnection(scope)) { transport.close(); return; }
                 retryingRef.current = false;
                 initialConnectionRef.current = false;
                 globalTransport = transport;
@@ -68,6 +75,7 @@ export const WebSocketProvider = ({ children }) => {
                 flushRealtimeEvents();
             },
             onEvent: (envelope) => {
+                if (!isCurrentConnection(scope)) return;
                 if (envelope.event === EventName.TRANSPORT_CONNECTED && envelope.payload?.connectionId) {
                     setConnectionId(envelope.payload.connectionId);
                 }
@@ -75,6 +83,7 @@ export const WebSocketProvider = ({ children }) => {
                 if (mountedRef.current) setMessages((current) => [...current.slice(-99), envelope]);
             },
             onMedia: (header, body) => {
+                if (!isCurrentConnection(scope)) return;
                 // MEDIA is still a server -> client semantic event. Preserve the
                 // original event identity/direction so incoming-only consumers (for
                 // example ChatSpeech) receive raw audio chunks through the same FIFO
@@ -104,6 +113,7 @@ export const WebSocketProvider = ({ children }) => {
                 emitEvent({ event: EventName.PROTOCOL_ERROR, payload: { message: error.message }, localOnly: true });
             },
             onClose: (event) => {
+                if (!isCurrentConnection(scope)) return;
                 retryingRef.current = false;
                 if (globalTransport === transport) globalTransport = null;
                 if (transportRef.current === transport) transportRef.current = null;
@@ -155,6 +165,7 @@ export const WebSocketProvider = ({ children }) => {
                 });
             },
             onError: (error) => {
+                if (!isCurrentConnection(scope)) return;
                 retryingRef.current = false;
                 emitEvent({
                     event: EventName.TRANSPORT_ERROR,
@@ -172,6 +183,16 @@ export const WebSocketProvider = ({ children }) => {
         } finally {
             retryingRef.current = false;
         }
+    };
+
+    const createConnection = (isRetry = false) => {
+        if (connectionAttemptRef.current) return connectionAttemptRef.current;
+        const attempt = openConnection(isRetry).finally(() => {
+            if (connectionAttemptRef.current === attempt) connectionAttemptRef.current = null;
+            retryingRef.current = false;
+        });
+        connectionAttemptRef.current = attempt;
+        return attempt;
     };
 
     useEffect(() => {

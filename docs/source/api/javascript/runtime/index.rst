@@ -13,6 +13,26 @@
      - 方法
      - 局部/回调
      - 源码
+   * - :doc:`src/runtime/backend/BackendBootstrapGate </api/javascript/runtime/backend/BackendBootstrapGate>`
+     - 1
+     - 0
+     - 14
+     - ``src/runtime/backend/BackendBootstrapGate.jsx``
+   * - :doc:`src/runtime/backend/clientAdapter </api/javascript/runtime/backend/clientAdapter>`
+     - 1
+     - 0
+     - 6
+     - ``src/runtime/backend/clientAdapter.js``
+   * - :doc:`src/runtime/backend/connection </api/javascript/runtime/backend/connection>`
+     - 27
+     - 0
+     - 12
+     - ``src/runtime/backend/connection.js``
+   * - :doc:`src/runtime/backend/session </api/javascript/runtime/backend/session>`
+     - 2
+     - 0
+     - 2
+     - ``src/runtime/backend/session.js``
    * - :doc:`src/runtime/protocol/events </api/javascript/runtime/protocol/events>`
      - 3
      - 0
@@ -46,18 +66,22 @@
    * - :doc:`src/runtime/transport/channel </api/javascript/runtime/transport/channel>`
      - 5
      - 0
-     - 0
+     - 1
      - ``src/runtime/transport/channel.js``
    * - :doc:`src/runtime/voice/RealtimeVoiceTransport </api/javascript/runtime/voice/RealtimeVoiceTransport>`
      - 3
      - 12
-     - 9
+     - 10
      - ``src/runtime/voice/RealtimeVoiceTransport.js``
 
 .. toctree::
    :hidden:
    :maxdepth: 1
 
+   /api/javascript/runtime/backend/BackendBootstrapGate
+   /api/javascript/runtime/backend/clientAdapter
+   /api/javascript/runtime/backend/connection
+   /api/javascript/runtime/backend/session
    /api/javascript/runtime/protocol/events
    /api/javascript/runtime/protocol/frame
    /api/javascript/runtime/protocol/msgpack

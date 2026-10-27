@@ -1,3 +1,4 @@
+export { layoutGraph, reconcileDiagramNodes } from "../../components/configuration/nodeGraphModel.js";
 export const INPUT_KINDS = [
   { value: "text", label: "文本" },
   { value: "integer", label: "整数" },
@@ -44,60 +45,6 @@ export function inputKindsForField(field) {
         ? ["integer", "number"]
         : [field.valueType];
   return INPUT_KINDS.filter((kind) => allowed.includes(kind.value));
-}
-
-/** API files have no layout. Compute columns from dependencies, without altering links. */
-export function layoutGraph(nodes = [], edges = [], usePositions = false) {
-  if (usePositions)
-    return nodes.map((node) => ({
-      ...node,
-      position: node.position || { x: 0, y: 0 },
-    }));
-  const ids = new Set(nodes.map((node) => String(node.id)));
-  const downstream = new Map(nodes.map((node) => [String(node.id), []]));
-  const incoming = new Map(nodes.map((node) => [String(node.id), 0]));
-  const levels = new Map(nodes.map((node) => [String(node.id), 0]));
-  edges.forEach((edge) => {
-    const source = String(edge.source),
-      target = String(edge.target);
-    if (ids.has(source) && ids.has(target)) {
-      downstream.get(source).push(target);
-      incoming.set(target, incoming.get(target) + 1);
-    }
-  });
-  const queue = [...incoming.entries()]
-    .filter(([, count]) => count === 0)
-    .map(([id]) => id);
-  for (let index = 0; index < queue.length; index += 1) {
-    const id = queue[index];
-    downstream.get(id).forEach((target) => {
-      levels.set(target, Math.max(levels.get(target), levels.get(id) + 1));
-      incoming.set(target, incoming.get(target) - 1);
-      if (!incoming.get(target)) queue.push(target);
-    });
-  }
-  const rows = new Map();
-  return nodes.map((node) => {
-    const column = levels.get(String(node.id));
-    const row = rows.get(column) || 0;
-    rows.set(column, row + 1);
-    return { ...node, position: { x: column * 300, y: row * 210 } };
-  });
-}
-
-/** Keep user-arranged positions when selection or parameter badges are refreshed. */
-export function reconcileDiagramNodes(current, next, resetPositions = false) {
-  const previous = new Map(current.map((node) => [String(node.id), node]));
-  return next.map((node) => {
-    const old = previous.get(String(node.id));
-    return old
-      ? {
-          ...old,
-          ...node,
-          position: resetPositions ? node.position : old.position,
-        }
-      : node;
-  });
 }
 
 /** Save visual positions beside the API prompt, preserving all original UI metadata. */

@@ -7,6 +7,7 @@ import { getRealtimeTransport } from '@/runtime/transport/channel.js';
 import apiClient from '@/lib/apiClient.js';
 import { applyRemoteState, toBase64, fromBase64 } from './sync.js';
 import { createDocumentPresence } from './presence.js';
+import { backendStorageKey, beforeBackendSwitch } from '../../runtime/backend/connection.js';
 
 export default function useCollaborativeDocument(documentId, onStatus) {
     const [resource, setResource] = useState(null);
@@ -212,7 +213,7 @@ export default function useCollaborativeDocument(documentId, onStatus) {
             try {
                 const metadata = await apiClient.get(`/document/${documentId}`);
                 if (disposed) return;
-                persistence = new IndexeddbPersistence(`cwm-document:${metadata.viewerUserId}:${documentId}`, doc);
+                persistence = new IndexeddbPersistence(backendStorageKey(`document:${documentId}`, metadata.viewerUserId), doc);
                 await persistence.whenSynced;
                 if (disposed) return;
                 initialized = true;
@@ -235,12 +236,19 @@ export default function useCollaborativeDocument(documentId, onStatus) {
                 event.returnValue = '';
             }
         };
+        const releaseSwitchGuard = beforeBackendSwitch(async () => {
+            if (version !== acknowledged) {
+                try { await flush(); }
+                catch { throw new Error('当前文档仍有未同步修改，请先同步后再切换后端。'); }
+            }
+        });
         const pageShow = () => {
             void sync();
         };
         window.addEventListener('pageshow', pageShow);
         window.addEventListener('beforeunload', beforeUnload);
         return () => {
+            releaseSwitchGuard();
             disposed = true;
             actions.current = null;
             clearInterval(interval);

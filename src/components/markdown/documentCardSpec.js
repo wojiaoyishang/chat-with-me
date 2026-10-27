@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import apiClient from '@/lib/apiClient.js';
+import { backendStorageKey } from '../../runtime/backend/connection.js';
 
 const CACHE_KEY = 'cwm-document-card-spec';
 const STYLE_ATTRIBUTE = 'data-cwm-document-card-style';
@@ -19,7 +20,7 @@ function validSpec(value) {
 
 function cachedSpec() {
     try {
-        return validSpec(JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null'));
+        return validSpec(JSON.parse(sessionStorage.getItem(backendStorageKey(CACHE_KEY, 'shared')) || 'null'));
     } catch {
         return null;
     }
@@ -54,7 +55,7 @@ function ensureLoaded() {
             const spec = validSpec(response);
             if (!spec) throw new Error('文档卡片定义无效');
             try {
-                sessionStorage.setItem(CACHE_KEY, JSON.stringify(spec));
+                sessionStorage.setItem(backendStorageKey(CACHE_KEY, 'shared'), JSON.stringify(spec));
             } catch {
                 // Private browsing and exhausted storage must not block preview.
             }

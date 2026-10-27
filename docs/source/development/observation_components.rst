@@ -16,7 +16,7 @@ React RunObservation.jsx 只负责挂载、清理和 API adapter。
 .. code-block:: text
 
    # 在前端仓库同步；--check 校验副本没有漂移
-   node scripts/sync-observation.mjs
+   node scripts/sync-observation.mjs --source "path/to/observation-components.js"
    node scripts/sync-observation.mjs --check
 
    # 在后端仓库生成管理页 bundle；--check 校验实际产物

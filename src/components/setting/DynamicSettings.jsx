@@ -1,9 +1,13 @@
+import clientAdapter from '@/runtime/backend/clientAdapter.js';
+import { applyRules, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue } from '@/features/settings-runtime/model.js';
+import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
+import { ActionsNode, ActionButton, AsyncOperationNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
+import { useActionExecutor } from '@/features/settings-runtime/useActionExecutor.js';
+import { validateSettingsScope } from '@/features/settings-runtime/validation.js';
+import '@/features/settings-runtime/extensions.jsx';
 import { useConfirmation } from '@/components/ui/useConfirmation.jsx';
-import { formatLocalTimestamp } from '@/lib/clientText.js';
-import {applyBulkToolPermissionMode, deduplicateToolPermissionGroups, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
 import JsonConfigEditor from './JsonConfigEditor.jsx';
-import TempCacheCleanup from './TempCacheCleanup.jsx';
 import MultilineEditor from '@/components/ui/MultilineEditor.jsx';
 import React, { useState, useCallback, useEffect, useRef, useMemo, createContext, useContext, memo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,9 +47,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import apiClient from '@/lib/apiClient.js';
-import { apiEndpoint, BASE_BACKEND_URL } from '@/config.js';
 import { toast } from 'sonner';
-import { useUserStore } from '@/context/userContext.jsx';
 import { onEvent } from '@/context/useEventStore.jsx';
 
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
@@ -54,6 +56,7 @@ import { CSS } from '@dnd-kit/utilities';
 
 // ─── Context ───────────────────────────────────────────────────────
 const SettingsContext = createContext(null);
+const ROW_KEY = Symbol('settings-row-key');
 
 function useSettings() {
     return useContext(SettingsContext);
@@ -64,19 +67,6 @@ function clamp(val, min, max) {
     if (min !== undefined && val < min) return min;
     if (max !== undefined && val > max) return max;
     return val;
-}
-
-function deepSet(obj, path, value) {
-    if (path.length === 0) return obj;
-    const isArray = Array.isArray(obj);
-    const result = isArray ? [...(obj || [])] : { ...(obj || {}) };
-    const key = path[0];
-    if (path.length === 1) {
-        result[key] = value;
-        return result;
-    }
-    result[key] = deepSet(result[key], path.slice(1), value);
-    return result;
 }
 
 function deepGet(obj, path) {
@@ -91,11 +81,6 @@ function deepGet(obj, path) {
 // 生成唯一 internalId
 function generateInternalId() {
     return `internal-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-// 生成唯一业务 id
-function generateBusinessId() {
-    return `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 // ─── Auto Scroll Text ──────────────────────────────────────────────
@@ -288,7 +273,7 @@ function ImageItem({ item, path }) {
     };
 
     const handleUpload = async () => {
-        if (isNull || !onImageUpload) return;
+        if (isNull || item.disabled || !onImageUpload) return;
         try {
             const url = await Promise.resolve(onImageUpload());
             if (url && typeof url === 'string' && url.trim() !== '') {
@@ -366,7 +351,7 @@ const SortableCard = memo(
         t,
         initialOpen = false,
     }) => {
-        const stableId = entry.internalId; // 使用稳定的 internalId
+        const stableId = entry[ROW_KEY]; // 使用稳定的 internalId
         const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stableId });
 
         const [isOpen, setIsOpen] = useState(initialOpen);
@@ -527,9 +512,9 @@ const SortableCard = memo(
                             <div className="p-3 sm:p-4 space-y-1">
                                 {item.children?.map((child, i) => (
                                     <SettingItemRenderer
-                                        key={child.name || i}
+                                        key={child.id || `${child.name || 'field'}:${i}`}
                                         item={child}
-                                        path={[...listPath, index, child.name]}
+                                        path={[...listPath, index, ...pathParts(child.name)]}
                                     />
                                 ))}
                             </div>
@@ -547,8 +532,8 @@ function ListItem({ item, path }) {
     const { t } = useTranslation();
     const { values, update } = useSettings();
     const listPath = path;
-    const list = Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [];
-    const addTemplates = Array.isArray(item.addTemplates) ? item.addTemplates : [];
+    const list = useMemo(() => Array.isArray(deepGet(values, listPath)) ? deepGet(values, listPath) : [], [values, listPath]);
+    const addTemplates = useMemo(() => Array.isArray(item.addTemplates) ? item.addTemplates : [], [item.addTemplates]);
 
     const [draggedEntry, setDraggedEntry] = useState(null);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -592,16 +577,16 @@ function ListItem({ item, path }) {
             if (item.itemTitleKey && entry?.[item.itemTitleKey]) {
                 return entry[item.itemTitleKey];
             }
-            const index = list.findIndex((e) => e.internalId === entry.internalId);
+            const index = list.findIndex((e) => e[ROW_KEY] === entry[ROW_KEY]);
             if (item.itemTitle) return item.itemTitle.replace('{{index}}', index + 1);
-            return `${t('ds.model')} ${index + 1}`;
+            return `${item.itemLabel || '项目'} ${index + 1}`;
         },
-        [item, list, t],
+        [item, list],
     );
 
     const isDuplicate = useCallback(
         (internalId) => {
-            const index = list.findIndex((e) => e.internalId === internalId);
+            const index = list.findIndex((e) => e[ROW_KEY] === internalId);
             return duplicateIndices.has(index);
         },
         [list, duplicateIndices],
@@ -610,8 +595,8 @@ function ListItem({ item, path }) {
     const addItem = useCallback(
         (template = null) => {
             const internalId = generateInternalId();
-            const editableId = generateBusinessId();
-            const defaultItem = { id: editableId, internalId };
+            const editableId = item.identityField && item.idFactory === 'uuid' ? crypto.randomUUID() : undefined;
+            const defaultItem = { [ROW_KEY]: internalId, ...(editableId ? { [item.identityField]: editableId } : {}) };
             if (item.children) {
                 item.children.forEach((child) => {
                     if (['info', 'heading'].includes(child.type)) return;
@@ -628,13 +613,12 @@ function ListItem({ item, path }) {
                 ...defaultItem,
                 ...templateValues,
                 // Template data must never control the local React/DnD identity.
-                id: templateValues.id || editableId,
-                internalId,
+                [ROW_KEY]: internalId,
             };
             update(listPath, [...list, nextItem]);
             setNewEntryId(internalId);
         },
-        [list, update, listPath, item.children],
+        [list, update, listPath, item.children, item.identityField, item.idFactory],
     );
 
     const handleAddClick = useCallback(() => {
@@ -663,20 +647,14 @@ function ListItem({ item, path }) {
     }, [addItem, addTemplates, selectedTemplateId, templateInputs]);
 
     const updateTemplateSwitch = useCallback((name, checked) => {
-        setTemplateInputs((previous) => ({
-            ...previous,
-            [name]: checked,
-            // 图片识别任务必须能够把图片传给模型。
-            ...(name === 'as_image_recognize' && checked ? { support_vision: true } : {}),
-            ...(name === 'support_vision' && !checked ? { as_image_recognize: false } : {}),
-        }));
-    }, []);
+        setTemplateInputs((previous) => applyRules({ ...selectedTemplate?.values, ...previous, [name]: checked }, selectedTemplate?.rules || [], { changedField: name }));
+    }, [selectedTemplate]);
 
     const removeItem = useCallback(
         (internalId) => {
             update(
                 listPath,
-                list.filter((e) => e.internalId !== internalId),
+                list.filter((e) => e[ROW_KEY] !== internalId),
             );
         },
         [list, update, listPath],
@@ -684,21 +662,21 @@ function ListItem({ item, path }) {
 
     const duplicateItem = useCallback(
         (internalId) => {
-            const original = list.find((e) => e.internalId === internalId);
+            const original = list.find((e) => e[ROW_KEY] === internalId);
             if (!original) return;
             const copy = {
                 ...original,
-                id: generateBusinessId(),
-                internalId: generateInternalId(), // 生成全新的 internalId
+                ...(item.identityField && item.idFactory === 'uuid' ? { [item.identityField]: crypto.randomUUID() } : {}),
+                [ROW_KEY]: generateInternalId(), // 生成全新的 internalId
             };
             update(listPath, [...list, copy]);
         },
-        [list, update, listPath],
+        [list, update, listPath, item.identityField, item.idFactory],
     );
 
     const handleDragStart = useCallback(
         (event) => {
-            const entry = list.find((e) => e.internalId === event.active.id);
+            const entry = list.find((e) => e[ROW_KEY] === event.active.id);
             if (entry) setDraggedEntry(entry);
         },
         [list],
@@ -709,8 +687,8 @@ function ListItem({ item, path }) {
             setDraggedEntry(null);
             const { active, over } = event;
             if (!over || active.id === over.id) return;
-            const oldIndex = list.findIndex((e) => e.internalId === active.id);
-            const newIndex = list.findIndex((e) => e.internalId === over.id);
+            const oldIndex = list.findIndex((e) => e[ROW_KEY] === active.id);
+            const newIndex = list.findIndex((e) => e[ROW_KEY] === over.id);
             if (oldIndex < 0 || newIndex < 0) return;
             update(listPath, arrayMove(list, oldIndex, newIndex));
         },
@@ -808,7 +786,7 @@ function ListItem({ item, path }) {
                             {(selectedTemplate?.fields || []).some((field) => field.type === 'switch') && (
                                 <div className="space-y-1.5">
                                     <div className="text-sm font-medium text-[#1a1d21] dark:text-[#e4e7eb]">
-                                        模型能力与用途
+                                        {item.templateSwitchLabel || '选项设置'}
                                     </div>
                                     <div className="rounded-xl border border-[#d0d7de] divide-y divide-[#e1e4e8] dark:border-[#3a3f45] dark:divide-[#3a3f45]">
                                         {(selectedTemplate?.fields || []).filter((field) => field.type === 'switch').map((field) => (
@@ -837,15 +815,12 @@ function ListItem({ item, path }) {
                             {(() => {
                                 const selected =
                                     addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
-                                const target = selected?.targetUrl || selected?.values?.base_url;
+                                const target = selected?.targetUrl;
                                 if (!target) return null;
                                 return (
                                     <div className="rounded-xl border border-[#d0d7de] bg-[#f8f9fa] px-3 py-2.5 dark:border-[#3a3f45] dark:bg-[#25282c]">
                                         <div className="text-xs font-medium text-[#656d76] dark:text-[#9ca3af]">
-                                            {selected?.provider === 'litellm' ||
-                                            selected?.values?.provider === 'litellm'
-                                                ? 'LiteLLM API Base'
-                                                : '目标 URL'}
+                                            {selected?.targetLabel || '目标地址'}
                                         </div>
                                         <div className="mt-1 break-all font-mono text-xs text-[#1a1d21] dark:text-[#e4e7eb]">
                                             {target}
@@ -868,7 +843,7 @@ function ListItem({ item, path }) {
                                 disabled={!selectedTemplateId}
                                 className="h-9 rounded-lg bg-[#2563eb] px-4 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
                             >
-                                创建模型
+                                {item.createLabel || '创建项目'}
                             </button>
                         </div>
                     </DialogContent>
@@ -887,10 +862,10 @@ function ListItem({ item, path }) {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
-                <SortableContext items={list.map((e) => e.internalId)} strategy={verticalListSortingStrategy}>
+                <SortableContext items={list.map((e) => e[ROW_KEY])} strategy={verticalListSortingStrategy}>
                     {list.map((entry, index) => (
                         <SortableCard
-                            key={entry.internalId} // 使用稳定的 internalId 作为 key
+                            key={entry[ROW_KEY]} // 使用稳定的 internalId 作为 key
                             entry={entry}
                             index={index}
                             listPath={listPath}
@@ -902,7 +877,7 @@ function ListItem({ item, path }) {
                             list={list}
                             update={update}
                             t={t}
-                            initialOpen={entry.internalId === newEntryId}
+                            initialOpen={entry[ROW_KEY] === newEntryId}
                         />
                     ))}
                 </SortableContext>
@@ -911,7 +886,7 @@ function ListItem({ item, path }) {
                     {draggedEntry && (
                         <div
                             className={`border rounded-2xl overflow-hidden bg-white dark:bg-[#1c1e21] shadow-2xl scale-[1.03] ${
-                                isDuplicate(draggedEntry.internalId)
+                                isDuplicate(draggedEntry[ROW_KEY])
                                     ? 'border-red-500'
                                     : 'border-[#e1e4e8] dark:border-[#3a3f45]'
                             }`}
@@ -979,6 +954,7 @@ function SwitchItem({ item, path }) {
                     </motion.button>
                 ) : (
                     <Switch
+                        aria-label={item.text || item.name}
                         className={disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
                         checked={val}
                         disabled={disabled}
@@ -1058,6 +1034,7 @@ function NumberSliderItem({ item, path }) {
             <input
                 className="w-full min-w-0 h-8 px-2.5 text-center text-sm font-sans outline-none bg-transparent text-[#1a1d21] dark:text-[#e4e7eb]"
                 type="text"
+                aria-label={item.text || item.name}
                 inputMode={item.integer ? 'numeric' : 'decimal'}
                 value={displayVal}
                 onChange={(e) => handleChange(e.target.value)}
@@ -1283,6 +1260,7 @@ function TextInputItem({ item, path }) {
                     <input
                         className="h-8 px-2.5 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] text-sm font-sans outline-none w-full sm:w-[220px] transition-colors focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         type={inputType}
+                        aria-label={item.text || item.name}
                         autoComplete={item.autoComplete || (inputType === 'password' ? 'new-password' : 'off')}
                         value={val}
                         onChange={(e) => update(path, e.target.value)}
@@ -1592,35 +1570,7 @@ function SelectItem({ item, path }) {
     const selected = options.find((o) => o.value === val) || options[0] || null;
     const buttonRef = useRef(null);
 
-    const handleSelectChange = useCallback(
-        (nextValue) => {
-            const compatibilityDefaults = item.compatibilityDefaults;
-            if (compatibilityDefaults && typeof compatibilityDefaults === 'object' && path.length > 0) {
-                const parentPath = path.slice(0, -1);
-                const fieldName = path[path.length - 1];
-                const currentRecord = deepGet(values, parentPath);
-                if (currentRecord && typeof currentRecord === 'object' && !Array.isArray(currentRecord)) {
-                    const nextRecord = { ...currentRecord, [fieldName]: nextValue };
-                    const profile = String(nextRecord.openai_compat_profile || 'generic');
-                    const protocol = String(nextRecord.api_protocol || 'chat_completions');
-                    const patch = compatibilityDefaults?.[profile]?.[protocol];
-                    if (patch && typeof patch === 'object' && !Array.isArray(patch)) {
-                        // Apply compatibility defaults only on an explicit profile/protocol
-                        // change. Later advanced edits remain untouched until the user
-                        // changes one of these selectors again.
-                        update(parentPath, {
-                            ...nextRecord,
-                            ...JSON.parse(JSON.stringify(patch)),
-                            [fieldName]: nextValue,
-                        });
-                        return;
-                    }
-                }
-            }
-            update(path, nextValue);
-        },
-        [item.compatibilityDefaults, path, update, values],
-    );
+    const handleSelectChange = useCallback((nextValue) => update(path, nextValue), [path, update]);
 
     useEffect(() => {
         setIsNull(rawVal === null);
@@ -1707,7 +1657,7 @@ function SelectItem({ item, path }) {
 }
 
 // ─── Shared visual / JSON editor ──────────────────────────────────
-const DEFAULT_OBJECT_JSON_SCHEMA = { type: 'object' };
+const DEFAULT_OBJECT_JSON_SCHEMA = {};
 function JsonItem({ item, path }) {
     const { values, update, onSave } = useSettings();
     const value = deepGet(values, path);
@@ -1724,1084 +1674,20 @@ function JsonItem({ item, path }) {
                     value={value === undefined ? (item.default ?? {}) : value}
                     schema={item.schema || (item.storage === 'json-string' ? undefined : DEFAULT_OBJECT_JSON_SCHEMA)}
                     uiSchema={item.uiSchema}
-                    storage={item.storage || 'value'}
+                    storage={typeof item.storage === 'string' ? item.storage : 'value'}
                     defaultMode={item.editorMode || 'form'}
                     label={item.text}
                     resetKey={item}
                     onChange={(next) => update(path, next)}
                     onSave={onSave}
+                    readOnly={item.readOnly || item.disabled}
                 />
             )}
         </SettingRow>
     );
 }
 
-// ─── Registered/special custom components are declared below. ───────
-
-// ─── Remote Workspace Components ─────────────────────────────────
-function RemoteWorkspaceStatusBadge({ online, status }) {
-    const revoked = status === 'revoked';
-    return (
-        <span
-            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                revoked
-                    ? 'bg-red-500/10 text-red-700 dark:text-red-300'
-                    : online
-                      ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-black/5 text-black/55 dark:bg-white/10 dark:text-white/55'
-            }`}
-        >
-            {online && !revoked ? <Wifi size={12} /> : <WifiOff size={12} />}
-            {revoked ? '已撤销' : online ? '已连接' : '离线'}
-        </span>
-    );
-}
-
-function workspaceStatusLabel(item) {
-    if (item?.status === 'revoked') return '设备已撤销';
-    if (item?.status === 'error') return '异常';
-    if (item?.online) return '在线';
-    return '离线';
-}
-
-function workspacePermissionLabel(value) {
-    if (value === 'manage') return '管理';
-    if (value === 'use') return '使用';
-    if (value === 'view') return '查看';
-    return '—';
-}
-
-function buildWorkspaceAgentCommand(token) {
-    if (typeof window === 'undefined')
-        return `python agent.py --server "wss://YOUR_HOST/api/workspace/remote/connect" --token "${token}" --root "ALIAS=/path/to/project"`;
-    const basePath = `${BASE_BACKEND_URL}${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/connect`.replace(/\/+/g, '/');
-    const scheme = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const server = `${scheme}//${window.location.host}${basePath.startsWith('/') ? basePath : `/${basePath}`}`;
-    return `python agent.py --server "${server}" --token "${token}" --root "workspace=/path/to/project"`;
-}
-
-function WorkspaceAclDialog({ workspace, open, onOpenChange, onChanged }) {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [saving, setSaving] = useState(false);
-    const [targetUserId, setTargetUserId] = useState('');
-    const [permission, setPermission] = useState('use');
-
-    const load = useCallback(async () => {
-        if (!workspace?.id || !open) return;
-        setLoading(true);
-        try {
-            const result = await apiClient.get(
-                `${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(workspace.id)}/permissions`,
-            );
-            setData(result || {});
-        } catch (error) {
-            toast.error(error?.message || '读取 Workspace 用户权限失败');
-        } finally {
-            setLoading(false);
-        }
-    }, [open, workspace?.id]);
-
-    useEffect(() => {
-        load();
-    }, [load]);
-
-    const grant = async () => {
-        if (!targetUserId) return;
-        setSaving(true);
-        try {
-            await apiClient.put(
-                `${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(workspace.id)}/permissions/${encodeURIComponent(targetUserId)}`,
-                { permission },
-            );
-            setTargetUserId('');
-            await load();
-            onChanged?.();
-            toast.success('Workspace 用户权限已更新');
-        } catch (error) {
-            toast.error(error?.message || '更新 Workspace 用户权限失败');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const remove = async (userId) => {
-        setSaving(true);
-        try {
-            await apiClient.delete(
-                `${apiEndpoint.WORKSPACES_ENDPOINT}/${encodeURIComponent(workspace.id)}/permissions/${encodeURIComponent(userId)}`,
-            );
-            await load();
-            onChanged?.();
-        } catch (error) {
-            toast.error(error?.message || '移除 Workspace 用户权限失败');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const grantIds = new Set((data?.grants || []).map((item) => Number(item.userId)));
-    const assignableUsers = (data?.assignableUsers || []).filter((item) => !grantIds.has(Number(item.id)));
-
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[560px]">
-                <DialogHeader>
-                    <DialogTitle>Workspace 用户权限</DialogTitle>
-                </DialogHeader>
-                <div className="text-xs text-muted-foreground">{workspace?.name}</div>
-                {loading ? (
-                    <div className="py-8 text-center text-sm text-muted-foreground">正在读取权限…</div>
-                ) : (
-                    <div className="space-y-3">
-                        <div className="divide-y rounded-xl border border-black/10 dark:border-white/10">
-                            {(data?.grants || []).map((grant) => (
-                                <div key={grant.userId} className="flex items-center gap-3 px-3 py-2.5">
-                                    <div className="min-w-0 flex-1">
-                                        <div className="truncate text-sm font-medium">
-                                            {grant.username || `User ${grant.userId}`}
-                                        </div>
-                                        <div className="mt-0.5 text-[11px] text-muted-foreground">
-                                            {grant.owner ? 'Workspace Owner' : '已分配权限'}
-                                        </div>
-                                    </div>
-                                    <span className="rounded-full bg-black/5 px-2 py-1 text-xs dark:bg-white/10">
-                                        {workspacePermissionLabel(grant.permission)}
-                                    </span>
-                                    {!grant.owner ? (
-                                        <button
-                                            type="button"
-                                            disabled={saving}
-                                            onClick={() => remove(grant.userId)}
-                                            className="rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 disabled:opacity-50"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
-                                    ) : null}
-                                </div>
-                            ))}
-                        </div>
-                        {assignableUsers.length > 0 ? (
-                            <div className="grid gap-2 rounded-xl border border-dashed border-black/10 p-3 dark:border-white/10 sm:grid-cols-[minmax(0,1fr)_8rem_auto]">
-                                <select
-                                    value={targetUserId}
-                                    onChange={(event) => setTargetUserId(event.target.value)}
-                                    className="h-9 rounded-lg border border-black/10 bg-transparent px-2 text-sm dark:border-white/10"
-                                >
-                                    <option value="">选择用户</option>
-                                    {assignableUsers.map((entry) => (
-                                        <option key={entry.id} value={entry.id}>
-                                            {entry.username}
-                                        </option>
-                                    ))}
-                                </select>
-                                <select
-                                    value={permission}
-                                    onChange={(event) => setPermission(event.target.value)}
-                                    className="h-9 rounded-lg border border-black/10 bg-transparent px-2 text-sm dark:border-white/10"
-                                >
-                                    <option value="view">查看</option>
-                                    <option value="use">使用</option>
-                                    <option value="manage">管理</option>
-                                </select>
-                                <button
-                                    type="button"
-                                    disabled={!targetUserId || saving}
-                                    onClick={grant}
-                                    className="h-9 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white disabled:opacity-50"
-                                >
-                                    添加
-                                </button>
-                            </div>
-                        ) : null}
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function WorkspaceManagementItem() {
-    const [confirmAction, confirmationDialog] = useConfirmation();
-    const { t } = useTranslation();
-    const [agents, setAgents] = useState([]);
-    const [workspaces, setWorkspaces] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [tokenInfo, setTokenInfo] = useState(null);
-    const [tokenLoading, setTokenLoading] = useState(false);
-    const [aclWorkspace, setAclWorkspace] = useState(null);
-    const { user } = useUserStore();
-
-    const refresh = useCallback(async ({ quiet = false } = {}) => {
-        if (!quiet) setLoading(true);
-        try {
-            const [agentData, localData, remoteData] = await Promise.all([
-                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/connections`),
-                apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/`),
-                apiClient.get(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces`),
-            ]);
-            setAgents(Array.isArray(agentData) ? agentData : []);
-            const locals = (Array.isArray(localData) ? localData : []).map((entry) => ({
-                ...entry,
-                kind: entry.kind || 'local',
-            }));
-            const remotes = Array.isArray(remoteData) ? remoteData : [];
-            setWorkspaces(
-                [...locals, ...remotes].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''))),
-            );
-        } catch (error) {
-            toast.error(error?.message || '读取 Workspace 设置失败');
-        } finally {
-            if (!quiet) setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
-    useEffect(() => {
-        const unsubscribeConnection = onEvent({ event: 'workspace.connection.status_changed' }).then(() =>
-            refresh({ quiet: true }),
-        );
-        const unsubscribeAccess = onEvent({ event: 'workspace.access.changed' }).then(() => refresh({ quiet: true }));
-        const timer = window.setInterval(() => refresh({ quiet: true }), 60_000);
-        return () => {
-            unsubscribeConnection?.();
-            unsubscribeAccess?.();
-            window.clearInterval(timer);
-        };
-    }, [refresh]);
-
-    const generateToken = async () => {
-        setTokenLoading(true);
-        try {
-            const data = await apiClient.post(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/enrollment-tokens`, {
-                expiresMinutes: 10,
-            });
-            setTokenInfo(data || null);
-        } catch (error) {
-            toast.error(error?.message || '生成 Workspace 连接凭据失败');
-        } finally {
-            setTokenLoading(false);
-        }
-    };
-
-    const revokeAgent = async (agent) => {
-        if (!agent?.id) return;
-        const accepted = await confirmAction({
-            title: '撤销远程设备',
-            description: `撤销设备“${agent.builtin ? t('workspace_backend_connection') : agent.name || agent.id}”吗？撤销后该设备必须重新注册。`,
-            confirmText: '撤销设备',
-        });
-        if (!accepted) return;
-        try {
-            await apiClient.delete(`${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/agents/${encodeURIComponent(agent.id)}`);
-            await refresh();
-            toast.success('设备身份已撤销');
-        } catch (error) {
-            toast.error(error?.message || '撤销远程设备失败');
-        }
-    };
-
-    const copyText = async (value, message) => {
-        try {
-            await navigator.clipboard.writeText(String(value || ''));
-            toast.success(message || '已复制');
-        } catch {
-            toast.error('复制失败');
-        }
-    };
-
-    const onlineAgents = agents.filter((item) => item.online).length;
-    const remoteCount = workspaces.filter((item) => item.kind === 'remote').length;
-    const command = tokenInfo?.token ? buildWorkspaceAgentCommand(tokenInfo.token) : '';
-
-    return (
-        <SettingRow fullWidth className="border-b border-black/10 last:border-b-0 dark:border-white/15">
-            {confirmationDialog}
-            <div className="w-full space-y-4">
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
-                        <div className="text-[11px] text-muted-foreground">Workspace</div>
-                        <div className="mt-1 text-xl font-semibold">{workspaces.length}</div>
-                    </div>
-                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
-                        <div className="text-[11px] text-muted-foreground">{t('workspace_connections')}</div>
-                        <div className="mt-1 text-xl font-semibold">{agents.length}</div>
-                    </div>
-                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
-                        <div className="text-[11px] text-muted-foreground">在线设备</div>
-                        <div className="mt-1 text-xl font-semibold">{onlineAgents}</div>
-                    </div>
-                    <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
-                        <div className="text-[11px] text-muted-foreground">远程根目录</div>
-                        <div className="mt-1 text-xl font-semibold">{remoteCount}</div>
-                    </div>
-                </div>
-
-                <section className="rounded-xl border border-black/10 p-3 dark:border-white/10">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                            <div className="text-sm font-semibold">连接新设备</div>
-                            <div className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
-                                生成一个绑定当前用户、10 分钟有效且只能使用一次的 Enrollment Token。远端注册成功后 Token
-                                立即作废，后续使用设备密钥自动重连。
-                            </div>
-                        </div>
-                        <button
-                            type="button"
-                            disabled={tokenLoading}
-                            onClick={generateToken}
-                            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white disabled:opacity-50"
-                        >
-                            <LockKeyhole size={14} />
-                            {tokenLoading ? '生成中…' : '生成连接凭据'}
-                        </button>
-                    </div>
-                    {tokenInfo?.token ? (
-                        <div className="mt-3 space-y-2 rounded-xl bg-black/[0.035] p-3 dark:bg-white/[0.06]">
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="text-xs font-medium">
-                                    一次性 Token · 用户 {tokenInfo.username || tokenInfo.userId}
-                                </div>
-                                <button
-                                    onClick={() => copyText(tokenInfo.token, 'Token 已复制')}
-                                    className="rounded-md p-1.5 hover:bg-black/5 dark:hover:bg-white/10"
-                                >
-                                    <Copy size={14} />
-                                </button>
-                            </div>
-                            <code className="block break-all rounded-lg border border-black/10 bg-white px-2.5 py-2 text-xs dark:border-white/10 dark:bg-black">
-                                {tokenInfo.token}
-                            </code>
-                            <div className="text-[11px] text-muted-foreground">
-                                有效至：{tokenInfo.expiresAt ? formatLocalTimestamp(tokenInfo.expiresAt) : '—'} ·
-                                注册成功后即焚
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <code className="min-w-0 flex-1 break-all rounded-lg border border-black/10 bg-white px-2.5 py-2 text-[11px] dark:border-white/10 dark:bg-black">
-                                    {command}
-                                </code>
-                                <button
-                                    onClick={() => copyText(command, '连接命令已复制')}
-                                    className="rounded-md p-1.5 hover:bg-black/5 dark:hover:bg-white/10"
-                                >
-                                    <Copy size={14} />
-                                </button>
-                            </div>
-                        </div>
-                    ) : null}
-                </section>
-
-                <section className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="text-sm font-semibold">{t('workspace_connections')}</div>
-                            <div className="text-xs text-muted-foreground">
-                                IP 与主机信息用于审计和异常提示；设备身份由 Ed25519 密钥证明。
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => refresh()}
-                            disabled={loading}
-                            className="rounded-md p-2 text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10"
-                        >
-                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                        </button>
-                    </div>
-                    {loading && agents.length === 0 ? (
-                        <div className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">
-                            正在读取设备…
-                        </div>
-                    ) : agents.length === 0 ? (
-                        <div className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">
-                            暂无已注册远程设备。
-                        </div>
-                    ) : (
-                        <div className="grid gap-2 xl:grid-cols-2">
-                            {agents.map((agent) => (
-                                <div
-                                    key={agent.id}
-                                    className="rounded-xl border border-black/10 p-3 dark:border-white/10"
-                                >
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <Server size={15} />
-                                                <span className="truncate text-sm font-semibold">
-                                                    {agent.builtin
-                                                        ? t('workspace_backend_connection')
-                                                        : agent.name || agent.id}
-                                                </span>
-                                            </div>
-                                            <div className="mt-1 truncate text-[11px] text-muted-foreground">
-                                                {agent.hostname || '未知主机'} · {agent.platform || '未知平台'}
-                                                {agent.builtin && (
-                                                    <div className="mt-1 whitespace-normal">
-                                                        {t('workspace_backend_connection_hint')}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <RemoteWorkspaceStatusBadge online={!!agent.online} status={agent.status} />
-                                    </div>
-                                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11px]">
-                                        <div className="rounded-lg bg-black/[0.035] p-2 dark:bg-white/[0.06]">
-                                            <div className="text-muted-foreground">最近 IP</div>
-                                            <div className="mt-0.5 truncate font-mono">{agent.ip || '—'}</div>
-                                        </div>
-                                        <div className="rounded-lg bg-black/[0.035] p-2 dark:bg-white/[0.06]">
-                                            <div className="text-muted-foreground">最后在线</div>
-                                            <div className="mt-0.5">
-                                                {agent.lastSeen
-                                                    ? new Date(Number(agent.lastSeen) * 1000).toLocaleString()
-                                                    : '—'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {!agent.builtin &&
-                                    (agent.owned || user?.isSuperuser) &&
-                                    agent.status !== 'revoked' ? (
-                                        <div className="mt-2 flex justify-end">
-                                            <button
-                                                onClick={() => revokeAgent(agent)}
-                                                className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-red-600 hover:bg-red-500/10"
-                                            >
-                                                <Trash2 size={13} />
-                                                撤销设备
-                                            </button>
-                                        </div>
-                                    ) : null}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
-
-                <section className="space-y-2">
-                    <div>
-                        <div className="text-sm font-semibold">Workspace 与用户权限</div>
-                        <div className="text-xs text-muted-foreground">
-                            Owner/管理员默认 manage；其他用户通过 ACL 获得 view/use/manage。只有 use/manage
-                            可以挂载并调用 Workspace 工具。
-                        </div>
-                    </div>
-                    {workspaces.length === 0 ? (
-                        <div className="rounded-xl border border-dashed p-5 text-center text-xs text-muted-foreground">
-                            暂无 Workspace。
-                        </div>
-                    ) : (
-                        <div className="divide-y rounded-xl border border-black/10 dark:border-white/10">
-                            {workspaces.map((workspace) => (
-                                <div key={workspace.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="truncate text-sm font-medium">{workspace.name}</span>
-                                            <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] dark:bg-white/10">
-                                                {workspace.kind === 'remote'
-                                                    ? workspaceStatusLabel(workspace)
-                                                    : workspace.available === false
-                                                      ? '不可用'
-                                                      : t('workspace_backend_connection')}
-                                            </span>
-                                        </div>
-                                        <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                                            {workspace.kind === 'remote'
-                                                ? `${workspace.agentName || ''}${workspace.rootAlias ? ` · ${workspace.rootAlias}` : ''}`
-                                                : (workspace.mounts || [])
-                                                      .map((mount) => `/${mount.alias}`)
-                                                      .join(' · ') || 'Local Workspace'}
-                                        </div>
-                                    </div>
-                                    <span className="rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-700 dark:text-blue-300">
-                                        {workspacePermissionLabel(workspace.permission || 'manage')}
-                                    </span>
-                                    {(workspace.permission || 'manage') === 'manage' ? (
-                                        <button
-                                            onClick={() => setAclWorkspace(workspace)}
-                                            className="rounded-lg border border-black/10 px-2.5 py-1.5 text-xs font-medium hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
-                                        >
-                                            管理用户
-                                        </button>
-                                    ) : null}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
-            </div>
-            <WorkspaceAclDialog
-                workspace={aclWorkspace}
-                open={!!aclWorkspace}
-                onOpenChange={(next) => {
-                    if (!next) setAclWorkspace(null);
-                }}
-                onChanged={() => refresh({ quiet: true })}
-            />
-        </SettingRow>
-    );
-}
-
-function ruleEffectForPattern(rules, pattern) {
-    const item = (Array.isArray(rules) ? rules : []).find((rule) => String(rule?.pattern || '') === String(pattern));
-    return item?.effect === 'deny' ? 'deny' : item?.effect === 'allow' ? 'allow' : 'inherit';
-}
-
-function setRuleEffect(rules, pattern, effect) {
-    const next = (Array.isArray(rules) ? rules : []).filter((rule) => String(rule?.pattern || '') !== String(pattern));
-    if (effect === 'allow' || effect === 'deny') next.push({ pattern, effect });
-    return next;
-}
-
-function AccessRuleButtons({ value, onChange, disabled = false, showInherit = true }) {
-    const options = [...(showInherit ? [['inherit', '继承']] : []), ['allow', '允许'], ['deny', '拒绝']];
-    return (
-        <div
-            className="grid shrink-0 rounded-lg border border-black/10 bg-white p-0.5 dark:border-white/10 dark:bg-black/10"
-            style={{ width: showInherit ? 150 : 104, gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
-        >
-            {options.map(([mode, label]) => (
-                <button
-                    key={mode}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => onChange(mode)}
-                    className={`min-w-0 whitespace-nowrap rounded-md px-2 py-1 text-center text-[11px] font-medium leading-5 transition-colors ${
-                        value === mode
-                            ? mode === 'allow'
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200'
-                                : mode === 'deny'
-                                  ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200'
-                                  : 'bg-black/5 text-foreground dark:bg-white/10'
-                            : 'text-muted-foreground hover:bg-black/5 dark:hover:bg-white/10'
-                    } disabled:cursor-not-allowed disabled:opacity-40`}
-                >
-                    {label}
-                </button>
-            ))}
-        </div>
-    );
-}
-
-function UserToolAccessEditor({ catalog, rules, setRules }) {
-    const [query, setQuery] = useState('');
-    const [expandedGroups, setExpandedGroups] = useState(() => new Set());
-    const normalizedQuery = query.trim().toLowerCase();
-    const overallEffect = ruleEffectForPattern(rules, '*') === 'allow' ? 'allow' : 'deny';
-
-    const visibleCatalog = useMemo(
-        () =>
-            (Array.isArray(catalog) ? catalog : [])
-                .map((group) => {
-                    const sourceTools = Array.isArray(group.tools) ? group.tools : [];
-                    const groupMatches =
-                        normalizedQuery &&
-                        [group.id, group.name]
-                            .filter(Boolean)
-                            .some((value) => String(value).toLowerCase().includes(normalizedQuery));
-                    const tools =
-                        !normalizedQuery || groupMatches
-                            ? sourceTools
-                            : sourceTools.filter((tool) =>
-                                  [tool.path, tool.name, tool.text]
-                                      .filter(Boolean)
-                                      .some((value) => String(value).toLowerCase().includes(normalizedQuery)),
-                              );
-                    return { ...group, sourceTools, tools };
-                })
-                .filter((group) => group.tools.length > 0),
-        [catalog, normalizedQuery],
-    );
-
-    const toggleExpanded = useCallback((groupId) => {
-        setExpandedGroups((previous) => {
-            const next = new Set(previous);
-            if (next.has(groupId)) next.delete(groupId);
-            else next.add(groupId);
-            return next;
-        });
-    }, []);
-
-    return (
-        <div className="space-y-3">
-            <div className="rounded-xl border border-black/10 bg-black/[0.015] p-3 dark:border-white/10 dark:bg-white/[0.03]">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="min-w-0">
-                        <div className="text-sm font-semibold">总体默认状态</div>
-                        <div className="mt-0.5 text-[11px] leading-5 text-muted-foreground">
-                            未设置独立规则的工具和工具集将继承这里的状态。
-                        </div>
-                    </div>
-                    <AccessRuleButtons
-                        value={overallEffect}
-                        showInherit={false}
-                        onChange={(effect) => setRules((value) => setRuleEffect(value, '*', effect))}
-                    />
-                </div>
-                <div className="relative mt-3">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="搜索工具集、工具名称或路径"
-                        className="h-9 w-full rounded-lg border border-black/10 bg-background pl-9 pr-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"
-                    />
-                </div>
-            </div>
-
-            {visibleCatalog.map((group) => {
-                const groupPattern = `${group.id}.*`;
-                const isExpanded = Boolean(normalizedQuery) || expandedGroups.has(group.id);
-                return (
-                    <div
-                        key={group.id}
-                        className="overflow-hidden rounded-lg border border-black/10 dark:border-white/10"
-                    >
-                        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 bg-black/[0.025] px-3 py-2 dark:bg-white/[0.04]">
-                            <button
-                                type="button"
-                                onClick={() => toggleExpanded(group.id)}
-                                aria-expanded={isExpanded}
-                                className="flex min-w-0 items-center gap-2 text-left"
-                            >
-                                <ChevronDown
-                                    className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                                />
-                                <span className="min-w-0">
-                                    <span className="block truncate text-sm font-medium">{group.name || group.id}</span>
-                                    <span className="block text-[10px] font-mono text-muted-foreground">
-                                        {groupPattern} · {group.sourceTools.length} 个工具
-                                        {normalizedQuery ? ` · 命中 ${group.tools.length}` : ''}
-                                    </span>
-                                </span>
-                            </button>
-                            <AccessRuleButtons
-                                value={ruleEffectForPattern(rules, groupPattern)}
-                                onChange={(effect) => setRules((value) => setRuleEffect(value, groupPattern, effect))}
-                            />
-                        </div>
-                        {isExpanded && (
-                            <div className="divide-y divide-black/5 dark:divide-white/5">
-                                {group.tools.map((tool) => (
-                                    <div
-                                        key={tool.path}
-                                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-2"
-                                    >
-                                        <div className="min-w-0 pl-6">
-                                            <div className="truncate text-xs font-medium">{tool.text || tool.name}</div>
-                                            <div className="truncate text-[10px] font-mono text-muted-foreground">
-                                                {tool.path}
-                                            </div>
-                                        </div>
-                                        <AccessRuleButtons
-                                            value={ruleEffectForPattern(rules, tool.path)}
-                                            onChange={(effect) =>
-                                                setRules((value) => setRuleEffect(value, tool.path, effect))
-                                            }
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                );
-            })}
-            {visibleCatalog.length === 0 && (
-                <div className="rounded-xl border border-dashed border-black/10 py-8 text-center text-sm text-muted-foreground dark:border-white/10">
-                    没有找到匹配的工具。
-                </div>
-            )}
-        </div>
-    );
-}
-
-function UserManagementItem() {
-    const [confirmAction, confirmationDialog] = useConfirmation();
-    const currentUser = useUserStore((state) => state.user);
-    const [users, setUsers] = useState([]);
-    const [catalog, setCatalog] = useState([]);
-    const [selectedId, setSelectedId] = useState(null);
-    const [rules, setRules] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [createOpen, setCreateOpen] = useState(false);
-    const [createForm, setCreateForm] = useState({ username: '', email: '', password: '', isSuperuser: false });
-    const [editForm, setEditForm] = useState(null);
-
-    const selectedUser = useMemo(
-        () => users.find((entry) => Number(entry.id) === Number(selectedId)) || null,
-        [users, selectedId],
-    );
-    const isSelf = Boolean(selectedUser && currentUser && Number(selectedUser.id) === Number(currentUser.id));
-
-    const refreshUsers = useCallback(async ({ keepSelection = true } = {}) => {
-        const data = await apiClient.get(apiEndpoint.ADMIN_USERS_ENDPOINT);
-        const next = Array.isArray(data) ? data : [];
-        setUsers(next);
-        setSelectedId((current) => {
-            if (keepSelection && next.some((entry) => Number(entry.id) === Number(current))) return current;
-            return next[0]?.id ?? null;
-        });
-        return next;
-    }, []);
-
-    const refreshAll = useCallback(async () => {
-        setLoading(true);
-        try {
-            const [userData, toolData] = await Promise.all([
-                apiClient.get(apiEndpoint.ADMIN_USERS_ENDPOINT),
-                apiClient.get(apiEndpoint.ADMIN_TOOL_CATALOG_ENDPOINT),
-            ]);
-            const nextUsers = Array.isArray(userData) ? userData : [];
-            setUsers(nextUsers);
-            setCatalog(Array.isArray(toolData) ? toolData : []);
-            setSelectedId((current) =>
-                nextUsers.some((entry) => Number(entry.id) === Number(current)) ? current : (nextUsers[0]?.id ?? null),
-            );
-        } catch (error) {
-            toast.error(error?.message || '加载用户管理数据失败。');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        refreshAll();
-    }, [refreshAll]);
-
-    useEffect(() => {
-        let active = true;
-        const unsubscribe = onEvent({ event: 'tool.catalog.changed' }).then(async () => {
-            try {
-                const tools = await apiClient.get(apiEndpoint.ADMIN_TOOL_CATALOG_ENDPOINT);
-                if (active) setCatalog(Array.isArray(tools) ? tools : []);
-            } catch (error) {
-                if (active) toast.error(error.message || '刷新工具目录失败。');
-            }
-        });
-        return () => { active = false; unsubscribe(); };
-    }, []);
-
-    useEffect(() => {
-        if (!selectedUser) {
-            setEditForm(null);
-            setRules([]);
-            return;
-        }
-        setEditForm({
-            username: selectedUser.username || '',
-            email: selectedUser.email || '',
-            password: '',
-            isActive: Boolean(selectedUser.isActive),
-            isSuperuser: Boolean(selectedUser.isSuperuser),
-        });
-        let cancelled = false;
-        apiClient
-            .get(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}/tool-access`)
-            .then((data) => {
-                if (!cancelled) setRules(Array.isArray(data?.rules) ? data.rules : []);
-            })
-            .catch((error) => {
-                if (!cancelled) toast.error(error?.message || '读取用户工具分配失败。');
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [selectedUser?.id]);
-
-    const createUser = useCallback(async () => {
-        if (!createForm.username.trim() || !createForm.email.trim() || !createForm.password) {
-            toast.error('用户名、邮箱和密码不能为空。');
-            return;
-        }
-        setSaving(true);
-        try {
-            const created = await apiClient.post(apiEndpoint.ADMIN_USERS_ENDPOINT, createForm);
-            await refreshUsers({ keepSelection: false });
-            setSelectedId(created?.id ?? null);
-            setCreateOpen(false);
-            setCreateForm({ username: '', email: '', password: '', isSuperuser: false });
-            toast.success('用户已创建。');
-        } catch (error) {
-            toast.error(error?.message || '创建用户失败。');
-        } finally {
-            setSaving(false);
-        }
-    }, [createForm, refreshUsers]);
-
-    const saveSelected = useCallback(async () => {
-        if (!selectedUser || !editForm) return;
-        setSaving(true);
-        try {
-            const payload = { ...editForm };
-            if (!payload.password) delete payload.password;
-            const updated = await apiClient.patch(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}`, payload);
-            if (!updated?.isSuperuser) {
-                await apiClient.put(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}/tool-access`, { rules });
-            }
-            await refreshUsers();
-            toast.success('用户设置已保存。');
-        } catch (error) {
-            toast.error(error?.message || '保存用户设置失败。');
-        } finally {
-            setSaving(false);
-        }
-    }, [selectedUser, editForm, rules, refreshUsers]);
-
-    const deleteSelected = useCallback(async () => {
-        if (!selectedUser || isSelf) return;
-        const confirmed = await confirmAction({
-            title: '永久删除用户',
-            description: `确定永久删除用户“${selectedUser.username}”吗？\n\n如果该用户已有会话或故事等持久数据，服务器会拒绝删除；这类账户请使用“禁用账户”。`,
-            confirmText: '永久删除',
-        });
-        if (!confirmed) return;
-        setSaving(true);
-        try {
-            await apiClient.delete(`${apiEndpoint.ADMIN_USERS_ENDPOINT}/${selectedUser.id}/permanent`);
-            await refreshUsers({ keepSelection: false });
-            toast.success('用户已删除。');
-        } catch (error) {
-            toast.error(error?.message || '删除用户失败。');
-        } finally {
-            setSaving(false);
-        }
-    }, [selectedUser, isSelf, refreshUsers, confirmAction]);
-
-    if (loading) {
-        return (
-            <SettingRow fullWidth>
-                <div className="w-full rounded-xl border border-dashed border-black/10 py-10 text-center text-sm text-muted-foreground dark:border-white/10">
-                    正在加载用户管理…
-                </div>
-            </SettingRow>
-        );
-    }
-
-    return (
-        <SettingRow fullWidth className="border-b-0">
-            {confirmationDialog}
-            <div className="grid w-full min-h-[420px] grid-cols-1 gap-4 md:grid-cols-[190px_minmax(0,1fr)]">
-                <div className="rounded-xl border border-black/10 bg-black/[0.015] p-2 dark:border-white/10 dark:bg-white/[0.03]">
-                    <div className="mb-2 flex items-center justify-between px-1">
-                        <div>
-                            <div className="text-sm font-semibold">用户</div>
-                            <div className="text-[11px] text-muted-foreground">{users.length} 个账户</div>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={() => setCreateOpen(true)}
-                            className="inline-flex h-8 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-xs font-medium text-white hover:bg-blue-700"
-                        >
-                            <Plus size={13} /> 添加
-                        </button>
-                    </div>
-                    <div className="space-y-1">
-                        {users.map((entry) => (
-                            <button
-                                key={entry.id}
-                                type="button"
-                                onClick={() => setSelectedId(entry.id)}
-                                className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${Number(selectedId) === Number(entry.id) ? 'bg-blue-50 text-blue-800 dark:bg-blue-500/15 dark:text-blue-200' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
-                            >
-                                <div className="flex items-center justify-between gap-2">
-                                    <span className="truncate text-sm font-medium">{entry.username}</span>
-                                    <span
-                                        className={`h-2 w-2 shrink-0 rounded-full ${entry.isActive ? 'bg-emerald-500' : 'bg-gray-300'}`}
-                                    />
-                                </div>
-                                <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                                    {entry.isSuperuser ? (
-                                        <>
-                                            <LockKeyhole size={11} /> 管理员
-                                        </>
-                                    ) : (
-                                        '普通用户'
-                                    )}
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {selectedUser && editForm ? (
-                    <div className="min-w-0 space-y-4">
-                        <div className="rounded-xl border border-black/10 p-4 dark:border-white/10">
-                            <div className="mb-4 flex items-start justify-between gap-3">
-                                <div>
-                                    <div className="text-base font-semibold">{selectedUser.username}</div>
-                                    <div className="text-xs text-muted-foreground">用户 #{selectedUser.id}</div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={saveSelected}
-                                        disabled={saving}
-                                        className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-                                    >
-                                        保存
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={deleteSelected}
-                                        disabled={saving || isSelf}
-                                        title={isSelf ? '不能删除当前登录管理员' : '永久删除用户'}
-                                        className="rounded-lg border border-red-500/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-500/5 disabled:cursor-not-allowed disabled:opacity-40"
-                                    >
-                                        删除
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <label className="space-y-1 text-xs text-muted-foreground">
-                                    用户名
-                                    <input
-                                        value={editForm.username}
-                                        onChange={(e) => setEditForm((v) => ({ ...v, username: e.target.value }))}
-                                        className="h-9 w-full rounded-lg border border-black/10 bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"
-                                    />
-                                </label>
-                                <label className="space-y-1 text-xs text-muted-foreground">
-                                    邮箱
-                                    <input
-                                        value={editForm.email}
-                                        onChange={(e) => setEditForm((v) => ({ ...v, email: e.target.value }))}
-                                        className="h-9 w-full rounded-lg border border-black/10 bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"
-                                    />
-                                </label>
-                                <label className="space-y-1 text-xs text-muted-foreground sm:col-span-2">
-                                    新密码（留空不修改）
-                                    <input
-                                        type="password"
-                                        value={editForm.password}
-                                        onChange={(e) => setEditForm((v) => ({ ...v, password: e.target.value }))}
-                                        className="h-9 w-full rounded-lg border border-black/10 bg-background px-3 text-sm text-foreground outline-none focus:border-blue-400 dark:border-white/10"
-                                    />
-                                </label>
-                            </div>
-                            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-black/5 pt-4 dark:border-white/10">
-                                <label
-                                    className={`flex items-center gap-2 text-sm ${isSelf ? 'text-muted-foreground' : ''}`}
-                                    title={isSelf ? '不能禁用当前登录管理员' : ''}
-                                >
-                                    <Switch
-                                        disabled={isSelf}
-                                        checked={editForm.isActive}
-                                        onCheckedChange={(checked) => setEditForm((v) => ({ ...v, isActive: checked }))}
-                                    />{' '}
-                                    启用账户
-                                </label>
-                                <label
-                                    className={`flex items-center gap-2 text-sm ${isSelf ? 'text-muted-foreground' : ''}`}
-                                    title={isSelf ? '不能撤销当前登录管理员身份' : ''}
-                                >
-                                    <Switch
-                                        disabled={isSelf}
-                                        checked={editForm.isSuperuser}
-                                        onCheckedChange={(checked) =>
-                                            setEditForm((v) => ({ ...v, isSuperuser: checked }))
-                                        }
-                                    />{' '}
-                                    管理员
-                                </label>
-                                {isSelf && (
-                                    <span className="flex min-h-7 items-center text-xs leading-5 text-muted-foreground">
-                                        当前登录管理员不能禁用自身或撤销自己的管理员身份。
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="rounded-xl border border-black/10 p-4 dark:border-white/10">
-                            <div className="mb-3">
-                                <div className="text-sm font-semibold">工具分配</div>
-                                <div className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                                    普通用户按“总体默认 → 工具集 →
-                                    单工具”逐层继承。精确工具规则优先于工具集规则；同级冲突时拒绝优先。
-                                </div>
-                            </div>
-                            {editForm.isSuperuser ? (
-                                <div className="rounded-lg border border-blue-500/15 bg-blue-500/5 px-3 py-3 text-xs text-blue-700 dark:text-blue-200">
-                                    管理员默认拥有全部工具，无需单独分配。
-                                </div>
-                            ) : (
-                                <UserToolAccessEditor catalog={catalog} rules={rules} setRules={setRules} />
-                            )}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center rounded-xl border border-dashed border-black/10 text-sm text-muted-foreground dark:border-white/10">
-                        请选择用户。
-                    </div>
-                )}
-            </div>
-
-            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                <DialogContent className="sm:max-w-[460px]">
-                    <DialogHeader>
-                        <DialogTitle>添加用户</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3 py-2">
-                        <label className="block space-y-1 text-xs text-muted-foreground">
-                            用户名
-                            <input
-                                value={createForm.username}
-                                onChange={(e) => setCreateForm((v) => ({ ...v, username: e.target.value }))}
-                                className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm text-foreground outline-none dark:border-white/10"
-                            />
-                        </label>
-                        <label className="block space-y-1 text-xs text-muted-foreground">
-                            邮箱
-                            <input
-                                value={createForm.email}
-                                onChange={(e) => setCreateForm((v) => ({ ...v, email: e.target.value }))}
-                                className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm text-foreground outline-none dark:border-white/10"
-                            />
-                        </label>
-                        <label className="block space-y-1 text-xs text-muted-foreground">
-                            密码
-                            <input
-                                type="password"
-                                value={createForm.password}
-                                onChange={(e) => setCreateForm((v) => ({ ...v, password: e.target.value }))}
-                                className="h-9 w-full rounded-lg border border-black/10 px-3 text-sm text-foreground outline-none dark:border-white/10"
-                            />
-                        </label>
-                        <label className="flex items-center gap-2 text-sm">
-                            <Switch
-                                checked={createForm.isSuperuser}
-                                onCheckedChange={(checked) => setCreateForm((v) => ({ ...v, isSuperuser: checked }))}
-                            />{' '}
-                            管理员
-                        </label>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setCreateOpen(false)}
-                            className="rounded-lg border border-black/10 px-3 py-2 text-sm dark:border-white/10"
-                        >
-                            取消
-                        </button>
-                        <button
-                            type="button"
-                            onClick={createUser}
-                            disabled={saving}
-                            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-                        >
-                            创建
-                        </button>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </SettingRow>
-    );
-}
-
-// ─── Registered Custom Components ────────────────────────────────
-// 后端只下发稳定的组件标识；具体 UI 实现由前端注册表负责。
-// 这样“自定义请求参数”不会再被误认为通用 JSON 字段，同时也便于
-// 后续继续增加专用动态设置组件，而无需扩展基础 item.type 枚举。
+// ─── Ordered options ─────────────────────────────────────────────
 function OrderedOptionsItem({ item, path }) {
     const { values, update } = useSettings();
     const { t } = useTranslation();
@@ -2816,25 +1702,6 @@ function OrderedOptionsItem({ item, path }) {
             <p className="text-xs text-muted-foreground">{t('orderedOptions.hint')}</p>
         </SettingRow>
     );
-}
-
-const CUSTOM_SETTING_COMPONENTS = {
-    orderedOptions: OrderedOptionsItem,
-    requestJsonKeyValue: JsonItem,
-    workspaceManagement: WorkspaceManagementItem,
-    userManagement: UserManagementItem,
-};
-
-function CustomItem({ item, path }) {
-    const RegisteredComponent = item.component ? CUSTOM_SETTING_COMPONENTS[item.component] : null;
-
-    if (RegisteredComponent) {
-        return <RegisteredComponent item={item} path={path} />;
-    }
-
-    // 未注册的 custom 字段统一作为 JSON 对象编辑。值类型保持 JSON 原生
-    // 语义，并允许对象/数组继续递归编辑，避免嵌套模板显示成 [object Object]。
-    return <JsonItem item={item} path={path} />;
 }
 
 // ─── Tags Item ─────
@@ -2982,12 +1849,12 @@ function GroupItem({ item, path }) {
                     value={selectedRadio}
                     onValueChange={(v) => update(path, v)}
                 >
-                    {radioChildren.map((child) => (
-                        <RadioItem key={child.name} item={child} path={[...path, child.name]} groupPath={path} />
+                    {radioChildren.map((child, index) => (
+                        <RadioItem key={child.id || `${child.name || child.type || 'field'}:${index}`} item={child} path={[...path, ...pathParts(child.name)]} groupPath={path} />
                     ))}
                 </RadioGroup>
-                {nonRadioChildren.map((child) => (
-                    <SettingItemRenderer key={child.name || child.text} item={child} path={[...path, child.name]} />
+                {nonRadioChildren.map((child, index) => (
+                    <SettingItemRenderer key={child.id || `${child.name || child.type || 'field'}:${index}`} item={child} path={[...path, ...pathParts(child.name)]} />
                 ))}
             </div>
         );
@@ -3001,8 +1868,8 @@ function GroupItem({ item, path }) {
             <div
                 className={hasCheckboxes ? 'flex flex-wrap gap-x-4 gap-y-1 px-3 sm:px-4 pb-2.5' : 'px-3 sm:px-4 pb-2.5'}
             >
-                {item.children?.map((child) => (
-                    <SettingItemRenderer key={child.name || child.text} item={child} path={[...path, child.name]} />
+                {item.children?.map((child, index) => (
+                    <SettingItemRenderer key={child.id || `${child.name || child.type || 'field'}:${index}`} item={child} path={[...path, ...pathParts(child.name)]} />
                 ))}
             </div>
         </div>
@@ -3066,357 +1933,25 @@ function InfoItem({ item }) {
     );
 }
 
-// ─── Tool Permission Matrix ────────────────────────────────────────
-const TOOL_PERMISSION_ICONS = {
-    allow: CheckCircle2,
-    ask: CircleHelp,
-    deny: Ban,
-};
-
-const TOOL_PERMISSION_STYLES = {
-    allow: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300',
-    ask: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
-    deny: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300',
-};
-
-function ToolPermissionMatrixItem({ item, path }) {
-    const { values, update } = useSettings();
-    const value = deepGet(values, path) || {};
-    const permissions = value.permissions || {};
-    const fallbackMode = value.fallbackMode || 'ask';
-    const groups = useMemo(() => deduplicateToolPermissionGroups(Array.isArray(item.groups) ? item.groups : []), [item.groups]);
-    const modes =
-        Array.isArray(item.modes) && item.modes.length
-            ? item.modes
-            : [
-                  { name: 'allow', text: '允许' },
-                  { name: 'ask', text: '询问' },
-                  { name: 'deny', text: '拒绝' },
-              ];
-    const [query, setQuery] = useState('');
-    const [manualExpandedGroups, setManualExpandedGroups] = useState(() => new Set());
-    const [allowConfirmation, setAllowConfirmation] = useState(null);
-    const normalizedQuery = query.trim().toLowerCase();
-
-    const resolveMode = useCallback(
-        (tool) => {
-            if (tool.locked && ['allow', 'ask', 'deny'].includes(tool.default)) return tool.default;
-            const explicit = readToolPermission(tool, permissions);
-            if (explicit !== undefined) return normalizeToolPermissionMode(explicit, fallbackMode);
-            if (['allow', 'ask', 'deny'].includes(tool.default)) return tool.default;
-            return fallbackMode;
-        },
-        [fallbackMode, permissions],
-    );
-
-    const setToolMode = useCallback(
-        (tool, mode) => {
-            if (tool.locked || !(tool.allowedModes || ['allow', 'ask', 'deny']).includes(mode)) return;
-            update(path, {
-                ...value,
-                permissions: { ...permissions, [getToolPermissionKey(tool)]: mode },
-            });
-        },
-        [path, permissions, update, value],
-    );
-
-    const setGroupMode = useCallback(
-        (group, mode) => {
-            update(path, {
-                ...value,
-                permissions: applyBulkToolPermissionMode(permissions, group.sourceTools || group.tools || [], mode),
-            });
-        },
-        [path, permissions, update, value],
-    );
-
-    const allTools = groups.flatMap((group) => group.tools || []);
-    const setAllMode = (mode) => {
-        update(path, {
-            ...value,
-            fallbackMode: mode,
-            permissions: applyBulkToolPermissionMode(permissions, allTools, mode),
-        });
-    };
-    const requestBulkMode = (mode, group = null) => {
-        if (mode === 'allow') {
-            setAllowConfirmation(group ? { groupId: group.id, groupName: group.name } : { all: true });
-            return;
-        }
-        if (group) setGroupMode(group, mode);
-        else setAllMode(mode);
-    };
-    const confirmAllow = () => {
-        if (allowConfirmation?.all) setAllMode('allow');
-        else {
-            const group = groups.find((entry) => entry.id === allowConfirmation?.groupId);
-            if (group) setGroupMode(group, 'allow');
-        }
-        setAllowConfirmation(null);
-    };
-    const counts = allTools.reduce(
-        (result, tool) => {
-            const mode = resolveMode(tool);
-            result[mode] = (result[mode] || 0) + 1;
-            return result;
-        },
-        { allow: 0, ask: 0, deny: 0 },
-    );
-
-    const visibleGroups = groups
-        .map((group) => {
-            const sourceTools = group.tools || [];
-            const groupMatches =
-                normalizedQuery &&
-                [group.id, group.name]
-                    .filter(Boolean)
-                    .some((text) => String(text).toLowerCase().includes(normalizedQuery));
-            return {
-                ...group,
-                sourceTools,
-                tools:
-                    !normalizedQuery || groupMatches
-                        ? sourceTools
-                        : sourceTools.filter((tool) =>
-                              [getToolPermissionKey(tool), tool.name, tool.text, tool.description]
-                                  .filter(Boolean)
-                                  .some((text) => String(text).toLowerCase().includes(normalizedQuery)),
-                          ),
-            };
-        })
-        .filter((group) => group.tools.length > 0);
-
-    const toggleGroupExpanded = useCallback((groupId) => {
-        setManualExpandedGroups((previous) => {
-            const next = new Set(previous);
-            if (next.has(groupId)) next.delete(groupId);
-            else next.add(groupId);
-            return next;
-        });
-    }, []);
-
-    return (
-        <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0 py-4 px-3 sm:px-4">
-            <div className="flex flex-col gap-1 mb-4">
-                <div className="text-[15px] font-semibold text-[#24292f] dark:text-[#e6edf3]">{item.text}</div>
-                {item.tips && <div className="text-xs leading-5 text-[#656d76] dark:text-[#8b949e]">{item.tips}</div>}
-            </div>
-
-            <div className="sticky top-0 z-10 -mx-1 mb-4 rounded-2xl border border-[#d8dee4] dark:border-[#30363d] bg-white/95 dark:bg-[#161b22]/95 p-3 backdrop-blur">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8c959f]" />
-                    <input
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="搜索工具名称、ID 或说明"
-                        className="w-full h-10 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-white dark:bg-[#0d1117] pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-blue-500/30"
-                    />
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                    {modes.map((mode) => {
-                        const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
-                        return (
-                            <span
-                                key={mode.name}
-                                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 ${TOOL_PERMISSION_STYLES[mode.name] || ''}`}
-                            >
-                                <Icon className="h-3.5 w-3.5" />
-                                {mode.text} {counts[mode.name] || 0}
-                            </span>
-                        );
-                    })}
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#eaeef2] pt-3 dark:border-[#30363d]">
-                    <span className="mr-auto text-xs text-[#656d76] dark:text-[#8b949e]">批量设置所有工具</span>
-                    {modes.map((mode) => {
-                        const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
-                        return (
-                            <button
-                                type="button"
-                                key={mode.name}
-                                onClick={() => requestBulkMode(mode.name)}
-                                className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:brightness-95 ${TOOL_PERMISSION_STYLES[mode.name] || ''}`}
-                            >
-                                <Icon className="h-3.5 w-3.5" />
-                                全部{mode.text}
-                            </button>
-                        );
-                    })}
-                </div>
-                <p className="mt-2 text-[11px] text-[#8c959f]">系统固定或不支持所选状态的工具保持原样。</p>
-            </div>
-
-            <div className="space-y-4">
-                {visibleGroups.map((group) => {
-                    const isExpanded = Boolean(normalizedQuery) || manualExpandedGroups.has(group.id);
-                    return (
-                        <section
-                            key={group.id}
-                            className="overflow-hidden rounded-2xl border border-[#d8dee4] dark:border-[#30363d] bg-white dark:bg-[#0d1117]"
-                        >
-                            <header className="flex flex-col gap-3 bg-[#f6f8fa] dark:bg-[#161b22] px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleGroupExpanded(group.id)}
-                                    aria-expanded={isExpanded}
-                                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
-                                >
-                                    <ChevronDown
-                                        className={`h-4 w-4 shrink-0 text-[#8c959f] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                                    />
-                                    <span className="min-w-0">
-                                        <span className="block truncate text-sm font-semibold">{group.name}</span>
-                                        <span className="mt-0.5 block text-xs font-normal text-[#656d76] dark:text-[#8b949e]">
-                                            共 {(group.sourceTools || group.tools || []).length} 个工具
-                                            {normalizedQuery ? `，当前显示 ${(group.tools || []).length} 个` : ''}
-                                        </span>
-                                    </span>
-                                </button>
-                                {item.allowGroupActions !== false && (
-                                    <div
-                                        className="flex flex-wrap gap-1.5"
-                                        onClick={(event) => event.stopPropagation()}
-                                    >
-                                        {modes.map((mode) => {
-                                            const Icon = TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
-                                            return (
-                                                <button
-                                                    type="button"
-                                                    key={mode.name}
-                                                    onClick={() => requestBulkMode(mode.name, group)}
-                                                    className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition hover:brightness-95 ${TOOL_PERMISSION_STYLES[mode.name] || ''}`}
-                                                >
-                                                    <Icon className="h-3.5 w-3.5" />
-                                                    全部{mode.text}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </header>
-                            {group.description && <div className="border-t border-[#eaeef2] px-3 py-2 text-xs leading-5 text-[#656d76] dark:border-[#30363d] dark:text-[#8b949e]">{group.description}</div>}
-                            {isExpanded && (
-                                <div className="divide-y divide-[#eaeef2] border-t border-[#d8dee4] dark:divide-[#21262d] dark:border-[#30363d]">
-                                    {(group.tools || []).map((tool) => {
-                                        const selectedMode = resolveMode(tool);
-                                        return (
-                                            <div
-                                                key={getToolPermissionKey(tool)}
-                                                className="flex flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
-                                            >
-                                                <div className="min-w-0 flex-1">
-                                                    <div className="flex items-center gap-2 text-sm font-medium">
-                                                        <span className="truncate">{tool.text || tool.name}</span>
-                                                        {tool.locked && (
-                                                            <LockKeyhole className="h-3.5 w-3.5 text-[#8c959f]" />
-                                                        )}
-                                                    </div>
-                                                    <div className="mt-0.5 break-all font-mono text-[11px] text-[#8c959f]">
-                                                        {getToolPermissionKey(tool)}
-                                                    </div>
-                                                    {tool.description && (
-                                                        <div className="mt-1 text-xs leading-5 text-[#656d76] dark:text-[#8b949e]">
-                                                            {tool.description}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                {tool.locked ? (
-                                                    <div
-                                                        className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-xs font-medium ${TOOL_PERMISSION_STYLES[selectedMode] || ''}`}
-                                                    >
-                                                        <LockKeyhole className="h-3.5 w-3.5" />
-                                                        <span>系统固定</span>
-                                                        <span>·</span>
-                                                        <span>
-                                                            {modes.find((mode) => mode.name === selectedMode)?.text ||
-                                                                selectedMode}
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex shrink-0 rounded-xl border border-[#d0d7de] dark:border-[#30363d] bg-[#f6f8fa] dark:bg-[#161b22] p-1">
-                                                        {modes
-                                                            .filter((mode) =>
-                                                                (
-                                                                    tool.allowedModes || ['allow', 'ask', 'deny']
-                                                                ).includes(mode.name),
-                                                            )
-                                                            .map((mode) => {
-                                                                const Icon =
-                                                                    TOOL_PERMISSION_ICONS[mode.name] || CircleHelp;
-                                                                const selected = selectedMode === mode.name;
-                                                                return (
-                                                                    <button
-                                                                        type="button"
-                                                                        key={mode.name}
-                                                                        onClick={() => setToolMode(tool, mode.name)}
-                                                                        title={mode.text}
-                                                                        className={`inline-flex h-8 min-w-8 cursor-pointer items-center justify-center gap-1 rounded-lg px-2 text-xs font-medium transition ${selected ? TOOL_PERMISSION_STYLES[mode.name] || '' : 'border border-transparent text-[#656d76] hover:bg-white dark:text-[#8b949e] dark:hover:bg-[#0d1117]'}`}
-                                                                    >
-                                                                        <Icon className="h-4 w-4" />
-                                                                        <span className="hidden md:inline">
-                                                                            {mode.text}
-                                                                        </span>
-                                                                    </button>
-                                                                );
-                                                            })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </section>
-                    );
-                })}
-                {visibleGroups.length === 0 && (
-                    <div className="rounded-2xl border border-dashed border-[#d0d7de] dark:border-[#30363d] px-4 py-10 text-center text-sm text-[#656d76] dark:text-[#8b949e]">
-                        没有找到匹配的工具
-                    </div>
-                )}
-            </div>
-            <AlertDialog open={Boolean(allowConfirmation)} onOpenChange={(open) => { if (!open) setAllowConfirmation(null); }}>
-                <AlertDialogContent className="z-[300] sm:max-w-[440px]">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="flex items-center gap-2">
-                            <TriangleAlert className="h-5 w-5 text-amber-600" />
-                            确认全部允许？
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="leading-relaxed">
-                            {allowConfirmation?.all ? '这会将所有可编辑工具' : `这会将“${allowConfirmation?.groupName || '此工具组'}”中可编辑的工具`}
-                            设为允许。AI 使用这些工具时将不再逐项询问，可能读取或修改数据、启动后台任务。
-                            系统固定或不支持“允许”的工具不会更改。确认后还需保存，仅影响之后新建的会话。
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => setAllowConfirmation(null)}>取消</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmAllow}>确认全部允许</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
-    );
-}
-
 function MultiSelectItem({ item, path }) {
     const { values, update } = useSettings();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const value = deepGet(values, path);
-    const emptyMeansAll = item.emptyMeansAll === true || item.name === 'allowedUserIds';
+    const emptyMeansAll = item.emptyMeansAll === true;
     const unrestricted = emptyMeansAll ? !Array.isArray(value) || value.length === 0 : value == null;
     const selected = Array.isArray(value) ? value : [];
     const options = item.options || [];
     const filtered = options.filter((option) =>
         `${option.label} ${option.value}`.toLowerCase().includes(search.trim().toLowerCase()),
     );
-    const unrestrictedLabel = item.unrestrictedLabel || (emptyMeansAll ? '所有用户' : '不限模型');
-    const selectionLabel = item.selectionLabel || (emptyMeansAll ? '已选择 {count} 个用户' : '已选择 {count} 个模型');
+    const unrestrictedLabel = item.unrestrictedLabel || '全部选项';
+    const selectionLabel = item.selectionLabel || '已选择 {count} 项';
     const label = unrestricted
         ? unrestrictedLabel
         : selected.length
           ? selectionLabel.replace('{count}', String(selected.length))
-          : item.emptyLabel || '未选择模型';
+          : item.emptyLabel || '未选择';
     return (
         <SettingRow text={item.text} tips={item.tips} required={item.required} controlFillAvailable>
             <Popover
@@ -3447,7 +1982,7 @@ function MultiSelectItem({ item, path }) {
                         <Input
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
-                            placeholder={item.searchPlaceholder || (emptyMeansAll ? '搜索用户' : '搜索模型')}
+                            placeholder={item.searchPlaceholder || '搜索选项'}
                             className="border-0 shadow-none focus-visible:ring-0"
                         />
                     </div>
@@ -3500,7 +2035,7 @@ function MultiSelectItem({ item, path }) {
                         ))}
                         {filtered.length === 0 && (
                             <p className="p-3 text-center text-xs text-gray-400">
-                                {item.noMatchesLabel || (emptyMeansAll ? '没有匹配的用户' : '没有匹配的模型')}
+                                {item.noMatchesLabel || '没有匹配的选项'}
                             </p>
                         )}
                     </div>
@@ -3512,14 +2047,39 @@ function MultiSelectItem({ item, path }) {
 
 // ─── Item Renderer ─────────────────────────────────────────────────
 function SettingItemRenderer({ item, path }) {
-    const { values } = useSettings();
+    const parentContext = useSettings();
+    const { values } = parentContext;
+    const storage = typeof item.storage === 'object' ? item.storage : null;
+    const storageId = JSON.stringify(storage);
+    const pathId = JSON.stringify(path);
+    const isDisabled = item.disabled === true || item.readOnly === true || parentContext.disabled || (item.disabledWhen ? matchesCondition(item.disabledWhen, { form: values, item: parentContext.item, parentItem: parentContext.parentItem }) : false);
+    const context = { ...parentContext, disabled: isDisabled, update: isDisabled ? () => {} : parentContext.update };
+    const effectiveItem = useMemo(() => item.disabled === isDisabled ? item : { ...item, disabled: isDisabled }, [item, isDisabled]);
+    useEffect(() => {
+        if (!storage?.key) return undefined;
+        let active = true;
+        context.storageBindings.current.set(pathId, storage);
+        const load = async () => {
+            const stored = await context.client.read(storage.key, storage);
+            const value = storage.path ? getValue(stored, storage.path) : stored;
+            if (active && value !== undefined) context.hydrate(path, value);
+        };
+        void load().catch((cause) => console.error('Unable to read client setting', cause));
+        const unsubscribe = context.client.subscribe(() => { void load().catch(() => {}); });
+        return () => { active = false; unsubscribe(); context.storageBindings.current.delete(pathId); };
+    // Bindings are descriptor values, not mutable dependencies of the current form.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [storageId, pathId, context.client, context.hydrate]);
+
+    if (item.when && !matchesCondition(item.when, { form: values, item: context.item })) return null;
+    item = effectiveItem;
 
     if (item.showWhen && typeof item.showWhen === 'object' && !Array.isArray(item.showWhen)) {
         let shouldShow = true;
         const parentPath = path.slice(0, -1);
 
         for (const [depField, expected] of Object.entries(item.showWhen)) {
-            const depFullPath = [...parentPath, depField];
+            const depFullPath = [...parentPath, ...pathParts(depField)];
             const actual = deepGet(values, depFullPath);
 
             if (Array.isArray(expected)) {
@@ -3534,13 +2094,31 @@ function SettingItemRenderer({ item, path }) {
         if (!shouldShow) return null;
     }
 
-    switch (item.type) {
-        case 'temp-cache-cleanup':
-            return <TempCacheCleanup item={item} />;
+    const render = () => { switch (item.type) {
+        case 'form':
+            return <GroupItem item={{ ...item, children: item.options || item.children || [] }} path={path} />;
+        case 'resource':
+            return <ResourceNode item={item} context={context} renderFields={context.renderFields} />;
+        case 'actions':
+            return <ActionsNode item={item} context={context} />;
+        case 'async-operation':
+            return <AsyncOperationNode item={item} context={context} />;
+        case 'action':
+            return <ActionButton action={item.action || item} context={context} />;
+        case 'secret-map':
+            return <SettingRow fullWidth text={item.text} tips={item.tips}><SecretMapNode item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} /></SettingRow>;
+        case 'file-input':
+            return <SettingRow fullWidth text={item.text} tips={item.tips}><FileNode item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} /></SettingRow>;
+        case 'table':
+            return <TableNode item={item} value={getValue(values, path)} context={context} />;
+        case 'matrix':
+            return <MatrixNode item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} />;
+        case 'diff':
+            return <DiffNode item={item} value={getValue(values, path)} context={context} />;
         case 'list':
             return <ListItem item={item} path={path} />;
         case 'image':
-            return <ImageItem item={item} path={path} />;
+            return item.upload ? <SettingRow fullWidth text={item.text} tips={item.tips}><FileNode item={{ ...item, accept: item.accept || 'image/*' }} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} /></SettingRow> : <ImageItem item={item} path={path} />;
         case 'group':
             return <GroupItem item={item} path={path} />;
         case 'heading':
@@ -3561,171 +2139,161 @@ function SettingItemRenderer({ item, path }) {
             return <MultiSelectItem item={item} path={path} />;
         case 'select': {
             const allowed = item.allowedBy ? deepGet(values, [...path.slice(0, -1), item.allowedBy]) : null;
-            const filtered = Array.isArray(allowed)
-                ? {
-                      ...item,
-                      options: (item.options || []).filter(
-                          (option) => option.value === '' || allowed.includes(option.value),
-                      ),
-                  }
-                : item;
+            const filtered = {
+                ...item,
+                options: (item.options || []).filter((option) =>
+                    (!Array.isArray(allowed) || option.value === '' || allowed.includes(option.value))
+                    && (!option.when || matchesCondition(option.when, { form: values, item: context.item }))),
+            };
             return <SelectItem item={filtered} path={path} />;
         }
-        case 'custom':
-            return <CustomItem item={item} path={path} />;
+        case 'ordered-options':
+            return <OrderedOptionsItem item={item} path={path} />;
         case 'json':
             return <JsonItem item={item} path={path} />;
         case 'tags':
             return <TagsItem item={item} path={path} />;
-        case 'toolPermissionMatrix':
-            return <ToolPermissionMatrixItem item={item} path={path} />;
         default:
-            return null;
-    }
+            { const Registered = getSettingsComponent(item.type);
+                return Registered ? <Registered item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={{ ...context, disabled: item.disabled }} renderFields={context.renderFields} />
+                    : <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive">客户端暂不支持组件：{item.type || '未命名'}，请升级客户端。</p>; }
+    } };
+    return <SettingsContext.Provider value={context}><fieldset disabled={isDisabled} className="contents min-w-0">{render()}</fieldset></SettingsContext.Provider>;
 }
 
 // ─── Main Component ────────────────────────────────────────────────
-export default function DynamicSettings({ config, onChange, initialValues, className, onImageUpload, runtimeContext, validationRef, onSave }) {
+export default function DynamicSettings({ config = [], onChange, initialValues, className, onImageUpload, runtimeContext = {}, validationRef, onSave, disabled = false }) {
     const [values, setValues] = useState(() => buildDefaults(config, initialValues));
     const valuesRef = useRef(values);
     const onChangeRef = useRef(onChange);
     onChangeRef.current = onChange;
+    const configRef = useRef(config);
+    configRef.current = config;
+    const runtimeRef = useRef(runtimeContext);
+    runtimeRef.current = runtimeContext;
     const previousConfigRef = useRef(config);
+    const previousInitialRef = useRef(initialValues);
     const editorScope = useRef(null);
-    useEffect(() => {
-        const host = editorScope.current;
-        const changed = (event) => {
-            if (validationRef && event.detail.userChanged && (!event.detail.valid || event.detail.pendingKeys?.length))
-                onChangeRef.current?.(valuesRef.current);
-        };
-        host?.addEventListener('cwm-json-editor-state', changed);
-        return () => host?.removeEventListener('cwm-json-editor-state', changed);
-    }, [validationRef]);
-
+    const resourceRefreshers = useRef(new Map());
+    const storageBindings = useRef(new Map());
+    const [confirm, confirmation] = useConfirmation();
+    const [descriptorDialog, setDescriptorDialog] = useState(null);
+    const client = runtimeContext.client || clientAdapter;
+    const hydrate = useCallback((path, value) => {
+        const next = setValue(valuesRef.current, path, value);
+        valuesRef.current = next;
+        setValues(next);
+    }, []);
     const update = useCallback((path, value) => {
-        // onChange 只能由真实的控件交互触发。不要把副作用放进 React 的
-        // setState updater：StrictMode 会重复调用 updater 来检查纯函数，
-        // 之前会因此产生重复回调，并把组件初始化误判为用户修改。
-        const next = deepSet(valuesRef.current, path, value);
+        let next = setValue(valuesRef.current, path, value);
+        const parent = path.slice(0, -1);
+        const field = findField(configRef.current, path);
+        if (field?.rules) {
+            const local = applyRules(getValue(next, parent, next), field.rules, { root: next, changedField: path[path.length - 1] });
+            next = parent.length ? setValue(next, parent, local) : local;
+        }
+        valuesRef.current = next;
+        setValues(next);
+        onChangeRef.current?.(next);
+        const binding = storageBindings.current.get(JSON.stringify(path));
+        if (binding) {
+            void Promise.resolve(client.read(binding.key, binding)).then((current) => client.write(binding.key,
+                binding.path ? setValue(current || {}, binding.path, value) : value, binding)).catch((cause) => toast.error(cause.message));
+        }
+    }, [client]);
+    const patchForm = useCallback((patch, target = 'form') => {
+        const next = target === 'form' ? { ...valuesRef.current, ...patch } : setValue(valuesRef.current, target.replace(/^form\./, ''), patch);
         valuesRef.current = next;
         setValues(next);
         onChangeRef.current?.(next);
     }, []);
-
+    const refresh = useCallback(async (id) => {
+        if (id && resourceRefreshers.current.has(id)) return resourceRefreshers.current.get(id)();
+        await Promise.all([...resourceRefreshers.current.values()].map((callback) => callback()));
+        return runtimeRef.current.refresh?.(id);
+    }, []);
+    const registerResource = useCallback((id, callback) => {
+        if (!id) return () => {};
+        resourceRefreshers.current.set(id, callback);
+        return () => { if (resourceRefreshers.current.get(id) === callback) resourceRefreshers.current.delete(id); };
+    }, []);
+    const subscribe = useCallback((event, callback) => onEvent({ event }).then(callback), []);
+    const navigate = useCallback((path) => {
+        if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) throw new Error('无效的页面地址。');
+        if (runtimeRef.current.navigate) runtimeRef.current.navigate(path);
+        else window.location.assign(path);
+    }, []);
+    const controller = useActionExecutor({
+        api: runtimeContext.api || apiClient, client, confirm, refresh, navigate, patchForm,
+        scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {} }),
+        openDialog: setDescriptorDialog,
+        notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
+        updateUser: (user) => runtimeRef.current.updateUser?.(user),
+    });
+    const ctx = {
+        values, update, hydrate, patchForm, onImageUpload, runtimeContext, onSave,
+        item: runtimeContext.item, parentItem: runtimeContext.parentItem, client, api: runtimeContext.api || apiClient,
+        confirm, refresh, registerResource, subscribe, navigate,
+        execute: async (...args) => { try { if (args[0].validate !== false) validateSettingsScope(editorScope.current); } catch (cause) { toast.error(cause.message); throw cause; } return controller.execute(...args); }, operations: controller.operations,
+        disabled: disabled || runtimeContext.disabled === true,
+        storageBindings,
+        resolve: (value, extra = {}) => resolveValue(value, { form: valuesRef.current, item: runtimeRef.current.item, ...extra }),
+    };
+    const renderFields = (options, initial, changed, extra = {}) => <DynamicSettings
+        key={extra.key} config={options} initialValues={initial} onChange={changed}
+        disabled={extra.disabled || ctx.disabled}
+        runtimeContext={{ ...runtimeContext, ...extra.runtimeContext, client, item: Object.hasOwn(extra, 'item') ? extra.item : runtimeContext.item }}
+        onImageUpload={onImageUpload} />;
+    ctx.renderFields = renderFields;
     useEffect(() => {
-        if (previousConfigRef.current === config) return;
-
+        const host = editorScope.current;
+        const changed = (event) => {
+            if (validationRef && event.detail.userChanged && (!event.detail.valid || event.detail.pendingKeys?.length)) onChangeRef.current?.(valuesRef.current);
+        };
+        host?.addEventListener('cwm-json-editor-state', changed);
+        return () => host?.removeEventListener('cwm-json-editor-state', changed);
+    }, [validationRef]);
+    useEffect(() => {
+        const configChanged = previousConfigRef.current !== config;
+        const externalChanged = previousInitialRef.current !== initialValues && JSON.stringify(initialValues) !== JSON.stringify(valuesRef.current);
         previousConfigRef.current = config;
+        previousInitialRef.current = initialValues;
+        if (!configChanged && !externalChanged) return;
         const next = buildDefaults(config, initialValues);
         valuesRef.current = next;
         setValues(next);
-        // 配置初始化/切换不是用户编辑，不主动调用 onChange。
     }, [config, initialValues]);
-
-    const ctx = useMemo(
-        () => ({ values, update, onImageUpload, runtimeContext, onSave }),
-        [values, update, onImageUpload, runtimeContext, onSave],
-    );
-
-    return (
-        <SettingsContext.Provider value={ctx}>
-            <div
-                ref={(node) => { editorScope.current = node; if (node) node._cwmSettingsValues = valuesRef; if (validationRef) validationRef.current = node; }}
-                className={`w-full min-w-0 font-sans text-[#1a1d21] dark:text-[#e4e7eb] rounded-lg overflow-hidden ${className || ''}`}
-            >
-                {config.map((item, i) => {
-                    const key = item.name || item.text || `item-${i}`;
-                    const path = item.name ? [item.name] : [];
-                    return <SettingItemRenderer key={key} item={item} path={path} />;
-                })}
-            </div>
-        </SettingsContext.Provider>
-    );
+    return <SettingsContext.Provider value={ctx}>
+        <div ref={(node) => { editorScope.current = node; if (node) node._cwmSettingsValues = valuesRef; if (validationRef) validationRef.current = node; }}
+            className={`w-full min-w-0 space-y-3 rounded-lg ${className || ''}`}>
+            {config.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || 'field'}:${index}`} item={field} path={field.name ? pathParts(field.name) : []} />)}
+        </div>
+        <DescriptorDialog descriptor={descriptorDialog} context={ctx} renderFields={renderFields} onClose={() => setDescriptorDialog(null)} />
+        {confirmation}
+    </SettingsContext.Provider>;
 }
 
-// ─── Build defaults from config ────────────────────────────────────
+function findField(fields, path) {
+    for (const field of fields || []) {
+        const parts = pathParts(field.name);
+        if (!parts.every((key, index) => String(key) === String(path[index]))) continue;
+        if (parts.length === path.length) return field;
+        const rest = path.slice(parts.length);
+        const nested = field.type === 'list' && /^\d+$/.test(String(rest[0])) ? rest.slice(1) : rest;
+        const found = findField(field.children || field.options, nested);
+        if (found) return found;
+    }
+    return null;
+}
+
 function buildDefaults(config, initialValues) {
-    const result = {};
-    for (const item of config) {
-        if (item.type === 'heading' || item.type === 'info' || item.type === 'temp-cache-cleanup') continue;
-        if (item.type === 'list' && item.name) {
-            const initList = initialValues?.[item.name];
-            // 为每个列表项补充稳定的 internalId
-            result[item.name] = Array.isArray(initList)
-                ? initList.map((entry) => ({
-                      ...entry,
-                      internalId: entry.internalId || generateInternalId(),
-                  }))
-                : [];
-            continue;
-        }
-        if (item.type === 'group' && item.name && item.children) {
-            const hasRadios = item.children.some((c) => c.type === 'radio');
-            if (hasRadios) {
-                const radioChildren = item.children.filter((c) => c.type === 'radio');
-                const defaultRadio = radioChildren.find((c) => c.default)?.name || radioChildren[0]?.name;
-                if (initialValues && typeof initialValues[item.name] === 'string') {
-                    result[item.name] = initialValues[item.name];
-                } else {
-                    result[item.name] = defaultRadio;
-                }
-            } else {
-                const groupResult = {};
-                for (const child of item.children) {
-                    if (child.type === 'info') continue;
-                    if (child.name) {
-                        const initVal = initialValues?.[item.name]?.[child.name];
-                        if (initVal !== undefined) {
-                            groupResult[child.name] = initVal;
-                        } else if (child.defaultNull) {
-                            groupResult[child.name] = null;
-                        } else {
-                            groupResult[child.name] = child.default ?? (child.nullable ? null : undefined);
-                        }
-                    }
-                }
-                result[item.name] = groupResult;
-            }
-        } else if (item.name) {
-            if (item.type === 'custom') {
-                const base = item.default ?? {};
-                const override = initialValues?.[item.name];
-                result[item.name] = override && typeof override === 'object' ? deepMerge(base, override) : base;
-            } else {
-                const initVal = initialValues?.[item.name];
-                if (initVal !== undefined) {
-                    result[item.name] = initVal;
-                } else if (item.defaultNull) {
-                    result[item.name] = null;
-                } else {
-                    result[item.name] = item.default ?? (item.nullable ? null : undefined);
-                }
-            }
+    let values = pageValues(config, initialValues);
+    for (const field of config || []) {
+        if (!field.name) continue;
+        if (field.type === 'list') {
+            const list = getValue(values, field.name, []);
+            if (Array.isArray(list)) values = setValue(values, field.name, list.map((entry) => ({ ...entry, [ROW_KEY]: entry[ROW_KEY] || generateInternalId() })));
         }
     }
-    return result;
-}
-
-function deepMerge(base, overrides) {
-    if (!overrides || typeof overrides !== 'object') return base;
-    const result = { ...base };
-    for (const key in overrides) {
-        if (Object.prototype.hasOwnProperty.call(overrides, key)) {
-            const baseVal = result[key];
-            const overrideVal = overrides[key];
-            if (
-                baseVal !== null &&
-                overrideVal !== null &&
-                typeof baseVal === 'object' &&
-                typeof overrideVal === 'object' &&
-                !Array.isArray(baseVal) &&
-                !Array.isArray(overrideVal)
-            ) {
-                result[key] = deepMerge(baseVal, overrideVal);
-            } else {
-                result[key] = overrideVal;
-            }
-        }
-    }
-    return result;
+    return values;
 }

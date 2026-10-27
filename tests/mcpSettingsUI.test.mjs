@@ -1,92 +1,68 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import path from 'node:path';
-import { build } from 'esbuild';
-import { JSDOM } from 'jsdom';
-import React, { act } from 'react';
-import { createRoot } from 'react-dom/client';
+import { mount, button, click, edit, ref, resource, act } from './helpers/settingsRuntimeHarness.mjs';
 
-await build({ entryPoints: ['src/components/setting/MCPSettings.jsx'], outfile: 'temp/mcp-settings-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', plugins: [{ name: 'mcp-ui', setup(builder) {
-  builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: requested }) => ({ path: requested, external: true }));
-  builder.onResolve({ filter: /^@\/features\/mcp\/settingsModel\.js$/ }, () => ({ path: path.resolve('src/features/mcp/settingsModel.js') }));
-  builder.onResolve({ filter: /^@\// }, ({ path: requested }) => ({ path: requested, namespace: 'mock' }));
-  builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: requested }) => {
-    if (requested.endsWith('/apiClient.js')) return { loader: 'js', contents: 'export default {get:(...args)=>globalThis.mcpUI.get(...args),post:(...args)=>globalThis.mcpUI.post(...args),patch:(...args)=>globalThis.mcpUI.patch(...args),delete:(...args)=>globalThis.mcpUI.delete(...args)};' };
-    if (requested.endsWith('/useEventStore.jsx')) return { loader: 'js', contents: 'export const onEvent=()=>({then(listener){globalThis.mcpUI.listeners.push(listener);return ()=>{globalThis.mcpUI.listeners=globalThis.mcpUI.listeners.filter(value=>value!==listener);};}});' };
-    if (requested.endsWith('/useConfirmation.jsx')) return { loader: 'js', contents: 'export const useConfirmation=()=>[async(options)=>{globalThis.mcpUI.confirmations.push(options);return true;},null];' };
-    if (requested.endsWith('/button')) return { loader: 'jsx', contents: 'export const Button=({children,variant,size,...props})=><button {...props}>{children}</button>;' };
-    if (requested.endsWith('/badge')) return { loader: 'jsx', contents: 'export const Badge=({children,variant,...props})=><span {...props}>{children}</span>;' };
-    if (requested.endsWith('/input')) return { loader: 'jsx', contents: 'export const Input=(props)=><input {...props}/>;' };
-    if (requested.endsWith('/switch')) return { loader: 'jsx', contents: 'export const Switch=({checked,onCheckedChange,...props})=><input type="checkbox" checked={checked} onChange={event=>onCheckedChange?.(event.target.checked)} {...props}/>;' };
-    if (requested.endsWith('/dialog')) return { loader: 'jsx', contents: 'export const Dialog=({open,children})=>open?<div>{children}</div>:null;export const DialogContent=({children,...props})=><div role="dialog" {...props}>{children}</div>;export const DialogHeader=({children,...props})=><header {...props}>{children}</header>;export const DialogTitle=({children})=><h2>{children}</h2>;export const DialogDescription=({children})=><p>{children}</p>;export const DialogFooter=({children,...props})=><footer {...props}>{children}</footer>;' };
-    if (requested.endsWith('/select')) return { loader: 'jsx', contents: 'export const Select=({children})=><div>{children}</div>;export const SelectContent=Select;export const SelectItem=({children})=><span>{children}</span>;export const SelectTrigger=({children})=><button type="button">{children}</button>;export const SelectValue=()=>null;' };
-    throw new Error(`Unexpected import ${requested}`);
-  });
-} }] });
+const fixture = (changes = {}) => ({ id: 'server-id', slug: 'robot', title: 'Robot', transport: 'http', revision: 2, connection: { url: 'http://localhost:9023/mcp', headers: { Authorization: '' } }, defaults: { default: 'ask' }, toolPolicies: {}, ...changes });
+const descriptor = () => resource({ id: 'mcp-servers', source: { endpoint: '/mcp', listPath: 'servers' }, editor: {
+    options: [{ type: 'text', name: 'title', text: '名称', required: true }, { type: 'secret-map', name: 'connection.headers', text: '请求头' }, { type: 'json', name: 'defaults', text: '工具默认策略' }, { type: 'json', name: 'toolPolicies', text: '工具策略' }],
+    defaults: {}, update: { id: 'save', endpoint: '/settings/{item.id}', method: 'PATCH', body: { title: ref('form.title'), connection: ref('form.connection'), defaults: ref('form.defaults'), toolPolicies: ref('form.toolPolicies'), revision: ref('item.revision') } },
+} });
 
-const { default: MCPSettings } = await import('../temp/mcp-settings-test.mjs');
-const fixture = (changes = {}) => ({ id: 'server-id', slug: 'robot', title: 'Robot', description: 'fixture', transport: 'http', enabled: true, revision: 2, connectTimeout: 10, callTimeout: 120, maxConcurrency: 4, connection: { url: 'http://localhost:9023/mcp', headers: { Authorization: '' } }, defaults: { default: 'ask', directExposure: false }, toolPolicies: {}, tools: [], status: 'untested', needsPublish: true, ...changes });
-
-async function mount(server) {
-  const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
-  for (const key of ['window', 'document', 'HTMLElement', 'Node', 'Event']) globalThis[key] = dom.window[key];
-  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  globalThis.mcpUI = { server, calls: [], listeners: [], confirmations: [], tasks: [],
-    async get(url) { this.calls.push(['get', url]); return { servers: [this.server] }; },
-    async post(url, data) { this.calls.push(['post', url, data]); return { taskId: 'probe-task' }; },
-    async patch(url, data) { this.calls.push(['patch', url, data]); return { server: this.server }; },
-    async delete(url, data) { this.calls.push(['delete', url, data]); return {}; },
-  };
-  const root = createRoot(document.getElementById('root'));
-  await act(async () => root.render(React.createElement(MCPSettings, { config: { endpoint: '/mcp' }, onTask: id => mcpUI.tasks.push(id) })));
-  return { close: async () => { await act(async () => root.unmount()); dom.window.close(); } };
-}
-const button = text => [...document.querySelectorAll('button')].find(node => node.textContent.trim() === text);
-const click = async element => { assert.ok(element); await act(async () => element.click()); };
-
-test('existing secrets remain masked when the editor saves an unchanged connection', async () => {
-  const ui = await mount(fixture());
-  try {
-    await click(button('编辑'));
-    assert.equal(document.querySelector('[aria-label="请求头值 1"]').type, 'password');
-    assert.equal(document.querySelector('[aria-label="请求头值 1"]').value, '');
-    await act(async () => document.querySelector('form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })));
-    const saved = mcpUI.calls.find(([method]) => method === 'patch');
-    assert.deepEqual(saved[2].connection.headers, { Authorization: '' });
-    assert.equal(saved[2].revision, 2);
-    assert.equal(saved[2].slug, 'robot');
-    assert.equal(document.querySelector('[role="dialog"]'), null);
-  } finally { await ui.close(); }
+test('MCP settings use the shared resource editor with masked and unchanged secrets', async () => {
+    const ui = await mount([descriptor()], { servers: [fixture()] });
+    try {
+        await click(button('编辑'));
+        const secret = document.querySelector('[aria-label="请求头内容 1"]');
+        assert.equal(secret.type, 'password'); assert.equal(secret.value, '');
+        await click(button('保存'));
+        const payload = settingsUI.calls.find(([method]) => method === 'patch')[2];
+        assert.deepEqual(payload.connection.headers, { Authorization: '' }); assert.equal(payload.revision, 2);
+        assert.equal(Object.hasOwn(payload, 'id'), false);
+    } finally { await ui.close(); }
 });
 
-test('rapid probe clicks submit once and expose the exact background task link', async () => {
-  const ui = await mount(fixture());
-  try {
-    const probe = button('刷新工具');
-    await act(async () => { probe.click(); probe.click(); });
-    assert.equal(mcpUI.calls.filter(([method]) => method === 'post').length, 1);
-    assert.deepEqual(mcpUI.calls.find(([method]) => method === 'post')[2], { revision: 2, operation: 'discover' });
-    await click(button('查看任务'));
-    assert.deepEqual(mcpUI.tasks, ['probe-task']);
-  } finally { await ui.close(); }
+test('probe submits once for rapid clicks and opens the exact background task', async () => {
+    const page = descriptor();
+    page.actions = [{ id: 'probe', label: '检测', method: 'POST', endpoint: '/mcp/{item.id}/probe', watch: { endpoint: '/tasks/{response.taskId}', terminal: ['completed', 'failed', 'cancelled', 'interrupted'], success: ['completed'], taskPage: '/tasks?taskId={response.taskId}' } }];
+    let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const ui = await mount([page], null, (method, url) => method === 'post' ? { taskId: 'probe-task' } : url.startsWith('/tasks/') ? pending : { servers: [fixture()] });
+    try {
+        await act(async () => { button('检测').click(); button('检测').click(); });
+        assert.equal(settingsUI.calls.filter(([method]) => method === 'post').length, 1);
+        await click(button('查看详情'));
+        assert.deepEqual(settingsUI.navigated, ['/tasks?taskId=probe-task']);
+    } finally { finish({ status: 'completed' }); await ui.close(); }
 });
 
-test('candidate publication sends the candidate identity and current revision', async () => {
-  const ui = await mount(fixture({ candidateId: 'candidate-id', candidateTools: [{ name: 'echo', inputSchema: {} }], diff: { added: ['echo'], changed: [], removed: [] } }));
-  try {
-    assert.match(document.body.textContent, /等待确认/);
-    await click(button('确认发布'));
-    const published = mcpUI.calls.find(([method, url]) => method === 'post' && url.endsWith('/publish'));
-    assert.deepEqual(published[2], { revision: 2, candidateId: 'candidate-id' });
-  } finally { await ui.close(); }
+test('candidate publication requires its identity and saved revision from the record', async () => {
+    const page = descriptor();
+    page.actions = [{ id: 'publish', label: '发布', method: 'POST', endpoint: '/mcp/{item.id}/publish', when: { left: ref('item.candidateId'), op: 'truthy' }, body: { candidateId: ref('item.candidateId'), revision: ref('item.revision') } }];
+    const ui = await mount([page], { servers: [fixture({ candidateId: 'candidate-3', revision: 6 })] });
+    try { await click(button('发布')); assert.deepEqual(settingsUI.calls.find(([method]) => method === 'post').slice(0, 3), ['post', '/mcp/server-id/publish', { candidateId: 'candidate-3', revision: 6 }]); } finally { await ui.close(); }
 });
 
-test('a tool named defaults opens its own advanced policy instead of server defaults', async () => {
-  const ui = await mount(fixture({ tools: [{ name: 'defaults', inputSchema: {} }], toolPolicies: { defaults: { default: 'deny' } } }));
-  try {
-    await click(button('工具策略'));
-    const advanced = [...document.querySelectorAll('button')].filter(node => node.textContent.trim() === '高级配置');
-    await click(advanced[1]);
-    assert.deepEqual(JSON.parse(document.querySelector('[aria-label="高级策略 JSON"]').value), { default: 'deny' });
-  } finally { await ui.close(); }
+test('advanced tool policies with reserved or dotted names do not collide with defaults', async () => {
+    const ui = await mount([descriptor()], { servers: [fixture()] });
+    try {
+        await click(button('编辑'));
+        await edit(document.querySelector('[aria-label="工具策略"]'), JSON.stringify({ defaults: { default: 'deny' }, 'odd.tool': { default: 'allow', execution: { promote: true } } }));
+        await click(button('保存'));
+        const payload = settingsUI.calls.find(([method]) => method === 'patch')[2];
+        assert.deepEqual(payload.defaults, { default: 'ask' });
+        assert.equal(payload.toolPolicies.defaults.default, 'deny');
+        assert.equal(payload.toolPolicies['odd.tool'].execution.promote, true);
+    } finally { await ui.close(); }
+});
+
+test('duplicate secret keys block saving until the invalid row is fixed', async () => {
+    const ui = await mount([descriptor()], { servers: [fixture()] });
+    try {
+        await click(button('编辑'));
+        await click(button('添加键值'));
+        await edit(document.querySelector('[aria-label="请求头名称 2"]'), 'Authorization');
+        await click(button('保存'));
+        assert.match(document.body.textContent, /键名不能重复/);
+        assert.equal(settingsUI.calls.some(([method]) => method === 'patch'), false);
+    } finally { await ui.close(); }
 });

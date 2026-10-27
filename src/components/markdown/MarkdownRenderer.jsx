@@ -34,6 +34,7 @@ import {
 import 'katex/dist/katex.min.css';
 
 import { resolveCwmUrl } from '@/lib/virtualUrl.js';
+import { authorizedResourceUrl } from '../../runtime/backend/connection.js';
 import { downloadDocumentResource, isDocumentDownloadUrl } from '@/lib/resourceDownload.js';
 import ResourceImage from './ResourceImage.jsx';
 import ResourceVideo from './ResourceVideo.jsx';
@@ -789,9 +790,9 @@ function MarkdownRendererInner({
                 if (resourceBaseUrl && safe?.startsWith('assets/')) {
                     const relative = safe.slice('assets/'.length);
                     if (relative.split('/').some((part) => part === '..' || part === '.')) return '';
-                    return resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/');
+                    return authorizedResourceUrl(resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/'));
                 }
-                return safe;
+                return authorizedResourceUrl(safe);
             }}
         >
             {processedContent}

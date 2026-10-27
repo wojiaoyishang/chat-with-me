@@ -1,4 +1,5 @@
 import { BASE_BACKEND_URL } from '@/config.js';
+import { authorizedResourceUrl } from '../runtime/backend/connection.js';
 
 const decodeSegments = (path) => {
     try {
@@ -46,7 +47,7 @@ export const isToolOnlyCwmUrl = (value) => classifyCwmUrl(value)?.kind === 'tool
  * cwm://host/... are opaque/lazy tool resources and MUST NOT trigger network I/O
  * merely because a React component rendered them.
  */
-export const resolveCwmUrl = (value, { download = false } = {}) => {
+const resolveRawCwmUrl = (value, { download = false } = {}) => {
     if (typeof value !== 'string') return null;
     const raw = value.trim();
     if (!raw.toLowerCase().startsWith('cwm://')) return null;
@@ -105,9 +106,11 @@ export const resolveCwmUrl = (value, { download = false } = {}) => {
     return '';
 };
 
+export const resolveCwmUrl = (value, options) => authorizedResourceUrl(resolveRawCwmUrl(value, options));
+
 export const resolveResourceUrl = (value) => {
     const resolved = resolveCwmUrl(value);
-    return resolved === null ? value : resolved;
+    return authorizedResourceUrl(resolved === null ? value : resolved);
 };
 
 export const artifactPreviewVirtualUrl = (serverId) => {

@@ -1,6 +1,14 @@
-export const BASE_BACKEND_URL = '/api';
-export const WEBSOCKET_URL = '/ws';
-export const REALTIME_VOICE_WEBSOCKET_URL = '/ws/realtime';
+import { getBackendConnection, backendSocketUrl, getBackendService, subscribeBackend } from './runtime/backend/connection.js';
+
+// These describe the window's selected connection, never a compile-time server.
+// A manual backend switch starts a fresh window runtime at the connection boundary.
+export const BASE_BACKEND_URL = getBackendConnection().url;
+export let WEBSOCKET_URL = backendSocketUrl('ws');
+export let REALTIME_VOICE_WEBSOCKET_URL = backendSocketUrl('ws/realtime');
+subscribeBackend(() => {
+    WEBSOCKET_URL = backendSocketUrl('ws');
+    REALTIME_VOICE_WEBSOCKET_URL = backendSocketUrl('ws/realtime');
+});
 
 export const apiEndpoint = {
     CHATBOX_ENDPOINT: '/chat/chatbox',
@@ -35,7 +43,7 @@ export const apiEndpoint = {
     ADMIN_TOOL_CATALOG_ENDPOINT: '/user/admin/tool-catalog',
     DOCUMENT_ENDPOINT: '/document',
     TASKS_ENDPOINT: '/tasks',
-    SETTING_TABS_ENDPOINT: '/setting/tabs',
+    get SETTING_TABS_ENDPOINT() { return getBackendService('settings', '/setting/tabs'); },
     ASR_ENDPOINT: '/asr',
     NOTIFICATION_TYPES_ENDPOINT: '/notification/types',
     NOTIFICATION_PENDING_ENDPOINT: '/notification/pending',

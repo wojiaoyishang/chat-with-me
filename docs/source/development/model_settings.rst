@@ -10,11 +10,11 @@
 #. 选择后端提供的模板，例如 ``DeepSeek (Completions API)`` 或 ``DeepSeek (by LiteLLM)``；
 #. 查看模板对应的目标 URL / LiteLLM API Base；
 #. 点击“创建模型”；
-#. 前端把 List Child 的默认值与模板 ``values`` 合并，生成新的业务 ``id`` 和独立 ``internalId``；
+#. 前端把字段默认值与模板 ``values`` 合并，只按后端显式 ``identityField`` 和 ``idFactory`` 声明生成业务 ID；
 #. 新建卡片自动展开，用户可以继续修改所有高级配置。
 
-``internalId`` 始终由前端生成，只用于 React/DnD 稳定身份，模板不得控制它。模板可以覆盖业务字段，但不应依赖
-组件内部实现。
+React/DnD 使用客户端内部 Symbol 行标识，该标识不提交到后端；模板不得控制它。
+没有身份生成声明的通用列表不自动创建业务 ID，模板不应依赖组件内部实现。
 
 原来的 ``presetButtons`` / “服务商完整快速预设”已经删除。新增 Provider/API 模板应由后端 List Schema
 提供，不要在 React 中硬编码厂商。
@@ -100,7 +100,7 @@ V10 的“添加模型”候选增加独立 Responses 模板：
 递归 JSON 参数编辑器
 --------------------------------------------------------------------------------
 
-``DynamicSettings`` 的通用 ``custom`` JSON 参数不再把值一律按字符串渲染。每个键值都保存真实 JSON 类型，
+``DynamicSettings`` 的通用 ``json`` 字段不把值一律按字符串渲染。每个键值都保存真实 JSON 类型，
 并可选择 ``string``、``number``、``boolean``、``null``、``object`` 或 ``array``。
 
 ``object`` / ``array`` 不在单行输入框中显示 ``[object Object]`` 或要求手写压缩 JSON；值位置改为“编辑对象/数组”
@@ -121,8 +121,8 @@ Provider 请求参数，例如：
    }
 
 后端 Schema 对模型固定请求参数、LiteLLM 额外参数、TTS/ASR ``extra_options`` 等字段显式使用
-``component=requestJsonKeyValue``。未注册的普通 ``custom`` 字段也回退到同一 JSON 编辑器；只有声明了专用
-``component`` 的字段（例如 Remote Workspace 状态视图）使用自己的注册组件。
+``type=json``，并提供 ``schema``、``uiSchema``、``storage`` 和默认编辑模式。未知组件必须报能力错误，
+不得回退为可写 JSON。Workspace 等资源页面同样组合通用组件，不注册专用业务页面。
 
 OpenAI 兼容协议与自动填充
 --------------------------------------------------------------------------------
@@ -136,10 +136,10 @@ V53 的 Direct HTTP 模型新增 ``openai_compat_profile``：
 
 该字段只在 ``provider=openai`` 时显示。``provider=litellm`` 继续严格透传，不参与这套兼容层。
 
-后端 Schema 在 ``openai_compat_profile`` 与 ``api_protocol`` Select 上提供同一份
-``compatibilityDefaults``。``DynamicSettings`` 只在用户**主动切换**这两个 Selector 时，根据
-``profile + protocol`` 原子填充 Thinking、Reasoning 和 Responses 默认字段；普通重新渲染不会再次覆盖，
-因此用户随后手动修改的高级设置会被保留。
+后端把兼容配置矩阵转换为选择字段上的通用 ``rules``，条件使用明确的 ``$ref``，
+更新通过 ``set`` 原子填充 Thinking、Reasoning 和 Responses 默认字段。客户端仅在用户
+**主动修改** 字段时执行声明的规则，不认识 profile、protocol 或厂商的业务含义；普通重新渲染
+不会再次覆盖，因此用户随后手动修改的高级设置会被保留。
 
 自定义 OpenAI-compatible 模板默认使用 ``generic``。如果目标实际上兼容 DeepSeek，用户选择
 “兼容 DeepSeek”即可自动获得对应默认值，不需要重新创建模型或根据 URL 猜厂商。

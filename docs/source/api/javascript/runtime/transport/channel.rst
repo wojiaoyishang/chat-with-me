@@ -17,18 +17,23 @@ src/runtime/transport/channel 模块
 * **模块标识**：``src/runtime/transport/channel``
 * **顶层函数/组件/Hook**：5
 * **类**：0
-* **局部函数与匿名回调**：0
+* **局部函数与匿名回调**：1
+
+主要依赖
+--------------------------------------------------------------------------------
+
+``../backend/connection.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:122:182:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:254:378:FUNCTION
 
 .. js:function:: setRealtimeTransport(transport)
 
    设置与 ``Realtime Transport`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``5``—``7`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``11`` 行。
 
    **参数**
 
@@ -39,13 +44,15 @@ src/runtime/transport/channel 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:220:242:FUNCTION
+   **主要协作调用**：``getBackendConnection``。
+
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:803:870:FUNCTION
 
 .. js:function:: getRealtimeTransport()
 
    读取与 ``Realtime Transport`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``9``—``9`` 行。
+   **性质**：同步函数；导出 API；源码第 ``23``—``23`` 行。
 
    **参数**
 
@@ -55,13 +62,15 @@ src/runtime/transport/channel 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:279:486:FUNCTION
+   **主要协作调用**：``isCurrentConnection``。
+
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:907:1223:FUNCTION
 
 .. js:function:: flushRealtimeEvents()
 
    实现 ``flushRealtimeEvents`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``11``—``19`` 行。
+   **性质**：同步函数；导出 API；源码第 ``25``—``33`` 行。
 
    **参数**
 
@@ -75,15 +84,15 @@ src/runtime/transport/channel 模块
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``activeTransport.sendEvent``、``pendingEvents.shift``。
+   **主要协作调用**：``isCurrentConnection``、``pendingEvents.shift``、``activeTransport.sendEvent``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:521:824:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1258:1635:FUNCTION
 
 .. js:function:: sendRealtimeEvent(envelope, {queue = true})
 
    发送与 ``Realtime Event`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``21``—``31`` 行。
+   **性质**：同步函数；导出 API；源码第 ``35``—``45`` 行。
 
    **参数**
 
@@ -101,15 +110,15 @@ src/runtime/transport/channel 模块
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``activeTransport.sendEvent``、``pendingEvents.push``、``pendingEvents.shift``。
+   **主要协作调用**：``isCurrentConnection``、``activeTransport.sendEvent``、``pendingEvents.push``、``getBackendConnection``、``pendingEvents.shift``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:859:991:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1670:1842:FUNCTION
 
 .. js:function:: sendRealtimeMedia(header, body)
 
    发送与 ``Realtime Media`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``33``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``47``—``51`` 行。
 
    **参数**
 
@@ -127,4 +136,31 @@ src/runtime/transport/channel 模块
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``activeTransport.sendMedia``。
+   **主要协作调用**：``isCurrentConnection``、``activeTransport.sendMedia``。
+
+局部函数与匿名回调
+--------------------------------------------------------------------------------
+
+这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
+
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:398:764:FUNCTION
+
+.. rubric:: ``subscribeBackend callback @ 13``
+
+.. code-block:: javascript
+
+   subscribeBackend callback @ 13()
+
+订阅与 ``Backend`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``13``—``21`` 行。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``isCurrentConnection``、``activeTransport?.close``、``pendingEvents.splice``。

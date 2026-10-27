@@ -1,1071 +1,199 @@
-import AccountSecurity from '@/components/setting/AccountSecurity.jsx';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Maximize2, Minimize2, ChevronLeft, User, Layout, Save, Settings, Upload, Bell } from 'lucide-react';
-import { motion as Motion, AnimatePresence } from 'framer-motion';
-import { toast } from 'sonner';
-import {
-    CONVERSATION_LIST_COMPACT_SETTING_KEY,
-    CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
-    CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-    EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-    MESSAGE_NAVIGATOR_SETTING_KEY,
-    UnifiedErrorScreen,
-    UnifiedLoadingScreen,
-    createFilePicker,
-    fileUpload,
-    processSelectedFiles,
-    useIsMobile,
-    useLocalSetting,
-    getLocalSetting,
-    setLocalSetting,
-} from '@/lib/tools.jsx';
-import { useUserStore } from '@/context/userContext.jsx';
-import { onEvent } from '@/context/useEventStore.jsx';
-import { useTranslation } from 'react-i18next';
-import { UserProfileCard } from '@/components/setting/UserProfileCard.jsx';
-import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
-import KnowledgeDatabaseSettings from '@/components/setting/KnowledgeDatabaseSettings.jsx';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Maximize2, Minimize2, Save, Settings, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { validateJsonEditors } from '@/components/setting/jsonEditorValidation.js';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { useConfirmation } from '@/components/ui/useConfirmation.jsx';
+import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
+import { validateSettingsScope } from '@/features/settings-runtime/validation.js';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
-import NotificationSettings from '@/features/notification/NotificationSettings.jsx';
+import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
+import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import apiClient from '@/lib/apiClient.js';
-import { apiEndpoint } from '@/config.js';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import { ROBOT_DEBUG_SETTING_KEY } from '@/features/avatar-scene/settings.js';
-import { KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY, DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION } from '@/features/knowledge/graphSettings.js';
-import { WORKFLOW_EDGE_ANIMATION_SETTING_KEY, DEFAULT_WORKFLOW_EDGE_ANIMATION } from '@/features/workflows/workflowSettings.js';
-import { artifactPreviewVirtualUrl, resolveResourceUrl } from '@/lib/virtualUrl.js';
+import { onEvent } from '@/context/useEventStore.jsx';
+import { useUserStore } from '@/context/userContext.jsx';
+import { beforeBackendSwitch, getBackendService } from '@/runtime/backend/connection.js';
+import clientAdapter from '@/runtime/backend/clientAdapter.js';
+import { cloneData, requestEndpoint, validateFields } from '@/features/settings-runtime/model.js';
+import { OperationStatus } from '@/features/settings-runtime/GenericNodes.jsx';
+import { operationKey, useActionExecutor } from '@/features/settings-runtime/useActionExecutor.js';
 
-const ComfyUISettings = React.lazy(() => import('@/components/setting/ComfyUISettings.jsx'));
-const MCPSettings = React.lazy(() => import('@/components/setting/MCPSettings.jsx'));
+const WINDOW_SIZE_KEY = 'cwm:settings-window-size:v1';
+const DEFAULT_SIZE = { width: 900, height: 640 };
+const clampWindow = (value) => ({
+    width: Math.min(Math.max(320, window.innerWidth - 24), Math.max(640, Number(value?.width) || DEFAULT_SIZE.width)),
+    height: Math.min(Math.max(360, window.innerHeight - 24), Math.max(440, Number(value?.height) || DEFAULT_SIZE.height)),
+});
 
-// ==================== 界面设置通用项 ====================
-const InterfaceSettingItem = ({ title, description, checked, onCheckedChange, badge }) => (
-    <div className="flex items-start gap-4 py-4">
-        <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-foreground">{title}</h3>
-                {badge && (
-                    <Badge variant="secondary" className="text-[10px]">
-                        {badge}
-                    </Badge>
-                )}
-            </div>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
-        </div>
-        <Switch checked={Boolean(checked)} onCheckedChange={onCheckedChange} aria-label={title} className="mt-0.5" />
-    </div>
-);
-
-// ==================== 图片上传进度弹窗 ====================
-const ImageUploadProgressDialog = ({ open, progress, fileName, onCancel, t }) => {
-    return (
-        <Dialog
-            open={open}
-            onOpenChange={() => {
-                if (open) onCancel();
-            }}
-        >
-            <DialogContent className="sm:max-w-[380px] z-[300]">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Upload className="w-5 h-5 text-blue-600" />
-                        上传图片
-                    </DialogTitle>
-                    <DialogDescription>{fileName || '正在上传...'}</DialogDescription>
-                </DialogHeader>
-
-                <div className="py-4">
-                    <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-                        <div
-                            className="h-full bg-blue-600 transition-all duration-300 ease-out"
-                            style={{ width: `${progress}%` }}
-                        />
-                    </div>
-                    <div className="mt-3 text-right text-sm font-medium text-gray-600 dark:text-gray-400">
-                        {progress}%
-                    </div>
-                </div>
-
-                <DialogFooter>
-                    <button
-                        onClick={onCancel}
-                        className="px-4 h-9 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
-                    >
-                        {t('cancel')}
-                    </button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
-const SETTINGS_WINDOW_SIZE_KEY = 'cwm:settings-window-size:v1';
-const DEFAULT_SETTINGS_WINDOW_SIZE = { width: 900, height: 600 };
-
-function clampSettingsWindowSize(size) {
-    if (typeof window === 'undefined') return DEFAULT_SETTINGS_WINDOW_SIZE;
-    const maxWidth = Math.max(560, window.innerWidth - 32);
-    const maxHeight = Math.max(420, window.innerHeight - 32);
-    return {
-        width: Math.min(maxWidth, Math.max(640, Number(size?.width) || DEFAULT_SETTINGS_WINDOW_SIZE.width)),
-        height: Math.min(maxHeight, Math.max(440, Number(size?.height) || DEFAULT_SETTINGS_WINDOW_SIZE.height)),
-    };
-}
-
-function loadSettingsWindowSize() {
-    if (typeof window === 'undefined') return DEFAULT_SETTINGS_WINDOW_SIZE;
-    return clampSettingsWindowSize(getLocalSetting(SETTINGS_WINDOW_SIZE_KEY, DEFAULT_SETTINGS_WINDOW_SIZE));
-}
-
-const SettingPage = ({ open, onClose, onRefreshRequested, handleLogout }) => {
+/** Loads one backend-defined component tree; no business page names live here. */
+export default function SettingPage({ open, onClose, onRefreshRequested }) {
     const navigate = useNavigate();
     const isMobile = useIsMobile();
-    const [robotDebugEnabled, setRobotDebugEnabled] = useLocalSetting(ROBOT_DEBUG_SETTING_KEY, false);
-    const [knowledgeGraphEdgeAnimation, setKnowledgeGraphEdgeAnimation] = useLocalSetting(
-        KNOWLEDGE_GRAPH_EDGE_ANIMATION_SETTING_KEY,
-        DEFAULT_KNOWLEDGE_GRAPH_EDGE_ANIMATION,
-    );
-    const [workflowEdgeAnimation, setWorkflowEdgeAnimation] = useLocalSetting(
-        WORKFLOW_EDGE_ANIMATION_SETTING_KEY,
-        DEFAULT_WORKFLOW_EDGE_ANIMATION,
-    );
-    const [showQuickUserMessageNavigator, setShowQuickUserMessageNavigator] = useLocalSetting(
-        MESSAGE_NAVIGATOR_SETTING_KEY,
-        true,
-    );
-    const [compactConversationList, setCompactConversationList] = useLocalSetting(
-        CONVERSATION_LIST_COMPACT_SETTING_KEY,
-        false,
-    );
-    const [showConversationTimestamps, setShowConversationTimestamps] = useLocalSetting(
-        CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY,
-        true,
-    );
-    const [autoCollapseChatToolCalls, setAutoCollapseChatToolCalls] = useLocalSetting(
-        CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-        true,
-    );
-    const [autoCollapseExecutionWindowToolCalls, setAutoCollapseExecutionWindowToolCalls] = useLocalSetting(
-        EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
-        false,
-    );
-    const { setUser } = useUserStore();
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [settingsWindowSize, setSettingsWindowSize] = useState(loadSettingsWindowSize);
-    const resizeCleanupRef = useRef(null);
-    const { t } = useTranslation();
+    const setUser = useUserStore((state) => state.setUser);
+    const [tabs, setTabs] = useState([]);
+    const tabsRef = useRef([]);
+    const [selectedId, setSelectedId] = useState(null);
+    const [description, setDescription] = useState(null);
+    const [values, setValues] = useState({});
+    const valuesRef = useRef(values);
+    valuesRef.current = values;
+    const [dirty, setDirty] = useState(false);
+    const dirtyRef = useRef(false);
+    dirtyRef.current = dirty;
+    const [catalogLoading, setCatalogLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(false);
+    const [catalogError, setCatalogError] = useState('');
+    const [pageError, setPageError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [fullscreen, setFullscreen] = useState(false);
+    const [size, setSize] = useState(() => clampWindow(getLocalSetting(WINDOW_SIZE_KEY, DEFAULT_SIZE)));
+    const [confirm, confirmation] = useConfirmation();
+    const scopeRef = useRef(null);
+    const catalogEpoch = useRef(0);
+    const pageEpoch = useRef(0);
+    const activeRequest = useRef(null);
+    const resizeCleanup = useRef(null);
+    const mounted = useRef(false);
+    const pendingRefresh = useRef(new Set());
+    const draftGuards = useRef(new Map());
+    const descriptionRef = useRef(null);
+    descriptionRef.current = description;
+    const base = getBackendService('settings');
 
-    // ==================== Tabs 状态 ====================
-    const [activeTab, setActiveTab] = useState('account');
-    const [dynamicTabs, setDynamicTabs] = useState([]);
-    const [loadingTabs, setLoadingTabs] = useState(false);
-    const [tabsError, setTabsError] = useState(false);
-
-    // ==================== 动态 Tab 配置状态 ====================
-    const [dynamicConfig, setDynamicConfig] = useState(null);
-    const [dynamicValues, setDynamicValues] = useState({});
-    const [originalDynamicValues, setOriginalDynamicValues] = useState({});
-    const [isConfigPristine, setIsConfigPristine] = useState(true);
-    const [loadingDynamicConfig, setLoadingDynamicConfig] = useState(false);
-    const [dynamicConfigError, setDynamicConfigError] = useState(false);
-
-    const abortControllerRef = useRef(null);
-    const latestDynamicConfigRequestRef = useRef(0);
-    const isSavingDynamicConfigRef = useRef(false);
-    const jsonEditorScopeRef = useRef(null);
-    const pendingRefreshScopesRef = useRef(new Set());
-    const tabsLoadedRef = useRef(false);
-    const tabsLoadingRef = useRef(false);
-
-    const isStaticTab = useCallback((tabId) => ['account', 'interface', 'notifications'].includes(tabId), []);
-
-    const normalizeRefreshScopes = useCallback((value) => {
-        const rawScopes = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
-        return [...new Set(rawScopes.map((scope) => String(scope || '').trim()).filter(Boolean))];
-    }, []);
-
-    const markTabRefreshOnClose = useCallback(
-        (tabId) => {
-            const tab = dynamicTabs.find((item) => item?.id === tabId);
-            normalizeRefreshScopes(tab?.refreshOnClose).forEach((scope) => {
-                pendingRefreshScopesRef.current.add(scope);
-            });
-        },
-        [dynamicTabs, normalizeRefreshScopes],
-    );
-
-    const closeSettings = useCallback(() => {
-        const refreshScopes = [...pendingRefreshScopesRef.current];
-        pendingRefreshScopesRef.current.clear();
-        onClose();
-        if (refreshScopes.length > 0 && typeof onRefreshRequested === 'function') {
-            onRefreshRequested(refreshScopes);
-        }
-    }, [onClose, onRefreshRequested]);
-
-    const cloneData = useCallback((value) => {
-        const normalizedValue = value ?? {};
+    const loadCatalog = useCallback(async () => {
+        const serial = ++catalogEpoch.current;
+        setCatalogLoading(true); setCatalogError('');
         try {
-            if (typeof structuredClone === 'function') {
-                return structuredClone(normalizedValue);
-            }
-            return JSON.parse(JSON.stringify(normalizedValue));
-        } catch (error) {
-            console.warn('Failed to clone settings data:', error);
-            return normalizedValue;
-        }
+            if (!base) throw new Error('当前后端没有提供设置功能。');
+            const data = await apiClient.get(requestEndpoint(base, {}));
+            if (!Array.isArray(data)) throw new Error('后端未返回有效的设置目录。');
+            if (!mounted.current || serial !== catalogEpoch.current) return;
+            setTabs(data);
+            tabsRef.current = data;
+            setSelectedId((current) => data.some((entry) => entry.id === current) ? current : data.find((entry) => entry.default)?.id || data[0]?.id || null);
+        } catch (cause) { if (mounted.current && serial === catalogEpoch.current) setCatalogError(cause.message); }
+        finally { if (mounted.current && serial === catalogEpoch.current) setCatalogLoading(false); }
+    }, [base]);
+    const loadPage = useCallback(async (id) => {
+        if (!id) return;
+        activeRequest.current?.abort();
+        const controller = new AbortController();
+        activeRequest.current = controller;
+        const serial = ++pageEpoch.current;
+        setPageLoading(true); setPageError(''); setDescription(null); setFieldErrors({});
+        try {
+            const link = tabsRef.current.find((entry) => entry.id === id)?.descriptor;
+            const data = await apiClient.get(requestEndpoint(link, {}), { signal: controller.signal });
+            if (!mounted.current || controller.signal.aborted || serial !== pageEpoch.current) return;
+            if (data.schema !== 'cwm.settings.v1' || !Array.isArray(data.options)) throw new Error('该后端设置页面使用了不支持的描述协议。');
+            setDescription(data);
+            setValues(cloneData(data.defaultOptions || {}));
+            setDirty(false);
+        } catch (cause) { if (mounted.current && !controller.signal.aborted && serial === pageEpoch.current) setPageError(cause.message); }
+        finally { if (mounted.current && serial === pageEpoch.current) setPageLoading(false); }
     }, []);
-
-    // 未保存修改确认 Dialog
-    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
-    const [pendingTabId, setPendingTabId] = useState(null);
-
-    // 防止 关闭 按钮文字在退出动画中闪变为 切换 的标志
-    const isProgrammaticCloseRef = useRef(false);
-
-    // ==================== 图片上传进度弹窗状态 ====================
-    const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [uploadFileName, setUploadFileName] = useState('');
-
-    const uploadCleanupRef = useRef(null);
-
-    const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
-
-    const isDynamicTab = !['account', 'interface', 'notifications'].includes(activeTab);
-    const hasUnsavedChanges = isDynamicTab && !['knowledge-databases', 'comfyui', 'mcp'].includes(dynamicConfig?.component) && !isConfigPristine;
-
-    // ==================== 加载动态 Tabs 列表 ====================
-    const loadDynamicTabs = useCallback(
-        async ({ force = false, silent = false } = {}) => {
-            if (tabsLoadingRef.current || (tabsLoadedRef.current && !force)) return;
-
-            tabsLoadingRef.current = true;
-            try {
-                setLoadingTabs(true);
-                setTabsError(false);
-                const response = await apiClient.get(apiEndpoint.SETTING_TABS_ENDPOINT);
-                const tabs = Array.isArray(response) ? response : [];
-                setDynamicTabs(tabs);
-                tabsLoadedRef.current = true;
-            } catch (error) {
-                console.error('Failed to load setting tabs:', error);
-                if (!tabsLoadedRef.current) setDynamicTabs([]);
-                setTabsError(true);
-                if (!silent) {
-                    toast.error(t('load_tabs_error') || 'Failed to load settings tabs');
-                }
-            } finally {
-                tabsLoadingRef.current = false;
-                setLoadingTabs(false);
-            }
-        },
-        [t],
-    );
-
-    // ==================== 加载单个动态 Tab 配置 ====================
-    const loadDynamicConfig = useCallback(
-        async (tabId) => {
-            if (!tabId || isStaticTab(tabId)) return;
-
-            if (abortControllerRef.current) abortControllerRef.current.abort();
-
-            const controller = new AbortController();
-            const requestId = latestDynamicConfigRequestRef.current + 1;
-            latestDynamicConfigRequestRef.current = requestId;
-            abortControllerRef.current = controller;
-
-            try {
-                setLoadingDynamicConfig(true);
-                setDynamicConfigError(false);
-                // 切换到新的动态 tab 时先清空旧配置，避免新 tab 使用旧 tab 的 schema 渲染。
-                setDynamicConfig(null);
-                setDynamicValues({});
-                setOriginalDynamicValues({});
-
-                const response = await apiClient.get(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${tabId}`, {
-                    signal: controller.signal,
-                });
-
-                if (controller.signal.aborted || latestDynamicConfigRequestRef.current !== requestId) return;
-
-                const options = Array.isArray(response?.options) ? response.options : [];
-                const initial = cloneData(response?.defaultOptions || {});
-
-                setDynamicConfig({ ...(response || {}), options });
-                setDynamicValues(initial);
-                // 后续修改始终通过不可变更新生成新对象，因此这里可以共享初始快照，
-                // 避免加载大型模型配置时在主线程连续执行两次深拷贝。
-                setOriginalDynamicValues(initial);
-                setIsConfigPristine(true);
-            } catch (error) {
-                if (
-                    error?.name === 'AbortError' ||
-                    controller.signal.aborted ||
-                    latestDynamicConfigRequestRef.current !== requestId
-                )
-                    return;
-                console.error('Failed to load tab config:', error);
-                setDynamicConfig(null);
-                setDynamicValues({});
-                setOriginalDynamicValues({});
-                setDynamicConfigError(true);
-                toast.error(t('load_config_error') || 'Failed to load settings config');
-            } finally {
-                // 只允许当前最后一次请求收尾，避免被已 abort 的旧请求把 loading 关闭。
-                if (latestDynamicConfigRequestRef.current === requestId) {
-                    setLoadingDynamicConfig(false);
-                    if (abortControllerRef.current === controller) {
-                        abortControllerRef.current = null;
-                    }
-                }
-            }
-        },
-        [cloneData, isStaticTab, t],
-    );
-
     useEffect(() => {
-        if (!open) return;
-        pendingRefreshScopesRef.current.clear();
-        loadDynamicTabs();
-    }, [loadDynamicTabs, open]);
-
-    // 已成功加载的动态配置在关闭后保留，重新打开时不再重复重建。
-    // 只有上次加载失败或尚未拿到配置时，才在入场动画结束后自动补载。
-    useEffect(() => {
-        if (!open || !isDynamicTab || loadingDynamicConfig) return undefined;
-        if (dynamicConfig && !dynamicConfigError) return undefined;
-
-        const timerId = window.setTimeout(() => loadDynamicConfig(activeTab), 220);
-        return () => window.clearTimeout(timerId);
-    }, [activeTab, dynamicConfig, dynamicConfigError, isDynamicTab, loadDynamicConfig, loadingDynamicConfig, open]);
-
-    // SettingPage 始终挂载在侧边栏中。浏览器空闲时预取一次动态标签，
-    // 绝大多数情况下用户真正打开设置时已经可以直接使用缓存。
-    useEffect(() => {
-        const preload = () => loadDynamicTabs({ silent: true });
-
-        if (typeof window.requestIdleCallback === 'function') {
-            const idleId = window.requestIdleCallback(preload, { timeout: 1200 });
-            return () => window.cancelIdleCallback?.(idleId);
-        }
-
-        const timerId = window.setTimeout(preload, 300);
-        return () => window.clearTimeout(timerId);
-    }, [loadDynamicTabs]);
-
+        mounted.current = true;
+        if (open) void loadCatalog();
+        return () => { mounted.current = false; catalogEpoch.current += 1; pageEpoch.current += 1; activeRequest.current?.abort(); resizeCleanup.current?.(); };
+    }, [open, loadCatalog]);
+    useEffect(() => { if (open && selectedId) void loadPage(selectedId); }, [open, selectedId, loadPage]);
+    const guardDraft = useCallback(async () => {
+        if (dirtyRef.current && !(await confirm({ title: '有未保存的更改', description: '离开此页面将丢弃当前尚未保存的修改。', confirmText: '放弃更改' }))) return false;
+        for (const guard of draftGuards.current.values()) if (!(await guard())) return false;
+        return true;
+    }, [confirm]);
+    const registerDraftGuard = useCallback((id, guard) => {
+        draftGuards.current.set(id, guard);
+        return () => { if (draftGuards.current.get(id) === guard) draftGuards.current.delete(id); };
+    }, []);
+    const close = useCallback(async () => {
+        if (!(await guardDraft())) return;
+        onClose();
+        const scopes = [...pendingRefresh.current];
+        pendingRefresh.current.clear();
+        if (scopes.length) onRefreshRequested?.(scopes);
+    }, [guardDraft, onClose, onRefreshRequested]);
+    useBrowserBackLayer(Boolean(open), () => { void close(); return false; }, { kind: 'settings-layer' });
     useEffect(() => {
         if (!open) return undefined;
-        const unsubscribe = onEvent({
-            event: 'tool.default_permissions.changed',
-        }).then(({ payload }) => {
-            if (activeTab !== 'default-tool-permissions' || isSavingDynamicConfigRef.current) return;
-
-            const nextValues = {
-                defaultToolPermissions: {
-                    revision: Number(payload.revision) || 0,
-                    baseRevision: Number(payload.revision) || 0,
-                    fallbackMode: payload.fallbackMode || 'ask',
-                    permissions: payload.permissions || {},
-                },
-            };
-            if (!isConfigPristine) {
-                toast.info('默认工具设置已在其他页面更新；保存前请重新加载。');
-                return;
-            }
-            setDynamicValues(cloneData(nextValues));
-            setOriginalDynamicValues(cloneData(nextValues));
-        });
-        return () => unsubscribe();
-    }, [activeTab, cloneData, isConfigPristine, open]);
-
+        return beforeBackendSwitch(async () => { if (!(await guardDraft())) throw new Error('已取消切换后端。'); });
+    }, [open, guardDraft]);
     useEffect(() => {
-        if (!open || activeTab !== 'default-tool-permissions') return undefined;
-        const unsubscribe = onEvent({ event: 'tool.catalog.changed' }).then(() => {
-            if (isConfigPristine) void loadDynamicConfig(activeTab);
-            else toast.info('工具目录已更新，请重新加载后再保存。');
-        });
-        return () => unsubscribe();
-    }, [activeTab, isConfigPristine, loadDynamicConfig, open]);
-
-    // ==================== Tab 切换 ====================
-    const handleTabChange = useCallback(
-        (newTab) => {
-            if (newTab === activeTab) return;
-
-            if (isDynamicTab && hasUnsavedChanges) {
-                setPendingAction('tabChange');
-                setPendingTabId(newTab);
-                setShowUnsavedDialog(true);
-                return;
-            }
-
-            performTabChange(newTab);
-        },
-        [activeTab, isDynamicTab, hasUnsavedChanges],
-    );
-
-    const performTabChange = (newTab) => {
-        if (!newTab) return;
-
-        setActiveTab(newTab);
-        setIsConfigPristine(true);
-
-        if (!isStaticTab(newTab)) {
-            loadDynamicConfig(newTab);
-            return;
-        }
-
-        // 切到内置 tab 时中止动态配置请求，并让旧请求无法再回写状态。
-        if (abortControllerRef.current) abortControllerRef.current.abort();
-        latestDynamicConfigRequestRef.current += 1;
-        abortControllerRef.current = null;
-        setLoadingDynamicConfig(false);
-        setDynamicConfigError(false);
-        setDynamicConfig(null);
-        setDynamicValues({});
-        setOriginalDynamicValues({});
-    };
-
-    // ==================== 保存 ====================
-    const handleSave = useCallback(async () => {
-        if (!isDynamicTab || isSavingDynamicConfigRef.current) return;
-        isSavingDynamicConfigRef.current = true;
+        if (!open) return undefined;
+        const events = [...new Set((description?.events || []).map((entry) => typeof entry === 'string' ? entry : entry.event))];
+        const subscriptions = events.map((event) => onEvent({ event }).then(() => {
+            if (dirtyRef.current || draftGuards.current.size) toast.info('服务器设置已更新，当前编辑内容仍保留，请保存前核对。');
+            else if (selectedId) void loadPage(selectedId);
+        }));
+        return () => subscriptions.forEach((unsubscribe) => unsubscribe());
+    }, [description?.events, loadPage, open, selectedId]);
+    const markRefresh = useCallback(() => {
+        for (const entry of descriptionRef.current?.refreshOnClose || []) pendingRefresh.current.add(entry);
+    }, []);
+    const controller = useActionExecutor({
+        api: apiClient, client: clientAdapter, confirm,
+        scope: () => ({ form: valuesRef.current }),
+        refresh: async () => { markRefresh(); },
+        navigate: (path) => { onClose(); navigate(path); },
+        patchForm: (patch) => { setValues((previous) => ({ ...previous, ...patch })); setDirty(true); },
+        openDialog: () => {},
+        notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
+        updateUser: setUser,
+    });
+    const save = async () => {
+        if (!description?.save) return;
+        setFieldErrors({});
         try {
-            const scope = jsonEditorScopeRef.current;
-            if (scope) validateJsonEditors(scope);
-            const valuesToSave = cloneData(scope?._cwmSettingsValues?.current || dynamicValues);
-            const drafts = [...(scope?.querySelectorAll('.cwm-json-editor') || [])].map((host) => [host, JSON.stringify(host._cwmJsonEditor?.getState())]);
-            const response = await apiClient.post(`${apiEndpoint.SETTING_TABS_ENDPOINT}/${activeTab}`, valuesToSave);
-            if (scope !== jsonEditorScopeRef.current) { markTabRefreshOnClose(activeTab); return; }
-            const editedDuringSave = JSON.stringify(scope?._cwmSettingsValues?.current || dynamicValues) !== JSON.stringify(valuesToSave)
-                || drafts.some(([host, state]) => JSON.stringify(host._cwmJsonEditor?.getState()) !== state);
-            if (editedDuringSave) {
-                toast.success(t('save_success'));
-                setOriginalDynamicValues(cloneData(response?.defaultOptions || response?.values || valuesToSave));
-                setIsConfigPristine(false);
-                markTabRefreshOnClose(activeTab);
-                return;
-            }
-            jsonEditorScopeRef.current?.querySelectorAll('.cwm-json-editor').forEach((host) => host._cwmJsonEditor?.markSaved());
-            const savedValues = cloneData(response?.defaultOptions || response?.values || valuesToSave);
-            toast.success(t('save_success'));
-
-            setDynamicValues(savedValues);
-            setOriginalDynamicValues(cloneData(savedValues));
-            setIsConfigPristine(true);
-            if (response?.user && typeof response.user === 'object') {
-                setUser(response.user);
-            }
-            markTabRefreshOnClose(activeTab);
-        } catch (error) {
-            if (error?.code === 409 && error?.data?.defaultOptions) {
-                const latest = cloneData(error.data.defaultOptions);
-                setDynamicValues(latest);
-                setOriginalDynamicValues(cloneData(latest));
-                setIsConfigPristine(true);
-                toast.error(error.message || '设置已在其他页面修改，已加载服务器最新状态。');
-                return;
-            }
-            toast.error(t('save_error', { message: error?.message }));
-        } finally {
-            isSavingDynamicConfigRef.current = false;
-        }
-    }, [isDynamicTab, activeTab, dynamicValues, t, cloneData, markTabRefreshOnClose, setUser]);
-
-    // ==================== 关闭窗口 ====================
-    const handleClose = useCallback(() => {
-        if (isDynamicTab && hasUnsavedChanges) {
-            setPendingAction('close');
-            setShowUnsavedDialog(true);
-            return;
-        }
-        closeSettings();
-    }, [isDynamicTab, hasUnsavedChanges, closeSettings]);
-
-    const handleBrowserBackSettings = useCallback(() => {
-        if (isDynamicTab && hasUnsavedChanges) {
-            setPendingAction('close');
-            setShowUnsavedDialog(true);
-            // Keep the settings layer active underneath the confirmation dialog.
-            return false;
-        }
-        closeSettings();
-        return true;
-    }, [isDynamicTab, hasUnsavedChanges, closeSettings]);
-
-    useBrowserBackLayer(Boolean(open), handleBrowserBackSettings, { kind: 'settings-layer' });
-
-    // ==================== 未保存确认处理（已修复按钮文字闪烁 + 关闭后重置为默认值） ====================
-    const handleUnsavedDialogOpenChange = useCallback((isOpen) => {
-        setShowUnsavedDialog(isOpen);
-        // 只有用户主动关闭弹窗（ESC / 点击外部）才立即清理 pending（视为取消）
-        if (!isOpen && !isProgrammaticCloseRef.current) {
-            setPendingAction(null);
-            setPendingTabId(null);
-        }
-    }, []);
-
-    const confirmUnsavedAction = () => {
-        const action = pendingAction;
-        const tabId = pendingTabId;
-
-        // 这是程序化关闭弹窗，不要让 onOpenChange 把 pending 状态抢先清掉，
-        // 否则退出动画期间按钮文案/状态会闪变。
-        isProgrammaticCloseRef.current = true;
-        setShowUnsavedDialog(false);
-        setPendingAction(null);
-        setPendingTabId(null);
-
-        if (action === 'tabChange' && tabId) {
-            performTabChange(tabId);
-            setTimeout(() => {
-                isProgrammaticCloseRef.current = false;
-            }, 150);
-            return;
-        }
-
-        if (action === 'close') {
-            // 关闭时丢弃未保存修改；重新打开时直接使用已恢复的原始快照，
-            // 避免在弹窗入场动画期间重复请求和重建大型动态设置页。
-            if (isDynamicTab && originalDynamicValues) {
-                setDynamicValues(cloneData(originalDynamicValues));
-                setIsConfigPristine(true);
-            }
-
-            setTimeout(() => {
-                closeSettings();
-                setLoadingDynamicConfig(false);
-                isProgrammaticCloseRef.current = false;
-            }, 150);
-            return;
-        }
-
-        isProgrammaticCloseRef.current = false;
+            validateSettingsScope(scopeRef.current);
+            const form = scopeRef.current?._cwmSettingsValues?.current || valuesRef.current;
+            const errors = validateFields(description.options, form);
+            setFieldErrors(errors);
+            if (Object.keys(errors).length) return;
+            const submitted = cloneData(form);
+            const requestPage = pageEpoch.current;
+            const response = await controller.execute(description.save, { form }, { onError: (cause) => { if (cause.data?.errors) setFieldErrors(cause.data.errors); } });
+            if (response === undefined) return;
+            if (!mounted.current || requestPage !== pageEpoch.current) return;
+            markRefresh();
+            if (JSON.stringify(valuesRef.current) !== JSON.stringify(submitted)) return;
+            setValues(cloneData(response.defaultOptions || response.values || submitted));
+            setDirty(false);
+            scopeRef.current?.querySelectorAll('.cwm-json-editor').forEach((node) => node._cwmJsonEditor?.markSaved());
+            if (response.user) setUser(response.user);
+            if (!(description.save.effects || []).some((effect) => effect.type === 'toast')) toast.success(description.save.successText || '保存成功');
+        } catch (cause) { if (!controller.operations[operationKey(description.save, {})]?.error) toast.error(cause.message); }
     };
-
-    // ==================== DynamicSettings onChange ====================
-    const handleDynamicValuesChange = useCallback((newValues) => {
-        // DynamicSettings 只会在真实用户交互时回调；初始化和重新挂载不会
-        // 再触发这里，因此任何回调都代表存在待保存的编辑。
-        setDynamicValues(newValues);
-        setIsConfigPristine(false);
-    }, []);
-
-    // ==================== 图片上传函数 ====================
-    const handleImageUpload = useCallback(() => {
-        return new Promise((resolve) => {
-            let hasResponded = false;
-
-            const picker = createFilePicker('image/*', (files) => {
-                if (hasResponded) return;
-                hasResponded = true;
-
-                if (!files || files.length === 0) {
-                    resolve('');
-                    return;
-                }
-
-                const file = files[0];
-                const uploadFile = processSelectedFiles([file])[0];
-
-                if (!uploadFile) {
-                    resolve('');
-                    return;
-                }
-
-                setUploadFileName(file.name || '图片');
-                setUploadProgress(0);
-                setUploadDialogOpen(true);
-
-                const handleProgress = (_, progress) => {
-                    setUploadProgress(Math.round(progress));
-                };
-
-                const handleComplete = (_, attachment) => {
-                    setUploadDialogOpen(false);
-                    uploadCleanupRef.current = null;
-                    toast.success(t('upload_success') || '上传成功');
-                    const imageUrl = artifactPreviewVirtualUrl(attachment.serverId) || attachment.preview || '';
-                    resolve(imageUrl);
-                };
-
-                const handleError = () => {
-                    setUploadDialogOpen(false);
-                    uploadCleanupRef.current = null;
-                    toast.error(t('upload_failed') || '上传失败');
-                    resolve('');
-                };
-
-                const cleanup = fileUpload(uploadFile, handleProgress, handleComplete, handleError);
-                uploadCleanupRef.current = cleanup;
-            });
-
-            picker();
-        });
-    }, [t]);
-
-    const handleUploadCancel = useCallback(() => {
-        if (uploadCleanupRef.current) {
-            uploadCleanupRef.current();
-            uploadCleanupRef.current = null;
-        }
-        setUploadDialogOpen(false);
-    }, []);
-
-    const beginSettingsResize = useCallback(
-        (event) => {
-            if (isMobile || isFullscreen || event.button !== 0) return;
-            event.preventDefault();
-            const startX = event.clientX;
-            const startY = event.clientY;
-            const startSize = clampSettingsWindowSize(settingsWindowSize);
-
-            resizeCleanupRef.current?.();
-            const onMove = (moveEvent) => {
-                const next = clampSettingsWindowSize({
-                    width: startSize.width + (moveEvent.clientX - startX) * 2,
-                    height: startSize.height + (moveEvent.clientY - startY) * 2,
-                });
-                setSettingsWindowSize(next);
-            };
-            const onUp = () => {
-                window.removeEventListener('pointermove', onMove);
-                window.removeEventListener('pointerup', onUp);
-                resizeCleanupRef.current = null;
-                setSettingsWindowSize((current) => {
-                    const next = clampSettingsWindowSize(current);
-                    try {
-                        setLocalSetting(SETTINGS_WINDOW_SIZE_KEY, next);
-                    } catch {
-                        // Keep resizing usable when browser storage is unavailable.
-                    }
-                    return next;
-                });
-            };
-            window.addEventListener('pointermove', onMove);
-            window.addEventListener('pointerup', onUp, { once: true });
-            resizeCleanupRef.current = () => {
-                window.removeEventListener('pointermove', onMove);
-                window.removeEventListener('pointerup', onUp);
-            };
-        },
-        [isFullscreen, isMobile, settingsWindowSize],
-    );
-
-    useEffect(() => () => resizeCleanupRef.current?.(), []);
-
-    useEffect(() => {
-        if (!open || isMobile || isFullscreen) return;
-        const keepInsideViewport = () => setSettingsWindowSize((current) => clampSettingsWindowSize(current));
-        window.addEventListener('resize', keepInsideViewport);
-        return () => window.removeEventListener('resize', keepInsideViewport);
-    }, [open, isMobile, isFullscreen]);
-
-    // ==================== 左侧侧边栏 ====================
-    const renderSidebar = () => (
-        <div className={`${isMobile ? 'w-16' : 'w-auto'} border-r bg-gray-50/50 p-2 flex flex-col gap-1`}>
-            <button
-                onClick={() => handleTabChange('account')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'account' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
-            >
-                <User className="w-5 h-5 shrink-0" />
-                {!isMobile && <span className="text-sm whitespace-nowrap">{t('Settings.Account')}</span>}
-            </button>
-
-            <button
-                onClick={() => handleTabChange('interface')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'interface' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
-            >
-                <Layout className="w-5 h-5 shrink-0" />
-                {!isMobile && <span className="text-sm whitespace-nowrap">{t('Settings.Interface')}</span>}
-            </button>
-
-            <button
-                onClick={() => handleTabChange('notifications')}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === 'notifications' ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
-            >
-                <Bell className="w-5 h-5 shrink-0" />
-                {!isMobile && <span className="text-sm whitespace-nowrap">通知</span>}
-            </button>
-
-            {!tabsError && !loadingTabs && dynamicTabs.length > 0 && !isMobile && (
-                <div className="h-px bg-gray-200 my-2 mx-2" />
-            )}
-
-            {loadingTabs ? (
-                <SidebarSkeleton />
-            ) : tabsError ? (
-                <div className="px-3 py-3 mt-2">
-                    <UnifiedErrorScreen
-                        title={t('load_error')}
-                        subtitle={t('retry_after_network')}
-                        retryText={t('retry')}
-                        onRetry={() => loadDynamicTabs({ force: true })}
-                        compact
-                    />
-                </div>
-            ) : dynamicTabs.length > 0 ? (
-                dynamicTabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => handleTabChange(tab.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer font-medium ${activeTab === tab.id ? 'bg-gray-200 text-gray-900' : 'hover:bg-gray-100 text-gray-600'}`}
-                    >
-                        <img
-                            src={resolveResourceUrl(tab.preview)}
-                            alt={tab.name}
-                            className="w-5 h-5 shrink-0 transition-colors"
-                            onError={(e) => {
-                                e.target.style.display = 'none';
-                            }}
-                        />
-                        {!isMobile && <span className="text-sm whitespace-nowrap">{tab.name}</span>}
-                    </button>
-                ))
-            ) : null}
-        </div>
-    );
-
-    // ==================== 右侧内容区 ====================
-    const renderContent = () => {
-        if (activeTab === 'account') {
-            return (
-                <Motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="max-w-3xl mx-auto"
-                >
-                    <UserProfileCard handleLogout={handleLogout} />
-                    <AccountSecurity />
-                </Motion.div>
-            );
-        }
-
-        if (activeTab === 'interface') {
-            return (
-                <Motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="mx-auto max-w-3xl space-y-6"
-                >
-                    <div>
-                        <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                            {t('Settings.Interface')}
-                        </p>
-                        <Card className="gap-0 py-0 shadow-sm">
-                            <CardHeader className="border-b py-5">
-                                <CardTitle className="text-base">{t('conversation_list_appearance')}</CardTitle>
-                                <CardDescription>{t('conversation_list_appearance_tip')}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="px-5">
-                                <InterfaceSettingItem
-                                    title={t('compact_conversation_list_setting')}
-                                    description={t('compact_conversation_list_setting_tip')}
-                                    checked={compactConversationList}
-                                    onCheckedChange={setCompactConversationList}
-                                />
-                                <Separator />
-                                <InterfaceSettingItem
-                                    title={t('conversation_timestamps_setting')}
-                                    description={t('conversation_timestamps_setting_tip')}
-                                    checked={showConversationTimestamps}
-                                    onCheckedChange={setShowConversationTimestamps}
-                                />
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card className="gap-0 py-0 shadow-sm">
-                        <CardHeader className="border-b py-5">
-                            <CardTitle className="text-base">{t('chat_page_appearance')}</CardTitle>
-                            <CardDescription>{t('chat_page_appearance_tip')}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="px-5">
-                            <InterfaceSettingItem
-                                title={t('quick_user_message_navigator_setting')}
-                                description={t('quick_user_message_navigator_setting_tip')}
-                                checked={showQuickUserMessageNavigator}
-                                onCheckedChange={setShowQuickUserMessageNavigator}
-                                badge={t('desktop_only')}
-                            />
-                            <Separator />
-                            <InterfaceSettingItem
-                                title={t('chat_tool_call_auto_collapse_setting')}
-                                description={t('chat_tool_call_auto_collapse_setting_tip')}
-                                checked={autoCollapseChatToolCalls}
-                                onCheckedChange={setAutoCollapseChatToolCalls}
-                            />
-                            <Separator />
-                            <InterfaceSettingItem
-                                title={t('execution_window_tool_call_auto_collapse_setting')}
-                                description={t('execution_window_tool_call_auto_collapse_setting_tip')}
-                                checked={autoCollapseExecutionWindowToolCalls}
-                                onCheckedChange={setAutoCollapseExecutionWindowToolCalls}
-                            />
-                            <Separator />
-                            <InterfaceSettingItem
-                                title="知识图谱关系动画"
-                                description="在聊天和知识库图谱的连线上显示柔和的流动效果，帮助辨认关联方向。关闭后保留节点的物理动画。"
-                                checked={knowledgeGraphEdgeAnimation}
-                                onCheckedChange={setKnowledgeGraphEdgeAnimation}
-                            />
-                            <Separator />
-                            <InterfaceSettingItem
-                                title="工作流连线动画"
-                                description="在工作流的虚线连线上显示流动方向。关闭后仍显示虚线。"
-                                checked={workflowEdgeAnimation}
-                                onCheckedChange={setWorkflowEdgeAnimation}
-                            />
-                            <Separator />
-                            <InterfaceSettingItem
-                                title="机器人调试"
-                                description="在 3D 场景中显示动作与表情测试按钮。"
-                                checked={robotDebugEnabled}
-                                onCheckedChange={setRobotDebugEnabled}
-                            />
-                        </CardContent>
-                    </Card>
-                </Motion.div>
-            );
-        }
-
-        if (activeTab === 'notifications') {
-            return (
-                <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }}>
-                    <NotificationSettings />
-                </Motion.div>
-            );
-        }
-
-        if (loadingDynamicConfig) {
-            return (
-                <div className="h-full flex items-center justify-center">
-                    <UnifiedLoadingScreen text={t('loading_config') || 'Loading settings...'} compact />
-                </div>
-            );
-        }
-
-        if (dynamicConfigError) {
-            return (
-                <div className="h-full flex items-center justify-center">
-                    <UnifiedErrorScreen
-                        title={t('load_config_error') || '加载配置失败'}
-                        subtitle={t('retry_after_network') || '请检查网络后重试'}
-                        retryText={t('retry') || '重试'}
-                        onRetry={() => loadDynamicConfig(activeTab)}
-                        compact
-                    />
-                </div>
-            );
-        }
-
-        if (!dynamicConfig) return null;
-
-        if (dynamicConfig.component === 'comfyui') {
-            return <React.Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">正在加载 ComfyUI 设置…</div>}><ComfyUISettings config={dynamicConfig} onTask={(taskId) => {
-                closeSettings();
-                navigate(`/tasks?taskId=${encodeURIComponent(taskId)}`);
-            }} /></React.Suspense>;
-        }
-
-        if (dynamicConfig.component === 'mcp') {
-            return <React.Suspense fallback={<div className="py-8 text-center text-sm text-muted-foreground">正在加载 MCP 设置…</div>}><MCPSettings config={dynamicConfig} onTask={(taskId) => {
-                closeSettings();
-                navigate(`/tasks?taskId=${encodeURIComponent(taskId)}`);
-            }} /></React.Suspense>;
-        }
-
-        if (dynamicConfig.component === 'knowledge-databases') {
-            return (
-                <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="w-full min-w-0">
-                    <KnowledgeDatabaseSettings config={dynamicConfig} />
-                </Motion.div>
-            );
-        }
-
-        return (
-            <Motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} className="w-full min-w-0">
-                <DynamicSettings
-                    key={activeTab}
-                    config={dynamicConfig.options || []}
-                    initialValues={dynamicValues}
-                    onChange={handleDynamicValuesChange}
-                    onImageUpload={handleImageUpload}
-                    validationRef={jsonEditorScopeRef}
-                    onSave={handleSave}
-                />
-            </Motion.div>
-        );
+    const resize = (event) => {
+        if (fullscreen || isMobile) return;
+        event.preventDefault();
+        const start = { x: event.clientX, y: event.clientY, ...size };
+        const move = (next) => setSize(clampWindow({ width: start.width + next.clientX - start.x, height: start.height + next.clientY - start.y }));
+        resizeCleanup.current?.();
+        const end = () => { window.removeEventListener('pointermove', move); setSize((current) => { setLocalSetting(WINDOW_SIZE_KEY, current); return current; }); resizeCleanup.current = null; };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', end, { once: true });
+        resizeCleanup.current = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); };
     };
-
-    return (
-        <AnimatePresence>
-            {open && (
-                <div className="fixed inset-0 z-[50] flex items-center justify-center overflow-hidden pretty-scrollbar">
-                    <Motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.14, ease: 'easeOut' }}
-                        onClick={handleClose}
-                        className="absolute inset-0 bg-black/45 cursor-pointer"
-                        style={{ willChange: 'opacity' }}
-                    />
-
-                    <Motion.div
-                        initial={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ scale: 1, y: 0, opacity: 1 }}
-                        exit={isMobile ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 20 }}
-                        transition={
-                            isMobile
-                                ? { duration: 0.22, ease: [0.22, 1, 0.36, 1] }
-                                : { duration: 0.18, ease: [0.22, 1, 0.36, 1] }
-                        }
-                        className={`relative bg-white shadow-2xl flex flex-col overflow-hidden cursor-default ${
-                            isFullscreen || isMobile ? 'w-full h-full' : ''
-                        }`}
-                        style={{
-                            width: isFullscreen || isMobile ? '100%' : settingsWindowSize.width,
-                            height: isFullscreen || isMobile ? '100%' : settingsWindowSize.height,
-                            maxWidth: isFullscreen || isMobile ? '100%' : 'calc(100vw - 2rem)',
-                            maxHeight: isFullscreen || isMobile ? '100%' : 'calc(100vh - 2rem)',
-                            borderRadius: isFullscreen || isMobile ? 0 : 12,
-                            contain: 'layout paint',
-                            willChange: 'transform, opacity',
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {!isMobile && !isFullscreen && (
-                            <button
-                                type="button"
-                                aria-label="拖动调整设置窗口大小"
-                                title="拖动调整窗口大小"
-                                onPointerDown={beginSettingsResize}
-                                className="absolute bottom-1 right-1 z-20 h-5 w-5 cursor-se-resize rounded-sm opacity-45 transition-opacity hover:opacity-90 focus:outline-none"
-                            >
-                                <span className="absolute bottom-[3px] right-[3px] h-[8px] w-[8px] border-b-2 border-r-2 border-gray-400" />
-                                <span className="absolute bottom-[7px] right-[7px] h-[5px] w-[5px] border-b border-r border-gray-300" />
-                            </button>
-                        )}
-
-                        {/* 顶部导航栏 */}
-                        <div className="flex items-center justify-between px-4 h-14 border-b shrink-0 bg-white">
-                            <div className="flex items-center gap-4">
-                                {(isFullscreen || isMobile) && (
-                                    <button
-                                        onClick={handleClose}
-                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
-                                    >
-                                        <ChevronLeft className="w-5 h-5 text-gray-600" />
-                                    </button>
-                                )}
-                                <h2 className="font-bold text-lg text-gray-800">{t('Settings.Settings')}</h2>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                {!isMobile && (
-                                    <button
-                                        onClick={toggleFullscreen}
-                                        className="p-2 hover:bg-gray-100 rounded-md text-gray-500 transition-colors cursor-pointer"
-                                    >
-                                        {isFullscreen ? (
-                                            <Minimize2 className="w-4 h-4" />
-                                        ) : (
-                                            <Maximize2 className="w-4 h-4" />
-                                        )}
-                                    </button>
-                                )}
-
-                                {isDynamicTab && hasUnsavedChanges && (
-                                    <button
-                                        onClick={handleSave}
-                                        className="flex items-center gap-1.5 px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer"
-                                    >
-                                        <Save className="w-4 h-4" /> {t('save') || '保存'}
-                                    </button>
-                                )}
-
-                                {!isFullscreen && (
-                                    <button
-                                        onClick={handleClose}
-                                        className="p-2 hover:bg-gray-100 rounded-md text-gray-500 transition-colors cursor-pointer"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="flex flex-1 overflow-hidden">
-                            {renderSidebar()}
-                            <div className="pretty-scrollbar min-w-0 flex-1 overflow-y-auto bg-white p-4 md:p-6">
-                                {renderContent()}
-                            </div>
-                        </div>
-                    </Motion.div>
-
-                    {/* 未保存修改确认 Dialog */}
-                    <Dialog open={showUnsavedDialog} onOpenChange={handleUnsavedDialogOpenChange}>
-                        <DialogContent className="z-[300]">
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                    <Settings size={20} className="text-blue-600" />
-                                    {t('unsaved_changes_confirm')}
-                                </DialogTitle>
-                                <DialogDescription>{t('unsaved_changes_confirm_close')}</DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter className="flex justify-end gap-2">
-                                <button
-                                    onClick={() => setShowUnsavedDialog(false)}
-                                    className="px-4 h-9 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
-                                >
-                                    {t('cancel') || '取消'}
-                                </button>
-                                <button
-                                    onClick={confirmUnsavedAction}
-                                    className="px-4 h-9 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer"
-                                >
-                                    {pendingAction === 'close' ? t('close') || '关闭' : t('switch_tab') || '切换'}
-                                </button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-
-                    {/* 图片上传进度弹窗 */}
-                    <ImageUploadProgressDialog
-                        open={uploadDialogOpen}
-                        progress={uploadProgress}
-                        fileName={uploadFileName}
-                        onCancel={handleUploadCancel}
-                        t={t}
-                    />
-                </div>
-            )}
-        </AnimatePresence>
-    );
-};
-
-const SidebarSkeleton = () => (
-    <div className="flex flex-col gap-1">
-        {[1, 2, 3].map((i) => (
-            <div key={i} className="w-full h-11 px-3 py-2.5 rounded-lg bg-gray-100 animate-pulse" />
-        ))}
-    </div>
-);
-
-export default SettingPage;
+    if (!open) return null;
+    const saveState = description?.save ? controller.operations[operationKey(description.save, {})] : null;
+    return <div className="fixed inset-0 z-[50] flex items-center justify-center bg-black/45 p-3" onClick={(event) => { if (event.target === event.currentTarget) void close(); }}>
+        <section role="dialog" aria-modal="true" aria-label="设置" className="relative flex max-h-full max-w-full flex-col overflow-hidden rounded-xl border bg-background shadow-2xl" style={fullscreen || isMobile ? { width: '100%', height: '100%' } : size} onClick={(event) => event.stopPropagation()}>
+            <header className="flex h-14 shrink-0 items-center justify-between border-b px-4"><h2 className="flex items-center gap-2 font-semibold"><Settings className="size-5" />设置</h2><div className="flex gap-1">{!isMobile && <Button variant="ghost" size="icon" aria-label={fullscreen ? '还原设置窗口' : '最大化设置窗口'} onClick={() => setFullscreen((current) => !current)}>{fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}</Button>}<Button variant="ghost" size="icon" aria-label="关闭设置" onClick={() => { void close(); }}><X className="size-4" /></Button></div></header>
+            <div className="flex min-h-0 flex-1"><nav aria-label="设置页面" className={`${isMobile ? 'w-16' : 'w-48'} shrink-0 space-y-1 overflow-y-auto border-r bg-muted/30 p-2`}>
+                {catalogLoading && <p className="p-2 text-xs text-muted-foreground">加载中…</p>}
+                {catalogError && <div className="space-y-2 p-2 text-xs text-destructive"><p role="alert">{catalogError}</p><Button size="sm" variant="outline" onClick={() => { void loadCatalog(); }}>重试</Button></div>}
+                {tabs.map((tab) => <button type="button" key={tab.id} aria-current={selectedId === tab.id ? 'page' : undefined} title={tab.name || tab.title} className={`flex w-full items-center gap-2 rounded-lg p-2.5 text-left text-sm ${selectedId === tab.id ? 'bg-accent font-medium text-accent-foreground' : 'hover:bg-muted'}`} onClick={async () => { if (tab.id !== selectedId && await guardDraft()) setSelectedId(tab.id); }}>
+                    {tab.preview ? <img alt="" src={resolveResourceUrl(tab.preview)} className="size-5 shrink-0" /> : <Settings className="size-5 shrink-0" />}{!isMobile && <span>{tab.name || tab.title}</span>}
+                </button>)}
+            </nav><div className="flex min-w-0 flex-1 flex-col"><main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+                {pageLoading ? <p className="py-10 text-center text-sm text-muted-foreground">正在加载设置…</p> : pageError ? <div className="space-y-3 text-sm text-destructive"><p role="alert">{pageError}</p><Button variant="outline" onClick={() => { void loadPage(selectedId); }}>重新加载</Button></div> : description ? <>
+                    {description.title && <h3 className="mb-2 text-lg font-semibold">{description.title}</h3>}{description.description && <p className="mb-5 text-sm text-muted-foreground">{description.description}</p>}
+                    {Object.entries(fieldErrors).map(([name, message]) => <p key={name} className="mb-2 text-sm text-destructive">{name}：{message}</p>)}
+                    <DynamicSettings key={description.id} config={description.options} initialValues={values} onChange={(next) => { setValues(next); if (description.saveMode === 'page' || description.save) setDirty(true); }} validationRef={scopeRef} onSave={save} runtimeContext={{ api: apiClient, client: clientAdapter, navigate: (path) => { onClose(); navigate(path); }, updateUser: setUser, refresh: markRefresh, registerDraftGuard }} />
+                </> : !catalogLoading && !tabs.length ? <p className="py-10 text-center text-muted-foreground">当前后端没有可用的设置页面。</p> : null}
+            </main>{description?.save && <footer className="shrink-0 space-y-2 border-t p-3"><OperationStatus operation={saveState} context={{ navigate }} /><div className="flex items-center justify-end gap-3"><span className="text-xs text-muted-foreground">{dirty ? '有未保存的更改' : '已保存'}</span><Button disabled={saveState?.busy || !dirty} onClick={() => { void save(); }}><Save className="size-4" />{description.save.label || '保存'}</Button></div></footer>}</div></div>
+            {!fullscreen && !isMobile && <button type="button" aria-label="调整设置窗口大小" className="absolute bottom-1 right-1 size-4 cursor-se-resize opacity-50" onPointerDown={resize}><span className="absolute bottom-0 right-0 size-2 border-b-2 border-r-2 border-current" /></button>}
+        </section>{confirmation}
+    </div>;
+}

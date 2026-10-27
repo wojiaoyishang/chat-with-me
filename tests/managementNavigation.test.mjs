@@ -23,6 +23,12 @@ async function workspace() {
         ? { username: "admin", nickname: "admin" }
         : { sidebar: {} };
     },
+    post: async (url, body) => {
+      assert.equal(url, '/client/frame-session');
+      assert.equal(body.clientOrigin, 'http://localhost');
+      assert.match(body.path, /^\/(tasks|knowledge|attachments)\/page$/);
+      return { pageTicket: 'navigation-page-ticket', resourceTicket: 'navigation-resource-ticket' };
+    },
   };
   await build({
     entryPoints: ["src/main.jsx"],
@@ -92,7 +98,7 @@ async function workspace() {
                 contents = `export default ({pageType,onOpenPage,onConversationIdSelect})=><aside aria-label="main navigation" data-active-page={pageType}><button onClick={()=>onOpenPage('tasks')}>任务管理</button><button onClick={()=>onOpenPage('knowledge')}>知识库</button><button data-page="doc" onClick={()=>onOpenPage('doc')}>文档</button><button data-page="chat" onClick={()=>onOpenPage('chat')}>对话</button><button onClick={()=>onConversationIdSelect('chat-2')}>另一个对话</button></aside>;`;
               else if (requested === "@/lib/apiClient.js")
                 contents =
-                  "export default {get:(...args)=>globalThis.workspaceTest.get(...args)};export const isAuthRedirectError=()=>false;";
+                  "export default {get:(...args)=>globalThis.workspaceTest.get(...args),post:(...args)=>globalThis.workspaceTest.post(...args)};export const isAuthRedirectError=()=>false;";
               else if (requested === "@/config.js")
                 contents =
                   'export const BASE_BACKEND_URL="/api";export const apiEndpoint={DASHBOARD_ENDPOINT:"/dashboard",USER_INFO_ENDPOINT:"/user/info"};';
@@ -103,7 +109,9 @@ async function workspace() {
                 contents = "export const emitEvent=()=>{};";
               else if (requested === "@/lib/tools.jsx")
                 contents =
-                  'export const UnifiedLoadingScreen=()=>null;export const UnifiedErrorScreen=()=>null;export const updateURL=(url)=>window.history.pushState({},"",url);export const useLocalSetting=(_key,defaultValue)=>[defaultValue];';
+                  'export const UnifiedLoadingScreen=()=>null;export const UnifiedErrorScreen=()=>null;export const updateURL=(url)=>window.history.pushState({},"",url);export const useLocalSetting=(_key,defaultValue)=>[defaultValue,()=>{}];export const setLocalSetting=()=>{};';
+              else if (requested === '@/runtime/backend/BackendBootstrapGate.jsx')
+                contents = 'export default ({children})=>children;';
               else if (requested === "@/components/ui/button")
                 contents =
                   "export const Button=({variant,size,...props})=><button {...props}/>;";
@@ -156,10 +164,12 @@ test("management uses the existing sidebar and returning preserves the live conv
     await act(async () => router.navigate("/tasks?taskId=task-1"));
     assert.equal(router.state.matches[0].route.id, parentRoute);
     assert.equal(document.querySelector("aside").dataset.activePage, "tasks");
-    assert.equal(
-      document.querySelector('iframe[title="任务管理"]').getAttribute("src"),
-      "/api/tasks/page?taskId=task-1",
-    );
+    const frameUrl = new URL(document.querySelector('iframe[title="任务管理"]').getAttribute('src'), window.location.origin);
+    assert.equal(frameUrl.pathname, '/api/tasks/page');
+    assert.equal(frameUrl.searchParams.get('taskId'), 'task-1');
+    assert.equal(frameUrl.searchParams.get('client_ticket'), 'navigation-page-ticket');
+    assert.equal(frameUrl.searchParams.get('client_origin'), window.location.origin);
+    assert.ok(frameUrl.searchParams.get('client_channel'));
     assert.equal(document.querySelector("[data-live-chat]"), chat);
     assert.equal(
       chat.closest("[aria-hidden]")?.getAttribute("aria-hidden"),

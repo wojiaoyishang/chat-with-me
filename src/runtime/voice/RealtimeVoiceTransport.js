@@ -1,6 +1,7 @@
 import {REALTIME_VOICE_WEBSOCKET_URL} from '@/config.js';
 import {generateUUID} from '@/lib/tools.jsx';
 import {WebSocketTransport} from '@/runtime/transport/WebSocketTransport.js';
+import { getBackendConnection, isCurrentConnection } from '../backend/connection.js';
 
 const nowMs = () => Date.now();
 const DEFAULT_CONNECT_TIMEOUT_MS = 8000;
@@ -18,15 +19,16 @@ const timeoutError = (label, timeoutMs) => {
 };
 
 export class RealtimeVoiceTransport {
-    constructor({url = REALTIME_VOICE_WEBSOCKET_URL, ticket, onEvent, onMedia, onClose, onError} = {}) {
+    constructor({url = REALTIME_VOICE_WEBSOCKET_URL, ticket, onEvent, onMedia, onClose, onError, backendScope = getBackendConnection()} = {}) {
+        this.backendScope = backendScope;
         this.sequence = 0;
         this.waiters = new Map();
         this.onEvent = onEvent;
         this.ready = false;
         this.readyWaiters = new Set();
         this.transport = new WebSocketTransport(withMediaTicket(url, ticket), {
-            onEvent: (event) => this.#handleEvent(event),
-            onMedia,
+            onEvent: (event) => { if (isCurrentConnection(this.backendScope)) this.#handleEvent(event); },
+            onMedia: (...args) => { if (isCurrentConnection(this.backendScope)) onMedia?.(...args); },
             onClose: (event) => {
                 const reason = String(event?.reason || '').trim();
                 const error = new Error(reason || `Realtime voice transport closed (${event.code})`);
@@ -44,6 +46,7 @@ export class RealtimeVoiceTransport {
     }
 
     async connect({timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS} = {}) {
+        if (!isCurrentConnection(this.backendScope)) throw new Error('Backend changed');
         let timer = null;
         try {
             const readyPromise = this.#waitUntilReady();
@@ -59,6 +62,7 @@ export class RealtimeVoiceTransport {
                     );
                 }),
             ]);
+            if (!isCurrentConnection(this.backendScope)) throw new Error('Backend changed');
             return this;
         } catch (error) {
             const isTimeout = error?.code === 'REALTIME_VOICE_TIMEOUT';
@@ -82,6 +86,7 @@ export class RealtimeVoiceTransport {
     }
 
     request({event, payload = {}, conversationId = null, turnId = null, streamId = null, timeoutMs = 12000}) {
+        if (!isCurrentConnection(this.backendScope)) return Promise.reject(new Error('Backend changed'));
         const envelope = this.#eventEnvelope({event, payload, conversationId, turnId, streamId});
         return new Promise((resolve, reject) => {
             const timeout = globalThis.setTimeout(() => {
@@ -100,12 +105,14 @@ export class RealtimeVoiceTransport {
     }
 
     sendEvent({event, payload = {}, conversationId = null, turnId = null, streamId = null}) {
+        if (!isCurrentConnection(this.backendScope)) throw new Error('Backend changed');
         const envelope = this.#eventEnvelope({event, payload, conversationId, turnId, streamId});
         this.transport.sendEvent(envelope);
         return envelope;
     }
 
     sendAudio({conversationId, streamId, pcm, durationMs = null, timestampMs = null, metadata = null}) {
+        if (!isCurrentConnection(this.backendScope)) return;
         const header = {
             version: 1,
             event_id: generateUUID(),

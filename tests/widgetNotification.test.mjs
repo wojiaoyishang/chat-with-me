@@ -9,11 +9,12 @@ assert.equal(widgetNotificationChannel({...base,conversationVisible:false}),'pag
 assert.equal(widgetNotificationChannel({...base,focused:false}),'system');
 assert.equal(widgetNotificationChannel({...base,visible:false}),'system');
 const settings={};let warned=0,info=0,requested=0,shown=0;
+let backend = 'a';
 function Notification(){shown++;}
 Notification.permission='default';
 Notification.requestPermission=async()=>{requested++;Notification.permission='denied';};
 const localStorage={setItem(key,value){this[key]=value;},getItem(key){return this[key];},removeItem(key){delete this[key];}};
-const context=vm.createContext({Notification,crypto:{randomUUID:()=> 'tab'},toast:{warning(){warned++;},info(){info++;}},getLocalSetting:(key,fallback)=>settings[key]??fallback,setLocalSetting:(key,value)=>{settings[key]=value;},window:{dispatchEvent(){},isSecureContext:false,focus(){}},navigator:{locks:{request:async(_key,callback)=>callback()}},document:{querySelectorAll:()=>[]},Event:class{},localStorage,location:{origin:'https://app.example'},URL,setTimeout});
+const context=vm.createContext({Notification,crypto:{randomUUID:()=> 'tab'},toast:{warning(){warned++;},info(){info++;}},backendStorageKey:(key)=>`${backend}:user:${key}`,getBackendConnection:()=>({id:backend}),getLocalSetting:(key,fallback)=>settings[key]??fallback,setLocalSetting:(key,value)=>{settings[key]=value;},window:{dispatchEvent(){},isSecureContext:false,focus(){}},navigator:{locks:{request:async(_key,callback)=>callback()}},document:{querySelectorAll:()=>[]},Event:class{},localStorage,location:{origin:'https://app.example'},URL,setTimeout});
 let source=fs.readFileSync('src/features/notification/systemNotifications.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export const ','const ').replaceAll('import.meta.env.BASE_URL',"'/'");
 vm.runInContext(source+'\nglobalThis.api={requestSystemNotificationPermission,showWidgetSystemNotification,updateNotificationPresence};',context);
 await context.api.requestSystemNotificationPermission({automatic:true});
@@ -26,4 +27,7 @@ await context.api.showWidgetSystemNotification(item,()=>{});
 await context.api.showWidgetSystemNotification(item,()=>{});assert.equal(shown,1);
 context.api.updateNotificationPresence({visible:true,focused:true});
 assert.equal(await context.api.showWidgetSystemNotification({...item,id:'another'},()=>{}),false);assert.equal(shown,1);
+backend = 'b';
+await context.api.showWidgetSystemNotification(item,()=>{});
+assert.equal(shown,2,'another backend reusing notification IDs and foreground state stays isolated');
 console.log('Widget channel, permission and cross-tab notification checks passed');

@@ -6,11 +6,10 @@ import React, {act} from 'react';
 
 // React's input-event support probe must see a DOM before the client renderer
 // loads. The editor focuses its real textarea; no legacy IE event shim is used.
-const bootstrap = new JSDOM('<!doctype html><html><body></body></html>');
+const bootstrap = new JSDOM('<!doctype html><html><body></body></html>', {url: 'http://localhost/chat'});
 globalThis.window = bootstrap.window;
 globalThis.document = bootstrap.window.document;
 const {createRoot} = await import('react-dom/client');
-bootstrap.window.close();
 
 await build({
     stdin: {contents: `export {default as Editor} from './src/features/execution/ExecutionGuidanceEditor.jsx';
@@ -36,6 +35,9 @@ await build({
     }}],
 });
 const {Editor, Record, submitGuidanceDraft, useExecutionStore} = await import('../temp/execution-guidance-editor-test.mjs');
+bootstrap.window.close();
+delete globalThis.window;
+delete globalThis.document;
 const cid = 'conversation-1';
 const eid = 'execution-1';
 const source = {id: 'original-guidance', kind: 'guidance', source: 'user_guidance',
@@ -83,7 +85,7 @@ async function mount(t, Component, props, {chatBox = false} = {}) {
             React.createElement(Component, next))
         : React.createElement(Component, next);
     const render = (next) => act(async () => root.render(view(next)));
-    t.after(async () => {await act(async () => root.unmount()); dom.window.close(); delete globalThis.__guidanceEditorHarness;});
+    t.after(async () => {await act(async () => root.unmount()); dom.window.close(); delete globalThis.window; delete globalThis.document; delete globalThis.HTMLElement; delete globalThis.__guidanceEditorHarness;});
     await render(props);
     return {state, render,
         button: (name) => [...document.querySelectorAll('button')].find((button) => button.getAttribute('aria-label') === name || button.textContent === name),
