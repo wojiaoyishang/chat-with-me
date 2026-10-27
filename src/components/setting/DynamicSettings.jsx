@@ -2321,11 +2321,11 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         storageBindings,
         resolve: (value, extra = {}) => resolveValue(value, { form: valuesRef.current, item: runtimeRef.current.item, ...extra }),
     };
-    const renderFields = (options, initial, changed, extra = {}) => <DynamicSettings
+    const renderFields = useCallback((options, initial, changed, extra = {}) => <DynamicSettings
         key={extra.key} config={options} initialValues={initial} onChange={changed}
-        disabled={extra.disabled || ctx.disabled}
+        disabled={extra.disabled || disabled || runtimeContext.disabled === true}
         runtimeContext={{ ...runtimeContext, ...extra.runtimeContext, client, item: Object.hasOwn(extra, 'item') ? extra.item : runtimeContext.item }}
-        onImageUpload={onImageUpload} />;
+        onImageUpload={onImageUpload} />, [client, disabled, onImageUpload, runtimeContext]);
     ctx.renderFields = renderFields;
     useEffect(() => {
         const host = editorScope.current;
@@ -2337,7 +2337,10 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     }, [validationRef]);
     useEffect(() => {
         const configChanged = previousConfigRef.current !== config;
-        const externalChanged = previousInitialRef.current !== initialValues && JSON.stringify(initialValues) !== JSON.stringify(valuesRef.current);
+        // Controlled owners echo the very object emitted by update(). Avoid
+        // serializing large graph values twice just to recognize that echo.
+        const externalChanged = previousInitialRef.current !== initialValues && initialValues !== valuesRef.current
+            && JSON.stringify(initialValues) !== JSON.stringify(valuesRef.current);
         previousConfigRef.current = config;
         previousInitialRef.current = initialValues;
         if (!configChanged && !externalChanged) return;

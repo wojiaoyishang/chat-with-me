@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.CWM_TEST_REAL_SETTINGS_DIALOGS = '1';
-const { mount, mountBootstrapGate, resource, click, button, act, edit, ref } = await import('./helpers/settingsRuntimeHarness.mjs');
+const { mount, mountBootstrapGate, resource, click, button, act, edit, ref, React, DynamicSettings, registerSettingsComponent } = await import('./helpers/settingsRuntimeHarness.mjs');
 
 const resourceEditor = (extra = {}) => resource({
     create: { label: '添加用户' },
@@ -29,6 +29,73 @@ const finishExit = async () => act(async () => {
     }
 });
 const field = () => currentDialog().querySelector('input');
+
+test('closing a resource editor retains its form without rendering the fields or background records again', async () => {
+    let fieldRenders = 0;
+    let titleReads = 0;
+    registerSettingsComponent('dialog-render-probe', () => { fieldRenders += 1; return React.createElement('p', null, 'expensive field'); });
+    const row = { id: 'one', get title() { titleReads += 1; return 'original'; } };
+    const ui = await mount([resourceEditor({ options: [
+        { type: 'text', name: 'title', text: '用户名' }, { type: 'dialog-render-probe', name: 'graph' },
+    ] })], { items: [row] });
+    animateExit();
+    try {
+        await click(button('编辑'));
+        await edit(field(), 'changed');
+        const renders = fieldRenders;
+        const reads = titleReads;
+        await click(button('取消'));
+        assert.equal(currentDialog().getAttribute('data-state'), 'closed');
+        assert.equal(field().value, 'changed');
+        assert.equal(fieldRenders, renders, 'the outgoing form must be reused throughout exit');
+        assert.equal(titleReads, reads, 'draft changes and exit must not re-read the background records');
+        await finishExit();
+        await click(button('编辑'));
+        assert.equal(field().value, 'original');
+        assert.ok(fieldRenders > renders, 'a fresh opening must mount a fresh form');
+    } finally { await ui.close(); }
+});
+
+test('echoing the current form value does not serialize a large object for equality checks', async () => {
+    let serializations = 0;
+    const graph = { nodes: Array.from({ length: 500 }, (_, id) => ({ id })), toJSON() { serializations += 1; return { nodes: this.nodes }; } };
+    registerSettingsComponent('dialog-echo-probe', ({ onChange }) => React.createElement('button', { onClick: () => onChange(graph) }, '更新图数据'));
+    const config = [{ type: 'dialog-echo-probe', name: 'graph' }];
+    const runtimeContext = {};
+    function EchoForm() {
+        const [values, setValues] = React.useState({});
+        return React.createElement(DynamicSettings, { config, runtimeContext, initialValues: values, onChange: setValues });
+    }
+    const ui = await mount([]);
+    try {
+        await ui.render(React.createElement(EchoForm));
+        await click(button('更新图数据'));
+        assert.equal(serializations, 0);
+    } finally { await ui.close(); }
+});
+
+test('a newer opening supersedes an interrupted large-form render', { timeout: 5000 }, async () => {
+    let resume;
+    let ready = false;
+    const pending = new Promise(resolve => { resume = resolve; });
+    registerSettingsComponent('interrupted-editor-probe', ({ context }) => {
+        if (context.item?.id === 'one' && !ready) throw pending;
+        return React.createElement('p', null, `record: ${context.item?.id}`);
+    });
+    const ui = await mount([resourceEditor({ options: [
+        { type: 'text', name: 'title', text: '用户名' }, { type: 'interrupted-editor-probe', name: 'graph' },
+    ] })], { items: [{ id: 'one', title: 'old' }, { id: 'two', title: 'new' }] });
+    try {
+        const edits = [...document.querySelectorAll('button')].filter(node => node.textContent.trim() === '编辑');
+        await click(edits[0]);
+        assert.equal(currentDialog(), null, 'the unfinished form must not replace the usable parent window');
+        await click(edits[1]);
+        assert.equal(field().value, 'new');
+        await act(async () => { ready = true; resume(); });
+        assert.equal(field().value, 'new');
+        assert.match(currentDialog().textContent, /record: two/);
+    } finally { ready = true; resume(); await ui.close(); }
+});
 
 for (const [name, width] of [['用户', 880], ['ComfyUI 工作流', 640], ['MCP 服务', 720], ['知识库连接', 640]]) test(`cancelling ${name} retains title, fields and width through its real Radix exit`, async () => {
     const ui = await mount([resourceEditor({ title: `编辑${name}`, createTitle: `创建${name}`, dialog: { width } })], { items: [{ id: 'one', title: 'original value' }] });
@@ -137,19 +204,23 @@ test('late errors and detail reads cannot write into another opening', async () 
 });
 
 test('response-authored detail dialogs retain their description, values and size while closing', async () => {
+    let renders = 0;
+    registerSettingsComponent('detail-render-probe', () => { renders += 1; return React.createElement('p', null, 'detail field'); });
     const ui = await mount([{ type: 'actions', actions: [{ id: 'details', label: '查看详情', endpoint: '/details', effects: [{ type: 'open-dialog', value: {
         title: '工作流参数', description: '本次运行的参数', dialog: { width: 420 },
-        options: [{ type: 'text', name: 'note', text: '备注' }], defaultOptions: { note: '保持到退出结束' },
+        options: [{ type: 'text', name: 'note', text: '备注' }, { type: 'detail-render-probe', name: 'graph' }], defaultOptions: { note: '保持到退出结束' },
     } }] }] }], {});
     animateExit();
     try {
         await click(button('查看详情'));
         const width = currentDialog().style.width;
+        const openingRenders = renders;
         await click(button('关闭'));
         assert.equal(currentDialog().getAttribute('data-state'), 'closed');
         assert.match(currentDialog().textContent, /工作流参数.*本次运行的参数/s);
         assert.equal(field().value, '保持到退出结束');
         assert.equal(currentDialog().style.width, width);
+        assert.equal(renders, openingRenders, 'closing a detail window must reuse the outgoing fields');
         await finishExit();
         assert.equal(currentDialog(), null);
     } finally { await ui.close(); }

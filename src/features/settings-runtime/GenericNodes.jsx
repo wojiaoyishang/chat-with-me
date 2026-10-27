@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Camera, ChevronDown, Plus, RefreshCw, Trash2, CircleUserRound, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -364,25 +364,31 @@ export function ResourceNode({ item, context, renderFields }) {
         return registerDraftGuard(`${item.id || item.name}:editor`, async () => JSON.stringify(editor.initial) === JSON.stringify(editor.values)
             || confirm({ title: '放弃未保存的更改？', description: '离开后本次编辑内容将被丢弃。', confirmText: '放弃更改' }));
     }, [registerDraftGuard, confirm, editorOpen, editor, item.id, item.name]);
-    const openEditor = async (record) => {
+    const openEditor = useCallback(async (record) => {
         if (!item.editor) return;
+        const context = latestContext.current;
         detailRequest.current.controller?.abort();
         const controller = new AbortController();
         const serial = ++detailRequest.current.serial;
         detailRequest.current.controller = controller;
-        setEditorBusy(Boolean(record && item.editor.load)); setEditorError(''); setFieldErrors({});
         const initial = pageValues(item.editor.options || [], { ...cloneData(item.editor.defaults || {}), ...cloneData(record || {}) });
-        setEditor({ open: true, serial, record, values: initial, initial });
+        // Building a large form must be interruptible instead of blocking the
+        // click event and every animation in the parent window.
+        startTransition(() => {
+            setEditorBusy(Boolean(record && item.editor.load)); setEditorError(''); setFieldErrors({});
+            setEditor((current) => detailRequest.current.serial === serial ? { open: true, serial, record, values: initial, initial } : current);
+        });
         try {
             if (record && item.editor.load) {
                 const result = await context.api.get(requestEndpoint(item.editor.load.endpoint, { item: record, parentItem: context.item, form: initial }), { signal: controller.signal });
                 if (!alive.current || controller.signal.aborted || serial !== detailRequest.current.serial) return;
                 const values = pageValues(item.editor.options || [], { ...initial, ...cloneData(getValue(result, item.editor.load.valuePath || '', result)) });
-                setEditor((current) => current?.serial === serial ? { ...current, values, initial: cloneData(values) } : current);
+                startTransition(() => setEditor((current) => current?.serial === serial && detailRequest.current.serial === serial
+                    ? { ...current, values, initial: cloneData(values) } : current));
             }
         } catch (cause) { if (alive.current && !controller.signal.aborted && serial === detailRequest.current.serial) setEditorError(cause.message); }
-        finally { if (alive.current && !controller.signal.aborted && serial === detailRequest.current.serial) setEditorBusy(false); }
-    };
+        finally { if (alive.current && !controller.signal.aborted && serial === detailRequest.current.serial) startTransition(() => setEditorBusy(false)); }
+    }, [item.editor]);
     const patchEditor = (patch, target = 'form') => setEditor((current) => current ? {
         ...current, values: target === 'form' ? { ...current.values, ...patch } : setValue(current.values, target.replace(/^form\./, ''), patch),
     } : current);
@@ -414,40 +420,55 @@ export function ResourceNode({ item, context, renderFields }) {
             onError: (cause) => { if (detailRequest.current.serial !== serial) return; setEditorError(cause.message); if (cause.data?.errors) setFieldErrors(cause.data.errors); },
         });
     };
-    const actionsFor = (record) => {
-        const scope = { form: context.values, item: record, parentItem: context.item };
-        const visible = (item.actions || []).filter((action) => matchesCondition(action.when || action.showWhen, scope));
-        if (!visible.length) return null;
-        return <div className="flex flex-wrap items-start gap-2">{visible.map((action, index) => action.kind === 'edit'
-            ? <Button key={action.id || index} type="button" size="sm" {...getActionPresentation(action)} disabled={context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}><SettingsActionLabel action={action} label={action.label || '编辑'} /></Button>
-            : <ActionButton key={action.id || index} action={action} context={context} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />)}</div>;
-    };
-    const columns = item.columns || [];
-    const valueText = (record, column) => {
-        const value = getValue(record, column.key || column.field);
-        return Object.hasOwn(column.labels || {}, String(value)) ? column.labels[String(value)] : displayValue(value);
-    };
-    const renderCards = () => <SettingsCardGrid columns={item.columnsCount}>{rows.map((record, index) => {
-        const actions = actionsFor(record);
-        if (item.recordView?.type === 'connection-card') return <ConnectionCard key={getValue(record, item.keyField || 'id', index)} item={{ ...item, ...item.recordView }} record={record} context={context} actions={actions} />;
-        const title = getValue(record, item.titleField || 'title', getValue(record, item.keyField || 'id'));
-        const description = item.descriptionField && getValue(record, item.descriptionField);
-        const properties = columns.filter(column => column.key !== (item.titleField || 'title') && column.key !== item.descriptionField);
-        return <article className="min-w-0 overflow-hidden rounded-lg border bg-card" key={getValue(record, item.keyField || 'id', index)}>
-            <div className="p-4">
-                <div className="flex min-w-0 items-start gap-3">
-                    {(item.recordIcon || item.icon) && <SettingsIcon icon={item.recordIcon || item.icon} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
-                    <div className="min-w-0 flex-1">
-                        <h4 className="break-words text-sm font-semibold leading-5">{displayValue(title)}</h4>
-                        {description && <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">{displayValue(description)}</p>}
-                        {item.badges?.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{item.badges.map((badge) => <Badge key={badge.field} variant="secondary" className="rounded-md text-[11px] font-medium">{badge.label ? `${badge.label}：` : ''}{valueText(record, badge)}</Badge>)}</div>}
+    // Editor visibility and draft changes do not invalidate the collection.
+    const records = useMemo(() => {
+        const actionsFor = (record) => {
+            const scope = { form: context.values, item: record, parentItem: context.item };
+            const visible = (item.actions || []).filter((action) => matchesCondition(action.when || action.showWhen, scope));
+            if (!visible.length) return null;
+            return <div className="flex flex-wrap items-start gap-2">{visible.map((action, index) => action.kind === 'edit'
+                ? <Button key={action.id || index} type="button" size="sm" {...getActionPresentation(action)} disabled={context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}><SettingsActionLabel action={action} label={action.label || '编辑'} /></Button>
+                : <ActionButton key={action.id || index} action={action} context={context} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />)}</div>;
+        };
+        const columns = item.columns || [];
+        const valueText = (record, column) => {
+            const value = getValue(record, column.key || column.field);
+            return Object.hasOwn(column.labels || {}, String(value)) ? column.labels[String(value)] : displayValue(value);
+        };
+        const renderCards = () => <SettingsCardGrid columns={item.columnsCount}>{rows.map((record, index) => {
+            const actions = actionsFor(record);
+            if (item.recordView?.type === 'connection-card') return <ConnectionCard key={getValue(record, item.keyField || 'id', index)} item={{ ...item, ...item.recordView }} record={record} context={context} actions={actions} />;
+            const title = getValue(record, item.titleField || 'title', getValue(record, item.keyField || 'id'));
+            const description = item.descriptionField && getValue(record, item.descriptionField);
+            const properties = columns.filter(column => column.key !== (item.titleField || 'title') && column.key !== item.descriptionField);
+            return <article className="min-w-0 overflow-hidden rounded-lg border bg-card" key={getValue(record, item.keyField || 'id', index)}>
+                <div className="p-4">
+                    <div className="flex min-w-0 items-start gap-3">
+                        {(item.recordIcon || item.icon) && <SettingsIcon icon={item.recordIcon || item.icon} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
+                        <div className="min-w-0 flex-1">
+                            <h4 className="break-words text-sm font-semibold leading-5">{displayValue(title)}</h4>
+                            {description && <p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-xs leading-5 text-muted-foreground">{displayValue(description)}</p>}
+                            {item.badges?.length > 0 && <div className="mt-2 flex flex-wrap gap-1.5">{item.badges.map((badge) => <Badge key={badge.field} variant="secondary" className="rounded-md text-[11px] font-medium">{badge.label ? `${badge.label}：` : ''}{valueText(record, badge)}</Badge>)}</div>}
+                        </div>
                     </div>
+                    {properties.length > 0 && <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">{properties.map(column => <div key={column.key} className="min-w-0"><dt className="text-[11px] leading-4 text-muted-foreground">{column.label}</dt><dd className="mt-1 break-words text-xs font-medium leading-5">{valueText(record, column)}</dd></div>)}</dl>}
                 </div>
-                {properties.length > 0 && <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">{properties.map(column => <div key={column.key} className="min-w-0"><dt className="text-[11px] leading-4 text-muted-foreground">{column.label}</dt><dd className="mt-1 break-words text-xs font-medium leading-5">{valueText(record, column)}</dd></div>)}</dl>}
-            </div>
-            {actions && <div className="border-t px-4 py-2.5">{actions}</div>}
-        </article>;
-    })}</SettingsCardGrid>;
+                {actions && <div className="border-t px-4 py-2.5">{actions}</div>}
+            </article>;
+        })}</SettingsCardGrid>;
+        return item.display === 'table' && columns.length ? <div className="overflow-auto rounded-xl border border-border/70"><table className="w-full text-left text-sm"><thead className="bg-muted/40 text-xs text-muted-foreground"><tr>{columns.map(column => <th key={column.key} className="px-4 py-3 font-medium">{column.label}</th>)}<th className="px-4 py-3 font-medium">操作</th></tr></thead><tbody>{rows.map((record, index) => <tr key={getValue(record, item.keyField || 'id', index)} className="border-t border-border/55 transition-colors hover:bg-muted/15">{columns.map(column => <td key={column.key} className="max-w-sm break-words px-4 py-3 text-sm">{valueText(record, column)}</td>)}<td className="px-4 py-3">{actionsFor(record)}</td></tr>)}</tbody></table></div>
+                    : renderCards();
+    }, [rows, item, context, conflictingActions, openEditor]);
+    const editorSerial = editor?.serial;
+    const updateEditorValues = useCallback((values) => setEditor((current) => current?.open && current.serial === editorSerial
+        ? { ...current, values } : current), [editorSerial]);
+    // Keep the complete form during exit without traversing it again just to
+    // change visibility. Real value, descriptor or runtime changes still render.
+    const editorForm = useMemo(() => editorSerial == null ? null :
+        <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor?.values, updateEditorValues, {
+            key: `${item.id}:editor:${editorSerial}`, item: editor?.record, disabled: context.disabled || editorBusy,
+            runtimeContext: { parentItem: context.item, isCreate: !editor?.record },
+        })}</SettingsFormLayout>, [editorSerial, editor?.values, editor?.record, item.editor, item.id, context.disabled, context.item, editorBusy, renderFields, updateEditorValues]);
     const resourceActions = <>
         <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="刷新列表" aria-busy={loading || undefined} onClick={() => { void load(); }}><RefreshCw className="size-4" /></Button>
         {(item.toolbarActions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />)}
@@ -456,8 +477,7 @@ export function ResourceNode({ item, context, renderFields }) {
     return <SettingsSection title={<span className="flex items-center gap-2">{item.text || item.title}<span className="text-xs font-normal tabular-nums text-muted-foreground">{rows.length} 项</span></span>} description={item.description} variant={item.variant} actions={resourceActions} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>
         <div className={`relative ${inlineLoading && !rows.length && (loading || error) ? 'min-h-28 rounded-lg border bg-card' : ''} ${loading ? '' : 'cwm-settings-reveal'}`} aria-busy={loading || undefined}>
         {!rows.length ? !loading && !error && <div className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center"><Inbox className="size-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
-                : item.display === 'table' && columns.length ? <div className="overflow-auto rounded-xl border border-border/70"><table className="w-full text-left text-sm"><thead className="bg-muted/40 text-xs text-muted-foreground"><tr>{columns.map(column => <th key={column.key} className="px-4 py-3 font-medium">{column.label}</th>)}<th className="px-4 py-3 font-medium">操作</th></tr></thead><tbody>{rows.map((record, index) => <tr key={getValue(record, item.keyField || 'id', index)} className="border-t border-border/55 transition-colors hover:bg-muted/15">{columns.map(column => <td key={column.key} className="max-w-sm break-words px-4 py-3 text-sm">{valueText(record, column)}</td>)}<td className="px-4 py-3">{actionsFor(record)}</td></tr>)}</tbody></table></div>
-                    : renderCards()}
+                : records}
         {inlineLoading && (loading || error) && <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 p-4">
             {loading ? <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Spinner />{loadingText}</div>
                 : <div className="space-y-2 text-center"><p role="alert" className="text-sm text-destructive">{error}</p><Button type="button" variant="outline" size="sm" onClick={() => { void load(); }}><RefreshCw className="size-3.5" />重新加载</Button></div>}
@@ -474,7 +494,7 @@ export function ResourceNode({ item, context, renderFields }) {
                 <div ref={editorScope} className={`relative min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6 ${editorBusy ? '' : 'cwm-settings-reveal'}`} aria-busy={editorBusy || undefined}>
                     {editorError && <p role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive">{editorError}</p>}
                     {Object.entries(fieldErrors).map(([field, message]) => <p className="text-xs text-destructive" key={field}>{field}：{message}</p>)}
-                    {editor && <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor:${editor.serial}`, item: editor.record, disabled: context.disabled || editorBusy, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}</SettingsFormLayout>}
+                    {editorForm}
                     {editorBusy && <div role="status" className="absolute inset-0 flex items-center justify-center gap-2 bg-background/80 p-4 text-sm text-muted-foreground"><Spinner />正在读取详情…</div>}
                 </div>
                 <DialogFooter className="shrink-0 border-t bg-background px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-md" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch(() => {}); }}>保存</Button>}</DialogFooter>
@@ -486,5 +506,17 @@ export function ResourceNode({ item, context, renderFields }) {
 export function DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
     useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
-    return <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}><DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited}><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>{renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</SettingsFormLayout>}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
+    const form = useMemo(() => descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>
+        {renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}
+    </SettingsFormLayout>, [descriptor, values, renderFields, context.runtimeContext]);
+    return <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+        <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited}>
+            <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12">
+                <DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle>
+                <DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription>
+            </DialogHeader>
+            <div className="min-h-0 flex-1 overflow-auto p-4">{form}</div>
+            <DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter>
+        </DialogContent>
+    </Dialog>;
 }
