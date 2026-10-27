@@ -82,7 +82,7 @@ src/components/ui/alert-dialog 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} /> )``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1627:2239:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:1627:2252:FUNCTION
 
 .. js:function:: AlertDialogOverlay({ className, style, ...props })
 
@@ -101,7 +101,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``React.useContext``、``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:2239:3404:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:2252:3417:FUNCTION
 
 .. js:function:: AlertDialogContent({ className, style, onPointerDownCapture, size = "default", ...props })
 
@@ -122,7 +122,7 @@ src/components/ui/alert-dialog 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3404:4042:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3417:4055:FUNCTION
 
 .. js:function:: AlertDialogHeader({ className, ...props })
 
@@ -141,7 +141,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4042:4433:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4055:4446:FUNCTION
 
 .. js:function:: AlertDialogFooter({ className, ...props })
 
@@ -160,7 +160,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4433:4863:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4446:4876:FUNCTION
 
 .. js:function:: AlertDialogTitle({ className, ...props })
 
@@ -179,7 +179,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4863:5177:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:4876:5190:FUNCTION
 
 .. js:function:: AlertDialogDescription({ className, ...props })
 
@@ -198,7 +198,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5177:5581:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5190:5594:FUNCTION
 
 .. js:function:: AlertDialogMedia({ className, ...props })
 
@@ -217,7 +217,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5581:6026:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:5594:6039:FUNCTION
 
 .. js:function:: AlertDialogAction({ className, variant = "default", size = "default", ...props })
 
@@ -236,7 +236,7 @@ src/components/ui/alert-dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:6026:6471:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:6039:6484:FUNCTION
 
 .. js:function:: AlertDialogCancel({ className, variant = "outline", size = "default", ...props })
 
@@ -305,7 +305,7 @@ src/components/ui/alert-dialog 模块
 
 **主要协作调用**：``handleOpenChange``。
 
-.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3302:3363:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/alert-dialog.tsx:3315:3376:FUNCTION
 
 .. rubric:: ``onPointerDownCapture callback @ 101``
 

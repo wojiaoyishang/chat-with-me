@@ -2259,7 +2259,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     const resourceRefreshers = useRef(new Map());
     const storageBindings = useRef(new Map());
     const [confirm, confirmation] = useConfirmation();
-    const [descriptorDialog, setDescriptorDialog] = useState(null);
+    const [descriptorDialog, setDescriptorDialog] = useState({ open: false, value: null, serial: 0 });
     const client = runtimeContext.client || clientAdapter;
     const hydrate = useCallback((path, value) => {
         const next = setValue(valuesRef.current, path, value);
@@ -2308,7 +2308,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     const controller = useActionExecutor({
         api: runtimeContext.api || apiClient, client, confirm, refresh, navigate, patchForm,
         scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {} }),
-        openDialog: setDescriptorDialog,
+        openDialog: (value) => setDescriptorDialog((current) => ({ open: true, value, serial: current.serial + 1 })),
         notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
         updateUser: (user) => runtimeRef.current.updateUser?.(user),
     });
@@ -2350,7 +2350,9 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
             className={`grid w-full min-w-0 grid-cols-1 gap-4 ${className || ''}`}>
             {config.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || 'field'}:${index}`} item={field} path={field.name ? pathParts(field.name) : []} />)}
         </div>
-        <DescriptorDialog descriptor={descriptorDialog} context={ctx} renderFields={renderFields} onClose={() => setDescriptorDialog(null)} />
+        <DescriptorDialog open={descriptorDialog.open} descriptor={descriptorDialog.value} context={ctx} renderFields={renderFields}
+            onClose={() => setDescriptorDialog((current) => current.serial === descriptorDialog.serial ? { ...current, open: false } : current)}
+            onExited={() => setDescriptorDialog((current) => !current.open && current.serial === descriptorDialog.serial ? { ...current, value: null } : current)} />
         {confirmation}
     </SettingsContext.Provider>;
 }

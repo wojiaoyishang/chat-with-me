@@ -34,6 +34,26 @@ const page = {
   },
 };
 
+test('catalog and page reads load in the right panel, then reveal settings without loading toasts', async () => {
+  let finishCatalog, finishPage;
+  const ui = await mountSettingsPage((_method, endpoint) => endpoint === '/custom/settings-index'
+    ? new Promise(resolve => { finishCatalog = resolve; })
+    : new Promise(resolve => { finishPage = resolve; }));
+  try {
+    await click(document.querySelector('[role="tab"][aria-label="后端设置"]'));
+    const panel = document.getElementById('settings-page-panel');
+    assert.match(panel.querySelector('[role="status"]').textContent, /正在加载设置目录/);
+    assert.equal(document.querySelector('[data-settings-test-toaster] [role="status"]'), null);
+    await act(async () => finishCatalog(catalog));
+    assert.match(panel.querySelector('[role="status"]').textContent, /正在加载设置页/);
+    await act(async () => finishPage(page));
+    assert.equal(panel.querySelector('[role="status"]'), null);
+    assert.equal(panel.querySelector('[aria-label="自定义字段"]').value, '服务器初值');
+    assert.ok(panel.querySelector('.cwm-settings-reveal'));
+    assert.equal(settingsUI.toastEvents?.some(event => event.kind === 'loading') || false, false);
+  } finally { await ui.close(); }
+});
+
 test("browser preferences and saved connections work without requesting backend settings", async () => {
   const ui = await mountSettingsPage(() => {
     throw new Error("backend unavailable");

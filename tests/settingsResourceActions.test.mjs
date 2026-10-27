@@ -59,10 +59,10 @@ test('connection cards use declared busy states and conditional diagnostics', as
 test('local snapshot updates refresh results without another collection-loading toast', async () => {
     const ui = await mount([resource({ source: { endpoint: 'client:backends', listPath: 'items' }, actions: [] })], {});
     try {
-        const firstLoads = settingsUI.toastEvents.filter(event => event.kind === 'loading').length;
+        const firstLoads = (settingsUI.toastEvents || []).filter(event => event.kind === 'loading').length;
         settingsUI.backendProfiles = [{ id: 'one', title: '已更新 · 42 ms' }];
         await act(async () => { for (const update of settingsUI.clientSubscribers) update(); });
         assert.match(document.querySelector('section').textContent, /42 ms/);
-        assert.equal(settingsUI.toastEvents.filter(event => event.kind === 'loading').length, firstLoads);
+        assert.equal((settingsUI.toastEvents || []).filter(event => event.kind === 'loading').length, firstLoads);
     } finally { await ui.close(); }
 });

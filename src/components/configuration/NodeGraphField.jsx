@@ -646,18 +646,18 @@ export default function NodeGraphField({
                 "拖动节点调整布局，点击节点配置参数和产物。"}
             </DialogDescription>
           </DialogHeader>
-          {open && (
-            <ReactFlowProvider>
-              <GraphCanvas
-                graph={graph}
-                onChange={onChange}
-                item={item}
-                renderFields={renderFields}
-                context={context}
-                disabled={disabled}
-              />
-            </ReactFlowProvider>
-          )}
+          {/* Radix owns mounting, including its exit animation. Clearing the
+              canvas on close would expose an empty window during that exit. */}
+          <ReactFlowProvider>
+            <GraphCanvas
+              graph={graph}
+              onChange={onChange}
+              item={item}
+              renderFields={renderFields}
+              context={context}
+              disabled={disabled}
+            />
+          </ReactFlowProvider>
         </DialogContent>
       </Dialog>
     </div>

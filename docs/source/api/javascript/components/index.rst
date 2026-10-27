@@ -296,7 +296,7 @@
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
      - 27
      - 0
-     - 201
+     - 206
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/JsonConfigEditor </api/javascript/components/setting/JsonConfigEditor>`
      - 0

@@ -22,12 +22,12 @@ Backend icons are optional resources; a failed icon must not break navigation.
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``react-router-dom``、``sonner``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/useConfirmation.jsx``、``@/components/setting/DynamicSettings.jsx``、``@/features/settings-runtime/validation.js``、``@/lib/browserHistoryLayers.js``、``@/lib/tools.jsx``、``@/lib/virtualUrl.js``、``@/lib/apiClient.js``、``@/context/useEventStore.jsx``、``@/context/userContext.jsx``、``@/runtime/backend/connection.js``、``@/runtime/backend/clientAdapter.js``、``@/features/settings-runtime/model.js``、``@/features/settings-runtime/loadingToasts.js``、``@/features/settings-runtime/sessionCache.js``、``@/features/settings-runtime/useActionExecutor.js``、``@/features/settings-client/catalog.js``、``@/config.js``。
+``react``、``lucide-react``、``react-router-dom``、``sonner``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/spinner``、``@/components/ui/useConfirmation.jsx``、``@/components/setting/DynamicSettings.jsx``、``@/features/settings-runtime/validation.js``、``@/lib/browserHistoryLayers.js``、``@/lib/tools.jsx``、``@/lib/virtualUrl.js``、``@/lib/apiClient.js``、``@/context/useEventStore.jsx``、``@/context/userContext.jsx``、``@/runtime/backend/connection.js``、``@/runtime/backend/clientAdapter.js``、``@/features/settings-runtime/model.js``、``@/features/settings-runtime/sessionCache.js``、``@/features/settings-runtime/useActionExecutor.js``、``@/features/settings-client/catalog.js``、``@/config.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2071:2662:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2034:2625:FUNCTION
 
 .. js:function:: SettingsNavigationIcon({ preview, icon })
 
@@ -48,7 +48,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2685:2975:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2648:2938:FUNCTION
 
 .. js:function:: clampWindow(value)
 
@@ -71,13 +71,13 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
    **主要协作调用**：``Math.min``、``Math.max``、``Number``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2976:32194:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2939:32518:FUNCTION
 
 .. js:function:: SettingPage({ open, onClose, onRefreshRequested })
 
    Client-owned preferences and backend-defined pages share the same renderer, while their catalogs, persistence and availability remain independent.
 
-   **性质**：同步函数；导出 API；源码第 ``90``—``801`` 行。
+   **性质**：同步函数；导出 API；源码第 ``90``—``804`` 行。
 
    **参数**
 
@@ -104,7 +104,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2501:2530:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2464:2493:FUNCTION
 
 .. rubric:: ``onError callback @ 69``
 
@@ -126,7 +126,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setFailedSource``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2547:2574:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:2510:2537:FUNCTION
 
 .. rubric:: ``onLoad callback @ 70``
 
@@ -148,7 +148,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setFailedSource``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3318:3342:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3281:3305:FUNCTION
 
 .. rubric:: ``useUserStore callback @ 93``
 
@@ -169,7 +169,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3382:3437:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3345:3400:FUNCTION
 
 .. rubric:: ``useUserStore callback @ 94``
 
@@ -190,7 +190,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3835:3935:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3798:3898:FUNCTION
 
 .. rubric:: ``useMemo callback @ 101``
 
@@ -218,7 +218,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3868:3922:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3831:3885:FUNCTION
 
 .. rubric:: ``createSettingsSessionCache callback @ 101``
 
@@ -248,7 +248,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``onEvent({ event }).then``、``onEvent``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3965:4065:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3928:4028:FUNCTION
 
 .. rubric:: ``useEffect callback @ 102``
 
@@ -272,7 +272,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:4029:4059:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:3992:4022:FUNCTION
 
 .. rubric:: ``returned callback @ 104``
 
@@ -294,7 +294,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``cache.setEnabled``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5181:5251:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5144:5214:FUNCTION
 
 .. rubric:: ``useState callback @ 129``
 
@@ -316,7 +316,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``clampWindow``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5675:5748:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5638:5711:FUNCTION
 
 .. rubric:: ``useEffect callback @ 144``
 
@@ -344,7 +344,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5704:5747:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5667:5710:FUNCTION
 
 .. rubric:: ``subscribeBackend callback @ 144``
 
@@ -366,7 +366,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setConnection``、``getBackendConnection``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5778:5802:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5741:5765:FUNCTION
 
 .. rubric:: ``useEffect callback @ 147``
 
@@ -388,7 +388,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setFilterQuery``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5853:7284:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:5816:7247:FUNCTION
 
 .. rubric:: ``useCallback callback @ 149``
 
@@ -419,7 +419,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6332:6369:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6295:6332:FUNCTION
 
 .. rubric:: ``data.some callback @ 159``
 
@@ -440,7 +440,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6673:6894:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6636:6857:FUNCTION
 
 .. rubric:: ``setSelections callback @ 168``
 
@@ -465,7 +465,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6738:6777:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6701:6740:FUNCTION
 
 .. rubric:: ``data.some callback @ 170``
 
@@ -486,7 +486,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6831:6855:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:6794:6818:FUNCTION
 
 .. rubric:: ``data.find callback @ 172``
 
@@ -507,7 +507,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7061:7105:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7024:7068:FUNCTION
 
 .. rubric:: ``setSelections callback @ 178``
 
@@ -528,7 +528,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7334:9946:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:7297:9909:FUNCTION
 
 .. rubric:: ``useCallback callback @ 186``
 
@@ -565,7 +565,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8712:8750:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:8675:8713:FUNCTION
 
 .. rubric:: ``tabsRef.current.find callback @ 223``
 
@@ -586,7 +586,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9971:10498:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:9934:10461:FUNCTION
 
 .. rubric:: ``useEffect callback @ 259``
 
@@ -610,7 +610,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10307:10492:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10270:10455:FUNCTION
 
 .. rubric:: ``returned callback @ 273``
 
@@ -632,7 +632,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``activeRequest.current?.abort``、``resizeCleanup.current``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10522:10594:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10485:10557:FUNCTION
 
 .. rubric:: ``useEffect callback @ 281``
 
@@ -654,7 +654,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``loadCatalog``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10640:10774:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10603:10737:FUNCTION
 
 .. rubric:: ``useEffect callback @ 284``
 
@@ -676,7 +676,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``loadPage``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10876:11212:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:10839:11175:FUNCTION
 
 .. rubric:: ``useCallback callback @ 287``
 
@@ -698,7 +698,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``confirm``、``draftGuards.current.values``、``guard``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11268:11440:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11231:11403:FUNCTION
 
 .. rubric:: ``useCallback callback @ 301``
 
@@ -730,7 +730,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11337:11434:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11300:11397:FUNCTION
 
 .. rubric:: ``returned callback @ 303``
 
@@ -756,7 +756,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``draftGuards.current.get``、``draftGuards.current.delete``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11476:11710:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11439:11673:FUNCTION
 
 .. rubric:: ``useCallback callback @ 307``
 
@@ -778,7 +778,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``guardDraft``、``cache.clear``、``onClose``、``pendingRefresh.current.clear``、``onRefreshRequested``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11806:11868:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11769:11831:FUNCTION
 
 .. rubric:: ``useBrowserBackLayer callback @ 317``
 
@@ -800,7 +800,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``close``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11922:12086:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11885:12049:FUNCTION
 
 .. rubric:: ``useEffect callback @ 323``
 
@@ -824,7 +824,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11996:12079:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:11959:12042:FUNCTION
 
 .. rubric:: ``beforeBackendSwitch callback @ 325``
 
@@ -848,7 +848,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``guardDraft``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12122:12715:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12085:12678:FUNCTION
 
 .. rubric:: ``useEffect callback @ 329``
 
@@ -876,7 +876,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12246:12315:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12209:12278:FUNCTION
 
 .. rubric:: ``(description?.events || []).map callback @ 333``
 
@@ -897,7 +897,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12385:12628:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12348:12591:FUNCTION
 
 .. rubric:: ``events.map callback @ 338``
 
@@ -926,7 +926,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12427:12627:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12390:12590:FUNCTION
 
 .. rubric:: ``onEvent({ event }).then callback @ 339``
 
@@ -948,7 +948,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``toast.info``、``loadPage``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12649:12709:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12612:12672:FUNCTION
 
 .. rubric:: ``returned callback @ 345``
 
@@ -976,7 +976,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12678:12708:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12641:12671:FUNCTION
 
 .. rubric:: ``subscriptions.forEach callback @ 345``
 
@@ -1003,7 +1003,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12813:12927:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12776:12890:FUNCTION
 
 .. rubric:: ``useCallback callback @ 347``
 
@@ -1025,7 +1025,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``pendingRefresh.current.add``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12992:13219:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:12955:13182:FUNCTION
 
 .. rubric:: ``useCallback callback @ 352``
 
@@ -1048,7 +1048,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``markRefresh``、``cache.invalidate``、``loadPage``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13401:13437:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13364:13400:FUNCTION
 
 .. rubric:: ``scope``
 
@@ -1068,7 +1068,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13452:13491:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13415:13454:FUNCTION
 
 .. rubric:: ``refresh``
 
@@ -1090,7 +1090,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``refresh``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13507:13567:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13470:13530:FUNCTION
 
 .. rubric:: ``navigate``
 
@@ -1117,7 +1117,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``onClose``、``navigate``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13584:13688:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13547:13651:FUNCTION
 
 .. rubric:: ``patchForm``
 
@@ -1142,7 +1142,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13615:13656:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13578:13619:FUNCTION
 
 .. rubric:: ``setValues callback @ 373``
 
@@ -1163,7 +1163,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13706:13715:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13669:13678:FUNCTION
 
 .. rubric:: ``openDialog``
 
@@ -1183,7 +1183,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13729:13820:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13692:13783:FUNCTION
 
 .. rubric:: ``notify``
 
@@ -1209,7 +1209,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``toast.error``、``toast.success``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13870:15713:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:13833:15676:FUNCTION
 
 .. rubric:: ``save``
 
@@ -1233,7 +1233,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14537:14635:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:14500:14598:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -1256,7 +1256,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setFieldErrors``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15299:15341:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15262:15304:FUNCTION
 
 .. rubric:: ``scopeRef.current ?.querySelectorAll(".cwm-json-editor") .forEach callback @ 417``
 
@@ -1279,7 +1279,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``node._cwmJsonEditor?.markSaved``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15496:15543:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15459:15506:FUNCTION
 
 .. rubric:: ``(description.save.effects || []).some callback @ 422``
 
@@ -1300,7 +1300,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15732:16649:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15695:16612:FUNCTION
 
 .. rubric:: ``resize``
 
@@ -1330,7 +1330,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15901:16098:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:15864:16061:FUNCTION
 
 .. rubric:: ``move``
 
@@ -1353,7 +1353,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setSize``、``clampWindow``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16148:16374:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16111:16337:FUNCTION
 
 .. rubric:: ``end``
 
@@ -1381,7 +1381,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16228:16328:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16191:16291:FUNCTION
 
 .. rubric:: ``setSize callback @ 444``
 
@@ -1404,7 +1404,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setLocalSetting``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16519:16643:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16482:16606:FUNCTION
 
 .. rubric:: ``anonymous callback @ 452``
 
@@ -1430,7 +1430,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16664:16924:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16627:16887:FUNCTION
 
 .. rubric:: ``useEffect callback @ 457``
 
@@ -1459,7 +1459,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16745:16794:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16708:16757:FUNCTION
 
 .. rubric:: ``resizeWindow``
 
@@ -1483,7 +1483,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16760:16793:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16723:16756:FUNCTION
 
 .. rubric:: ``setSize callback @ 459``
 
@@ -1506,7 +1506,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``clampWindow``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16861:16918:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16824:16881:FUNCTION
 
 .. rubric:: ``returned callback @ 461``
 
@@ -1532,7 +1532,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16971:17144:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:16934:17107:FUNCTION
 
 .. rubric:: ``selectSection``
 
@@ -1559,7 +1559,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``guardDraft``、``setSection``、``document.getElementById(\x60settings-section-${next}\x60)?.focus``、``document.getElementById``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17167:17308:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17130:17271:FUNCTION
 
 .. rubric:: ``selectPage``
 
@@ -1584,7 +1584,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17257:17301:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:17220:17264:FUNCTION
 
 .. rubric:: ``setSelections callback @ 470``
 
@@ -1605,7 +1605,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18363:18443:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18230:18310:FUNCTION
 
 .. rubric:: ``retry``
 
@@ -1615,7 +1615,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 实现 ``retry`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``489``—``490`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``487``—``488`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1627,17 +1627,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``loadPage``、``loadCatalog``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18579:18665:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18446:18532:FUNCTION
 
-.. rubric:: ``onClick callback @ 494``
+.. rubric:: ``onClick callback @ 492``
 
 .. code-block:: javascript
 
-   onClick callback @ 494(event)
+   onClick callback @ 492(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``494``—``496`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``492``—``494`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1650,17 +1650,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``close``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19012:19046:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:18879:18913:FUNCTION
 
-.. rubric:: ``onClick callback @ 506``
+.. rubric:: ``onClick callback @ 504``
 
 .. code-block:: javascript
 
-   onClick callback @ 506(event)
+   onClick callback @ 504(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``506``—``506`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``504``—``504`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1673,17 +1673,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19841:19883:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19708:19750:FUNCTION
 
-.. rubric:: ``onClick callback @ 524``
+.. rubric:: ``onClick callback @ 522``
 
 .. code-block:: javascript
 
-   onClick callback @ 524()
+   onClick callback @ 522()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``524``—``524`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``522``—``522`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1697,17 +1697,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19861:19882:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:19728:19749:FUNCTION
 
-.. rubric:: ``setFullscreen callback @ 524``
+.. rubric:: ``setFullscreen callback @ 522``
 
 .. code-block:: javascript
 
-   setFullscreen callback @ 524(current)
+   setFullscreen callback @ 522(current)
 
 设置与 ``Fullscreen`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``524``—``524`` 行；所属函数 ``onClick callback @ 524``。
+**性质**：同步局部函数；源码第 ``522``—``522`` 行；所属函数 ``onClick callback @ 522``。
 
 **参数**
 
@@ -1718,17 +1718,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20326:20381:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20193:20248:FUNCTION
 
-.. rubric:: ``onClick callback @ 538``
+.. rubric:: ``onClick callback @ 536``
 
 .. code-block:: javascript
 
-   onClick callback @ 538()
+   onClick callback @ 536()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``538``—``540`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``536``—``538`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1740,17 +1740,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``close``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20920:22984:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:20787:22851:FUNCTION
 
-.. rubric:: ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 555``
+.. rubric:: ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 553``
 
 .. code-block:: javascript
 
-   [ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 555(entry)
+   [ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 553(entry)
 
 作为 ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``555``—``602`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``553``—``600`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1763,17 +1763,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21399:22071:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21266:21938:FUNCTION
 
-.. rubric:: ``onKeyDown callback @ 567``
+.. rubric:: ``onKeyDown callback @ 565``
 
 .. code-block:: javascript
 
-   onKeyDown callback @ 567(event)
+   onKeyDown callback @ 565(event)
 
 处理 ``Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``567``—``584`` 行；所属函数 ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 555``。
+**性质**：同步局部函数；源码第 ``565``—``582`` 行；所属函数 ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 553``。
 
 **参数**
 
@@ -1786,17 +1786,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``["ArrowLeft", "ArrowRight", "Home", "End"].includes``、``event.preventDefault``、``selectSection``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:22101:22174:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:21968:22041:FUNCTION
 
-.. rubric:: ``onClick callback @ 585``
+.. rubric:: ``onClick callback @ 583``
 
 .. code-block:: javascript
 
-   onClick callback @ 585()
+   onClick callback @ 583()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``585``—``587`` 行；所属函数 ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 555``。
+**性质**：同步局部函数；源码第 ``583``—``585`` 行；所属函数 ``[ { id: "client", label: "前端设置", Icon: Monitor }, { id: "backend", label: "后端设置", Icon: Server }, ].map callback @ 553``。
 
 **参数**
 
@@ -1808,17 +1808,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``selectSection``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23952:25199:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:23819:25066:FUNCTION
 
-.. rubric:: ``visibleTabs.map callback @ 625``
+.. rubric:: ``visibleTabs.map callback @ 623``
 
 .. code-block:: javascript
 
-   visibleTabs.map callback @ 625(tab)
+   visibleTabs.map callback @ 623(tab)
 
 作为 ``visibleTabs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``625``—``647`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``623``—``645`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1831,17 +1831,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24633:24711:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:24500:24578:FUNCTION
 
-.. rubric:: ``onClick callback @ 634``
+.. rubric:: ``onClick callback @ 632``
 
 .. code-block:: javascript
 
-   onClick callback @ 634()
+   onClick callback @ 632()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``634``—``636`` 行；所属函数 ``visibleTabs.map callback @ 625``。
+**性质**：同步局部函数；源码第 ``632``—``634`` 行；所属函数 ``visibleTabs.map callback @ 623``。
 
 **参数**
 
@@ -1853,17 +1853,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``selectPage``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26501:26832:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:26441:26772:FUNCTION
 
-.. rubric:: ``Object.entries(fieldErrors).map callback @ 677``
+.. rubric:: ``Object.entries(fieldErrors).map callback @ 676``
 
 .. code-block:: javascript
 
-   Object.entries(fieldErrors).map callback @ 677([name, message])
+   Object.entries(fieldErrors).map callback @ 676([name, message])
 
 作为 ``Object.entries(fieldErrors).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``677``—``684`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``676``—``683`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1874,17 +1874,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27479:27553:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:27419:27493:FUNCTION
 
-.. rubric:: ``onChange callback @ 696``
+.. rubric:: ``onChange callback @ 695``
 
 .. code-block:: javascript
 
-   onChange callback @ 696(event)
+   onChange callback @ 695(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``696``—``697`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``695``—``696`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1897,17 +1897,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setFilterQuery``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28240:28538:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28180:28478:FUNCTION
 
-.. rubric:: ``onChange callback @ 713``
+.. rubric:: ``onChange callback @ 712``
 
 .. code-block:: javascript
 
-   onChange callback @ 713(next)
+   onChange callback @ 712(next)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``713``—``720`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``712``—``719`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1920,7 +1920,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``setValues``、``setDirty``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28789:28909:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:28729:28849:FUNCTION
 
 .. rubric:: ``navigate``
 
@@ -1930,7 +1930,7 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 实现 ``navigate`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``726``—``729`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``725``—``728`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1947,17 +1947,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``onClose``、``navigate``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:30044:30067:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:30368:30391:FUNCTION
 
-.. rubric:: ``onClick callback @ 748``
+.. rubric:: ``onClick callback @ 751``
 
 .. code-block:: javascript
 
-   onClick callback @ 748()
+   onClick callback @ 751()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``748``—``748`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``751``—``751`` 行；所属函数 ``SettingPage``。
 
 **参数**
 
@@ -1969,17 +1969,17 @@ Backend icons are optional resources; a failed icon must not break navigation.
 
 **主要协作调用**：``retry``。
 
-.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:30869:30935:FUNCTION
+.. CWM-AST-FUNCTION src/pages/SettingPage.jsx:31193:31259:FUNCTION
 
-.. rubric:: ``onClick callback @ 764``
+.. rubric:: ``onClick callback @ 767``
 
 .. code-block:: javascript
 
-   onClick callback @ 764()
+   onClick callback @ 767()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``764``—``766`` 行；所属函数 ``SettingPage``。
+**性质**：同步局部函数；源码第 ``767``—``769`` 行；所属函数 ``SettingPage``。
 
 **参数**
 

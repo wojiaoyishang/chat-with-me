@@ -298,6 +298,9 @@ export function ResourceNode({ item, context, renderFields }) {
     const [loading, setLoading] = useState(initialCache === undefined);
     const [error, setError] = useState('');
     const [editor, setEditor] = useState(null);
+    // The model outlives visibility so Radix can animate the complete outgoing
+    // form. A new opening replaces it; closing never turns an edit into create.
+    const editorOpen = editor?.open === true;
     const [editorBusy, setEditorBusy] = useState(false);
     const [editorError, setEditorError] = useState('');
     const [fieldErrors, setFieldErrors] = useState({});
@@ -335,10 +338,9 @@ export function ResourceNode({ item, context, renderFields }) {
     // Source descriptors are immutable until the page or parent record changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sourceKey, cache]);
-    const inlineLoading = item.loadingMode === 'inline';
+    const inlineLoading = context.runtimeContext.loadingMode === 'inline' || item.loadingMode !== 'toast';
     const loadingText = `正在加载${item.text || item.title || '列表'}…`;
     useSettingsLoadingToast(!inlineLoading && loading, loadingText, { error: inlineLoading ? '' : error, retry: load });
-    useSettingsLoadingToast(editorBusy, '正在读取详情…');
     useEffect(() => {
         alive.current = true;
         const cached = cache?.get(cacheKey);
@@ -358,25 +360,25 @@ export function ResourceNode({ item, context, renderFields }) {
         return () => { subscriptions.forEach((unsubscribe) => unsubscribe?.()); local?.(); };
     }, [subscribe, client, item.events, source.endpoint, load]);
     useEffect(() => {
-        if (!registerDraftGuard || !editor) return undefined;
+        if (!registerDraftGuard || !editorOpen || !editor) return undefined;
         return registerDraftGuard(`${item.id || item.name}:editor`, async () => JSON.stringify(editor.initial) === JSON.stringify(editor.values)
             || confirm({ title: '放弃未保存的更改？', description: '离开后本次编辑内容将被丢弃。', confirmText: '放弃更改' }));
-    }, [registerDraftGuard, confirm, editor, item.id, item.name]);
+    }, [registerDraftGuard, confirm, editorOpen, editor, item.id, item.name]);
     const openEditor = async (record) => {
         if (!item.editor) return;
         detailRequest.current.controller?.abort();
         const controller = new AbortController();
         const serial = ++detailRequest.current.serial;
         detailRequest.current.controller = controller;
-        setEditorBusy(true); setEditorError(''); setFieldErrors({});
+        setEditorBusy(Boolean(record && item.editor.load)); setEditorError(''); setFieldErrors({});
         const initial = pageValues(item.editor.options || [], { ...cloneData(item.editor.defaults || {}), ...cloneData(record || {}) });
-        setEditor({ record, values: initial, initial });
+        setEditor({ open: true, serial, record, values: initial, initial });
         try {
             if (record && item.editor.load) {
                 const result = await context.api.get(requestEndpoint(item.editor.load.endpoint, { item: record, parentItem: context.item, form: initial }), { signal: controller.signal });
                 if (!alive.current || controller.signal.aborted || serial !== detailRequest.current.serial) return;
                 const values = pageValues(item.editor.options || [], { ...initial, ...cloneData(getValue(result, item.editor.load.valuePath || '', result)) });
-                setEditor((current) => current?.record === record ? { record, values, initial: cloneData(values) } : current);
+                setEditor((current) => current?.serial === serial ? { ...current, values, initial: cloneData(values) } : current);
             }
         } catch (cause) { if (alive.current && !controller.signal.aborted && serial === detailRequest.current.serial) setEditorError(cause.message); }
         finally { if (alive.current && !controller.signal.aborted && serial === detailRequest.current.serial) setEditorBusy(false); }
@@ -384,25 +386,32 @@ export function ResourceNode({ item, context, renderFields }) {
     const patchEditor = (patch, target = 'form') => setEditor((current) => current ? {
         ...current, values: target === 'form' ? { ...current.values, ...patch } : setValue(current.values, target.replace(/^form\./, ''), patch),
     } : current);
-    const closeEditor = async () => {
-        if (editor && JSON.stringify(editor.initial) !== JSON.stringify(editor.values) && !(await context.confirm({ title: '放弃未保存的更改？', description: '关闭后本次编辑内容将被丢弃。', confirmText: '放弃更改' }))) return;
+    const dismissEditor = (serial) => {
+        if (detailRequest.current.serial !== serial) return;
         detailRequest.current.serial += 1;
         detailRequest.current.controller?.abort();
         setEditorBusy(false);
-        setEditor(null);
+        setEditor((current) => current?.serial === serial ? { ...current, open: false } : current);
+    };
+    const closeEditor = async () => {
+        if (!editorOpen) return;
+        const serial = detailRequest.current.serial;
+        if (editor && JSON.stringify(editor.initial) !== JSON.stringify(editor.values) && !(await context.confirm({ title: '放弃未保存的更改？', description: '关闭后本次编辑内容将被丢弃。', confirmText: '放弃更改' }))) return;
+        dismissEditor(serial);
     };
     const editorAction = editor?.record ? item.editor?.update : item.editor?.create;
     const onSave = async () => {
-        if (context.disabled) return;
+        if (context.disabled || !editorOpen || !editor) return;
+        const serial = detailRequest.current.serial;
         try { validateSettingsScope(editorScope.current); }
         catch (cause) { setEditorError(cause.message); return; }
         const errors = validateSettingsFields(editorScope.current, item.editor.options, editor.values, { item: editor.record, parentItem: context.item, isCreate: !editor.record });
         setFieldErrors(errors);
         if (Object.keys(errors).length) return;
         await context.execute(editorAction, { form: editor.values, item: editor.record, parentItem: context.item }, {
-            patchForm: patchEditor,
-            onSuccess: async () => { setEditor(null); if (!(editorAction.effects || []).some((effect) => effect.type === 'refresh' && (!effect.target || effect.target === item.id))) await load(); },
-            onError: (cause) => { setEditorError(cause.message); if (cause.data?.errors) setFieldErrors(cause.data.errors); },
+            patchForm: (patch, target) => { if (detailRequest.current.serial === serial) patchEditor(patch, target); },
+            onSuccess: async () => { dismissEditor(serial); if (!(editorAction.effects || []).some((effect) => effect.type === 'refresh' && (!effect.target || effect.target === item.id))) await load(); },
+            onError: (cause) => { if (detailRequest.current.serial !== serial) return; setEditorError(cause.message); if (cause.data?.errors) setFieldErrors(cause.data.errors); },
         });
     };
     const actionsFor = (record) => {
@@ -454,22 +463,28 @@ export function ResourceNode({ item, context, renderFields }) {
                 : <div className="space-y-2 text-center"><p role="alert" className="text-sm text-destructive">{error}</p><Button type="button" variant="outline" size="sm" onClick={() => { void load(); }}><RefreshCw className="size-3.5" />重新加载</Button></div>}
         </div>}
         </div>
-        <Dialog open={Boolean(editor)} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
-            <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(item.editor?.dialog, 960)}>
+        <Dialog open={editorOpen} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
+            <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(item.editor?.dialog, 960)}
+                onCloseAutoFocus={() => {
+                    // Radix has removed the exiting surface. Release the old
+                    // draft now, without a timer or touching a newer opening.
+                    setEditor((current) => !current?.open && current?.serial === editor?.serial ? null : current);
+                }}>
                 <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{formatValue((!editor?.record && item.editor?.createTitle) || item.editor?.title || '编辑', { item: editor?.record, form: editor?.values })}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{item.editor?.description}</DialogDescription></DialogHeader>
-                <div ref={editorScope} className={`min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6 ${editorBusy ? '' : 'cwm-settings-reveal'}`}>
+                <div ref={editorScope} className={`relative min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6 ${editorBusy ? '' : 'cwm-settings-reveal'}`} aria-busy={editorBusy || undefined}>
                     {editorError && <p role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive">{editorError}</p>}
                     {Object.entries(fieldErrors).map(([field, message]) => <p className="text-xs text-destructive" key={field}>{field}：{message}</p>)}
-                    {editor && <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor`, item: editor.record, disabled: context.disabled || editorBusy, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}</SettingsFormLayout>}
+                    {editor && <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor:${editor.serial}`, item: editor.record, disabled: context.disabled || editorBusy, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}</SettingsFormLayout>}
+                    {editorBusy && <div role="status" className="absolute inset-0 flex items-center justify-center gap-2 bg-background/80 p-4 text-sm text-muted-foreground"><Spinner />正在读取详情…</div>}
                 </div>
-                <DialogFooter className="shrink-0 border-t bg-background px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-md" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch((cause) => setEditorError(cause.message)); }}>保存</Button>}</DialogFooter>
+                <DialogFooter className="shrink-0 border-t bg-background px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-md" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch(() => {}); }}>保存</Button>}</DialogFooter>
             </DialogContent>
         </Dialog>
     </SettingsSection>;
 }
 
-export function DescriptorDialog({ descriptor, context, renderFields, onClose }) {
+export function DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
     useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
-    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)}><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>{renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</SettingsFormLayout>}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
+    return <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}><DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited}><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>{renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</SettingsFormLayout>}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
 }

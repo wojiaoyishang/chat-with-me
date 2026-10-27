@@ -1,4 +1,4 @@
-import { createContext, useContext, useId, useLayoutEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useId, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import { create } from 'zustand';
 
 const BASE = 1000000;
@@ -28,14 +28,20 @@ export const isOwnedWindowPopoverTarget = (event, id) => {
 export function useWindowLayer(active) {
     const id = useId();
     const index = useWindowLayers((state) => state.windows.indexOf(id));
+    const lastVisibleZIndex = useRef(BASE + STEP);
+    const zIndex = active && index >= 0 ? BASE + (index + 1) * STEP : lastVisibleZIndex.current;
+    useLayoutEffect(() => {
+        if (active && index >= 0) lastVisibleZIndex.current = BASE + (index + 1) * STEP;
+    }, [active, index]);
     useLayoutEffect(() => {
         if (!active) return undefined;
         raise(id);
         return () => remove(id);
     }, [active, id]);
     const activate = useCallback(() => { if (active) raise(id); }, [active, id]);
-    return useMemo(() => ({ id, active, activate, zIndex: BASE + (Math.max(0, index) + 1) * STEP }),
-        [id, active, activate, index]);
+    // Leaving the interaction stack must not lower a still-visible exit surface
+    // behind its parent. Presentation keeps the last committed visual order.
+    return useMemo(() => ({ id, active, activate, zIndex }), [id, active, activate, zIndex]);
 }
 
 // Portalled menus inherit their owning window through React context.

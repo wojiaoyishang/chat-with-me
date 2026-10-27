@@ -17,7 +17,7 @@ DOM controls can portal outside React while remaining inside one window.
 * **模块标识**：``src/lib/windowLayers``
 * **顶层函数/组件/Hook**：7
 * **类**：0
-* **局部函数与匿名回调**：11
+* **局部函数与匿名回调**：12
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ DOM controls can portal outside React while remaining inside one window.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:483:587:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:491:595:FUNCTION
 
 .. js:function:: remove(id)
 
@@ -52,7 +52,7 @@ DOM controls can portal outside React while remaining inside one window.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:602:755:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:610:763:FUNCTION
 
 .. js:function:: raise(id)
 
@@ -77,7 +77,7 @@ DOM controls can portal outside React while remaining inside one window.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:788:845:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:796:853:FUNCTION
 
 .. js:function:: isTopWindowLayer(id)
 
@@ -96,7 +96,7 @@ DOM controls can portal outside React while remaining inside one window.
 
    **主要协作调用**：``useWindowLayers.getState().windows.at``、``useWindowLayers.getState``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:881:1096:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:889:1104:FUNCTION
 
 .. js:function:: isOtherWindowTarget(event, id)
 
@@ -118,7 +118,7 @@ DOM controls can portal outside React while remaining inside one window.
 
    **主要协作调用**：``target?.closest``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1220:1445:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1228:1453:FUNCTION
 
 .. js:function:: isOwnedWindowPopoverTarget(event, id)
 
@@ -140,13 +140,13 @@ DOM controls can portal outside React while remaining inside one window.
 
    **主要协作调用**：``target?.closest``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1446:1951:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1454:2361:FUNCTION
 
 .. js:function:: useWindowLayer(active)
 
    封装 ``useWindowLayer`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``28``—``39`` 行。
+   **性质**：同步函数；导出 API；源码第 ``28``—``45`` 行。
 
    **参数**
 
@@ -155,19 +155,19 @@ DOM controls can portal outside React while remaining inside one window.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``useMemo(() => ({ id, active, activate, zIndex: BASE + (Math.max(0, index) + 1) * STEP }), [id, active, activate, index])``。
+   根据执行分支返回结果；代表性返回表达式为 ``useMemo(() => ({ id, active, activate, zIndex }), [id, active, activate, zIndex])``。
 
-   **主要协作调用**：``useId``、``useWindowLayers``、``useLayoutEffect``、``useCallback``、``useMemo``。
+   **主要协作调用**：``useId``、``useWindowLayers``、``useRef``、``useLayoutEffect``、``useCallback``、``useMemo``。
 
-   **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1951:2333:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:2361:2743:FUNCTION
 
 .. js:function:: useWindowPopoverLayer()
 
    封装 ``useWindowPopoverLayer`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``42``—``47`` 行。
+   **性质**：同步函数；导出 API；源码第 ``48``—``53`` 行。
 
    **参数**
 
@@ -186,7 +186,7 @@ DOM controls can portal outside React while remaining inside one window.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:442:465:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:450:473:FUNCTION
 
 .. rubric:: ``create callback @ 9``
 
@@ -206,7 +206,7 @@ DOM controls can portal outside React while remaining inside one window.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:517:586:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:525:594:FUNCTION
 
 .. rubric:: ``useWindowLayers.setState callback @ 11``
 
@@ -231,7 +231,7 @@ DOM controls can portal outside React while remaining inside one window.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:561:582:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:569:590:FUNCTION
 
 .. rubric:: ``state.windows.filter callback @ 11``
 
@@ -252,7 +252,7 @@ DOM controls can portal outside React while remaining inside one window.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:636:754:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:644:762:FUNCTION
 
 .. rubric:: ``useWindowLayers.setState callback @ 12``
 
@@ -277,7 +277,7 @@ DOM controls can portal outside React while remaining inside one window.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:725:746:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:733:754:FUNCTION
 
 .. rubric:: ``state.windows.filter callback @ 13``
 
@@ -298,7 +298,7 @@ DOM controls can portal outside React while remaining inside one window.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1547:1583:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1555:1591:FUNCTION
 
 .. rubric:: ``useWindowLayers callback @ 30``
 
@@ -321,17 +321,37 @@ DOM controls can portal outside React while remaining inside one window.
 
 **主要协作调用**：``state.windows.indexOf``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1606:1710:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1762:1864:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 31``
+.. rubric:: ``useLayoutEffect callback @ 33``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 31()
+   useLayoutEffect callback @ 33()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``31``—``35`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``33``—``35`` 行；所属函数 ``useWindowLayer``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1904:2008:FUNCTION
+
+.. rubric:: ``useLayoutEffect callback @ 36``
+
+.. code-block:: javascript
+
+   useLayoutEffect callback @ 36()
+
+作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
+
+**性质**：同步局部函数；源码第 ``36``—``40`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -345,17 +365,17 @@ DOM controls can portal outside React while remaining inside one window.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1686:1703:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1984:2001:FUNCTION
 
-.. rubric:: ``returned callback @ 34``
+.. rubric:: ``returned callback @ 39``
 
 .. code-block:: javascript
 
-   returned callback @ 34()
+   returned callback @ 39()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``34``—``34`` 行；所属函数 ``useLayoutEffect callback @ 31``。
+**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``useLayoutEffect callback @ 36``。
 
 **参数**
 
@@ -367,17 +387,17 @@ DOM controls can portal outside React while remaining inside one window.
 
 **主要协作调用**：``remove``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1760:1792:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:2058:2090:FUNCTION
 
-.. rubric:: ``useCallback callback @ 36``
+.. rubric:: ``useCallback callback @ 41``
 
 .. code-block:: javascript
 
-   useCallback callback @ 36()
+   useCallback callback @ 41()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -389,17 +409,17 @@ DOM controls can portal outside React while remaining inside one window.
 
 **主要协作调用**：``raise``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1828:1908:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:2285:2325:FUNCTION
 
-.. rubric:: ``useMemo callback @ 37``
+.. rubric:: ``useMemo callback @ 44``
 
 .. code-block:: javascript
 
-   useMemo callback @ 37()
+   useMemo callback @ 44()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -409,19 +429,17 @@ DOM controls can portal outside React while remaining inside one window.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``Math.max``。
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:2559:2590:FUNCTION
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:2149:2180:FUNCTION
-
-.. rubric:: ``useWindowLayers callback @ 44``
+.. rubric:: ``useWindowLayers callback @ 50``
 
 .. code-block:: javascript
 
-   useWindowLayers callback @ 44(state)
+   useWindowLayers callback @ 50(state)
 
 封装 ``WindowLayers`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``useWindowPopoverLayer``。
+**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``useWindowPopoverLayer``。
 
 **参数**
 

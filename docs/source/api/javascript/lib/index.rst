@@ -56,7 +56,7 @@
    * - :doc:`src/lib/windowLayers </api/javascript/lib/windowLayers>`
      - 7
      - 0
-     - 11
+     - 12
      - ``src/lib/windowLayers.js``
 
 .. toctree::

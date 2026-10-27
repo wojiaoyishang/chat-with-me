@@ -153,12 +153,11 @@ export default function BackendBootstrapGate({ children }) {
             </DialogDescription>
           </DialogHeader>
           <div className="min-h-0 flex-1 overflow-y-auto bg-muted/20 p-5 sm:p-6">
-            {managerOpen && (
-              <DynamicSettings
-                config={CONNECTION_PAGE.options}
-                initialValues={CONNECTION_PAGE.defaultOptions}
-              />
-            )}
+            <DynamicSettings
+              config={CONNECTION_PAGE.options}
+              initialValues={CONNECTION_PAGE.defaultOptions}
+              runtimeContext={{ loadingMode: 'inline' }}
+            />
           </div>
         </DialogContent>
       </Dialog>

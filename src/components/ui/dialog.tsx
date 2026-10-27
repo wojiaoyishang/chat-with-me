@@ -67,19 +67,18 @@ function DialogOverlay({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
   const layer = React.useContext(WindowLayerContext)
-  if (!layer?.active) return null
   return (
     <div
       {...props}
       aria-hidden="true"
-      data-state="open"
+      data-state={layer?.active ? "open" : "closed"}
       data-window-layer={layer.id}
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50 duration-200",
         className
       )}
-      style={{...style, zIndex: layer.zIndex - 1, pointerEvents: style?.pointerEvents || 'none'}}
+      style={{...style, zIndex: layer ? layer.zIndex - 1 : undefined, pointerEvents: style?.pointerEvents || 'none'}}
     />
   )
 }

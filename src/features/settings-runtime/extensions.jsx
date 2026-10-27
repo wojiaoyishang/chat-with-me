@@ -1,14 +1,13 @@
 import { registerSettingsComponent } from "./registry.js";
 import { lazy, Suspense } from "react";
-import { useSettingsLoadingToast } from "./loadingToasts.js";
+import { Spinner } from "@/components/ui/spinner";
 
 const NodeGraphField = lazy(
   () => import("@/components/configuration/NodeGraphField.jsx"),
 );
 
 function LoadingExtension() {
-  useSettingsLoadingToast(true, '正在加载图编辑组件…');
-  return null;
+  return <div role="status" className="flex min-h-24 items-center justify-center gap-2 text-sm text-muted-foreground"><Spinner />正在加载图编辑组件…</div>;
 }
 
 export function LazyNodeGraphField(props) {

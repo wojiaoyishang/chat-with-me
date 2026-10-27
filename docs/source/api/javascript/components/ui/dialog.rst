@@ -99,13 +99,13 @@ src/components/ui/dialog 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<DialogPrimitive.Close data-slot="dialog-close" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:1932:2612:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:1932:2640:FUNCTION
 
 .. js:function:: DialogOverlay({ className, style, ...props })
 
    渲染 ``DialogOverlay`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``64``—``85`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``64``—``84`` 行。
 
    **参数**
 
@@ -114,17 +114,17 @@ src/components/ui/dialog 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div {...props} aria-hidden="true" data-state="open" data-window-layer={layer.id} data-slot="dialog-overlay" className={cn( "data-[state=open]:animate-in data-[state=closed]:ani…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div {...props} aria-hidden="true" data-state={layer?.active ? "open" : "closed"} data-window-layer={layer.id} data-slot="dialog-overlay" className={cn( "data-[state=open]:anima…``。
 
    **主要协作调用**：``React.useContext``、``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:2612:5764:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:2640:5792:FUNCTION
 
 .. js:function:: DialogContent({ className, children, showCloseButton = true, overlayClassName, style, onPointerDownCapture, onPoi…)
 
    渲染 ``DialogContent`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``87``—``163`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``86``—``162`` 行。
 
    **参数**
 
@@ -143,13 +143,13 @@ src/components/ui/dialog 模块
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:5764:6005:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:5792:6033:FUNCTION
 
 .. js:function:: DialogHeader({ className, ...props })
 
    渲染 ``DialogHeader`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``165``—``173`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``164``—``172`` 行。
 
    **参数**
 
@@ -162,13 +162,13 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:6005:6545:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:6033:6573:FUNCTION
 
 .. js:function:: DialogFooter({ className, showCloseButton = false, children, ...props })
 
    渲染 ``DialogFooter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``175``—``200`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``174``—``199`` 行。
 
    **参数**
 
@@ -181,13 +181,13 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:6545:6819:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:6573:6847:FUNCTION
 
 .. js:function:: DialogTitle({ className, ...props })
 
    渲染 ``DialogTitle`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``202``—``213`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``201``—``212`` 行。
 
    **参数**
 
@@ -200,13 +200,13 @@ src/components/ui/dialog 模块
 
    **主要协作调用**：``cn``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:6819:7112:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:6847:7140:FUNCTION
 
 .. js:function:: DialogDescription({ className, ...props })
 
    渲染 ``DialogDescription`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``215``—``226`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``214``—``225`` 行。
 
    **参数**
 
@@ -289,17 +289,17 @@ src/components/ui/dialog 模块
 
 **主要协作调用**：``handleOpenChange``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3835:3925:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3863:3953:FUNCTION
 
-.. rubric:: ``onPointerDownCapture callback @ 116``
+.. rubric:: ``onPointerDownCapture callback @ 115``
 
 .. code-block:: javascript
 
-   onPointerDownCapture callback @ 116(event)
+   onPointerDownCapture callback @ 115(event)
 
 处理 ``Pointer Down Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``116``—``119`` 行；所属函数 ``DialogContent``。
+**性质**：同步局部函数；源码第 ``115``—``118`` 行；所属函数 ``DialogContent``。
 
 **参数**
 
@@ -312,17 +312,17 @@ src/components/ui/dialog 模块
 
 **主要协作调用**：``layer?.activate``、``onPointerDownCapture``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3954:4266:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:3982:4294:FUNCTION
 
-.. rubric:: ``onInteractOutside callback @ 120``
+.. rubric:: ``onInteractOutside callback @ 119``
 
 .. code-block:: javascript
 
-   onInteractOutside callback @ 120(event)
+   onInteractOutside callback @ 119(event)
 
 处理 ``Interact Outside`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``120``—``127`` 行；所属函数 ``DialogContent``。
+**性质**：同步局部函数；源码第 ``119``—``126`` 行；所属函数 ``DialogContent``。
 
 **参数**
 
@@ -335,17 +335,17 @@ src/components/ui/dialog 模块
 
 **主要协作调用**：``isOwnedWindowPopoverTarget``、``event.preventDefault``、``onInteractOutside``、``isTopWindowLayer``、``isOtherWindowTarget``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4298:4496:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4326:4524:FUNCTION
 
-.. rubric:: ``onPointerDownOutside callback @ 128``
+.. rubric:: ``onPointerDownOutside callback @ 127``
 
 .. code-block:: javascript
 
-   onPointerDownOutside callback @ 128(event)
+   onPointerDownOutside callback @ 127(event)
 
 处理 ``Pointer Down Outside`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``128``—``134`` 行；所属函数 ``DialogContent``。
+**性质**：同步局部函数；源码第 ``127``—``133`` 行；所属函数 ``DialogContent``。
 
 **参数**
 
@@ -358,17 +358,17 @@ src/components/ui/dialog 模块
 
 **主要协作调用**：``isOwnedWindowPopoverTarget``、``event.preventDefault``、``onPointerDownOutside``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4522:4773:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4550:4801:FUNCTION
 
-.. rubric:: ``onFocusOutside callback @ 135``
+.. rubric:: ``onFocusOutside callback @ 134``
 
 .. code-block:: javascript
 
-   onFocusOutside callback @ 135(event)
+   onFocusOutside callback @ 134(event)
 
 处理 ``Focus Outside`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``135``—``140`` 行；所属函数 ``DialogContent``。
+**性质**：同步局部函数；源码第 ``134``—``139`` 行；所属函数 ``DialogContent``。
 
 **参数**
 
@@ -385,17 +385,17 @@ src/components/ui/dialog 模块
 
 **主要协作调用**：``event.preventDefault``、``onFocusOutside``。
 
-.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4800:5068:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/dialog.tsx:4828:5096:FUNCTION
 
-.. rubric:: ``onEscapeKeyDown callback @ 141``
+.. rubric:: ``onEscapeKeyDown callback @ 140``
 
 .. code-block:: javascript
 
-   onEscapeKeyDown callback @ 141(event)
+   onEscapeKeyDown callback @ 140(event)
 
 处理 ``Escape Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``141``—``148`` 行；所属函数 ``DialogContent``。
+**性质**：同步局部函数；源码第 ``140``—``147`` 行；所属函数 ``DialogContent``。
 
 **参数**
 

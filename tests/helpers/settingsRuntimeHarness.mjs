@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 
+const realDialogs = process.env.CWM_TEST_REAL_SETTINGS_DIALOGS === '1';
 const bootstrap = new JSDOM('<div></div>', { url: 'http://localhost/', pretendToBeVisual: true });
 for (const key of ['window', 'document', 'HTMLElement', 'Element', 'Node', 'Event', 'CustomEvent', 'MutationObserver']) globalThis[key] = bootstrap.window[key];
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -15,6 +17,7 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
     builder.onResolve({ filter: /^(react(?:\/|$)|react-dom(?:\/|$))/ }, ({ path: name }) => ({ path: name, external: true }));
     builder.onResolve({ filter: /(?:apiClient\.js|session\.js|connection\.js|components\/ui\/[^/]+)$/ }, ({ path: name, importer }) => {
         if (!importer.endsWith('BackendBootstrapGate.jsx')) return null;
+        if (realDialogs && name.endsWith('/components/ui/dialog')) return { path: path.resolve('src/components/ui/dialog.tsx') };
         if (name.endsWith('/session.js')) return { path: 'bootstrap-session', namespace: 'mock' };
         if (name.endsWith('/connection.js')) return { path: '@/runtime/backend/connection.js', namespace: 'mock' };
         if (name.endsWith('/apiClient.js')) return { path: '@/lib/apiClient.js', namespace: 'mock' };
@@ -22,8 +25,10 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
     });
     builder.onResolve({ filter: /^sonner$|^react-i18next$|^framer-motion$|^react-router-dom$/ }, ({ path: name }) => ({ path: name, namespace: 'mock' }));
     builder.onResolve({ filter: /^@\// }, ({ path: name }) => {
+        if (realDialogs && name === '@/components/ui/dialog') return { path: path.resolve('src/components/ui/dialog.tsx') };
         if (name.includes('/components/ui/') || name.endsWith('/apiClient.js') || name.endsWith('/clientAdapter.js') || name.endsWith('/extensions.jsx') || name.endsWith('/useEventStore.jsx') || name.endsWith('/virtualUrl.js') || name.endsWith('/tools.jsx') || name.endsWith('/connection.js') || name.endsWith('/browserHistoryLayers.js') || name.endsWith('/userContext.jsx')) return { path: name, namespace: 'mock' };
-        return { path: path.resolve('src', name.slice(2)) };
+        const target = path.resolve('src', name.slice(2));
+        return { path: [target, `${target}.js`, `${target}.jsx`, `${target}.ts`, `${target}.tsx`].find(existsSync) || target };
     });
     builder.onResolve({ filter: /JsonConfigEditor\.jsx$/ }, () => ({ path: 'json-editor', namespace: 'mock' }));
     builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => {
@@ -56,7 +61,7 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
         if (name.endsWith('/badge')) return { loader: 'jsx', contents: 'export const Badge=({children,variant,...props})=><span {...props}>{children}</span>;' };
         if (name.endsWith('/spinner')) return { loader: 'jsx', contents: 'export const Spinner=props=><span aria-hidden="true" data-slot="spinner" {...props}/>;' };
         if (name.endsWith('/card')) return { loader: 'jsx', contents: 'export const Card=({children,...props})=><section data-slot="card" {...props}>{children}</section>;export const CardContent=({children,...props})=><div {...props}>{children}</div>;export const CardHeader=CardContent;export const CardTitle=({children,...props})=><h3 {...props}>{children}</h3>;export const CardDescription=({children,...props})=><p {...props}>{children}</p>;' };
-        if (name.endsWith('/dialog')) return { loader: 'jsx', contents: `import {createContext,useContext,cloneElement} from 'react'; const C=createContext({});export const Dialog=({open,onOpenChange,children})=><C.Provider value={{open,onOpenChange}}>{children}</C.Provider>;export const DialogContent=({children,...props})=>useContext(C).open?<div role="dialog" {...props}>{children}</div>:null;export const DialogHeader=({children,...props})=><header {...props}>{children}</header>;export const DialogTitle=({children,...props})=><h2 {...props}>{children}</h2>;export const DialogDescription=({children,...props})=><p {...props}>{children}</p>;export const DialogFooter=({children,...props})=><footer {...props}>{children}</footer>;export const DialogTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onClick:event=>{children.props.onClick?.(event);if(!event.defaultPrevented)c.onOpenChange?.(true);}});};` };
+        if (name.endsWith('/dialog')) return { loader: 'jsx', contents: `import {createContext,useContext,cloneElement} from 'react'; const C=createContext({});export const Dialog=({open,onOpenChange,children})=><C.Provider value={{open,onOpenChange}}>{children}</C.Provider>;export const DialogContent=({children,onCloseAutoFocus,...props})=>useContext(C).open?<div role="dialog" {...props}>{children}</div>:null;export const DialogHeader=({children,...props})=><header {...props}>{children}</header>;export const DialogTitle=({children,...props})=><h2 {...props}>{children}</h2>;export const DialogDescription=({children,...props})=><p {...props}>{children}</p>;export const DialogFooter=({children,...props})=><footer {...props}>{children}</footer>;export const DialogTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onClick:event=>{children.props.onClick?.(event);if(!event.defaultPrevented)c.onOpenChange?.(true);}});};` };
         if (name.endsWith('/switch')) return { loader: 'jsx', contents: 'export const Switch=({checked,onCheckedChange,...props})=><input type="checkbox" checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;' };
         if (name.endsWith('/checkbox')) return { loader: 'jsx', contents: 'export const Checkbox=({checked,onCheckedChange,...props})=><input type="checkbox" checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;' };
         if (name.endsWith('/slider')) return { loader: 'jsx', contents: 'export const Slider=()=>null;' };
@@ -73,6 +78,12 @@ const wrap = element => React.createElement(React.Fragment, null, element, React
 async function mount(config, response, handler, runtime = {}, initialValues = {}) {
     const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
     for (const key of ['window', 'document', 'HTMLElement', 'Element', 'Node', 'Event', 'CustomEvent', 'MutationObserver']) globalThis[key] = dom.window[key];
+    if (realDialogs) {
+        for (const key of ['NodeFilter', 'HTMLInputElement', 'HTMLTextAreaElement']) globalThis[key] = dom.window[key];
+        for (const key of ['getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame']) globalThis[key] = dom.window[key].bind(dom.window);
+        Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.window.navigator });
+        globalThis.CSS = dom.window.CSS || { escape: name => String(name) };
+    }
     globalThis.settingsUI = { calls: [], confirmations: [], errors: [], changed: [], navigated: [], api: async (method, url, body, options) => {
         settingsUI.calls.push([method, url, body, options]);
         return handler ? handler(method, url, body, options) : method === 'get' ? response : { saved: true };

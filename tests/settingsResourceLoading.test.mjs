@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mount, resource, click, button, act } from './helpers/settingsRuntimeHarness.mjs';
 
-test('inline resource loading remains in its own card and retains records during refresh', async () => {
+test('resource reads default to inline loading and retain records during refresh', async () => {
     let complete;
-    const ui = await mount([resource({ loadingMode: 'inline' })], null, () => new Promise(resolve => { complete = resolve; }));
+    const ui = await mount([resource()], null, () => new Promise(resolve => { complete = resolve; }));
     try {
         assert.ok(document.querySelector('section [role="status"] [data-slot="spinner"]'));
         assert.equal(document.querySelector('[data-settings-test-toaster] [role="status"]'), null);

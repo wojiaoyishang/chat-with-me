@@ -14,6 +14,7 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
             ?dom.window[key].bind(dom.window):dom.window[key];
     }
     Object.defineProperty(globalThis,'navigator',{configurable:true,value:dom.window.navigator});
+    globalThis.CSS=dom.window.CSS||{escape:name=>String(name)};
     window.innerWidth=1600;window.innerHeight=1000;
     globalThis.IS_REACT_ACT_ENVIRONMENT=true;
     const {createRoot}=await import('react-dom/client');
@@ -28,6 +29,9 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
             return {path:[target,`${target}.tsx`,`${target}.ts`,`${target}.jsx`,`${target}.js`].find(existsSync)};
         });}}]});
     const {Floating,Dialog,DialogContent,DialogTitle,Popover,PopoverContent,PopoverTrigger,useWindowLayers,Tools}=await import('../temp/window-layers-test.mjs');
+    const style=document.createElement('style');
+    style.textContent='[data-slot="dialog-content"][data-state="open"],[data-slot="dialog-overlay"][data-state="open"]{animation-name:enter;}[data-slot="dialog-content"][data-state="closed"],[data-slot="dialog-overlay"][data-state="closed"]{animation-name:window-exit;animation-duration:1s;}';
+    document.head.append(style);
     function Fixture(){
         const [open,setOpen]=useState(false);
         return React.createElement(React.Fragment,null,
@@ -84,6 +88,20 @@ test('later windows cover earlier windows; focusing and dragging an earlier wind
         await act(async()=>pointer(document.getElementById('page-focus'),'pointerdown'));
         assert.equal(document.querySelector('[data-slot="dialog-content"]'),settings);
         assert.equal(settings.querySelector('input').value,'document_read');
+        const layerId=settings.dataset.windowLayer;
+        const exitZIndex=settings.style.zIndex;
+        await act(async()=>settings.querySelector('[data-slot="dialog-close"]').click());
+        assert.equal(settings.getAttribute('data-state'),'closed');
+        assert.equal(settings.style.zIndex,exitZIndex,'an exiting window stays above its parent while fading');
+        assert.equal(settings.style.pointerEvents,'none');
+        const backdrop=document.querySelector('[data-slot="dialog-overlay"]');
+        assert.ok(backdrop,'the backdrop also remains for its fade');
+        assert.equal(backdrop.getAttribute('data-state'),'closed');
+        assert.equal(Number(backdrop.style.zIndex),Number(exitZIndex)-1);
+        assert.equal(useWindowLayers.getState().windows.includes(layerId),false,'closing windows no longer own keyboard or pointer activation');
+        await act(async()=>{for(const node of [settings,backdrop]){const event=new window.Event('animationend',{bubbles:true});Object.defineProperty(event,'animationName',{value:'window-exit'});node.dispatchEvent(event);}});
+        assert.equal(document.querySelector('[data-slot="dialog-content"]'),null);
+        assert.equal(document.querySelector('[data-slot="dialog-overlay"]'),null);
     }finally{
         await act(async()=>root.unmount());
         assert.deepEqual(useWindowLayers.getState().windows,[]);

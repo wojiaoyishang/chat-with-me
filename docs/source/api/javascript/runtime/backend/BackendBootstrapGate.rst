@@ -43,13 +43,13 @@ The broken path is decorative; it never implies an automatic reconnect.
 
    根据执行分支返回结果；代表性返回表达式为 ``( <div aria-hidden="true" className="flex w-fit items-center sm:flex-col"> <span className="cwm-backend-connector-port grid size-14 place-items-center rounded-2xl border bg-backgr…``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2407:7406:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2407:7410:FUNCTION
 
 .. js:function:: BackendBootstrapGate({ children })
 
    The only built-in page is connection recovery, available before any backend.
 
-   **性质**：同步函数；导出 API；源码第 ``50``—``167`` 行。
+   **性质**：同步函数；导出 API；源码第 ``50``—``166`` 行。
 
    **参数**
 

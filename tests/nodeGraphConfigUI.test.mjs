@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act, useState } from 'react';
 
 const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
-for (const key of ['window', 'document', 'HTMLElement', 'Node', 'Event']) globalThis[key] = dom.window[key];
+for (const key of ['window', 'document', 'HTMLElement', 'Element', 'Node', 'NodeFilter', 'Event', 'CustomEvent', 'MutationObserver', 'HTMLInputElement', 'HTMLTextAreaElement']) globalThis[key] = dom.window[key];
+globalThis.getComputedStyle = dom.window.getComputedStyle.bind(dom.window);
+globalThis.CSS = dom.window.CSS || { escape: name => String(name) };
+Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.window.navigator });
 globalThis.requestAnimationFrame = callback => setTimeout(callback, 0);
 globalThis.cancelAnimationFrame = clearTimeout;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -17,7 +21,12 @@ await build({ entryPoints: ['src/components/configuration/NodeGraphField.jsx'], 
   builder.onResolve({ filter: /\.css$/ }, () => ({ path: 'css', namespace: 'empty' }));
   builder.onLoad({ filter: /.*/, namespace: 'empty' }, () => ({ contents: '' }));
   builder.onResolve({ filter: /^@xyflow\/react$/ }, () => ({ path: 'flow', namespace: 'mock' }));
-  builder.onResolve({ filter: /^@\// }, ({ path: name }) => name.includes('/components/ui/') ? ({ path: name, namespace: 'mock' }) : ({ path: path.resolve('src', name.slice(2)) }));
+  builder.onResolve({ filter: /^@\// }, ({ path: name }) => {
+    if (name === '@/components/ui/dialog') return { path: path.resolve('src/components/ui/dialog.tsx') };
+    if (name.includes('/components/ui/')) return { path: name, namespace: 'mock' };
+    const target = path.resolve('src', name.slice(2));
+    return { path: [target, `${target}.js`, `${target}.jsx`, `${target}.ts`, `${target}.tsx`].find(existsSync) || target };
+  });
   builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => {
     if (name === 'flow') return { loader: 'jsx', contents: `
       import React,{useState} from 'react';
@@ -26,7 +35,6 @@ await build({ entryPoints: ['src/components/configuration/NodeGraphField.jsx'], 
       export const ReactFlowProvider=({children})=><>{children}</>,Position={Left:'left',Right:'right'},Handle=()=>null,Background=()=>null,Controls=()=>null;
       export function ReactFlow(props){globalThis.graphUI.props=props;globalThis.graphUI.nodes=props.nodes;return <div>{props.nodes.map(node=><button key={node.id} data-node={node.id} onClick={event=>props.onNodeClick(event,node)} onDoubleClick={event=>props.onNodeDoubleClick(event,node)}>{node.data.node.title}</button>)}</div>;}
     ` };
-    if (name.endsWith('/dialog')) return { loader: 'jsx', contents: 'export const Dialog=({open,children})=>open?<div>{children}</div>:null;export const DialogContent=({children})=><div role="dialog">{children}</div>;export const DialogHeader=({children})=><header>{children}</header>;export const DialogTitle=({children})=><h2>{children}</h2>;export const DialogDescription=({children})=><p>{children}</p>;' };
     if (name.endsWith('/button')) return { loader: 'jsx', contents: 'export const Button=({children,variant,size,...props})=><button {...props}>{children}</button>;' };
     if (name.endsWith('/badge')) return { loader: 'jsx', contents: 'export const Badge=({children,variant})=><span>{children}</span>;' };
     if (name.endsWith('/input')) return { loader: 'jsx', contents: 'export const Input=props=><input {...props}/>;' };
@@ -50,7 +58,7 @@ const fixture = () => ({
 });
 const click = async node => { assert.ok(node); await act(async () => node.click()); };
 const button = text => [...document.querySelectorAll('button')].find(node => node.textContent.trim() === text);
-async function mount(readOnly = false) {
+async function mount(readOnly = false, { openGraph = true } = {}) {
   globalThis.graphUI = {};
   const root = createRoot(document.getElementById('root'));
   function Host() {
@@ -59,7 +67,7 @@ async function mount(readOnly = false) {
     return React.createElement(NodeGraphField, { item: { readOnly }, value: graph, onChange: setGraph, context: {}, renderFields: (fields, value, onChange) => React.createElement('button', { onClick: () => onChange({ ...value, description: '共同说明' }) }, '修改参数元信息') });
   }
   await act(async () => root.render(React.createElement(Host)));
-  await click(button('打开图配置'));
+  if (openGraph) await click(button('打开图配置'));
   return async () => { await act(async () => root.unmount()); };
 }
 
@@ -101,4 +109,31 @@ test('read-only graph remains navigable without editable bindings or drag writes
     assert.equal(document.querySelector('[aria-label="开放 共用提示"]').disabled, true);
     assert.deepEqual(graphUI.value.bindings, []);
   } finally { await close(); }
+});
+
+test('the graph mounts lazily and stays complete through the real dialog exit', async () => {
+  const style = document.createElement('style');
+  style.textContent = '[data-slot="dialog-content"][data-state="open"]{animation-name:enter;}[data-slot="dialog-content"][data-state="closed"]{animation-name:graph-exit;animation-duration:1s;}';
+  document.head.append(style);
+  const close = await mount(false, { openGraph: false });
+  try {
+    assert.equal(document.querySelector('[data-node]'), null);
+    await click(button('打开图配置'));
+    await click(document.querySelector('[data-node="1"]'));
+    await click(document.querySelector('[data-slot="dialog-close"]'));
+    const closing = document.querySelector('[data-slot="dialog-content"]');
+    assert.equal(closing.getAttribute('data-state'), 'closed');
+    assert.ok(closing.querySelector('[data-node="1"]'));
+    assert.match(closing.textContent, /共用提示/);
+    await act(async () => {
+      const event = new window.Event('animationend', { bubbles: true });
+      Object.defineProperty(event, 'animationName', { value: 'graph-exit' });
+      closing.dispatchEvent(event);
+    });
+    assert.equal(document.querySelector('[data-slot="dialog-content"]'), null);
+    assert.equal(document.querySelector('[data-node]'), null);
+    await click(button('打开图配置'));
+    assert.ok(document.querySelector('[data-node="1"]'));
+    assert.equal(document.querySelector('[aria-label="开放 共用提示"]'), null);
+  } finally { await close(); style.remove(); }
 });

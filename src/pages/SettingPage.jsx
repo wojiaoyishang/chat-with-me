@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { useConfirmation } from "@/components/ui/useConfirmation.jsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 import { validateSettingsFields, validateSettingsScope } from "@/features/settings-runtime/validation.js";
@@ -39,7 +40,6 @@ import {
   cloneData,
   requestEndpoint,
 } from "@/features/settings-runtime/model.js";
-import { useSettingsLoadingToast } from "@/features/settings-runtime/loadingToasts.js";
 import { createSettingsSessionCache, settingsCacheEvents } from "@/features/settings-runtime/sessionCache.js";
 import {
   operationKey,
@@ -469,8 +469,6 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     if (id !== selectedId && (await guardDraft()))
       setSelections((current) => ({ ...current, [section]: id }));
   };
-  useSettingsLoadingToast(open && catalogLoading, '正在加载设置目录…');
-  useSettingsLoadingToast(open && pageLoading, '正在加载设置页…');
   if (!open) return null;
   const isClient = section === "client";
   const visibleTabs = isClient ? CLIENT_SETTINGS_TABS : catalogScope === cacheScope ? tabs : [];
@@ -482,7 +480,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     ? controller.operations[operationKey(currentDescription.save, {})]
     : null;
   const isLoading =
-    Boolean(selectedId && (pageLoading || loadedPageKey !== pageKey)) ||
+    Boolean(selectedId && (pageLoading || loadedPageKey !== pageKey || loadedScope !== cacheScope)) ||
     (!isClient && catalogLoading && !tabs.length);
   const visibleError =
     (pageError?.key === `page:${section}:${selectedId}` && pageError.scope === cacheScope ? pageError.message : '') || (!isClient && !tabs.length ? catalogError : "");
@@ -669,9 +667,10 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
               id="settings-page-panel"
               role="tabpanel"
               aria-labelledby={`settings-section-${section}`}
-              className="@container/settings min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
+              className="@container/settings relative min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
+              aria-busy={(isLoading && !visibleError) || undefined}
             >
-              <div className={`w-full space-y-4 ${isLoading ? '' : 'cwm-settings-reveal'}`} aria-busy={isLoading || undefined}>
+              <div className={`w-full space-y-4 ${isLoading ? 'pointer-events-none opacity-40' : 'cwm-settings-reveal'}`}>
                 {currentDescription ? (
                   <>
                     {Object.entries(fieldErrors).map(([name, message]) => (
@@ -731,6 +730,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                         refresh,
                         registerDraftGuard,
                         settingsCache: cache,
+                        loadingMode: 'inline',
                       }}
                     />
                   </>
@@ -740,6 +740,9 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                   </div>
                 ) : null}
               </div>
+              {isLoading && !visibleError && <div role="status" className="cwm-settings-reveal absolute inset-0 flex items-center justify-center gap-2 bg-background/80 p-6 text-sm text-muted-foreground">
+                <Spinner />{!isClient && catalogLoading && !visibleTabs.length ? '正在加载设置目录…' : '正在加载设置页…'}
+              </div>}
             </main>
             {visibleError && <div className="cwm-settings-reveal absolute inset-0 z-10 flex items-center justify-center bg-background/70 p-5 backdrop-blur-sm">
               <div className="w-full max-w-sm space-y-4 rounded-xl border bg-background/95 p-6 shadow-sm">
