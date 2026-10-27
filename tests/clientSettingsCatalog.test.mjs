@@ -19,7 +19,8 @@ test("client catalogs own only browser preferences and explicitly preserve stora
   const page = clientSettingsPage("interface");
   assert.equal(page.scope, "client");
   assert.equal(page.saveMode, "immediate");
-  assert.equal(page.layout.columns, 2);
+  assert.equal(page.layout.columns, 1);
+  assert.ok(page.options.every((item) => item.variant === "divided"));
   const preferences = fields(page.options).filter((item) => item.storage);
   assert.equal(preferences.length, 10);
   assert.equal(

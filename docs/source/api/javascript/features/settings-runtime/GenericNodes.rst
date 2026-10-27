@@ -22,18 +22,18 @@ A backend-authored summary remains presentation data, not an account page.
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/dialog``、``@/components/ui/radio-group``、``@/components/ui/badge``、``@/lib/virtualUrl.js``、``./model.js``、``./useActionExecutor.js``、``./validation.js``、``./SettingsPresentation.jsx``、``./displayValue.js``、``./SettingsCards.jsx``、``./SettingsFormLayout.jsx``、``./SettingsActionLabel.jsx``、``./actionPresentation.js``。
+``react``、``lucide-react``、``@/components/ui/button``、``@/components/ui/input``、``@/components/ui/dialog``、``@/components/ui/radio-group``、``@/components/ui/badge``、``@/components/ui/card``、``@/lib/virtualUrl.js``、``./model.js``、``./useActionExecutor.js``、``./validation.js``、``./SettingsPresentation.jsx``、``./displayValue.js``、``./SettingsCards.jsx``、``./SettingsFormLayout.jsx``、``./SettingsActionLabel.jsx``、``./actionPresentation.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:1342:5479:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:1401:5538:FUNCTION
 
 .. js:function:: FileNode({ item, value, onChange, context })
 
    渲染 ``FileNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``20``—``64`` 行。
+   **性质**：同步函数；导出 API；源码第 ``21``—``65`` 行。
 
    **参数**
 
@@ -52,13 +52,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:5479:6662:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:5538:6721:FUNCTION
 
 .. js:function:: ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant, showStatus = true })
 
    渲染 ``ActionButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``66``—``79`` 行。
+   **性质**：同步函数；导出 API；源码第 ``67``—``80`` 行。
 
    **参数**
 
@@ -73,13 +73,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6662:8035:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6721:8094:FUNCTION
 
 .. js:function:: OperationStatus({ operation, context })
 
    渲染 ``OperationStatus`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``81``—``95`` 行。
+   **性质**：同步函数；导出 API；源码第 ``82``—``96`` 行。
 
    **参数**
 
@@ -98,13 +98,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8035:8287:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8094:8346:FUNCTION
 
 .. js:function:: ActionsNode({ item, context })
 
    渲染 ``ActionsNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``97``—``99`` 行。
+   **性质**：同步函数；导出 API；源码第 ``98``—``100`` 行。
 
    **参数**
 
@@ -119,13 +119,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8287:10329:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8346:10388:FUNCTION
 
 .. js:function:: ProfileSummaryNode({ item, context })
 
    A backend-authored summary remains presentation data, not an account page.
 
-   **性质**：同步函数；导出 API；源码第 ``102``—``122`` 行。
+   **性质**：同步函数；导出 API；源码第 ``103``—``123`` 行。
 
    **参数**
 
@@ -140,13 +140,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10329:10740:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10388:10799:FUNCTION
 
 .. js:function:: presentationActions(actions, context)
 
    实现 ``presentationActions`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``124``—``128`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``125``—``129`` 行。
 
    **参数**
 
@@ -164,13 +164,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10740:10988:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10799:11047:FUNCTION
 
 .. js:function:: ProfileCardNode({ item, context, avatarControl, children })
 
    渲染 ``ProfileCardNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``130``—``132`` 行。
+   **性质**：同步函数；导出 API；源码第 ``131``—``133`` 行。
 
    **参数**
 
@@ -183,13 +183,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **主要协作调用**：``presentationActions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10988:11165:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11047:11224:FUNCTION
 
 .. js:function:: ConnectionCardNode({ item, context })
 
    渲染 ``ConnectionCardNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``134``—``136`` 行。
+   **性质**：同步函数；导出 API；源码第 ``135``—``137`` 行。
 
    **参数**
 
@@ -202,13 +202,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **主要协作调用**：``presentationActions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11165:15870:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11224:15929:FUNCTION
 
 .. js:function:: AsyncOperationNode({ item, context })
 
    A persisted operation can be inspected again after the settings page reopens.
 
-   **性质**：同步函数；导出 API；源码第 ``139``—``195`` 行。
+   **性质**：同步函数；导出 API；源码第 ``140``—``196`` 行。
 
    **参数**
 
@@ -223,13 +223,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：9。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15870:16872:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15929:16931:FUNCTION
 
 .. js:function:: TableNode({ item, value, context })
 
    渲染 ``TableNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``197``—``201`` 行。
+   **性质**：同步函数；导出 API；源码第 ``198``—``202`` 行。
 
    **参数**
 
@@ -244,13 +244,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16872:17569:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16931:17628:FUNCTION
 
 .. js:function:: DiffNode({ item, value, context })
 
    渲染 ``DiffNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``203``—``207`` 行。
+   **性质**：同步函数；导出 API；源码第 ``204``—``208`` 行。
 
    **参数**
 
@@ -265,13 +265,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17569:20234:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17628:20293:FUNCTION
 
 .. js:function:: SecretMapNode({ item, value = EMPTY_MAP, onChange, context })
 
    渲染 ``SecretMapNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``209``—``237`` 行。
+   **性质**：同步函数；导出 API；源码第 ``210``—``238`` 行。
 
    **参数**
 
@@ -286,13 +286,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20234:27557:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20293:27837:FUNCTION
 
 .. js:function:: MatrixNode({ item, value = {}, onChange, context })
 
    渲染 ``MatrixNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``239``—``303`` 行。
+   **性质**：同步函数；导出 API；源码第 ``240``—``304`` 行。
 
    **参数**
 
@@ -311,13 +311,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：11。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27557:42867:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27837:43147:FUNCTION
 
 .. js:function:: ResourceNode({ item, context, renderFields })
 
    渲染 ``ResourceNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``305``—``456`` 行。
+   **性质**：同步函数；导出 API；源码第 ``306``—``457`` 行。
 
    **参数**
 
@@ -337,13 +337,13 @@ A backend-authored summary remains presentation data, not an account page.
 
    **内部回调数量**：22。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42867:44166:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43147:44446:FUNCTION
 
 .. js:function:: DescriptorDialog({ descriptor, context, renderFields, onClose })
 
    渲染 ``DescriptorDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``458``—``462`` 行。
+   **性质**：同步函数；导出 API；源码第 ``459``—``463`` 行。
 
    **参数**
 
@@ -363,7 +363,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:1737:2837:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:1796:2896:FUNCTION
 
 .. rubric:: ``choose``
 
@@ -373,7 +373,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``choose`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``25``—``46`` 行；所属函数 ``FileNode``。
+**性质**：异步局部函数；源码第 ``26``—``47`` 行；所属函数 ``FileNode``。
 
 **参数**
 
@@ -390,17 +390,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setBusy``、``setError``、``form.append``、``context.api.post``、``requestEndpoint``、``values.push``、``getValue``、``setUploadedPreview``、``file.text``、``JSON.parse``、``onChange``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:4027:4061:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:4086:4120:FUNCTION
 
-.. rubric:: ``onChange callback @ 51``
+.. rubric:: ``onChange callback @ 52``
 
 .. code-block:: javascript
 
-   onChange callback @ 51(event)
+   onChange callback @ 52(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``FileNode``。
+**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``FileNode``。
 
 **参数**
 
@@ -413,17 +413,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:5035:5069:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:5094:5128:FUNCTION
 
-.. rubric:: ``onChange callback @ 58``
+.. rubric:: ``onChange callback @ 59``
 
 .. code-block:: javascript
 
-   onChange callback @ 58(event)
+   onChange callback @ 59(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``FileNode``。
+**性质**：同步局部函数；源码第 ``59``—``59`` 行；所属函数 ``FileNode``。
 
 **参数**
 
@@ -436,17 +436,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6293:6372:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6352:6431:FUNCTION
 
-.. rubric:: ``onClick callback @ 74``
+.. rubric:: ``onClick callback @ 75``
 
 .. code-block:: javascript
 
-   onClick callback @ 74()
+   onClick callback @ 75()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``ActionButton``。
+**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``ActionButton``。
 
 **参数**
 
@@ -460,17 +460,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6360:6368:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6419:6427:FUNCTION
 
-.. rubric:: ``context.execute(action, actualScope, callbacks).catch callback @ 74``
+.. rubric:: ``context.execute(action, actualScope, callbacks).catch callback @ 75``
 
 .. code-block:: javascript
 
-   context.execute(action, actualScope, callbacks).catch callback @ 74()
+   context.execute(action, actualScope, callbacks).catch callback @ 75()
 
 处理 ``context.execute(action, actualScope, callbacks).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``onClick callback @ 74``。
+**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``onClick callback @ 75``。
 
 **参数**
 
@@ -480,29 +480,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7414:7439:FUNCTION
-
-.. rubric:: ``onClick callback @ 88``
-
-.. code-block:: javascript
-
-   onClick callback @ 88()
-
-处理 ``Click`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``88``—``88`` 行；所属函数 ``OperationStatus``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``operation.retry``。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7578:7620:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7473:7498:FUNCTION
 
 .. rubric:: ``onClick callback @ 89``
 
@@ -522,23 +500,45 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
+**主要协作调用**：``operation.retry``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7637:7679:FUNCTION
+
+.. rubric:: ``onClick callback @ 90``
+
+.. code-block:: javascript
+
+   onClick callback @ 90()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``OperationStatus``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
 **副作用**
 
 * 改变前端路由或浏览器历史。
 
 **主要协作调用**：``context.navigate``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8181:8275:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8240:8334:FUNCTION
 
-.. rubric:: ``(item.actions || []).map callback @ 98``
+.. rubric:: ``(item.actions || []).map callback @ 99``
 
 .. code-block:: javascript
 
-   (item.actions || []).map callback @ 98(action, index)
+   (item.actions || []).map callback @ 99(action, index)
 
 作为 ``(item.actions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``ActionsNode``。
+**性质**：同步局部函数；源码第 ``99``—``99`` 行；所属函数 ``ActionsNode``。
 
 **参数**
 
@@ -552,17 +552,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:9829:10055:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:9888:10114:FUNCTION
 
-.. rubric:: ``item.meta.map callback @ 117``
+.. rubric:: ``item.meta.map callback @ 118``
 
 .. code-block:: javascript
 
-   item.meta.map callback @ 117(entry, index)
+   item.meta.map callback @ 118(entry, index)
 
 作为 ``item.meta.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``ProfileSummaryNode``。
+**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``ProfileSummaryNode``。
 
 **参数**
 
@@ -578,17 +578,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``displayValue``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10182:10276:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10241:10335:FUNCTION
 
-.. rubric:: ``item.actions.map callback @ 119``
+.. rubric:: ``item.actions.map callback @ 120``
 
 .. code-block:: javascript
 
-   item.actions.map callback @ 119(action, index)
+   item.actions.map callback @ 120(action, index)
 
 作为 ``item.actions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``119``—``119`` 行；所属函数 ``ProfileSummaryNode``。
+**性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``ProfileSummaryNode``。
 
 **参数**
 
@@ -602,17 +602,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10523:10590:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10582:10649:FUNCTION
 
-.. rubric:: ``(actions || []).filter callback @ 126``
+.. rubric:: ``(actions || []).filter callback @ 127``
 
 .. code-block:: javascript
 
-   (actions || []).filter callback @ 126(action)
+   (actions || []).filter callback @ 127(action)
 
 作为 ``(actions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``presentationActions``。
+**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``presentationActions``。
 
 **参数**
 
@@ -625,17 +625,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10634:10728:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10693:10787:FUNCTION
 
-.. rubric:: ``visible.map callback @ 127``
+.. rubric:: ``visible.map callback @ 128``
 
 .. code-block:: javascript
 
-   visible.map callback @ 127(action, index)
+   visible.map callback @ 128(action, index)
 
 作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``presentationActions``。
+**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``presentationActions``。
 
 **参数**
 
@@ -649,7 +649,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11879:12074:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11938:12133:FUNCTION
 
 .. rubric:: ``read``
 
@@ -659,7 +659,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``read`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``148``—``152`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``149``—``153`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -673,17 +673,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12000:12008:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12059:12067:FUNCTION
 
-.. rubric:: ``latest.current.execute(readAction).catch callback @ 151``
+.. rubric:: ``latest.current.execute(readAction).catch callback @ 152``
 
 .. code-block:: javascript
 
-   latest.current.execute(readAction).catch callback @ 151()
+   latest.current.execute(readAction).catch callback @ 152()
 
 处理 ``latest.current.execute(readAction).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``152``—``152`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -693,17 +693,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12018:12065:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12077:12124:FUNCTION
 
-.. rubric:: ``latest.current.execute(readAction).catch(() => {}).finally callback @ 151``
+.. rubric:: ``latest.current.execute(readAction).catch(() => {}).finally callback @ 152``
 
 .. code-block:: javascript
 
-   latest.current.execute(readAction).catch(() => {}).finally callback @ 151()
+   latest.current.execute(readAction).catch(() => {}).finally callback @ 152()
 
 处理 ``latest.current.execute(readAction).catch(() => {}).finally callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``152``—``152`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -715,17 +715,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setReading``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12091:12373:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12150:12432:FUNCTION
 
-.. rubric:: ``useEffect callback @ 153``
+.. rubric:: ``useEffect callback @ 154``
 
 .. code-block:: javascript
 
-   useEffect callback @ 153()
+   useEffect callback @ 154()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``153``—``159`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``154``—``160`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -739,17 +739,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12189:12222:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12248:12281:FUNCTION
 
-.. rubric:: ``returned callback @ 156``
+.. rubric:: ``returned callback @ 157``
 
 .. code-block:: javascript
 
-   returned callback @ 156()
+   returned callback @ 157()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``156``—``156`` 行；所属函数 ``useEffect callback @ 153``。
+**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``useEffect callback @ 154``。
 
 **参数**
 
@@ -759,17 +759,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12453:12541:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12512:12600:FUNCTION
 
-.. rubric:: ``[readAction, ...(item.actions || [])].map callback @ 160``
+.. rubric:: ``[readAction, ...(item.actions || [])].map callback @ 161``
 
 .. code-block:: javascript
 
-   [readAction, ...(item.actions || [])].map callback @ 160(action)
+   [readAction, ...(item.actions || [])].map callback @ 161(action)
 
 作为 ``[readAction, ...(item.actions || [])].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``160``—``160`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -782,17 +782,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``operationKey``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12632:12664:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12691:12723:FUNCTION
 
-.. rubric:: ``keys.map callback @ 162``
+.. rubric:: ``keys.map callback @ 163``
 
 .. code-block:: javascript
 
-   keys.map callback @ 162(key)
+   keys.map callback @ 163(key)
 
 作为 ``keys.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``162``—``162`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -803,17 +803,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12687:12720:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12746:12779:FUNCTION
 
-.. rubric:: ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 162``
+.. rubric:: ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 163``
 
 .. code-block:: javascript
 
-   keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 162(a, b)
+   keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 163(a, b)
 
 作为 ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``162``—``162`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -827,7 +827,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13348:13398:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13407:13457:FUNCTION
 
 .. rubric:: ``onSuccess``
 
@@ -837,7 +837,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Success`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``171``—``171`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``172``—``172`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -849,7 +849,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setSubmitError``、``setUncertain``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13417:13798:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13476:13857:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -859,7 +859,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``172``—``180`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``173``—``181`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -872,17 +872,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setSubmitError``、``Number``、``setUncertain``、``read``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14894:15188:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14953:15247:FUNCTION
 
-.. rubric:: ``item.summary.map callback @ 191``
+.. rubric:: ``item.summary.map callback @ 192``
 
 .. code-block:: javascript
 
-   item.summary.map callback @ 191(field)
+   item.summary.map callback @ 192(field)
 
 作为 ``item.summary.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``192``—``192`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -895,17 +895,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``displayValue``、``getValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15475:15677:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15534:15736:FUNCTION
 
-.. rubric:: ``(item.actions || []).map callback @ 193``
+.. rubric:: ``(item.actions || []).map callback @ 194``
 
 .. code-block:: javascript
 
-   (item.actions || []).map callback @ 193(action, index)
+   (item.actions || []).map callback @ 194(action, index)
 
 作为 ``(item.actions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``194``—``194`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -919,17 +919,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16371:16457:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16430:16516:FUNCTION
 
-.. rubric:: ``(item.columns || []).map callback @ 200``
+.. rubric:: ``(item.columns || []).map callback @ 201``
 
 .. code-block:: javascript
 
-   (item.columns || []).map callback @ 200(column)
+   (item.columns || []).map callback @ 201(column)
 
 作为 ``(item.columns || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``TableNode``。
+**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``TableNode``。
 
 **参数**
 
@@ -940,17 +940,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16489:16735:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16548:16794:FUNCTION
 
-.. rubric:: ``rows.map callback @ 200``
+.. rubric:: ``rows.map callback @ 201``
 
 .. code-block:: javascript
 
-   rows.map callback @ 200(row, index)
+   rows.map callback @ 201(row, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``TableNode``。
+**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``TableNode``。
 
 **参数**
 
@@ -968,17 +968,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16606:16728:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16665:16787:FUNCTION
 
-.. rubric:: ``(item.columns || []).map callback @ 200``
+.. rubric:: ``(item.columns || []).map callback @ 201``
 
 .. code-block:: javascript
 
-   (item.columns || []).map callback @ 200(column)
+   (item.columns || []).map callback @ 201(column)
 
 作为 ``(item.columns || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``rows.map callback @ 200``。
+**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``rows.map callback @ 201``。
 
 **参数**
 
@@ -991,17 +991,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``displayValue``、``getValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17093:17123:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17152:17182:FUNCTION
 
-.. rubric:: ``Object.keys(data).map callback @ 205``
+.. rubric:: ``Object.keys(data).map callback @ 206``
 
 .. code-block:: javascript
 
-   Object.keys(data).map callback @ 205(key)
+   Object.keys(data).map callback @ 206(key)
 
 作为 ``Object.keys(data).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``205``—``205`` 行；所属函数 ``DiffNode``。
+**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``DiffNode``。
 
 **参数**
 
@@ -1012,17 +1012,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17216:17557:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17275:17616:FUNCTION
 
-.. rubric:: ``columns.map callback @ 206``
+.. rubric:: ``columns.map callback @ 207``
 
 .. code-block:: javascript
 
-   columns.map callback @ 206(column)
+   columns.map callback @ 207(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``DiffNode``。
+**性质**：同步局部函数；源码第 ``207``—``207`` 行；所属函数 ``DiffNode``。
 
 **参数**
 
@@ -1037,17 +1037,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17458:17540:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17517:17599:FUNCTION
 
-.. rubric:: ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 206``
+.. rubric:: ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 207``
 
 .. code-block:: javascript
 
-   (Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 206(entry, index)
+   (Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 207(entry, index)
 
 作为 ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``columns.map callback @ 206``。
+**性质**：同步局部函数；源码第 ``207``—``207`` 行；所属函数 ``columns.map callback @ 207``。
 
 **参数**
 
@@ -1063,17 +1063,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``displayValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17691:17800:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17750:17859:FUNCTION
 
-.. rubric:: ``useState callback @ 210``
+.. rubric:: ``useState callback @ 211``
 
 .. code-block:: javascript
 
-   useState callback @ 210()
+   useState callback @ 211()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``210``—``210`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``211``—``211`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1087,17 +1087,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17729:17799:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17788:17858:FUNCTION
 
-.. rubric:: ``Object.entries(value || {}).map callback @ 210``
+.. rubric:: ``Object.entries(value || {}).map callback @ 211``
 
 .. code-block:: javascript
 
-   Object.entries(value || {}).map callback @ 210([key, content])
+   Object.entries(value || {}).map callback @ 211([key, content])
 
 作为 ``Object.entries(value || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``210``—``210`` 行；所属函数 ``useState callback @ 210``。
+**性质**：同步局部函数；源码第 ``211``—``211`` 行；所属函数 ``useState callback @ 211``。
 
 **参数**
 
@@ -1110,17 +1110,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``crypto.randomUUID``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17855:18076:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17914:18135:FUNCTION
 
-.. rubric:: ``useEffect callback @ 212``
+.. rubric:: ``useEffect callback @ 213``
 
 .. code-block:: javascript
 
-   useEffect callback @ 212()
+   useEffect callback @ 213()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``212``—``216`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``213``—``217`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1134,17 +1134,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17996:18066:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18055:18125:FUNCTION
 
-.. rubric:: ``Object.entries(value || {}).map callback @ 215``
+.. rubric:: ``Object.entries(value || {}).map callback @ 216``
 
 .. code-block:: javascript
 
-   Object.entries(value || {}).map callback @ 215([key, content])
+   Object.entries(value || {}).map callback @ 216([key, content])
 
 作为 ``Object.entries(value || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``215``—``215`` 行；所属函数 ``useEffect callback @ 212``。
+**性质**：同步局部函数；源码第 ``216``—``216`` 行；所属函数 ``useEffect callback @ 213``。
 
 **参数**
 
@@ -1157,7 +1157,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``crypto.randomUUID``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18152:18631:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18211:18690:FUNCTION
 
 .. rubric:: ``commit``
 
@@ -1167,7 +1167,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``commit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``218``—``227`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``219``—``228`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1182,36 +1182,15 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18220:18236:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18279:18295:FUNCTION
 
-.. rubric:: ``next.map callback @ 220``
+.. rubric:: ``next.map callback @ 221``
 
 .. code-block:: javascript
 
-   next.map callback @ 220(row)
+   next.map callback @ 221(row)
 
 作为 ``next.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``220``—``220`` 行；所属函数 ``commit``。
-
-**参数**
-
-``row``
-   调用方传入的 ``row`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18278:18302:FUNCTION
-
-.. rubric:: ``next.some callback @ 221``
-
-.. code-block:: javascript
-
-   next.some callback @ 221(row)
-
-作为 ``next.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``221``—``221`` 行；所属函数 ``commit``。
 
@@ -1224,19 +1203,40 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``row.key.trim``。
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18337:18361:FUNCTION
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18507:18523:FUNCTION
-
-.. rubric:: ``next.filter callback @ 224``
+.. rubric:: ``next.some callback @ 222``
 
 .. code-block:: javascript
 
-   next.filter callback @ 224(row)
+   next.some callback @ 222(row)
+
+作为 ``next.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``222``—``222`` 行；所属函数 ``commit``。
+
+**参数**
+
+``row``
+   调用方传入的 ``row`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``row.key.trim``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18566:18582:FUNCTION
+
+.. rubric:: ``next.filter callback @ 225``
+
+.. code-block:: javascript
+
+   next.filter callback @ 225(row)
 
 作为 ``next.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``224``—``224`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``225``—``225`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1247,17 +1247,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18529:18558:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18588:18617:FUNCTION
 
-.. rubric:: ``next.filter((row) => row.key).map callback @ 224``
+.. rubric:: ``next.filter((row) => row.key).map callback @ 225``
 
 .. code-block:: javascript
 
-   next.filter((row) => row.key).map callback @ 224(row)
+   next.filter((row) => row.key).map callback @ 225(row)
 
 作为 ``next.filter((row) => row.key).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``224``—``224`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``225``—``225`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1268,17 +1268,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18838:19844:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18897:19903:FUNCTION
 
-.. rubric:: ``rows.map callback @ 229``
+.. rubric:: ``rows.map callback @ 230``
 
 .. code-block:: javascript
 
-   rows.map callback @ 229(row, index)
+   rows.map callback @ 230(row, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``229``—``233`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``230``—``234`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1294,53 +1294,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19093:19200:FUNCTION
-
-.. rubric:: ``onChange callback @ 230``
-
-.. code-block:: javascript
-
-   onChange callback @ 230(event)
-
-处理 ``Change`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``rows.map callback @ 229``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``commit``、``rows.map``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19120:19198:FUNCTION
-
-.. rubric:: ``rows.map callback @ 230``
-
-.. code-block:: javascript
-
-   rows.map callback @ 230(entry)
-
-作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``onChange callback @ 230``。
-
-**参数**
-
-``entry``
-   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19483:19592:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19152:19259:FUNCTION
 
 .. rubric:: ``onChange callback @ 231``
 
@@ -1350,7 +1304,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``rows.map callback @ 229``。
+**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``rows.map callback @ 230``。
 
 **参数**
 
@@ -1365,7 +1319,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19510:19590:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19179:19257:FUNCTION
 
 .. rubric:: ``rows.map callback @ 231``
 
@@ -1386,17 +1340,63 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19731:19788:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19542:19651:FUNCTION
 
-.. rubric:: ``onClick callback @ 232``
+.. rubric:: ``onChange callback @ 232``
 
 .. code-block:: javascript
 
-   onClick callback @ 232()
+   onChange callback @ 232(event)
+
+处理 ``Change`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``rows.map callback @ 230``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``commit``、``rows.map``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19569:19649:FUNCTION
+
+.. rubric:: ``rows.map callback @ 232``
+
+.. code-block:: javascript
+
+   rows.map callback @ 232(entry)
+
+作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``onChange callback @ 232``。
+
+**参数**
+
+``entry``
+   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19790:19847:FUNCTION
+
+.. rubric:: ``onClick callback @ 233``
+
+.. code-block:: javascript
+
+   onClick callback @ 233()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``rows.map callback @ 229``。
+**性质**：同步局部函数；源码第 ``233``—``233`` 行；所属函数 ``rows.map callback @ 230``。
 
 **参数**
 
@@ -1410,17 +1410,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19756:19786:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19815:19845:FUNCTION
 
-.. rubric:: ``rows.filter callback @ 232``
+.. rubric:: ``rows.filter callback @ 233``
 
 .. code-block:: javascript
 
-   rows.filter callback @ 232(entry)
+   rows.filter callback @ 233(entry)
 
 作为 ``rows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``onClick callback @ 232``。
+**性质**：同步局部函数；源码第 ``233``—``233`` 行；所属函数 ``onClick callback @ 233``。
 
 **参数**
 
@@ -1431,17 +1431,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20045:20153:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20104:20212:FUNCTION
 
-.. rubric:: ``onClick callback @ 235``
+.. rubric:: ``onClick callback @ 236``
 
 .. code-block:: javascript
 
-   onClick callback @ 235()
+   onClick callback @ 236()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``236``—``236`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1453,17 +1453,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setRows``、``crypto.randomUUID``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20399:20468:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20458:20527:FUNCTION
 
-.. rubric:: ``useState callback @ 241``
+.. rubric:: ``useState callback @ 242``
 
 .. code-block:: javascript
 
-   useState callback @ 241()
+   useState callback @ 242()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``242``—``242`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1475,17 +1475,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20909:20984:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20968:21043:FUNCTION
 
-.. rubric:: ``groupDefinitions.map callback @ 249``
+.. rubric:: ``groupDefinitions.map callback @ 250``
 
 .. code-block:: javascript
 
-   groupDefinitions.map callback @ 249(group)
+   groupDefinitions.map callback @ 250(group)
 
 作为 ``groupDefinitions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``249``—``249`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``250``—``250`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1498,17 +1498,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21276:21630:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21335:21689:FUNCTION
 
-.. rubric:: ``[...groupMap.values()].map callback @ 255``
+.. rubric:: ``[...groupMap.values()].map callback @ 256``
 
 .. code-block:: javascript
 
-   [...groupMap.values()].map callback @ 255(group)
+   [...groupMap.values()].map callback @ 256(group)
 
 作为 ``[...groupMap.values()].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``255``—``258`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``256``—``259`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1523,17 +1523,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21489:21619:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21548:21678:FUNCTION
 
-.. rubric:: ``group.rows.filter callback @ 257``
+.. rubric:: ``group.rows.filter callback @ 258``
 
 .. code-block:: javascript
 
-   group.rows.filter callback @ 257(row)
+   group.rows.filter callback @ 258(row)
 
 作为 ``group.rows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``257``—``257`` 行；所属函数 ``[...groupMap.values()].map callback @ 255``。
+**性质**：同步局部函数；源码第 ``258``—``258`` 行；所属函数 ``[...groupMap.values()].map callback @ 256``。
 
 **参数**
 
@@ -1546,17 +1546,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase().includes``、``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21639:21667:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21698:21726:FUNCTION
 
-.. rubric:: ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''… callback @ 258``
+.. rubric:: ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''… callback @ 259``
 
 .. code-block:: javascript
 
-   [...groupMap.values()].map((group) => { const matchesGroup = grouped && `${group.label || ''} ${group.description || ''… callback @ 258(group)
+   [...groupMap.values()].map((group) => { const matchesGroup = grouped && `${group.label || ''} ${group.description || ''… callback @ 259(group)
 
 实现 ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``258``—``258`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``259``—``259`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1567,7 +1567,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21802:22014:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21861:22073:FUNCTION
 
 .. rubric:: ``setRow``
 
@@ -1577,7 +1577,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 设置与 ``Row`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``260``—``263`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``261``—``264`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1596,7 +1596,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22033:22895:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22092:22954:FUNCTION
 
 .. rubric:: ``bulk``
 
@@ -1606,7 +1606,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``bulk`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``264``—``276`` 行；所属函数 ``MatrixNode``。
+**性质**：异步局部函数；源码第 ``265``—``277`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1622,7 +1622,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``context.confirm``、``setRow``、``onChange``、``Object.entries``、``context.update``、``path.split``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22920:24215:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22979:24291:FUNCTION
 
 .. rubric:: ``renderRows``
 
@@ -1632,7 +1632,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 渲染与 ``Rows`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``277``—``283`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``278``—``284`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1647,17 +1647,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23129:23211:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23205:23287:FUNCTION
 
-.. rubric:: ``columns.map callback @ 278``
+.. rubric:: ``columns.map callback @ 279``
 
 .. code-block:: javascript
 
-   columns.map callback @ 278(column)
+   columns.map callback @ 279(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``278``—``278`` 行；所属函数 ``renderRows``。
+**性质**：同步局部函数；源码第 ``279``—``279`` 行；所属函数 ``renderRows``。
 
 **参数**
 
@@ -1668,17 +1668,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23239:24201:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23315:24277:FUNCTION
 
-.. rubric:: ``rows.map callback @ 279``
+.. rubric:: ``rows.map callback @ 280``
 
 .. code-block:: javascript
 
-   rows.map callback @ 279(row)
+   rows.map callback @ 280(row)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``279``—``282`` 行；所属函数 ``renderRows``。
+**性质**：同步局部函数；源码第 ``280``—``283`` 行；所属函数 ``renderRows``。
 
 **参数**
 
@@ -1693,17 +1693,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23414:23546:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23490:23622:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 279``
+.. rubric:: ``onValueChange callback @ 280``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 279(next)
+   onValueChange callback @ 280(next)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``279``—``279`` 行；所属函数 ``rows.map callback @ 279``。
+**性质**：同步局部函数；源码第 ``280``—``280`` 行；所属函数 ``rows.map callback @ 280``。
 
 **参数**
 
@@ -1718,17 +1718,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23454:23493:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23530:23569:FUNCTION
 
-.. rubric:: ``columns.find callback @ 279``
+.. rubric:: ``columns.find callback @ 280``
 
 .. code-block:: javascript
 
-   columns.find callback @ 279(entry)
+   columns.find callback @ 280(entry)
 
 作为 ``columns.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``279``—``279`` 行；所属函数 ``onValueChange callback @ 279``。
+**性质**：同步局部函数；源码第 ``280``—``280`` 行；所属函数 ``onValueChange callback @ 280``。
 
 **参数**
 
@@ -1741,17 +1741,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23887:24176:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23963:24252:FUNCTION
 
-.. rubric:: ``columns.map callback @ 281``
+.. rubric:: ``columns.map callback @ 282``
 
 .. code-block:: javascript
 
-   columns.map callback @ 281(column)
+   columns.map callback @ 282(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``281``—``281`` 行；所属函数 ``rows.map callback @ 279``。
+**性质**：同步局部函数；源码第 ``282``—``282`` 行；所属函数 ``rows.map callback @ 280``。
 
 **参数**
 
@@ -1764,17 +1764,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``String``、``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24614:24653:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24690:24729:FUNCTION
 
-.. rubric:: ``onChange callback @ 285``
+.. rubric:: ``onChange callback @ 286``
 
 .. code-block:: javascript
 
-   onChange callback @ 285(event)
+   onChange callback @ 286(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1787,17 +1787,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24687:24900:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24763:24976:FUNCTION
 
-.. rubric:: ``(item.bulkActions || []).map callback @ 285``
+.. rubric:: ``(item.bulkActions || []).map callback @ 286``
 
 .. code-block:: javascript
 
-   (item.bulkActions || []).map callback @ 285(action)
+   (item.bulkActions || []).map callback @ 286(action)
 
 作为 ``(item.bulkActions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1812,17 +1812,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24822:24850:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24898:24926:FUNCTION
 
-.. rubric:: ``onClick callback @ 285``
+.. rubric:: ``onClick callback @ 286``
 
 .. code-block:: javascript
 
-   onClick callback @ 285()
+   onClick callback @ 286()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``(item.bulkActions || []).map callback @ 285``。
+**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``(item.bulkActions || []).map callback @ 286``。
 
 **参数**
 
@@ -1834,17 +1834,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``bulk``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25108:27366:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25194:27646:FUNCTION
 
-.. rubric:: ``visibleGroups.map callback @ 287``
+.. rubric:: ``visibleGroups.map callback @ 288``
 
 .. code-block:: javascript
 
-   visibleGroups.map callback @ 287(group)
+   visibleGroups.map callback @ 288(group)
 
 作为 ``visibleGroups.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``287``—``300`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``288``—``301`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1853,23 +1853,23 @@ A backend-authored summary remains presentation data, not an account page.
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``<section key={group.id} className="border-b" data-matrix-group={group.id}> <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2"> <Button type="button"…``。
+根据执行分支返回结果；代表性返回表达式为 ``<Card key={group.id} className="min-w-0 gap-0 overflow-hidden rounded-lg py-0 shadow-none" data-matrix-group={group.id}> <div className={\x60flex flex-wrap items-center justify-betwe…``。
 
 **主要协作调用**：``Boolean``、``expanded.has``、``encodeURIComponent``、``group.bulkActions.map``、``renderRows``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25753:25932:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25946:26125:FUNCTION
 
-.. rubric:: ``onClick callback @ 292``
+.. rubric:: ``onClick callback @ 293``
 
 .. code-block:: javascript
 
-   onClick callback @ 292()
+   onClick callback @ 293()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``292``—``292`` 行；所属函数 ``visibleGroups.map callback @ 287``。
+**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``visibleGroups.map callback @ 288``。
 
 **参数**
 
@@ -1883,17 +1883,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25794:25928:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25987:26121:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 292``
+.. rubric:: ``setExpanded callback @ 293``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 292(previous)
+   setExpanded callback @ 293(previous)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``292``—``292`` 行；所属函数 ``onClick callback @ 292``。
+**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``onClick callback @ 293``。
 
 **参数**
 
@@ -1906,17 +1906,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``next.has``、``next.delete``、``next.add``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26566:27182:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26833:27449:FUNCTION
 
-.. rubric:: ``group.bulkActions.map callback @ 296``
+.. rubric:: ``group.bulkActions.map callback @ 297``
 
 .. code-block:: javascript
 
-   group.bulkActions.map callback @ 296(action, index)
+   group.bulkActions.map callback @ 297(action, index)
 
 作为 ``group.bulkActions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``visibleGroups.map callback @ 287``。
+**性质**：同步局部函数；源码第 ``297``—``297`` 行；所属函数 ``visibleGroups.map callback @ 288``。
 
 **参数**
 
@@ -1934,17 +1934,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26951:27041:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27218:27308:FUNCTION
 
-.. rubric:: ``group.sourceRows.some callback @ 296``
+.. rubric:: ``group.sourceRows.some callback @ 297``
 
 .. code-block:: javascript
 
-   group.sourceRows.some callback @ 296(row)
+   group.sourceRows.some callback @ 297(row)
 
 作为 ``group.sourceRows.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``group.bulkActions.map callback @ 296``。
+**性质**：同步局部函数；源码第 ``297``—``297`` 行；所属函数 ``group.bulkActions.map callback @ 297``。
 
 **参数**
 
@@ -1957,17 +1957,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27053:27132:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27320:27399:FUNCTION
 
-.. rubric:: ``onClick callback @ 296``
+.. rubric:: ``onClick callback @ 297``
 
 .. code-block:: javascript
 
-   onClick callback @ 296()
+   onClick callback @ 297()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``group.bulkActions.map callback @ 296``。
+**性质**：同步局部函数；源码第 ``297``—``297`` 行；所属函数 ``group.bulkActions.map callback @ 297``。
 
 **参数**
 
@@ -1979,17 +1979,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``bulk``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27396:27510:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27676:27790:FUNCTION
 
-.. rubric:: ``allRows.filter callback @ 300``
+.. rubric:: ``allRows.filter callback @ 301``
 
 .. code-block:: javascript
 
-   allRows.filter callback @ 300(row)
+   allRows.filter callback @ 301(row)
 
 作为 ``allRows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -2002,17 +2002,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase().includes``、``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28051:28066:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28331:28346:FUNCTION
 
-.. rubric:: ``useState callback @ 313``
+.. rubric:: ``useState callback @ 314``
 
 .. code-block:: javascript
 
-   useState callback @ 313()
+   useState callback @ 314()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``313``—``313`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2022,17 +2022,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28677:29964:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28957:30244:FUNCTION
 
-.. rubric:: ``useCallback callback @ 326``
+.. rubric:: ``useCallback callback @ 327``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 326()
+   async useCallback callback @ 327()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``326``—``345`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``327``—``346`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2050,53 +2050,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``requestController.current?.abort``、``setLoading``、``setError``、``source.endpoint?.startsWith``、``ctx.client.read``、``source.endpoint.slice``、``ctx.api.get``、``requestEndpoint``、``resolveValue``、``getValue``、``Array.isArray``、``setRows``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29995:30222:FUNCTION
-
-.. rubric:: ``useEffect callback @ 346``
-
-.. code-block:: javascript
-
-   useEffect callback @ 346()
-
-封装 ``Effect`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``346``—``346`` 行；所属函数 ``ResourceNode``。
-
-**参数**
-
-无。
-
-**返回值**
-
-根据执行分支返回结果；代表性返回表达式为 ``() => { alive.current = false; epoch.current += 1; requestController.current?.abort(); detail.serial += 1; detail.controller?.abort(); }``。
-
-**主要协作调用**：``load``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30082:30219:FUNCTION
-
-.. rubric:: ``returned callback @ 346``
-
-.. code-block:: javascript
-
-   returned callback @ 346()
-
-实现 ``returned`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``346``—``346`` 行；所属函数 ``useEffect callback @ 346``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``requestController.current?.abort``、``detail.controller?.abort``。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30248:30298:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30275:30502:FUNCTION
 
 .. rubric:: ``useEffect callback @ 347``
 
@@ -2114,11 +2068,35 @@ A backend-authored summary remains presentation data, not an account page.
 
 **返回值**
 
+根据执行分支返回结果；代表性返回表达式为 ``() => { alive.current = false; epoch.current += 1; requestController.current?.abort(); detail.serial += 1; detail.controller?.abort(); }``。
+
+**主要协作调用**：``load``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30362:30499:FUNCTION
+
+.. rubric:: ``returned callback @ 347``
+
+.. code-block:: javascript
+
+   returned callback @ 347()
+
+实现 ``returned`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``347``—``347`` 行；所属函数 ``useEffect callback @ 347``。
+
+**参数**
+
+无。
+
+**返回值**
+
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``registerResource``。
+**主要协作调用**：``requestController.current?.abort``、``detail.controller?.abort``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30362:30693:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30528:30578:FUNCTION
 
 .. rubric:: ``useEffect callback @ 348``
 
@@ -2128,7 +2106,29 @@ A backend-authored summary remains presentation data, not an account page.
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``348``—``352`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``348``—``348`` 行；所属函数 ``ResourceNode``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``registerResource``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30642:30973:FUNCTION
+
+.. rubric:: ``useEffect callback @ 349``
+
+.. code-block:: javascript
+
+   useEffect callback @ 349()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``349``—``353`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2146,17 +2146,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30425:30476:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30705:30756:FUNCTION
 
-.. rubric:: ``(item.events || []).map callback @ 349``
+.. rubric:: ``(item.events || []).map callback @ 350``
 
 .. code-block:: javascript
 
-   (item.events || []).map callback @ 349(event)
+   (item.events || []).map callback @ 350(event)
 
 作为 ``(item.events || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``349``—``349`` 行；所属函数 ``useEffect callback @ 348``。
+**性质**：同步局部函数；源码第 ``350``—``350`` 行；所属函数 ``useEffect callback @ 349``。
 
 **参数**
 
@@ -2175,17 +2175,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30452:30475:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30732:30755:FUNCTION
 
-.. rubric:: ``subscribe callback @ 349``
+.. rubric:: ``subscribe callback @ 350``
 
 .. code-block:: javascript
 
-   subscribe callback @ 349()
+   subscribe callback @ 350()
 
 订阅与 ``subscribe`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``349``—``349`` 行；所属函数 ``(item.events || []).map callback @ 349``。
+**性质**：同步局部函数；源码第 ``350``—``350`` 行；所属函数 ``(item.events || []).map callback @ 350``。
 
 **参数**
 
@@ -2197,17 +2197,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30560:30582:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30840:30862:FUNCTION
 
-.. rubric:: ``client.subscribe callback @ 350``
+.. rubric:: ``client.subscribe callback @ 351``
 
 .. code-block:: javascript
 
-   client.subscribe callback @ 350()
+   client.subscribe callback @ 351()
 
 实现 ``client.subscribe`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``350``—``350`` 行；所属函数 ``useEffect callback @ 348``。
+**性质**：同步局部函数；源码第 ``351``—``351`` 行；所属函数 ``useEffect callback @ 349``。
 
 **参数**
 
@@ -2219,17 +2219,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30607:30685:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30887:30965:FUNCTION
 
-.. rubric:: ``returned callback @ 351``
+.. rubric:: ``returned callback @ 352``
 
 .. code-block:: javascript
 
-   returned callback @ 351()
+   returned callback @ 352()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``351``—``351`` 行；所属函数 ``useEffect callback @ 348``。
+**性质**：同步局部函数；源码第 ``352``—``352`` 行；所属函数 ``useEffect callback @ 349``。
 
 **参数**
 
@@ -2247,17 +2247,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30638:30670:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30918:30950:FUNCTION
 
-.. rubric:: ``subscriptions.forEach callback @ 351``
+.. rubric:: ``subscriptions.forEach callback @ 352``
 
 .. code-block:: javascript
 
-   subscriptions.forEach callback @ 351(unsubscribe)
+   subscriptions.forEach callback @ 352(unsubscribe)
 
 作为 ``subscriptions.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``351``—``351`` 行；所属函数 ``returned callback @ 351``。
+**性质**：同步局部函数；源码第 ``352``—``352`` 行；所属函数 ``returned callback @ 352``。
 
 **参数**
 
@@ -2274,17 +2274,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30768:31093:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31048:31373:FUNCTION
 
-.. rubric:: ``useEffect callback @ 353``
+.. rubric:: ``useEffect callback @ 354``
 
 .. code-block:: javascript
 
-   useEffect callback @ 353()
+   useEffect callback @ 354()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``353``—``357`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``354``—``358`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2298,17 +2298,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30907:31084:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31187:31364:FUNCTION
 
-.. rubric:: ``registerDraftGuard callback @ 355``
+.. rubric:: ``registerDraftGuard callback @ 356``
 
 .. code-block:: javascript
 
-   async registerDraftGuard callback @ 355()
+   async registerDraftGuard callback @ 356()
 
 注册与 ``Draft Guard`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``355``—``356`` 行；所属函数 ``useEffect callback @ 353``。
+**性质**：异步局部函数；源码第 ``356``—``357`` 行；所属函数 ``useEffect callback @ 354``。
 
 **参数**
 
@@ -2320,7 +2320,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``JSON.stringify``、``confirm``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31178:32680:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31458:32960:FUNCTION
 
 .. rubric:: ``openEditor``
 
@@ -2330,7 +2330,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 打开与 ``Editor`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``358``—``376`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``359``—``377`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2349,17 +2349,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32271:32369:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32551:32649:FUNCTION
 
-.. rubric:: ``setEditor callback @ 372``
+.. rubric:: ``setEditor callback @ 373``
 
 .. code-block:: javascript
 
-   setEditor callback @ 372(current)
+   setEditor callback @ 373(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``372``—``372`` 行；所属函数 ``openEditor``。
+**性质**：同步局部函数；源码第 ``373``—``373`` 行；所属函数 ``openEditor``。
 
 **参数**
 
@@ -2372,7 +2372,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``cloneData``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32706:32934:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32986:33214:FUNCTION
 
 .. rubric:: ``patchEditor``
 
@@ -2382,7 +2382,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``patchEditor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``377``—``379`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``378``—``380`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2400,17 +2400,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32745:32933:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33025:33213:FUNCTION
 
-.. rubric:: ``setEditor callback @ 377``
+.. rubric:: ``setEditor callback @ 378``
 
 .. code-block:: javascript
 
-   setEditor callback @ 377(current)
+   setEditor callback @ 378(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``377``—``379`` 行；所属函数 ``patchEditor``。
+**性质**：同步局部函数；源码第 ``378``—``380`` 行；所属函数 ``patchEditor``。
 
 **参数**
 
@@ -2423,7 +2423,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setValue``、``target.replace``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32960:33304:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33240:33584:FUNCTION
 
 .. rubric:: ``closeEditor``
 
@@ -2433,7 +2433,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 关闭与 ``Editor`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``380``—``385`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``381``—``386`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2445,7 +2445,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``JSON.stringify``、``context.confirm``、``detailRequest.current.controller?.abort``、``setEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33411:34359:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33691:34639:FUNCTION
 
 .. rubric:: ``onSave``
 
@@ -2455,7 +2455,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Save`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``387``—``399`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``388``—``400`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2469,7 +2469,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34035:34210:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34315:34490:FUNCTION
 
 .. rubric:: ``onSuccess``
 
@@ -2479,7 +2479,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Success`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``396``—``396`` 行；所属函数 ``onSave``。
+**性质**：异步局部函数；源码第 ``397``—``397`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2493,17 +2493,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34106:34192:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34386:34472:FUNCTION
 
-.. rubric:: ``(editorAction.effects || []).some callback @ 396``
+.. rubric:: ``(editorAction.effects || []).some callback @ 397``
 
 .. code-block:: javascript
 
-   (editorAction.effects || []).some callback @ 396(effect)
+   (editorAction.effects || []).some callback @ 397(effect)
 
 作为 ``(editorAction.effects || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``396``—``396`` 行；所属函数 ``onSuccess``。
+**性质**：同步局部函数；源码第 ``397``—``397`` 行；所属函数 ``onSuccess``。
 
 **参数**
 
@@ -2514,7 +2514,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34233:34338:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34513:34618:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -2524,7 +2524,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``397``—``397`` 行；所属函数 ``onSave``。
+**性质**：同步局部函数；源码第 ``398``—``398`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2537,7 +2537,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setEditorError``、``setFieldErrors``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34384:35516:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34664:35796:FUNCTION
 
 .. rubric:: ``actionsFor``
 
@@ -2547,7 +2547,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``actionsFor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``400``—``407`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``401``—``408`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2562,17 +2562,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34541:34608:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34821:34888:FUNCTION
 
-.. rubric:: ``(item.actions || []).filter callback @ 402``
+.. rubric:: ``(item.actions || []).filter callback @ 403``
 
 .. code-block:: javascript
 
-   (item.actions || []).filter callback @ 402(action)
+   (item.actions || []).filter callback @ 403(action)
 
 作为 ``(item.actions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``402``—``402`` 行；所属函数 ``actionsFor``。
+**性质**：同步局部函数；源码第 ``403``—``403`` 行；所属函数 ``actionsFor``。
 
 **参数**
 
@@ -2585,17 +2585,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34733:35500:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35013:35780:FUNCTION
 
-.. rubric:: ``visible.map callback @ 404``
+.. rubric:: ``visible.map callback @ 405``
 
 .. code-block:: javascript
 
-   visible.map callback @ 404(action, index)
+   visible.map callback @ 405(action, index)
 
 作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``404``—``406`` 行；所属函数 ``actionsFor``。
+**性质**：同步局部函数；源码第 ``405``—``407`` 行；所属函数 ``actionsFor``。
 
 **参数**
 
@@ -2613,17 +2613,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35020:35054:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35300:35334:FUNCTION
 
-.. rubric:: ``onClick callback @ 405``
+.. rubric:: ``onClick callback @ 406``
 
 .. code-block:: javascript
 
-   onClick callback @ 405()
+   onClick callback @ 406()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``405``—``405`` 行；所属函数 ``visible.map callback @ 404``。
+**性质**：同步局部函数；源码第 ``406``—``406`` 行；所属函数 ``visible.map callback @ 405``。
 
 **参数**
 
@@ -2635,7 +2635,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35357:35494:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35637:35774:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -2645,7 +2645,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``406``—``406`` 行；所属函数 ``visible.map callback @ 404``。
+**性质**：同步局部函数；源码第 ``407``—``407`` 行；所属函数 ``visible.map callback @ 405``。
 
 **参数**
 
@@ -2660,17 +2660,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35425:35490:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35705:35770:FUNCTION
 
-.. rubric:: ``setConflictingActions callback @ 406``
+.. rubric:: ``setConflictingActions callback @ 407``
 
 .. code-block:: javascript
 
-   setConflictingActions callback @ 406(previous)
+   setConflictingActions callback @ 407(previous)
 
 设置与 ``Conflicting Actions`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``406``—``406`` 行；所属函数 ``onError``。
+**性质**：同步局部函数；源码第 ``407``—``407`` 行；所属函数 ``onError``。
 
 **参数**
 
@@ -2683,7 +2683,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``operationKey``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35581:35799:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35861:36079:FUNCTION
 
 .. rubric:: ``valueText``
 
@@ -2693,7 +2693,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 实现 ``valueText`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``409``—``412`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``410``—``413`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2709,7 +2709,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``getValue``、``Object.hasOwn``、``String``、``displayValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35825:38150:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36105:38430:FUNCTION
 
 .. rubric:: ``renderCards``
 
@@ -2719,7 +2719,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 渲染与 ``Cards`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``413``—``433`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``414``—``434`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2733,17 +2733,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35888:38129:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36168:38409:FUNCTION
 
-.. rubric:: ``rows.map callback @ 413``
+.. rubric:: ``rows.map callback @ 414``
 
 .. code-block:: javascript
 
-   rows.map callback @ 413(record, index)
+   rows.map callback @ 414(record, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``413``—``433`` 行；所属函数 ``renderCards``。
+**性质**：同步局部函数；源码第 ``414``—``434`` 行；所属函数 ``renderCards``。
 
 **参数**
 
@@ -2761,17 +2761,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36431:36524:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36711:36804:FUNCTION
 
-.. rubric:: ``columns.filter callback @ 418``
+.. rubric:: ``columns.filter callback @ 419``
 
 .. code-block:: javascript
 
-   columns.filter callback @ 418(column)
+   columns.filter callback @ 419(column)
 
 作为 ``columns.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``418``—``418`` 行；所属函数 ``rows.map callback @ 413``。
+**性质**：同步局部函数；源码第 ``419``—``419`` 行；所属函数 ``rows.map callback @ 414``。
 
 **参数**
 
@@ -2782,17 +2782,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37396:37571:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37676:37851:FUNCTION
 
-.. rubric:: ``item.badges.map callback @ 426``
+.. rubric:: ``item.badges.map callback @ 427``
 
 .. code-block:: javascript
 
-   item.badges.map callback @ 426(badge)
+   item.badges.map callback @ 427(badge)
 
 作为 ``item.badges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``426``—``426`` 行；所属函数 ``rows.map callback @ 413``。
+**性质**：同步局部函数；源码第 ``427``—``427`` 行；所属函数 ``rows.map callback @ 414``。
 
 **参数**
 
@@ -2805,17 +2805,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37761:37993:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38041:38273:FUNCTION
 
-.. rubric:: ``properties.map callback @ 429``
+.. rubric:: ``properties.map callback @ 430``
 
 .. code-block:: javascript
 
-   properties.map callback @ 429(column)
+   properties.map callback @ 430(column)
 
 作为 ``properties.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``429``—``429`` 行；所属函数 ``rows.map callback @ 413``。
+**性质**：同步局部函数；源码第 ``430``—``430`` 行；所属函数 ``rows.map callback @ 414``。
 
 **参数**
 
@@ -2828,29 +2828,7 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38311:38333:FUNCTION
-
-.. rubric:: ``onClick callback @ 435``
-
-.. code-block:: javascript
-
-   onClick callback @ 435()
-
-处理 ``Click`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``435``—``435`` 行；所属函数 ``ResourceNode``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``load``。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38544:38576:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38591:38613:FUNCTION
 
 .. rubric:: ``onClick callback @ 436``
 
@@ -2870,19 +2848,41 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``openEditor``。
+**主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39874:39958:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38824:38856:FUNCTION
 
-.. rubric:: ``columns.map callback @ 442``
+.. rubric:: ``onClick callback @ 437``
 
 .. code-block:: javascript
 
-   columns.map callback @ 442(column)
+   onClick callback @ 437()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``437``—``437`` 行；所属函数 ``ResourceNode``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``openEditor``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40154:40238:FUNCTION
+
+.. rubric:: ``columns.map callback @ 443``
+
+.. code-block:: javascript
+
+   columns.map callback @ 443(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``442``—``442`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``443``—``443`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2893,17 +2893,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40035:40370:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40315:40650:FUNCTION
 
-.. rubric:: ``rows.map callback @ 442``
+.. rubric:: ``rows.map callback @ 443``
 
 .. code-block:: javascript
 
-   rows.map callback @ 442(record, index)
+   rows.map callback @ 443(record, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``442``—``442`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``443``—``443`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2921,17 +2921,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40198:40312:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40478:40592:FUNCTION
 
-.. rubric:: ``columns.map callback @ 442``
+.. rubric:: ``columns.map callback @ 443``
 
 .. code-block:: javascript
 
-   columns.map callback @ 442(column)
+   columns.map callback @ 443(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``442``—``442`` 行；所属函数 ``rows.map callback @ 442``。
+**性质**：同步局部函数；源码第 ``443``—``443`` 行；所属函数 ``rows.map callback @ 443``。
 
 **参数**
 
@@ -2944,17 +2944,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40487:40531:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40767:40811:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 444``
+.. rubric:: ``onOpenChange callback @ 445``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 444(open)
+   onOpenChange callback @ 445(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``444``—``444`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``445``—``445`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2967,17 +2967,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``closeEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41397:41492:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41677:41772:FUNCTION
 
-.. rubric:: ``Object.entries(fieldErrors).map callback @ 449``
+.. rubric:: ``Object.entries(fieldErrors).map callback @ 450``
 
 .. code-block:: javascript
 
-   Object.entries(fieldErrors).map callback @ 449([field, message])
+   Object.entries(fieldErrors).map callback @ 450([field, message])
 
 作为 ``Object.entries(fieldErrors).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``449``—``449`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``450``—``450`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2988,17 +2988,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41836:41915:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42116:42195:FUNCTION
 
-.. rubric:: ``renderFields callback @ 450``
+.. rubric:: ``renderFields callback @ 451``
 
 .. code-block:: javascript
 
-   renderFields callback @ 450(values)
+   renderFields callback @ 451(values)
 
 渲染与 ``Fields`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``450``—``450`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``451``—``451`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3013,17 +3013,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41859:41914:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42139:42194:FUNCTION
 
-.. rubric:: ``setEditor callback @ 450``
+.. rubric:: ``setEditor callback @ 451``
 
 .. code-block:: javascript
 
-   setEditor callback @ 450(current)
+   setEditor callback @ 451(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``450``—``450`` 行；所属函数 ``renderFields callback @ 450``。
+**性质**：同步局部函数；源码第 ``451``—``451`` 行；所属函数 ``renderFields callback @ 451``。
 
 **参数**
 
@@ -3034,17 +3034,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42272:42301:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42552:42581:FUNCTION
 
-.. rubric:: ``onClick callback @ 452``
+.. rubric:: ``onClick callback @ 453``
 
 .. code-block:: javascript
 
-   onClick callback @ 452()
+   onClick callback @ 453()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``452``—``452`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``453``—``453`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3056,17 +3056,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``closeEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42689:42761:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42969:43041:FUNCTION
 
-.. rubric:: ``onClick callback @ 452``
+.. rubric:: ``onClick callback @ 453``
 
 .. code-block:: javascript
 
-   onClick callback @ 452()
+   onClick callback @ 453()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``452``—``452`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``453``—``453`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3080,17 +3080,17 @@ A backend-authored summary remains presentation data, not an account page.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42717:42757:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42997:43037:FUNCTION
 
-.. rubric:: ``onSave().catch callback @ 452``
+.. rubric:: ``onSave().catch callback @ 453``
 
 .. code-block:: javascript
 
-   onSave().catch callback @ 452(cause)
+   onSave().catch callback @ 453(cause)
 
 处理 ``onSave().catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``452``—``452`` 行；所属函数 ``onClick callback @ 452``。
+**性质**：同步局部函数；源码第 ``453``—``453`` 行；所属函数 ``onClick callback @ 453``。
 
 **参数**
 
@@ -3103,37 +3103,15 @@ A backend-authored summary remains presentation data, not an account page.
 
 **主要协作调用**：``setEditorError``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42996:43073:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43276:43353:FUNCTION
 
-.. rubric:: ``useState callback @ 459``
+.. rubric:: ``useState callback @ 460``
 
 .. code-block:: javascript
 
-   useState callback @ 459()
+   useState callback @ 460()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``459``—``459`` 行；所属函数 ``DescriptorDialog``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``pageValues``。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43091:43184:FUNCTION
-
-.. rubric:: ``useEffect callback @ 460``
-
-.. code-block:: javascript
-
-   useEffect callback @ 460()
-
-封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
 **性质**：同步局部函数；源码第 ``460``—``460`` 行；所属函数 ``DescriptorDialog``。
 
@@ -3145,19 +3123,41 @@ A backend-authored summary remains presentation data, not an account page.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setValues``、``pageValues``。
+**主要协作调用**：``pageValues``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43262:43297:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43371:43464:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 461``
+.. rubric:: ``useEffect callback @ 461``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 461(open)
+   useEffect callback @ 461()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``461``—``461`` 行；所属函数 ``DescriptorDialog``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setValues``、``pageValues``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43542:43577:FUNCTION
+
+.. rubric:: ``onOpenChange callback @ 462``
+
+.. code-block:: javascript
+
+   onOpenChange callback @ 462(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``461``—``461`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``462``—``462`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 

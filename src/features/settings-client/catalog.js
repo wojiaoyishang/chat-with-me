@@ -33,6 +33,7 @@ const preference = (key, text, tips, defaultValue = true) => ({
 });
 const group = (text, icon, children) => ({
   type: "group",
+  variant: "divided",
   text,
   icon,
   children,
@@ -308,7 +309,7 @@ export function clientSettingsPage(id, notificationData) {
           : notificationOptions(notificationData),
     saveMode: id === "connections" ? "actions" : "immediate",
     defaultOptions: {},
-    ...(id === "interface" ? { layout: { columns: 2 } } : {}),
+    ...(id === "interface" ? { layout: { columns: 1 } } : {}),
     ...(id === "notifications"
       ? {
           layout: { columns: 1 },

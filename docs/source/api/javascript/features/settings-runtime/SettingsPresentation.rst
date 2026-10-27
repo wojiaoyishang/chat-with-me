@@ -46,7 +46,7 @@ Icon names are presentation vocabulary; pages never select a business renderer.
 
    **主要协作调用**：``/^(?:cwm:\/\/|https?:\/\/|\/)/.test``、``resolveResourceUrl``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsPresentation.jsx:1201:2992:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsPresentation.jsx:1201:3099:FUNCTION
 
 .. js:function:: SettingsSection({ title, description, icon, actions, children, variant, className = '', bodyClassName = '' })
 
@@ -61,4 +61,4 @@ Icon names are presentation vocabulary; pages never select a business renderer.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<section className={\x60min-w-0 space-y-3 ${className}\x60}> {(title || description || actions) && <div className="flex flex-wrap items-center justify-between gap-3"> <div className="mi…``、``<Card className={\x60h-fit min-w-0 gap-0 overflow-hidden rounded-lg border-border bg-card py-0 shadow-none ${className}\x60}> {(title || description || actions) && <CardHeader className…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<section className={\x60min-w-0 ${variant === 'divided' ? 'space-y-1' : 'space-y-3'} ${className}\x60}> {(title || description || actions) && <div className={\x60flex flex-wrap items-cente…``、``<Card className={\x60h-fit min-w-0 gap-0 overflow-hidden rounded-lg border-border bg-card py-0 shadow-none ${className}\x60}> {(title || description || actions) && <CardHeader className…``。

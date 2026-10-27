@@ -65,13 +65,13 @@ Device preferences and connection selection belong to the client. Backend notifi
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:855:937:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:855:960:FUNCTION
 
 .. js:function:: group(text, icon, children)
 
    实现 ``group`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``34``—``39`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``34``—``40`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ Device preferences and connection selection belong to the client. Backend notifi
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:938:2515:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:961:2538:FUNCTION
 
 .. js:function:: interfaceOptions()
 
    实现 ``interfaceOptions`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``41``—``109`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``42``—``110`` 行。
 
    **参数**
 
@@ -106,13 +106,13 @@ Device preferences and connection selection belong to the client. Backend notifi
 
    **主要协作调用**：``group``、``preference``。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:2515:5272:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:2538:5295:FUNCTION
 
 .. js:function:: connectionOptions()
 
    实现 ``connectionOptions`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``111``—``205`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``112``—``206`` 行。
 
    **参数**
 
@@ -124,13 +124,13 @@ Device preferences and connection selection belong to the client. Backend notifi
 
    **主要协作调用**：``ref``。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:5272:7574:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:5295:7597:FUNCTION
 
 .. js:function:: notificationOptions({ types = [], permission = "unsupported", error = "", })
 
    实现 ``notificationOptions`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``207``—``290`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``208``—``291`` 行。
 
    **参数**
 
@@ -147,13 +147,13 @@ Device preferences and connection selection belong to the client. Backend notifi
 
    **主要协作调用**：``preference``、``options.push``、``categories.has``、``categories.set``、``categories.get(category).fields.push``、``categories.get``。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:7574:8522:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:7597:8545:FUNCTION
 
 .. js:function:: clientSettingsPage(id, notificationData)
 
    实现 ``clientSettingsPage`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``292``—``322`` 行。
+   **性质**：同步函数；导出 API；源码第 ``293``—``323`` 行。
 
    **参数**
 
@@ -173,13 +173,13 @@ Device preferences and connection selection belong to the client. Backend notifi
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:8522:9549:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:8545:9572:FUNCTION
 
 .. js:function:: filterClientSettingsOptions(options, query)
 
    Search local preference groups without changing the source type catalog or their literal storage identities. Non-filterable controls remain available.
 
-   **性质**：同步函数；导出 API；源码第 ``326``—``348`` 行。
+   **性质**：同步函数；导出 API；源码第 ``327``—``349`` 行。
 
    **参数**
 
@@ -202,17 +202,17 @@ Device preferences and connection selection belong to the client. Backend notifi
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:7678:7702:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:7701:7725:FUNCTION
 
-.. rubric:: ``CLIENT_SETTINGS_TABS.find callback @ 293``
+.. rubric:: ``CLIENT_SETTINGS_TABS.find callback @ 294``
 
 .. code-block:: javascript
 
-   CLIENT_SETTINGS_TABS.find callback @ 293(item)
+   CLIENT_SETTINGS_TABS.find callback @ 294(item)
 
 作为 ``CLIENT_SETTINGS_TABS.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``clientSettingsPage``。
+**性质**：同步局部函数；源码第 ``294``—``294`` 行；所属函数 ``clientSettingsPage``。
 
 **参数**
 
@@ -223,17 +223,17 @@ Device preferences and connection selection belong to the client. Backend notifi
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:8893:9417:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:8916:9440:FUNCTION
 
-.. rubric:: ``options.flatMap callback @ 331``
+.. rubric:: ``options.flatMap callback @ 332``
 
 .. code-block:: javascript
 
-   options.flatMap callback @ 331(item)
+   options.flatMap callback @ 332(item)
 
 实现 ``options.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``331``—``344`` 行；所属函数 ``filterClientSettingsOptions``。
+**性质**：同步局部函数；源码第 ``332``—``345`` 行；所属函数 ``filterClientSettingsOptions``。
 
 **参数**
 
@@ -248,17 +248,17 @@ Device preferences and connection selection belong to the client. Backend notifi
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:9100:9343:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:9123:9366:FUNCTION
 
-.. rubric:: ``(item.children || []).filter callback @ 337``
+.. rubric:: ``(item.children || []).filter callback @ 338``
 
 .. code-block:: javascript
 
-   (item.children || []).filter callback @ 337(child)
+   (item.children || []).filter callback @ 338(child)
 
 作为 ``(item.children || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``337``—``341`` 行；所属函数 ``options.flatMap callback @ 331``。
+**性质**：同步局部函数；源码第 ``338``—``342`` 行；所属函数 ``options.flatMap callback @ 332``。
 
 **参数**
 
@@ -271,17 +271,17 @@ Device preferences and connection selection belong to the client. Backend notifi
 
 **主要协作调用**：``\x60${child.text || ""} ${child.description || child.tips || ""} ${(Array.isArray(child.name) ? child.name : [child.name])…``、``(Array.isArray(child.name) ? child.name : [child.name]).join``、``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:9442:9467:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-client/catalog.js:9465:9490:FUNCTION
 
-.. rubric:: ``filtered.some callback @ 345``
+.. rubric:: ``filtered.some callback @ 346``
 
 .. code-block:: javascript
 
-   filtered.some callback @ 345(item)
+   filtered.some callback @ 346(item)
 
 作为 ``filtered.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``345``—``345`` 行；所属函数 ``filterClientSettingsOptions``。
+**性质**：同步局部函数；源码第 ``346``—``346`` 行；所属函数 ``filterClientSettingsOptions``。
 
 **参数**
 

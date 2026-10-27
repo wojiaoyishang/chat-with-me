@@ -476,7 +476,7 @@
    * - :doc:`src/components/ui/useConfirmation </api/javascript/components/ui/useConfirmation>`
      - 1
      - 0
-     - 8
+     - 9
      - ``src/components/ui/useConfirmation.jsx``
    * - :doc:`src/components/window/FloatingDockWindow </api/javascript/components/window/FloatingDockWindow>`
      - 4

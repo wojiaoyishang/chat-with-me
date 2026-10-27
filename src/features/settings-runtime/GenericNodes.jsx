@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { cloneData, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
 import { operationKey } from './useActionExecutor.js';
@@ -274,7 +275,7 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
             if (applyGlobalSet) for (const [path, updated] of Object.entries(action.set || {})) context.update(path.split('.'), resolveValue(updated, { form: context.values, item: context.item, parentItem: context.parentItem }));
         } finally { confirming.current = false; }
     };
-    const renderRows = (rows) => <div className="divide-y">
+    const renderRows = (rows) => <div className="divide-y divide-border/50">
         <div aria-hidden="true" className="grid items-center gap-2 py-2 text-xs text-muted-foreground" style={gridStyle}><span>{item.rowLabel || '项目'}</span>{columns.map((column) => <span className="text-center" key={column.value}>{column.label}</span>)}</div>
         {rows.map((row) => <RadioGroup key={row.id} value={String(value[row.id] ?? row.value ?? '')} disabled={context.disabled || row.disabled} aria-label={row.label || row.id} onValueChange={(next) => { const column = columns.find((entry) => String(entry.value) === next); if (column) onChange(setRow(row, column.value)); }} className="grid items-center gap-2 py-2.5" style={gridStyle}>
             <div className="min-w-0 pr-2"><div className="text-sm font-medium">{row.label || row.id}</div>{row.description && <p className="mt-0.5 truncate text-xs leading-5 text-muted-foreground" title={row.description}>{row.description}</p>}</div>
@@ -283,20 +284,20 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
     </div>;
     return <SettingsSection title={item.text} description={item.description || item.tips} variant={item.variant} bodyClassName={item.variant === 'card' ? 'space-y-3 p-4' : 'space-y-3'}>
         <div className="flex flex-wrap items-center gap-2"><Input className="h-9 min-w-40 flex-1" aria-label={item.searchLabel || '搜索选项'} placeholder={item.searchPlaceholder || '搜索选项'} value={query} onChange={(event) => setQuery(event.target.value)} />{(item.bulkActions || []).map((action) => <Button type="button" size="sm" {...getActionPresentation(action)} key={action.label} disabled={context.disabled} onClick={() => { void bulk(action); }}><SettingsActionLabel action={action} /></Button>)}</div>
-        <div className="min-w-0">
+        <div className="min-w-0 space-y-3">
             {!visibleGroups.length ? <p className="py-6 text-center text-sm text-muted-foreground">{item.emptyText || '没有匹配的选项'}</p> : grouped ? visibleGroups.map((group) => {
                 const open = Boolean(keyword) || expanded.has(group.id);
                 const regionId = `${instanceId}-${encodeURIComponent(group.id)}`;
-                return <section key={group.id} className="border-b" data-matrix-group={group.id}>
-                    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-2">
-                        <Button type="button" variant="ghost" aria-expanded={open} aria-controls={regionId} aria-disabled={Boolean(keyword) || undefined} className="h-auto min-w-0 flex-1 justify-start gap-2 rounded-none px-0 py-1 text-left hover:bg-transparent" onClick={() => { if (keyword) return; setExpanded((previous) => { const next = new Set(previous); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; }); }}>
+                return <Card key={group.id} className="min-w-0 gap-0 overflow-hidden rounded-lg py-0 shadow-none" data-matrix-group={group.id}>
+                    <div className={`flex flex-wrap items-center justify-between gap-x-3 gap-y-1 bg-muted/25 px-4 py-2 ${open ? 'border-b' : ''}`}>
+                        <Button type="button" variant="ghost" aria-expanded={open} aria-controls={regionId} aria-disabled={Boolean(keyword) || undefined} className="h-auto min-w-0 flex-1 justify-start gap-2 rounded-none px-0 py-1 text-left hover:bg-transparent has-[>svg]:px-0" onClick={() => { if (keyword) return; setExpanded((previous) => { const next = new Set(previous); if (next.has(group.id)) next.delete(group.id); else next.add(group.id); return next; }); }}>
                             <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? '' : '-rotate-90'}`} />
-                            <span className="min-w-0 truncate text-sm font-medium">{group.label || group.id}</span><span className="shrink-0 text-xs font-normal tabular-nums text-muted-foreground">{keyword ? `${group.rows.length} / ${group.sourceRows.length}` : group.rows.length}</span>
+                            <span className="min-w-0 truncate text-sm font-medium">{group.label || group.id}</span><span className="shrink-0 rounded border border-border/60 bg-background px-1.5 py-0.5 text-[11px] font-normal leading-4 tabular-nums text-muted-foreground">{keyword ? `${group.rows.length} / ${group.sourceRows.length}` : group.rows.length}</span>
                         </Button>
                         {group.bulkActions?.length > 0 && <div className="flex shrink-0 flex-wrap items-center gap-1">{group.bulkActions.map((action, index) => <Button key={action.id || action.value || index} type="button" size="sm" {...getActionPresentation(action)} className={`h-7 px-2 text-xs ${getActionPresentation(action).className}`} aria-label={`${group.label || group.id} ${action.label}`} title={`${action.label}：作用于本组全部 ${group.sourceRows.length} 项，遵循锁定与可选范围`} disabled={context.disabled || !group.sourceRows.some((row) => !row.disabled && (!row.allowedValues || row.allowedValues.includes(action.value)))} onClick={() => { void bulk(action, { rows: group.sourceRows, applyGlobalSet: false }); }}><SettingsActionLabel action={action} /></Button>)}</div>}
                     </div>
-                    {open && <div id={regionId} className="pb-2 pl-6">{renderRows(group.rows)}</div>}
-                </section>;
+                    {open && <CardContent id={regionId} className="px-5 py-2">{renderRows(group.rows)}</CardContent>}
+                </Card>;
             }) : renderRows(allRows.filter((row) => !keyword || `${row.label || ''} ${row.id || ''} ${row.description || ''}`.toLowerCase().includes(keyword)))}
         </div>
     </SettingsSection>;
