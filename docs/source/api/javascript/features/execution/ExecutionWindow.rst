@@ -166,7 +166,7 @@ src/features/execution/ExecutionWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4294:32681:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:4294:32901:FUNCTION
 
 .. rubric:: ``memo callback @ 93``
 
@@ -176,7 +176,7 @@ src/features/execution/ExecutionWindow 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``93``—``520`` 行。
+**性质**：同步局部函数；源码第 ``93``—``522`` 行。
 
 **参数**
 
@@ -508,7 +508,7 @@ src/features/execution/ExecutionWindow 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:16653:32160:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionWindow.jsx:16653:32380:FUNCTION
 
 .. rubric:: ``timelineItems.map callback @ 331``
 
@@ -518,7 +518,7 @@ src/features/execution/ExecutionWindow 模块
 
 作为 ``timelineItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``331``—``506`` 行；所属函数 ``memo callback @ 93``。
+**性质**：同步局部函数；源码第 ``331``—``508`` 行；所属函数 ``memo callback @ 93``。
 
 **参数**
 
@@ -530,6 +530,6 @@ src/features/execution/ExecutionWindow 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.key} className={\x60rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm transition-shadow ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''}\x60} d…``、``( <div key={item.key} data-execution-timeline-kind="activity" data-execution-activity-id={activity.id || undefined} data-execution-navigation-active={highlightedKey === item.key |…``、``( <div key={item.key || \x60${activity.time}-${index}\x60} className={\x60flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${highlightedKey === item.key ? 'ring-2 ring-blue-200'…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div key={item.key} className={\x60rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm transition-shadow ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''}\x60} s…``、``( <div key={item.key} data-execution-timeline-kind="activity" data-execution-activity-id={activity.id || undefined} data-execution-navigation-active={highlightedKey === item.key |…``、``( <div key={item.key || \x60${activity.time}-${index}\x60} className={\x60flex gap-3 rounded-lg px-2 py-2 transition hover:bg-gray-50 ${highlightedKey === item.key ? 'ring-2 ring-blue-200'…``。
 
 **主要协作调用**：``String(card?.replacementId || '').trim``、``String``、``Object.prototype.hasOwnProperty.call``、``workspaceTransferDirectionForCard``、``String(execution?.toolStatusNodes?.[card.toolCallId]?.action || '').trim``、``fmtTime``、``Array.isArray``、``card.displayNames.join``、``card.toolNames.join``、``action.replace``、``String(card.state || '').toLowerCase``、``String(activity?.kind || '').toLowerCase``。

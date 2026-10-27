@@ -18,7 +18,11 @@ const mocks = new Map([
     ['tools.jsx', 'export const copyTextToClipboard = (text) => navigator.clipboard.writeText(text);'],
     ['react-i18next', 'export const useTranslation = () => ({ t: (key, fallback) => fallback || key });'],
     ['documentCardSpec.js', 'export const useDocumentCardSpec = () => ({ spec: null, loading: false, error: null });'],
-    ['CardBlock.jsx', 'export default function CardBlock() { return null; }'],
+    ['CardBlock.jsx', `import React from 'react';
+        export default function CardBlock({id, type, content, renderMarkdown}) {
+            return React.createElement('section', {'data-test-card': id},
+                ['markdown', 'toolCalling'].includes(type) ? renderMarkdown(content) : content);
+        }`],
     ['ExecutionStatusGroup.jsx', 'export default function ExecutionStatusGroup() { return null; }'],
     ['ReplacementContextBadge.jsx', 'export default function ReplacementContextBadge() { return null; }'],
     ['universalModal.js', 'export const isUniversalModalLink = () => false; export const openUniversalModalLink = () => {};'],
@@ -28,6 +32,7 @@ await build({
     stdin: { contents: "export { default } from './src/components/markdown/MarkdownRenderer.jsx';", resolveDir: process.cwd() },
     bundle: true,
     packages: 'external',
+    external: ['react'],
     platform: 'node',
     format: 'esm',
     jsx: 'automatic',
@@ -134,5 +139,58 @@ test('editable document checkboxes still receive the latest source content', asy
         assert.equal(checkbox.disabled, false);
         await act(async () => checkbox.click());
         assert.equal(toggles[0].sourceContent, latest);
+    });
+});
+
+
+test('replacement-only progress updates live card content without rerunning unrelated Markdown pipelines', async () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const root = createRoot(host);
+    let pipelines = 0;
+    const plugins = [() => () => { pipelines += 1; }];
+    let replacement = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`card-${i}`, '[toolLog]\nInitial']));
+    const render = async () => act(async () => root.render(React.createElement(React.Fragment, null,
+        ...Array.from({ length: 12 }, (_, i) => React.createElement(MarkdownRenderer, {
+            key: i, contextId: 'owner', content: `{{cardReplace id=card-${i}}}`, replacement,
+            msg: { readonly: true }, extraRehypePlugins: plugins,
+        })))));
+    try {
+        await render();
+        assert.equal(pipelines, 12);
+        const unchanged = host.querySelector('[data-test-card="card-3"]');
+        pipelines = 0;
+        replacement = { ...replacement, 'card-4': '[toolLog]\nUpdated progress' };
+        await render();
+        assert.equal(pipelines, 0, 'replacement text is live data, not new Markdown source');
+        assert.match(host.querySelector('[data-test-card="card-4"]').textContent, /Updated progress/);
+        assert.equal(host.querySelector('[data-test-card="card-3"]'), unchanged);
+    } finally { await act(async () => root.unmount()); host.remove(); }
+});
+
+test('nested replacement video survives both progress updates and owner completion', async () => {
+    await withRenderer(async (host, render) => {
+        const content = '{{cardReplace id=outer}}';
+        const replacement = { outer: '[markdown]\n{{cardReplace id=media}}', media: '[markdown]\n![Demo](https://example.invalid/nested.mp4){type=video}' };
+        await render(content, { replacement });
+        const video = host.querySelector('video');
+        video.currentTime = 8;
+        await render(content, { replacement: { ...replacement, ignored: 'unrelated' } });
+        await render(content, { replacement, msg: { readonly: false } });
+        assert.equal(host.querySelector('video'), video);
+        assert.equal(video.currentTime, 8);
+    });
+});
+
+test('an ESC component keeps an incomplete draft separate from subsequent replacement cards', async () => {
+    await withRenderer(async (host, render) => {
+        const prefix = '{{cardReplace id=esc type=escStatus}}';
+        const replacement = {esc: JSON.stringify({code:'ESC_WRITE_REJECTED', previewText:'```esc[doc]\nDocument draft without a stream ID'})};
+        await render(prefix, {replacement});
+        await render(prefix + '\n\n{{cardReplace id=next}}', { replacement: { ...replacement, next: '[toolLog]\nNext real card' }, msg: { readonly: false } });
+        const card = host.querySelector('[data-test-card="next"]');
+        assert.ok(card);
+        assert.equal(card.closest('pre'), null);
+        assert.match(host.querySelector('[data-test-card="esc"]').textContent, /Document draft without a stream ID/);
     });
 });

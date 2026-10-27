@@ -138,6 +138,7 @@ const CardBlock = memo(({
                     id={id}
                     content={content}
                     snapshot={snapshot}
+                    messageReadonly={messageReadonly}
                 />
             );
 

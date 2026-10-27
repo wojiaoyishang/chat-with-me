@@ -1,9 +1,12 @@
 import './EscWritingStatus.css';
 import {memo, useEffect, useMemo, useState} from 'react';
-import {ArrowUpRight, Check, CircleAlert, FilePenLine, Loader2} from 'lucide-react';
+import {ArrowUpRight, Check, CircleAlert, Copy, FilePenLine, Loader2} from 'lucide-react';
 import {Link, useLocation, useParams} from 'react-router-dom';
 import {onEvent} from '@/context/useEventStore.jsx';
 import {resolveEscStatus} from './escStatus.js';
+import {Button} from '@/components/ui/button';
+import {copyTextToClipboard} from '@/lib/tools.jsx';
+import {toast} from 'sonner';
 
 const EscWritingStatus = memo(({content = '', conversationId}) => {
     const location = useLocation();
@@ -11,7 +14,7 @@ const EscWritingStatus = memo(({content = '', conversationId}) => {
     const data = useMemo(() => {
         try {
             const parsed = JSON.parse(content);
-            return parsed?.streamId ? parsed : null;
+            return parsed?.streamId || parsed?.code === 'ESC_WRITE_REJECTED' ? parsed : null;
         } catch { return null; }
     }, [content]);
     const [live, setLive] = useState(null);
@@ -24,6 +27,7 @@ const EscWritingStatus = memo(({content = '', conversationId}) => {
     }, [data?.documentId, data?.streamId]);
     if (!data) return null;
     const {status, label, message} = resolveEscStatus(data, live);
+    const previewText = typeof data.previewText === 'string' ? data.previewText : '';
     const writing = status === 'writing';
     const interrupted = ['interrupted', 'conflict'].includes(status);
     const Icon = writing ? Loader2 : interrupted ? CircleAlert : status === 'completed' ? Check : FilePenLine;
@@ -40,6 +44,19 @@ const EscWritingStatus = memo(({content = '', conversationId}) => {
                 <Link to={documentPath} data-tts-ignore="true" className="relative z-10 inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-cyan-800 underline-offset-2 hover:bg-cyan-100/70 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600 dark:text-cyan-200 dark:hover:bg-cyan-900/50">
                     打开文档 <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
                 </Link>
+            )}
+            {previewText && (
+                <details open aria-live="off" className="basis-full min-w-0 border-t border-current/10 pt-2 text-foreground">
+                    <summary className="cursor-pointer text-xs text-muted-foreground">未写入内容</summary>
+                    <div className="mt-1 flex justify-end">
+                        <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs"
+                            onClick={() => void copyTextToClipboard(previewText).then(() => toast.success('已复制未写入内容')).catch(() => toast.error('复制失败'))}>
+                            <Copy className="size-3.5" />复制内容
+                        </Button>
+                    </div>
+                    {/* Draft text is data, never another Markdown/tool parser. */}
+                    <pre data-esc-preview className="pretty-scrollbar max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted/40 p-3 text-sm leading-6">{previewText}</pre>
+                </details>
             )}
         </div>
     );

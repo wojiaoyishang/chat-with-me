@@ -23,6 +23,11 @@
      - 0
      - 6
      - ``src/hooks/useDropZone.jsx``
+   * - :doc:`src/hooks/useElementVisibility </api/javascript/hooks/useElementVisibility>`
+     - 1
+     - 0
+     - 4
+     - ``src/hooks/useElementVisibility.js``
 
 .. toctree::
    :hidden:
@@ -30,4 +35,5 @@
 
    /api/javascript/hooks/messageCallback
    /api/javascript/hooks/useDropZone
+   /api/javascript/hooks/useElementVisibility
 

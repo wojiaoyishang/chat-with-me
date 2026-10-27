@@ -33,6 +33,11 @@
      - 0
      - 3
      - ``src/lib/horizontalWheel.js``
+   * - :doc:`src/lib/idleWork </api/javascript/lib/idleWork>`
+     - 1
+     - 0
+     - 2
+     - ``src/lib/idleWork.js``
    * - :doc:`src/lib/resourceDownload </api/javascript/lib/resourceDownload>`
      - 4
      - 0
@@ -67,6 +72,7 @@
    /api/javascript/lib/browserHistoryLayers
    /api/javascript/lib/clientText
    /api/javascript/lib/horizontalWheel
+   /api/javascript/lib/idleWork
    /api/javascript/lib/resourceDownload
    /api/javascript/lib/tools
    /api/javascript/lib/utils

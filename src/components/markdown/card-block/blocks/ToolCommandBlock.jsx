@@ -13,6 +13,8 @@ import { toSafeString } from '../utils.js';
 import OutputToolbar from './OutputToolbar.jsx';
 import useFollowOutputScroll from './useFollowOutputScroll.js';
 import '../../CodeBlock.css';
+import { scheduleIdleWork } from '@/lib/idleWork.js';
+import useElementVisibility from '@/hooks/useElementVisibility.js';
 
 const TOOL_COMMAND_CODE_RE = /^\s*\[CODE:([^\]]+)]\s*(?:\r?\n|$)/i;
 
@@ -36,7 +38,8 @@ const parseToolCommandContent = (content) => {
     };
 };
 
-const ToolCommandBlock = memo(({content = '', id, snapshot = false}) => {
+const ToolCommandBlock = memo(({content = '', id, snapshot = false, messageReadonly = false}) => {
+    const [visibilityRef, visible] = useElementVisibility();
     const [highlightState, setHighlightState] = useState(() => ({
         source: '',
         language: '',
@@ -64,7 +67,7 @@ const ToolCommandBlock = memo(({content = '', id, snapshot = false}) => {
     });
 
     useEffect(() => {
-        if (!codeString || language === 'text') {
+        if (!visible || !codeString || language === 'text' || codeString.length > 120_000 || codeString.split('\n').length > 2_500) {
             return undefined;
         }
 
@@ -82,12 +85,13 @@ const ToolCommandBlock = memo(({content = '', id, snapshot = false}) => {
             });
         };
 
-        doHighlight();
+        const cancelWork = scheduleIdleWork(doHighlight, { delay: 80 });
 
         return () => {
             isDisposed = true;
+            cancelWork();
         };
-    }, [codeString, language]);
+    }, [codeString, language, visible]);
 
     const highlightedHtml = (
         language !== 'text'
@@ -105,7 +109,8 @@ const ToolCommandBlock = memo(({content = '', id, snapshot = false}) => {
 
     return (
         <div
-            className={`${snapshot ? '' : 'card-tool-command-soft-breathe'} relative my-1.5 overflow-hidden rounded-lg border border-sky-200/80 bg-sky-50/90 text-slate-700 shadow-[0_8px_24px_rgba(14,165,233,0.08)]`}
+            ref={visibilityRef}
+            className={`${!snapshot && messageReadonly && visible ? 'card-tool-command-soft-breathe' : ''} relative my-1.5 overflow-hidden rounded-lg border border-sky-200/80 bg-sky-50/90 text-slate-700 shadow-[0_8px_24px_rgba(14,165,233,0.08)]`}
             data-card-block-id={id}
         >
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/65 via-sky-50/20 to-sky-100/45"/>
@@ -154,6 +159,7 @@ const ToolCommandBlock = memo(({content = '', id, snapshot = false}) => {
     return (
         prev.id === next.id &&
         prev.snapshot === next.snapshot &&
+        prev.messageReadonly === next.messageReadonly &&
         prev.content === next.content
     );
 });

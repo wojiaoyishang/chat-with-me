@@ -44,7 +44,7 @@ const mocks = new Map([
 ]);
 
 await build({
-    stdin: { contents: "export {default as MarkdownRenderer, resolveMarkdownCopyContent} from './src/components/markdown/MarkdownRenderer.jsx'; export {getSpeakableSegments, getStreamingSpeakableSegments} from './src/features/chat/ui/message/utils/speechContent.js';", resolveDir: process.cwd() },
+    stdin: { contents: "export {default as MarkdownRenderer} from './src/components/markdown/MarkdownRenderer.jsx'; export {resolveMarkdownCopyContent} from './src/components/markdown/markdownCopy.js'; export {getSpeakableSegments, getStreamingSpeakableSegments} from './src/features/chat/ui/message/utils/speechContent.js';", resolveDir: process.cwd() },
     bundle: true, packages: 'external', platform: 'node', format: 'esm', jsx: 'automatic',
     outfile: 'temp/conversation-fork-cards-test.mjs', alias: { '@': path.resolve('src') },
     loader: { '.css': 'empty', '.woff': 'empty', '.woff2': 'empty', '.ttf': 'empty' },

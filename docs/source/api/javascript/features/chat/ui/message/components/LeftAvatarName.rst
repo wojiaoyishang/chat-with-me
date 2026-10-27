@@ -17,29 +17,29 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 * **模块标识**：``src/features/chat/ui/message/components/LeftAvatarName``
 * **顶层函数/组件/Hook**：0
 * **类**：0
-* **局部函数与匿名回调**：11
+* **局部函数与匿名回调**：10
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``./MessageIndicators.jsx``、``@/lib/clientText.js``、``react``、``@/lib/tools.jsx``、``framer-motion``、``@/lib/virtualUrl.js``、``@/components/ui/avatar``。
+``./MessageIndicators.jsx``、``./overflowMarquee.js``、``@/lib/clientText.js``、``react``、``@/lib/tools.jsx``、``framer-motion``、``@/lib/virtualUrl.js``、``@/components/ui/avatar``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:435:4698:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:497:4115:FUNCTION
 
-.. rubric:: ``memo callback @ 9``
+.. rubric:: ``memo callback @ 10``
 
 .. code-block:: javascript
 
-   memo callback @ 9({ msg, isLeaving, showDetails })
+   memo callback @ 10({ msg, isLeaving, showDetails })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``9``—``104`` 行。
+**性质**：同步局部函数；源码第 ``10``—``85`` 行。
 
 **参数**
 
@@ -58,17 +58,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:681:1402:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:743:1464:FUNCTION
 
-.. rubric:: ``useEffect callback @ 15``
+.. rubric:: ``useEffect callback @ 16``
 
 .. code-block:: javascript
 
-   useEffect callback @ 15()
+   useEffect callback @ 16()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``15``—``29`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``16``—``30`` 行；所属函数 ``memo callback @ 10``。
 
 **参数**
 
@@ -86,7 +86,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:794:1259:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:856:1321:FUNCTION
 
 .. rubric:: ``wheel``
 
@@ -96,7 +96,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 实现 ``wheel`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``18``—``26`` 行；所属函数 ``useEffect callback @ 15``。
+**性质**：同步局部函数；源码第 ``19``—``27`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -109,17 +109,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``Math.abs``、``Math.max``、``Math.min``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1345:1395:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1407:1457:FUNCTION
 
-.. rubric:: ``returned callback @ 28``
+.. rubric:: ``returned callback @ 29``
 
 .. code-block:: javascript
 
-   returned callback @ 28()
+   returned callback @ 29()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``useEffect callback @ 15``。
+**性质**：同步局部函数；源码第 ``29``—``29`` 行；所属函数 ``useEffect callback @ 16``。
 
 **参数**
 
@@ -131,17 +131,17 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``element.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1431:2508:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1493:1786:FUNCTION
 
-.. rubric:: ``useEffect callback @ 30``
+.. rubric:: ``useEffect callback @ 31``
 
 .. code-block:: javascript
 
-   useEffect callback @ 30()
+   useEffect callback @ 31()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``30``—``56`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``31``—``37`` 行；所属函数 ``memo callback @ 10``。
 
 **参数**
 
@@ -149,46 +149,23 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``undefined``、``() => cancelAnimationFrame(frame)``。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``、``() => { controller.dispose(); marquee.current = null; }``。
 
-**主要协作调用**：``requestAnimationFrame``。
+**主要协作调用**：``createOverflowMarquee``。
 
-**内部回调数量**：2。这些回调也会在本页逐项说明。
+**内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1716:2406:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1723:1779:FUNCTION
 
-.. rubric:: ``tick``
-
-.. code-block:: javascript
-
-   tick(now)
-
-实现 ``tick`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``39``—``53`` 行；所属函数 ``useEffect callback @ 30``。
-
-**参数**
-
-``now``
-   调用方传入的 ``now`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``Math.min``、``Math.max``、``requestAnimationFrame``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2467:2501:FUNCTION
-
-.. rubric:: ``returned callback @ 55``
+.. rubric:: ``returned callback @ 36``
 
 .. code-block:: javascript
 
-   returned callback @ 55()
+   returned callback @ 36()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``useEffect callback @ 30``。
+**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``useEffect callback @ 31``。
 
 **参数**
 
@@ -198,19 +175,19 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``cancelAnimationFrame``。
+**主要协作调用**：``controller.dispose``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2997:3057:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2275:2346:FUNCTION
 
-.. rubric:: ``onMouseEnter callback @ 64``
+.. rubric:: ``onMouseEnter callback @ 45``
 
 .. code-block:: javascript
 
-   onMouseEnter callback @ 64()
+   onMouseEnter callback @ 45()
 
 处理 ``Mouse Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``64``—``66`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``45``—``47`` 行；所属函数 ``memo callback @ 10``。
 
 **参数**
 
@@ -220,17 +197,19 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3085:3146:FUNCTION
+**主要协作调用**：``marquee.current?.setPaused``。
 
-.. rubric:: ``onMouseLeave callback @ 67``
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2374:2492:FUNCTION
+
+.. rubric:: ``onMouseLeave callback @ 48``
 
 .. code-block:: javascript
 
-   onMouseLeave callback @ 67()
+   onMouseLeave callback @ 48()
 
 处理 ``Mouse Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``67``—``69`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``48``—``50`` 行；所属函数 ``memo callback @ 10``。
 
 **参数**
 
@@ -240,17 +219,19 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3839:3907:FUNCTION
+**主要协作调用**：``marquee.current?.setPaused``、``Boolean``、``viewport.current?.matches``。
 
-.. rubric:: ``onFocus callback @ 84``
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3185:3264:FUNCTION
+
+.. rubric:: ``onFocus callback @ 65``
 
 .. code-block:: javascript
 
-   onFocus callback @ 84()
+   onFocus callback @ 65()
 
 处理 ``Focus`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``84``—``86`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``65``—``67`` 行；所属函数 ``memo callback @ 10``。
 
 **参数**
 
@@ -260,22 +241,27 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3933:4002:FUNCTION
+**主要协作调用**：``marquee.current?.setPaused``。
 
-.. rubric:: ``onBlur callback @ 87``
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3290:3419:FUNCTION
+
+.. rubric:: ``onBlur callback @ 68``
 
 .. code-block:: javascript
 
-   onBlur callback @ 87()
+   onBlur callback @ 68(event)
 
 处理 ``Blur`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``87``—``89`` 行；所属函数 ``memo callback @ 9``。
+**性质**：同步局部函数；源码第 ``68``—``70`` 行；所属函数 ``memo callback @ 10``。
 
 **参数**
 
-无。
+``event``
+   语义事件名或 EventEnvelope。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``marquee.current?.setPaused``、``event.currentTarget.contains``。

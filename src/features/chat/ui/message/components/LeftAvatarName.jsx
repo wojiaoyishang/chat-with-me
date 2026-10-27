@@ -1,4 +1,5 @@
 import MessageIndicators from './MessageIndicators.jsx';
+import { createOverflowMarquee } from './overflowMarquee.js';
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import React, { memo, useEffect, useRef } from 'react';
 import { useIsMobile } from '@/lib/tools.jsx';
@@ -9,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
     const displayName = msg?.name || 'U';
     const viewport = useRef(null);
-    const paused = useRef(false);
+    const marquee = useRef(null);
     const isMobile = useIsMobile();
     const reducedMotion = useReducedMotion();
     useEffect(() => {
@@ -29,30 +30,10 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
     }, [isMobile]);
     useEffect(() => {
         const element = viewport.current;
-        if (!element) return;
-        if (isMobile || reducedMotion) return;
-        let frame;
-        let last = 0;
-        let position = element.scrollLeft;
-        let direction = 1;
-        let holdUntil = 0;
-        const tick = (now) => {
-            const elapsed = last ? Math.min(now - last, 100) : 0;
-            last = now;
-            const max = element.scrollWidth - element.clientWidth;
-            if (paused.current) position = element.scrollLeft;
-            else if (max > 0 && now >= holdUntil) {
-                position = Math.max(0, Math.min(max, position + direction * elapsed * 0.018));
-                element.scrollLeft = position;
-                if ((direction > 0 && position >= max) || (direction < 0 && position <= 0)) {
-                    direction *= -1;
-                    holdUntil = now + 900;
-                }
-            }
-            frame = requestAnimationFrame(tick);
-        };
-        frame = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(frame);
+        if (!element || isMobile || reducedMotion) return undefined;
+        const controller = createOverflowMarquee(element);
+        marquee.current = controller;
+        return () => { controller.dispose(); marquee.current = null; };
     }, [isMobile, reducedMotion]);
     const createdAt = msg?.createdAt || msg?.created_at;
     const indicators = msg?.extraInfo?.indicators || msg?.extra_info?.indicators || [];
@@ -62,10 +43,10 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
         <div
             className={`group/identity relative flex w-full min-w-0 items-center gap-2 mb-1 max-w-full transition-opacity duration-300 ${isLeaving ? 'opacity-0' : 'opacity-100'}`}
             onMouseEnter={() => {
-                paused.current = true;
+                marquee.current?.setPaused(true);
             }}
             onMouseLeave={() => {
-                paused.current = false;
+                marquee.current?.setPaused(Boolean(viewport.current?.matches(':focus-within')));
             }}
         >
             <Avatar className="h-10 w-10 shrink-0">
@@ -82,10 +63,10 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
                 className="hide-scrollbar min-w-0 flex-1 overflow-x-auto overflow-y-hidden py-1"
                 style={{ scrollbarWidth: 'none' }}
                 onFocus={() => {
-                    paused.current = true;
+                    marquee.current?.setPaused(true);
                 }}
-                onBlur={() => {
-                    paused.current = false;
+                onBlur={(event) => {
+                    marquee.current?.setPaused(event.currentTarget.contains(event.relatedTarget));
                 }}
             >
                 <div className="flex w-max min-w-full flex-nowrap items-center gap-2 whitespace-nowrap">

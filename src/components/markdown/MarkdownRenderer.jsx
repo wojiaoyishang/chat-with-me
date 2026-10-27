@@ -19,16 +19,10 @@ import CodeBlock from './CodeBlock.jsx';
 import './MarkdownContent.css';
 import CardBlock from './card-block/CardBlock.jsx';
 import ExecutionStatusGroup from '@/features/execution/ExecutionStatusGroup.jsx';
-import { parseAgentContent } from './card-block/agent/agentContent.js';
-import { stripFrontendFeedback } from '@/features/chat/speech/frontendFeedback.js';
 import ReplacementContextBadge from '@/features/chat/ui/message/components/ReplacementContextBadge.jsx';
 import {
-    getCardReplaceIdFromAttributes,
     normalizeCardReplaceBlockBoundaries,
     normalizeReplacementEntry,
-    normalizeReplacementLineBreaks,
-    parseCardReplaceAttributes,
-    parseReplacementProtocol,
 } from './replacementProtocol.js';
 
 import 'katex/dist/katex.min.css';
@@ -38,12 +32,10 @@ import { authorizedResourceUrl } from '../../runtime/backend/connection.js';
 import { downloadDocumentResource, isDocumentDownloadUrl } from '@/lib/resourceDownload.js';
 import ResourceImage from './ResourceImage.jsx';
 import ResourceVideo from './ResourceVideo.jsx';
+import { createMarkdownCopyContentComponent, resolveMarkdownCopyContent } from './markdownCopy.js';
+import { executionGroupingKey, projectReplacements } from './replacementProjection.js';
 import { toast } from 'sonner';
 import { isUniversalModalLink, openUniversalModalLink } from '@/components/modal/universalModal.js';
-
-const CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE = /:{2,3}\s*(card|card-replace)\s*\{([^}]*)\}\s*:{2,3}/g;
-const CARD_REPLACE_BLOCK_DIRECTIVE_RE = /:{3}\s*(card|card-replace)\s*\{([^}]*)\}\s*\n[\s\S]*?\n:{3}/g;
-const CARD_REPLACE_MUSTACHE_RE = /\{\{\s*(cardReplace|card-replace|card)\s+([^{}]*?)\s*\}\}/g;
 
 export const MARKDOWN_COPY_CONTENT_COMPONENT_NAME = 'markdownCopyContent';
 
@@ -52,7 +44,7 @@ const getVisitedKey = (visitedIds) => {
         return '';
     }
 
-    return visitedIds.join('>');
+    return JSON.stringify(visitedIds);
 };
 
 const allowCustomScheme = (uri, key, node) => {
@@ -93,249 +85,6 @@ const stripDanglingStreamingCardToken = (content) => {
     return mayBeCardToken ? content.slice(0, tokenStart) : content;
 };
 
-const toSafeString = (value) => {
-    return typeof value === 'string' ? value : String(value ?? '');
-};
-
-const normalizeLineBreaks = normalizeReplacementLineBreaks;
-
-const normalizeCopyText = (content) => {
-    return normalizeLineBreaks(content).replace(/\n{3,}/g, '\n\n');
-};
-
-const COPY_TEXT_FIELD_PRIORITY = [
-    'copyContent',
-    'copyMarkdown',
-    'copyText',
-    'markdown',
-    'displayContent',
-    'displayText',
-    'plainText',
-    'plain',
-    'text',
-    'content',
-    'frontend',
-    'value',
-    'children',
-];
-
-const stripCopyTypeMarker = (content) => {
-    const parsed = parseReplacementProtocol(content);
-    return parsed.hadMarker ? parsed.content : normalizeLineBreaks(content);
-};
-
-const extractCopyTextFromReplacementValue = (value, seenObjects = new WeakSet()) => {
-    if (value == null) {
-        return '';
-    }
-
-    if (typeof value === 'string') {
-        return value;
-    }
-
-    if (typeof value === 'number' || typeof value === 'boolean') {
-        return String(value);
-    }
-
-    if (Array.isArray(value)) {
-        return value
-            .map((item) => extractCopyTextFromReplacementValue(item, seenObjects))
-            .filter(Boolean)
-            .join('\n');
-    }
-
-    if (typeof value !== 'object') {
-        return '';
-    }
-
-    if (seenObjects.has(value)) {
-        return '';
-    }
-
-    seenObjects.add(value);
-
-    for (const fieldName of COPY_TEXT_FIELD_PRIORITY) {
-        if (Object.prototype.hasOwnProperty.call(value, fieldName)) {
-            const fieldText = extractCopyTextFromReplacementValue(value[fieldName], seenObjects);
-
-            if (fieldText) {
-                return fieldText;
-            }
-        }
-    }
-
-    return '';
-};
-
-const normalizeReplacementCopyEntry = (replacement, id, explicitType, inheritedSnapshot = false) => {
-    const normalizedId = String(id || '');
-
-    if (!replacement || typeof replacement !== 'object') {
-        return {
-            exists: false,
-            id: normalizedId,
-            content: '',
-        };
-    }
-
-    if (!Object.prototype.hasOwnProperty.call(replacement, normalizedId)) {
-        return {
-            exists: false,
-            id: normalizedId,
-            content: '',
-        };
-    }
-
-    const entry = replacement[normalizedId];
-    const extractedCopyContent = extractCopyTextFromReplacementValue(entry);
-    const snapshot = inheritedSnapshot || entry?.snapshot === true;
-    const rawCopyContent = snapshot ? stripFrontendFeedback(extractedCopyContent) : extractedCopyContent;
-    const protocol = parseReplacementProtocol(rawCopyContent);
-
-    // Tool details routed exclusively to Execution Window are deliberately absent from
-    // the Assistant transcript. Keep message-level copy/TTS semantics aligned with
-    // what the conversation surface actually shows instead of expanding hidden
-    // command/log/result payloads back into the copied answer.
-    if (
-        ['executionwindowtool', 'workspacetransfer', 'executionstatus', 'escstatus'].includes(
-            String(explicitType || entry?.type || protocol.type || '').toLowerCase(),
-        )
-    ) {
-        return {
-            exists: true,
-            id: normalizedId,
-            content: '',
-        };
-    }
-
-    return {
-        exists: true,
-        id: normalizedId,
-        snapshot,
-        content:
-            String(explicitType || entry?.type || protocol.type || '').toLowerCase() === 'agent'
-                ? parseAgentContent(stripCopyTypeMarker(rawCopyContent)).cleanContent
-                : stripCopyTypeMarker(rawCopyContent),
-    };
-};
-
-const isReplaceDirective = (directiveName, attributes) => {
-    if (directiveName === 'card-replace') {
-        return true;
-    }
-
-    if (directiveName !== 'card') {
-        return false;
-    }
-
-    return String(attributes.type || '').trim() === 'replace';
-};
-
-const replaceCopyDirectives = (source, directiveRegex, replacement, options) => {
-    const { depth, maxDepth, visitedIds, snapshot } = options;
-
-    directiveRegex.lastIndex = 0;
-
-    return source.replace(directiveRegex, (_match, directiveName, rawAttributes) => {
-        const attributes = parseCardReplaceAttributes(rawAttributes);
-        const finalId = getCardReplaceIdFromAttributes(attributes);
-        const hasReplacementEntry = Boolean(
-            finalId &&
-            replacement &&
-            typeof replacement === 'object' &&
-            Object.prototype.hasOwnProperty.call(replacement, finalId),
-        );
-
-        // copy 走纯 Markdown 文本路径：UI card marker 本身不进入剪切板。
-        // 明确的 replace marker 会展开 replacement；其它 card marker 如能命中 replacement，也按 replacement 展开；否则移除。
-        if (!isReplaceDirective(directiveName, attributes) && !hasReplacementEntry) {
-            return '';
-        }
-
-        if (!finalId) {
-            return '';
-        }
-
-        if (visitedIds.includes(finalId)) {
-            console.error(`[MarkdownRenderer] cardReplace copy 文本出现循环引用，id: ${finalId}`);
-            return '';
-        }
-
-        const normalized = normalizeReplacementCopyEntry(replacement, finalId, attributes.type, snapshot);
-
-        if (!normalized.exists) {
-            return '';
-        }
-
-        return resolveMarkdownCopyContent(normalized.content, replacement, {
-            depth: depth + 1,
-            maxDepth,
-            visitedIds: [...visitedIds, finalId],
-            snapshot: normalized.snapshot,
-        });
-    });
-};
-
-export const resolveMarkdownCopyContent = (content, replacement = {}, options = {}) => {
-    const { depth = 0, maxDepth = 10, visitedIds = [], snapshot = false } = options;
-
-    const source = normalizeLineBreaks(snapshot ? stripFrontendFeedback(content) : content);
-
-    if (!source) {
-        return '';
-    }
-
-    if (depth >= maxDepth) {
-        return normalizeCopyText(
-            source
-                .replace(CARD_REPLACE_BLOCK_DIRECTIVE_RE, '')
-                .replace(CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE, '')
-                .replace(CARD_REPLACE_MUSTACHE_RE, ''),
-        );
-    }
-
-    const withoutBlockDirectives = replaceCopyDirectives(source, CARD_REPLACE_BLOCK_DIRECTIVE_RE, replacement, {
-        depth,
-        maxDepth,
-        visitedIds,
-        snapshot,
-    });
-
-    const withoutSelfClosingDirectives = replaceCopyDirectives(
-        withoutBlockDirectives,
-        CARD_REPLACE_SELF_CLOSING_DIRECTIVE_RE,
-        replacement,
-        { depth, maxDepth, visitedIds, snapshot },
-    );
-
-    const withoutMustacheDirectives = replaceCopyDirectives(
-        withoutSelfClosingDirectives,
-        CARD_REPLACE_MUSTACHE_RE,
-        replacement,
-        { depth, maxDepth, visitedIds, snapshot },
-    );
-
-    return normalizeCopyText(withoutMustacheDirectives);
-};
-
-export const createMarkdownCopyContentComponent = (copyContent) => {
-    const safeCopyContent = toSafeString(copyContent);
-
-    return {
-        content: safeCopyContent,
-        copyContent: safeCopyContent,
-        markdownContent: safeCopyContent,
-        displayContent: safeCopyContent,
-        text: safeCopyContent,
-        getContent: () => safeCopyContent,
-        getCopyContent: () => safeCopyContent,
-        getMarkdownContent: () => safeCopyContent,
-        getDisplayContent: () => safeCopyContent,
-        getText: () => safeCopyContent,
-        toString: () => safeCopyContent,
-    };
-};
-
 // Keep the code renderer identity stable while the message grows. Replacing a
 // renderer function remounts its whole subtree and can discard a pressed copy button.
 const MarkdownCode = ({ className, children, isCodeBlock, ...props }) => {
@@ -366,7 +115,7 @@ const getStableRendererHost = (name) => {
 const createElementRenderers = ({
     contextId = '',
     conversationId = null,
-    replacementRef,
+    replacement,
     depth = 0,
     maxDepth = 10,
     visitedIds = [],
@@ -381,7 +130,7 @@ const createElementRenderers = ({
     cardSpec = null,
 }) => {
     const getCurrentReplacement = () => {
-        return replacementRef?.current || {};
+        return replacement;
     };
 
     const renderNestedMarkdown = (nestedContent, extra = {}) => {
@@ -660,13 +409,41 @@ const createElementRenderers = ({
     };
 };
 
+// Replacement content and readonly belong to the live component context. Only
+// source/configuration or grouping topology changes require another syntax pass.
+const MarkdownSyntax = memo(({ processedContent, replacement,
+    renderSurface, snapshot, studyDirectivesEnabled, studyIdPrefix, cardSpec,
+    extraRehypePlugins, editableTasks, taskSourceContent, components, resourceBaseUrl }) => (
+    <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkMath,
+            ...(studyDirectivesEnabled ? [remarkDirective, [remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
+            remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}],
+            remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
+        rehypePlugins={[rehypeKatex, ...extraRehypePlugins,
+            ...(editableTasks ? [[rehypeDocumentTasks, { sourceContent: taskSourceContent, normalizeLine: preprocessContent }]] : [])]}
+        components={components}
+        urlTransform={(uri, key, node) => {
+            const safe = allowCustomScheme(uri, key, node);
+            if (resourceBaseUrl && safe?.startsWith('assets/')) {
+                const relative = safe.slice('assets/'.length);
+                if (relative.split('/').some((part) => part === '..' || part === '.')) return '';
+                return authorizedResourceUrl(resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/'));
+            }
+            return authorizedResourceUrl(safe);
+        }}
+    >{processedContent}</ReactMarkdown>
+), (prev, next) => Object.keys(next).every((key) => key === 'replacement' || prev[key] === next[key]));
+
+const EMPTY_PLUGINS = [];
+const EMPTY_REPLACEMENTS = {};
+
 function MarkdownRendererInner({
     resourceBaseUrl = null,
-    extraRehypePlugins = [],
+    extraRehypePlugins = EMPTY_PLUGINS,
     contextId = '',
     conversationId = null,
     content,
-    replacement = {},
+    replacement: allReplacements = EMPTY_REPLACEMENTS,
     depth = 0,
     maxDepth = 10,
     visitedIds = [],
@@ -682,8 +459,12 @@ function MarkdownRendererInner({
     const studyIdPrefix = useId();
     const documentSurface = renderSurface === 'document' || renderSurface === 'document-preview';
     const { spec: cardSpec, loading: cardsLoading, error: cardsError } = useDocumentCardSpec(documentSurface);
-    const replacementRef = useRef(replacement);
-    replacementRef.current = replacement;
+    const projectionRef = useRef(null);
+    const replacement = useMemo(() => {
+        const projected = projectReplacements(content, allReplacements, projectionRef.current, maxDepth);
+        projectionRef.current = projected;
+        return projected;
+    }, [content, allReplacements, maxDepth]);
     const isStreaming = isStreamingProp ?? msg?.readonly === true;
     const messageContextState = messageContextStateProp ?? msg?.contextState ?? null;
     const messageReadonly = msg?.readonly === true || Boolean(isStreamingProp);
@@ -695,18 +476,17 @@ function MarkdownRendererInner({
     // latest conversation. Users can still reopen it explicitly from its inline launcher.
     const messageIsLatest = messageIsLatestProp ?? (msg ? msg?.nextMessage == null : true);
 
-    const visitedKey = useMemo(() => {
-        return getVisitedKey(visitedIds);
-    }, [visitedIds]);
+    const visitedKey = getVisitedKey(visitedIds);
+    const stableVisitedIds = useMemo(() => visitedKey ? JSON.parse(visitedKey) : [], [visitedKey]);
 
     const elementRenderers = useMemo(() => {
         return createElementRenderers({
             contextId,
             conversationId,
-            replacementRef,
+            replacement,
             depth,
             maxDepth,
-            visitedIds,
+            visitedIds: stableVisitedIds,
             isStreaming,
             messageContextState,
             messageReadonly,
@@ -720,10 +500,10 @@ function MarkdownRendererInner({
     }, [
         contextId,
         conversationId,
-        replacementRef,
+        replacement,
         depth,
         maxDepth,
-        visitedKey,
+        stableVisitedIds,
         isStreaming,
         messageContextState,
         messageReadonly,
@@ -735,9 +515,10 @@ function MarkdownRendererInner({
         cardSpec,
     ]);
 
+    const rendererNames = Object.keys(elementRenderers).join('|');
     const components = useMemo(() => Object.fromEntries(
-        Object.keys(elementRenderers).map((name) => [name, getStableRendererHost(name)]),
-    ), [elementRenderers]);
+        rendererNames.split('|').map((name) => [name, getStableRendererHost(name)]),
+    ), [rendererNames]);
 
     const processedContent = useMemo(() => {
         const preprocessed = preprocessContent(content);
@@ -750,9 +531,11 @@ function MarkdownRendererInner({
     }, [content, msg?.readonly]);
 
     const copyContent = useMemo(() => {
-        return resolveMarkdownCopyContent(content, replacement, {
-            maxDepth,
-        });
+        let resolved;
+        return () => {
+            resolved ??= resolveMarkdownCopyContent(content, replacement, { maxDepth });
+            return resolved;
+        };
     }, [content, replacement, maxDepth]);
 
     useEffect(() => {
@@ -787,39 +570,17 @@ function MarkdownRendererInner({
 
     const hasCardSource = /(?:^|\n)\s*:{3,}study-[a-z-]+(?=[\s{])/.test(processedContent || '');
     const studyDirectivesEnabled = documentSurface && cardSpec && hasCardSource;
-    const documentRemarkPlugins = [
-        ...(studyDirectivesEnabled ? [remarkDirective] : []),
-        ...(studyDirectivesEnabled ? [[remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
-    ];
-
     if (documentSurface && cardsLoading && !cardSpec && hasCardSource) {
         return <div className="cwm-document-card-surface" aria-busy="true">正在加载文档卡片…</div>;
     }
-
     const markdown = (
         <MarkdownRenderersContext.Provider value={elementRenderers}>
-        <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkMath, ...documentRemarkPlugins, remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}], remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
-            rehypePlugins={[
-                rehypeKatex,
-                ...extraRehypePlugins,
-                ...(renderSurface === 'document' && onTaskToggle
-                    ? [[rehypeDocumentTasks, { sourceContent: content, normalizeLine: preprocessContent }]]
-                    : []),
-            ]}
-            components={components}
-            urlTransform={(uri, key, node) => {
-                const safe = allowCustomScheme(uri, key, node);
-                if (resourceBaseUrl && safe?.startsWith('assets/')) {
-                    const relative = safe.slice('assets/'.length);
-                    if (relative.split('/').some((part) => part === '..' || part === '.')) return '';
-                    return authorizedResourceUrl(resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/'));
-                }
-                return authorizedResourceUrl(safe);
-            }}
-        >
-            {processedContent}
-        </ReactMarkdown>
+            <MarkdownSyntax processedContent={processedContent} replacement={replacement}
+                groupingKey={executionGroupingKey(processedContent, replacement)}
+                renderSurface={renderSurface} snapshot={snapshot} studyDirectivesEnabled={Boolean(studyDirectivesEnabled)}
+                studyIdPrefix={studyIdPrefix} cardSpec={cardSpec} extraRehypePlugins={extraRehypePlugins}
+                editableTasks={Boolean(renderSurface === 'document' && onTaskToggle)} taskSourceContent={taskSourceContent}
+                components={components} resourceBaseUrl={resourceBaseUrl} />
         </MarkdownRenderersContext.Provider>
     );
     return documentSurface ? (
@@ -846,6 +607,7 @@ const MarkdownRenderer = memo(MarkdownRendererInner, (prev, next) => {
         prev.resourceBaseUrl === next.resourceBaseUrl &&
         prev.extraRehypePlugins === next.extraRehypePlugins &&
         prev.contextId === next.contextId &&
+        prev.conversationId === next.conversationId &&
         prev.content === next.content &&
         prev.replacement === next.replacement &&
         prev.depth === next.depth &&

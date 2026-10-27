@@ -96,7 +96,7 @@ src/components/markdown/card-block/CardBlock 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( prev.type === next.type && prev.content === next.content )``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:2296:8951:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:2296:9005:FUNCTION
 
 .. rubric:: ``memo callback @ 69``
 
@@ -106,7 +106,7 @@ src/components/markdown/card-block/CardBlock 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``69``—``293`` 行。
+**性质**：同步局部函数；源码第 ``69``—``294`` 行。
 
 **参数**
 
@@ -119,17 +119,17 @@ src/components/markdown/card-block/CardBlock 模块
 
 **主要协作调用**：``['executionStatus', 'escStatus', 'workflowTaskStatus', 'workspaceTransfer', 'story', 'widget', 'queuing'].includes``、``String(renderSurface || 'conversation').toLowerCase``、``String``、``String(renderSurface).toLowerCase``、``String(renderSurface || '').toLowerCase``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:8952:9982:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/CardBlock.jsx:9006:10036:FUNCTION
 
-.. rubric:: ``memo callback @ 293``
+.. rubric:: ``memo callback @ 294``
 
 .. code-block:: javascript
 
-   memo callback @ 293(prev, next)
+   memo callback @ 294(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``293``—``321`` 行。
+**性质**：同步局部函数；源码第 ``294``—``322`` 行。
 
 **参数**
 

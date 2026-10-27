@@ -7,6 +7,7 @@ import { build } from 'esbuild';
 import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MESSAGE_STREAM_EVENTS } from '../src/features/chat/page/utils/messageStreamBatch.js';
 
 const pageSource = fs.readFileSync('src/features/chat/ChatPage.jsx', 'utf8');
 const composerSource = fs.readFileSync('src/features/chat/ui/ChatBox.jsx', 'utf8');
@@ -29,6 +30,7 @@ function callback(source, name, scope) {
 }
 
 function eventHandler(source, eventName, scope) {
+    scope = { MESSAGE_STREAM_EVENTS, streamBatch: { flush() {} }, ...scope };
     const tree = ts.createSourceFile('chat.jsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JSX);
     let expression;
     const visit = (node) => {

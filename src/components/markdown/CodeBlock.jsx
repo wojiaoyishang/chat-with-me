@@ -5,21 +5,12 @@ import {useTranslation} from 'react-i18next';
 import {copyTextToClipboard} from '@/lib/tools.jsx';
 import {highlightCode, normalizeHighlightLanguage} from './card-block/highlight.js';
 import './CodeBlock.css';
+import { scheduleIdleWork } from '@/lib/idleWork.js';
 
 const MAX_HIGHLIGHT_CHARACTERS = 120_000;
 const MAX_HIGHLIGHT_LINES = 2_500;
 const MAX_LINE_NUMBER_COUNT = 5_000;
 const COPY_RESET_DELAY_MS = 1_800;
-
-const scheduleIdleWork = (callback) => {
-    if (typeof window.requestIdleCallback === 'function') {
-        const handle = window.requestIdleCallback(callback, {timeout: 280});
-        return () => window.cancelIdleCallback?.(handle);
-    }
-
-    const handle = window.setTimeout(callback, 32);
-    return () => window.clearTimeout(handle);
-};
 
 const CodeBlock = memo(({codeString = '', language}) => {
     const {t} = useTranslation();

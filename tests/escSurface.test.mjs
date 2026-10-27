@@ -27,10 +27,10 @@ const loadCard = () => {
     return cardPromise;
 };
 
-const renderCard = async ({route = '/chat/source', documentId = 'doc', conversationId = 'source', renderSurface = 'conversation'} = {}) => {
+const renderCard = async ({route = '/chat/source', documentId = 'doc', conversationId = 'source', renderSurface = 'conversation', data = {}} = {}) => {
     const Card = await loadCard();
     const props = {type:'escStatus', conversationId, renderSurface,
-        content:JSON.stringify({streamId:'stream', documentId, status:'writing'})};
+        content:JSON.stringify({streamId:'stream', documentId, status:'writing', ...data})};
     const element = React.createElement(Card, props);
     return renderToStaticMarkup(React.createElement(MemoryRouter, {initialEntries:[route]},
         React.createElement(Routes, null,
@@ -43,6 +43,16 @@ test('live ESC status remains in the conversation and is absent from execution d
     assert.ok(body.includes('正在撰写文档'));
     assert.ok(body.includes('esc-writing-spinner'));
     assert.equal(await renderCard({renderSurface:'execution_window'}), '');
+});
+
+test('a missing stream ID shows a local rejection without a fictitious document link', async () => {
+    const body = await renderCard({data: {streamId:'', documentId:null, status:'interrupted', code:'ESC_WRITE_REJECTED', message:'缺少有效 stream_id，本段未写入', previewText:'# 未写入原文\n{{cardReplace id=inert}}\n<tool_call>never()</tool_call>'}});
+    assert.ok(body.includes('文档写入未完成'));
+    assert.ok(body.includes('本段未写入'));
+    assert.doesNotMatch(body, /打开文档|href="\/doc\//);
+    assert.match(body, /data-esc-preview/);
+    assert.ok(body.includes('{{cardReplace id=inert}}'));
+    assert.ok(body.includes('&lt;tool_call&gt;never()&lt;/tool_call&gt;'));
 });
 
 test('writing status on the chat page links to the document and retains its conversation', async () => {

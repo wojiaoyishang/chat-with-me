@@ -18,7 +18,7 @@ const runEffect = (body, scope) => {
   const names = Object.keys(scope);
   const evaluate = new Function(
     ...names,
-    `let cleanup; const useEffect = (callback) => { cleanup = callback(); };\n${body}\nreturn cleanup;`,
+    `const streamBatchRef = {current: null}; let cleanup; const useEffect = (callback) => { cleanup = callback(); };\n${body}\nreturn cleanup;`,
   );
   return evaluate(...Object.values(scope));
 };

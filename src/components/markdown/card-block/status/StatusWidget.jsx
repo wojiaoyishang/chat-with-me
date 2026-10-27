@@ -2,7 +2,7 @@ import useFrontendFeedback from '@/features/chat/speech/useFrontendFeedback.js';
 import ToolLogBlock from '../blocks/ToolLogBlock.jsx';
 import FrontendFeedbackButtons from '@/features/chat/speech/FrontendFeedbackButtons.jsx';
 import { parseFrontendFeedback, stripFrontendFeedback } from '@/features/chat/speech/frontendFeedback.js';
-import { memo, useEffect, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { defaultRenderMarkdown } from '../constants.jsx';
@@ -92,6 +92,9 @@ const StatusWidget = memo(
         renderMarkdown = defaultRenderMarkdown,
     }) => {
         const { t } = useTranslation();
+        // Once a user starts media in this card, completion must not tear down
+        // its player. The header still permits an explicit manual collapse.
+        const [keepMediaOpen, setKeepMediaOpen] = useState(false);
         const [autoCollapseChatToolCalls] = useLocalSetting(CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY, true);
         const [autoCollapseExecutionWindowToolCalls] = useLocalSetting(
             EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
@@ -236,7 +239,7 @@ const StatusWidget = memo(
             isToolCalling && !isFailed && !isCancelled && (isDone || isProgressComplete),
         );
         const desiredToolExpanded = Boolean(
-            isToolCalling && !snapshot && (!isSuccessfulToolCompletion || !autoCollapseCompletedToolCalls),
+            isToolCalling && !snapshot && (keepMediaOpen || !isSuccessfulToolCompletion || !autoCollapseCompletedToolCalls),
         );
 
         const [isExpanded] = useExpandedState(expandedKey, isToolCalling ? desiredToolExpanded : defaultExpanded);
@@ -349,7 +352,7 @@ const StatusWidget = memo(
         if (isFailed) currentColor = 'text-red-600';
 
         return (
-            <div className="relative w-full py-1.5">
+            <div className="relative w-full py-1.5" onPlayCapture={() => setKeepMediaOpen(true)}>
                 {/* Keep the controls within this card and its nearest scrolling surface. */}
                 <StickyStatusHeader expanded={isExpanded}>
                     <StatusHeader

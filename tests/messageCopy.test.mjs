@@ -1,11 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import { parseAgentContent } from '../src/components/markdown/card-block/agent/agentContent.js';
-import * as protocol from '../src/components/markdown/replacementProtocol.js';
-const renderer = fs.readFileSync('src/components/markdown/MarkdownRenderer.jsx', 'utf8');
-const context = vm.createContext({ ...protocol, parseAgentContent, console });
-vm.runInContext(renderer.slice(renderer.indexOf('const CARD_REPLACE_SELF_CLOSING'), renderer.indexOf('export const createMarkdownCopyContentComponent')).replaceAll('export const ', 'const ') + '\nglobalThis.resolveCopy = resolveMarkdownCopyContent;', context);
+import { resolveMarkdownCopyContent } from '../src/components/markdown/markdownCopy.js';
+const context = { resolveCopy: resolveMarkdownCopyContent };
 const replacements = { state: '[executionStatus]\n' + JSON.stringify({toolCalls:[{toolCallId:'5:3'}], executionMode:{status:'completed'}}), text: '[markdown]正常结果', hidden: '[executionWindowTool]\n{"secret":true}' };
 assert.equal(context.resolveCopy('任务开始\n{{cardReplace id=state}}\n{{cardReplace id=text}}\n{{cardReplace id=hidden}}', replacements).trim(), '任务开始\n\n正常结果');
 assert.equal(context.resolveCopy('::card-replace{id=state}::', replacements), '');

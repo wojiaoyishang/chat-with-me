@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 279
+     - 277
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -248,6 +248,11 @@
      - 0
      - 3
      - ``src/features/chat/page/utils/messageMountPoints.js``
+   * - :doc:`src/features/chat/page/utils/messageStreamBatch </api/javascript/features/chat/page/utils/messageStreamBatch>`
+     - 2
+     - 0
+     - 6
+     - ``src/features/chat/page/utils/messageStreamBatch.js``
    * - :doc:`src/features/chat/page/utils/messageSummaries </api/javascript/features/chat/page/utils/messageSummaries>`
      - 4
      - 0
@@ -481,7 +486,7 @@
    * - :doc:`src/features/chat/ui/message/components/LeftAvatarName </api/javascript/features/chat/ui/message/components/LeftAvatarName>`
      - 0
      - 0
-     - 11
+     - 10
      - ``src/features/chat/ui/message/components/LeftAvatarName.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageActions </api/javascript/features/chat/ui/message/components/MessageActions>`
      - 0
@@ -563,6 +568,11 @@
      - 0
      - 4
      - ``src/features/chat/ui/message/components/knowledgeGraphPresentation.js``
+   * - :doc:`src/features/chat/ui/message/components/overflowMarquee </api/javascript/features/chat/ui/message/components/overflowMarquee>`
+     - 1
+     - 0
+     - 10
+     - ``src/features/chat/ui/message/components/overflowMarquee.js``
    * - :doc:`src/features/chat/ui/message/hooks/useMessageAnimation </api/javascript/features/chat/ui/message/hooks/useMessageAnimation>`
      - 1
      - 0
@@ -701,7 +711,7 @@
    * - :doc:`src/features/documents/EscWritingStatus </api/javascript/features/documents/EscWritingStatus>`
      - 0
      - 0
-     - 4
+     - 7
      - ``src/features/documents/EscWritingStatus.jsx``
    * - :doc:`src/features/documents/LocalMarkdownEditor </api/javascript/features/documents/LocalMarkdownEditor>`
      - 1
@@ -1440,6 +1450,7 @@
    /api/javascript/features/chat/page/utils/liveMessageReconcile
    /api/javascript/features/chat/page/utils/messageConfigUpdates
    /api/javascript/features/chat/page/utils/messageMountPoints
+   /api/javascript/features/chat/page/utils/messageStreamBatch
    /api/javascript/features/chat/page/utils/messageSummaries
    /api/javascript/features/chat/page/utils/networkMerge
    /api/javascript/features/chat/speech/FrontendFeedbackButtons
@@ -1503,6 +1514,7 @@
    /api/javascript/features/chat/ui/message/components/chatKnowledgeGraphRenderer
    /api/javascript/features/chat/ui/message/components/knowledgeGraphContextMenu
    /api/javascript/features/chat/ui/message/components/knowledgeGraphPresentation
+   /api/javascript/features/chat/ui/message/components/overflowMarquee
    /api/javascript/features/chat/ui/message/hooks/useMessageAnimation
    /api/javascript/features/chat/ui/message/hooks/useMessageConfigCatalog
    /api/javascript/features/chat/ui/message/hooks/useMessageEvents

@@ -4,6 +4,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { queueOutputFollow } from './outputScrollBatch.js';
 
 const BOTTOM_THRESHOLD = 24;
 
@@ -109,8 +110,7 @@ const useFollowOutputScroll = ({contentKey = '', enabled = true} = {}) => {
             return;
         }
 
-        // Run before paint so a streaming update does not briefly jump the viewport.
-        node.scrollTop = node.scrollHeight;
+        return queueOutputFollow(node, () => followModeRef.current === 'following');
     }, [contentKey, enabled]);
 
     return {

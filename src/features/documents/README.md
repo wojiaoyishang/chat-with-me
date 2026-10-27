@@ -27,3 +27,6 @@ aiCursorDecorations为AI提供在线持续显示的光标标签及选区，编�
 文档顶部的会话选择器使用非模态 Dialog：遮罩仅覆盖工具栏下方内容区，任务/通知入口与全局任务面板仍可交互，点击选择器外部可关闭选择器。不要恢复为全页模态或通过 body pointer-events 锁定整个文档页面。
 
 CollaboraOnlineEditor在Document_Loaded后通过Send_UNO_Command默认关闭自动拼写检查，避免中文被英文词典误报；只接受目标iframe和origin的消息，每次iframe实际加载仅初始化一次。回调或聊天更新不重载iframe，也不覆盖用户之后手动开启的校对设置。新Word文档的中文语言默认值由后端负责。
+
+
+ESC_WRITE_REJECTED 允许没有 streamId，显示未写入提示且不生成虚假文档链接。previewText 在同一 EscWritingStatus 组件的折叠原文区展示并可复制，不解析 Markdown／工具／卡片控制标记；聊天根文本不依赖 ESC 围栏闭合。恢复尝试的未保存片段由后端合并保留，成功上屏不重复显示正文。

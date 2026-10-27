@@ -15,111 +15,31 @@ src/components/markdown/CodeBlock 模块
 
 * **源码文件**：``src/components/markdown/CodeBlock.jsx``
 * **模块标识**：``src/components/markdown/CodeBlock``
-* **顶层函数/组件/Hook**：1
+* **顶层函数/组件/Hook**：0
 * **类**：0
-* **局部函数与匿名回调**：16
+* **局部函数与匿名回调**：14
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``react-i18next``、``@/lib/tools.jsx``、``./card-block/highlight.js``、``./CodeBlock.css``。
-
-顶层函数、组件与 Hook
---------------------------------------------------------------------------------
-
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:527:853:FUNCTION
-
-.. js:function:: scheduleIdleWork(callback)
-
-   实现 ``scheduleIdleWork`` 对应的前端处理。
-
-   **性质**：同步函数；模块内部入口；源码第 ``14``—``22`` 行。
-
-   **参数**
-
-   ``callback``
-      状态变化、事件到达或操作完成时执行的回调。
-
-   **返回值**
-
-   根据执行分支返回结果；代表性返回表达式为 ``() => window.cancelIdleCallback?.(handle)``、``() => window.clearTimeout(handle)``。
-
-   **副作用**
-
-   * 读取或修改浏览器全局对象、页面或历史状态。
-
-   **主要协作调用**：``window.requestIdleCallback``、``window.setTimeout``。
-
-   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+``react``、``lucide-react``、``react-i18next``、``@/lib/tools.jsx``、``./card-block/highlight.js``、``./CodeBlock.css``、``@/lib/idleWork.js``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:698:740:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:581:6411:FUNCTION
 
-.. rubric:: ``returned callback @ 17``
-
-.. code-block:: javascript
-
-   returned callback @ 17()
-
-实现 ``returned`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``scheduleIdleWork``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**副作用**
-
-* 读取或修改浏览器全局对象、页面或历史状态。
-
-**主要协作调用**：``window.cancelIdleCallback``。
-
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:815:849:FUNCTION
-
-.. rubric:: ``returned callback @ 21``
+.. rubric:: ``memo callback @ 15``
 
 .. code-block:: javascript
 
-   returned callback @ 21()
-
-实现 ``returned`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``21``—``21`` 行；所属函数 ``scheduleIdleWork``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**副作用**
-
-* 读取或修改浏览器全局对象、页面或历史状态。
-
-**主要协作调用**：``window.clearTimeout``。
-
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:881:6711:FUNCTION
-
-.. rubric:: ``memo callback @ 24``
-
-.. code-block:: javascript
-
-   memo callback @ 24({codeString = '', language})
+   memo callback @ 15({codeString = '', language})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``24``—``182`` 行。
+**性质**：同步局部函数；源码第 ``15``—``173`` 行。
 
 **参数**
 
@@ -138,17 +58,17 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：8。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1104:1214:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:804:914:FUNCTION
 
-.. rubric:: ``useState callback @ 28``
+.. rubric:: ``useState callback @ 19``
 
 .. code-block:: javascript
 
-   useState callback @ 28()
+   useState callback @ 19()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``28``—``33`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``19``—``24`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -158,17 +78,17 @@ src/components/markdown/CodeBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1259:1301:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:959:1001:FUNCTION
 
-.. rubric:: ``useMemo callback @ 35``
+.. rubric:: ``useMemo callback @ 26``
 
 .. code-block:: javascript
 
-   useMemo callback @ 35()
+   useMemo callback @ 26()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``35``—``35`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -180,17 +100,17 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``normalizeHighlightLanguage``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1353:1426:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1053:1126:FUNCTION
 
-.. rubric:: ``useMemo callback @ 37``
+.. rubric:: ``useMemo callback @ 28``
 
 .. code-block:: javascript
 
-   useMemo callback @ 37()
+   useMemo callback @ 28()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -202,17 +122,17 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``String(language || 'text').trim().toLowerCase``、``String(language || 'text').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1490:1778:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1190:1478:FUNCTION
 
-.. rubric:: ``useMemo callback @ 41``
+.. rubric:: ``useMemo callback @ 32``
 
 .. code-block:: javascript
 
-   useMemo callback @ 41()
+   useMemo callback @ 32()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``41``—``50`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``32``—``41`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -224,17 +144,17 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``codeString.indexOf``、``codeString.endsWith``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1958:2099:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1658:1799:FUNCTION
 
-.. rubric:: ``useMemo callback @ 55``
+.. rubric:: ``useMemo callback @ 46``
 
 .. code-block:: javascript
 
-   useMemo callback @ 55()
+   useMemo callback @ 46()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``55``—``58`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``46``—``49`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -248,17 +168,17 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2055:2079:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:1755:1779:FUNCTION
 
-.. rubric:: ``Array.from callback @ 57``
+.. rubric:: ``Array.from callback @ 48``
 
 .. code-block:: javascript
 
-   Array.from callback @ 57(_, index)
+   Array.from callback @ 48(_, index)
 
 实现 ``Array.from`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``useMemo callback @ 55``。
+**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``useMemo callback @ 46``。
 
 **参数**
 
@@ -272,17 +192,17 @@ src/components/markdown/CodeBlock 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2577:3307:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2277:3007:FUNCTION
 
-.. rubric:: ``useEffect callback @ 69``
+.. rubric:: ``useEffect callback @ 60``
 
 .. code-block:: javascript
 
-   useEffect callback @ 69()
+   useEffect callback @ 60()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``69``—``91`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``60``—``82`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -296,17 +216,17 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2758:3198:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2458:2898:FUNCTION
 
-.. rubric:: ``scheduleIdleWork callback @ 75``
+.. rubric:: ``scheduleIdleWork callback @ 66``
 
 .. code-block:: javascript
 
-   async scheduleIdleWork callback @ 75()
+   async scheduleIdleWork callback @ 66()
 
 实现 ``scheduleIdleWork`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``75``—``85`` 行；所属函数 ``useEffect callback @ 69``。
+**性质**：异步局部函数；源码第 ``66``—``76`` 行；所属函数 ``useEffect callback @ 60``。
 
 **参数**
 
@@ -318,17 +238,17 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``highlightCode``、``setHighlightState``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3218:3299:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:2918:2999:FUNCTION
 
-.. rubric:: ``returned callback @ 87``
+.. rubric:: ``returned callback @ 78``
 
 .. code-block:: javascript
 
-   returned callback @ 87()
+   returned callback @ 78()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``87``—``90`` 行；所属函数 ``useEffect callback @ 69``。
+**性质**：同步局部函数；源码第 ``78``—``81`` 行；所属函数 ``useEffect callback @ 60``。
 
 **参数**
 
@@ -340,17 +260,17 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``cancelIdleWork``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3743:3877:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3443:3577:FUNCTION
 
-.. rubric:: ``useEffect callback @ 105``
+.. rubric:: ``useEffect callback @ 96``
 
 .. code-block:: javascript
 
-   useEffect callback @ 105()
+   useEffect callback @ 96()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``105``—``109`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``96``—``100`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -366,17 +286,17 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3748:3877:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3448:3577:FUNCTION
 
-.. rubric:: ``anonymous callback @ 105``
+.. rubric:: ``anonymous callback @ 96``
 
 .. code-block:: javascript
 
-   anonymous callback @ 105()
+   anonymous callback @ 96()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``105``—``109`` 行；所属函数 ``useEffect callback @ 105``。
+**性质**：同步局部函数；源码第 ``96``—``100`` 行；所属函数 ``useEffect callback @ 96``。
 
 **参数**
 
@@ -392,17 +312,17 @@ src/components/markdown/CodeBlock 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3922:4481:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3622:4181:FUNCTION
 
-.. rubric:: ``useCallback callback @ 111``
+.. rubric:: ``useCallback callback @ 102``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 111()
+   async useCallback callback @ 102()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``111``—``127`` 行；所属函数 ``memo callback @ 24``。
+**性质**：异步局部函数；源码第 ``102``—``118`` 行；所属函数 ``memo callback @ 15``。
 
 **参数**
 
@@ -420,17 +340,17 @@ src/components/markdown/CodeBlock 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:4254:4362:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/CodeBlock.jsx:3954:4062:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 120``
+.. rubric:: ``window.setTimeout callback @ 111``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 120()
+   window.setTimeout callback @ 111()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``120``—``123`` 行；所属函数 ``useCallback callback @ 111``。
+**性质**：同步局部函数；源码第 ``111``—``114`` 行；所属函数 ``useCallback callback @ 102``。
 
 **参数**
 

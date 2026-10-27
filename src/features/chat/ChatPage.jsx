@@ -1,3 +1,4 @@
+import { createMessageStreamBatch, MESSAGE_STREAM_EVENTS } from './page/utils/messageStreamBatch.js';
 import { openChatWindow } from './page/openChatWindow.js';
 import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -202,6 +203,7 @@ function ChatPage({
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
     const messagesRef = useRef({});
+    const streamBatchRef = useRef(null);
     const messagesOrderRef = useRef([]);
     // HTTP history snapshots are durable but can lag behind the WebSocket stream.
     // Keep an explicit record of message ids touched by a live Run so history
@@ -1336,6 +1338,7 @@ function ChatPage({
                 return false;
             }
 
+            streamBatchRef.current?.flush();
             const currentMessages = messagesRef.current || {};
             const currentOrder = messagesOrderRef.current || [];
 
@@ -1698,6 +1701,7 @@ function ChatPage({
             });
             if (activeConversationIdRef.current !== conversationId) return false;
 
+            streamBatchRef.current?.flush();
             const latestOrder = messagesOrderRef.current;
             const loadedOrder = latestOrder[0] === '<PREV_MORE>' ? latestOrder.slice(1) : latestOrder;
             const loadedIds = new Set(loadedOrder);
@@ -1807,6 +1811,8 @@ function ChatPage({
             const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                 params: { conversationId: conversationId, limit: HISTORY_PAGE_SIZE },
             });
+            if (activeConversationIdRef.current !== conversationId) return false;
+            streamBatchRef.current?.flush();
             const decorated = decorateMessages(data.messages || {});
             const snapshotOrder = data.haveMore
                 ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
@@ -1885,6 +1891,8 @@ function ChatPage({
                     expectedOrderFingerprint,
                     requireContiguous: true,
                 });
+                if (activeConversationIdRef.current !== conversationId) return false;
+                streamBatchRef.current?.flush();
                 const decorated = decorateMessages(data.messages || {});
                 const nextMessages = { ...messagesRef.current, ...decorated };
                 const nextOrder = data.haveMoreBefore
@@ -1962,6 +1970,7 @@ function ChatPage({
 
     const loadSwitchMessage = useCallback(
         async (msgId, newMsgId) => {
+            streamBatchRef.current?.flush();
             if (!(msgId in messagesRef.current)) return false;
             let newOrders = [];
             let loadStartId = newMsgId;
@@ -1989,8 +1998,10 @@ function ChatPage({
                     const data = await apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
                         params: { conversationId: conversationId, nextId: loadStartId },
                     });
+                    if (activeConversationIdRef.current !== conversationId) return false;
+                    streamBatchRef.current?.flush();
                     finalMessagesMap = {
-                        ...finalMessagesMap,
+                        ...messagesRef.current,
                         ...decorateMessages(data.messages || {}),
                     };
                     const insertPoint = messagesOrderRef.current.indexOf(msgId) + 1;
@@ -2452,6 +2463,18 @@ function ChatPage({
     }, [messagesOrder]);
 
     useEffect(() => {
+        const streamBatch = createMessageStreamBatch({
+            getMessages: () => messagesRef.current,
+            commit: (next, messageIds) => {
+                const wasAutoScroll = isAutoScrollEnabledRef.current;
+                updateStreamingStatus();
+                messagesRef.current = next;
+                setMessages(next);
+                ensureStreamMessagesVisible(messageIds);
+                scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
+            },
+        });
+        streamBatchRef.current = streamBatch;
         const unsubscribe1 = onEvent({
             event: [
                 'message.*',
@@ -2480,6 +2503,20 @@ function ChatPage({
             ],
             conversationId,
         }).then(({ event, payload, reply, eventRunId, eventTurnId }) => {
+            if (MESSAGE_STREAM_EVENTS.has(event)) {
+                if (payload.value && typeof payload.value === 'object') {
+                    markLiveStreamMessages(Object.keys(payload.value), eventRunId);
+                    streamBatch.enqueue({ event, value: payload.value, runId: eventRunId });
+                    if (payload.reply) {
+                        streamBatch.flush();
+                        reply({ success: true });
+                    }
+                } else if (payload.reply) reply({ success: false });
+                return;
+            }
+            // Snapshots, completion, cancellation, branch changes and speech/copy
+            // requests must observe every earlier delta before their own action.
+            streamBatch.flush();
             switch (event) {
                 case 'composer.status.changed':
                     // Reconnection may have missed this Turn's terminal event.
@@ -2672,106 +2709,6 @@ function ChatPage({
                     messagesRef.current = next;
                     break;
                 }
-                case 'message.content.set':
-                    if (payload.value && typeof payload.value === 'object') {
-                        const messageIds = Object.keys(payload.value);
-                        markLiveStreamMessages(messageIds, eventRunId);
-                        const wasAutoScroll = isAutoScrollEnabledRef.current;
-                        updateStreamingStatus();
-                        const newMessages = produce(messagesRef.current, (draft) => {
-                            for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    draft[msgId].content = newContent || '';
-                                }
-                            }
-                        });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-                        ensureStreamMessagesVisible(messageIds);
-                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
-                        if (payload.reply) reply({ success: true });
-                    } else {
-                        reply({ success: false });
-                    }
-                    break;
-                case 'message.content.delta':
-                    if (payload.value && typeof payload.value === 'object') {
-                        const messageIds = Object.keys(payload.value);
-                        markLiveStreamMessages(messageIds, eventRunId);
-                        const wasAutoScroll = isAutoScrollEnabledRef.current;
-                        updateStreamingStatus();
-                        const newMessages = produce(messagesRef.current, (draft) => {
-                            for (const [msgId, newContent] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    draft[msgId].content = (draft[msgId].content || '') + (newContent || '');
-                                }
-                            }
-                        });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-                        ensureStreamMessagesVisible(messageIds);
-                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
-                        if (payload.reply) reply({ success: true });
-                    } else {
-                        reply({ success: false });
-                    }
-                    break;
-                case 'message.replacement.set':
-                    if (payload.value && typeof payload.value === 'object') {
-                        const messageIds = Object.keys(payload.value);
-                        markLiveStreamMessages(messageIds, eventRunId);
-                        const wasAutoScroll = isAutoScrollEnabledRef.current;
-                        const newMessages = produce(messagesRef.current, (draft) => {
-                            for (const [msgId, newReplaces] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    if (!draft[msgId].extraInfo) {
-                                        draft[msgId].extraInfo = {};
-                                    }
-                                    const currentReplace = draft[msgId].extraInfo.replace || {};
-                                    draft[msgId].extraInfo.replace = { ...currentReplace, ...newReplaces };
-                                }
-                            }
-                        });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-                        ensureStreamMessagesVisible(messageIds);
-                        scrollToBottomAfterRender(wasAutoScroll, { delay: 50 });
-                        if (payload.reply) reply({ success: true });
-                    } else {
-                        reply({ success: false });
-                    }
-                    break;
-                case 'message.replacement.delta':
-                    if (payload.value && typeof payload.value === 'object') {
-                        const messageIds = Object.keys(payload.value);
-                        markLiveStreamMessages(messageIds, eventRunId);
-                        const wasAutoScroll = isAutoScrollEnabledRef.current;
-                        updateStreamingStatus();
-                        const newMessages = produce(messagesRef.current, (draft) => {
-                            for (const [msgId, appendFields] of Object.entries(payload.value)) {
-                                if (draft[msgId]) {
-                                    if (!draft[msgId].extraInfo) {
-                                        draft[msgId].extraInfo = {};
-                                    }
-                                    if (!draft[msgId].extraInfo.replace) {
-                                        draft[msgId].extraInfo.replace = {};
-                                    }
-                                    for (const [key, appendString] of Object.entries(appendFields)) {
-                                        const currentValue = draft[msgId].extraInfo.replace[key] || '';
-                                        draft[msgId].extraInfo.replace[key] = currentValue + appendString;
-                                    }
-                                }
-                            }
-                        });
-                        setMessages(newMessages);
-                        messagesRef.current = newMessages;
-                        ensureStreamMessagesVisible(messageIds);
-                        scrollToBottomAfterRender(wasAutoScroll, { streaming: true });
-                        if (payload.reply) reply({ success: true });
-                    } else {
-                        if (payload.reply) reply({ success: false });
-                    }
-                    break;
                 case 'workspace.transfer.state_changed': {
                     const transfer = payload.value;
                     if (transfer && typeof transfer === 'object' && transfer.transferId) {
@@ -3158,6 +3095,8 @@ function ChatPage({
             handleBackendSpeechEvent(event, payload, reply);
         });
         return () => {
+            streamBatch.flush();
+            if (streamBatchRef.current === streamBatch) streamBatchRef.current = null;
             unsubscribe1();
             unsubscribe2();
             unsubscribe3();
@@ -3392,6 +3331,10 @@ function ChatPage({
                 });
                 if (!isCurrent()) return;
 
+                // A durable snapshot may already include the queued deltas.
+                // Flush first so the existing monotonic reconciliation sees them
+                // instead of appending the same prefix a second time later.
+                streamBatchRef.current?.flush();
                 const snapshotMessages = decorateMessages(messagesData.messages || {});
                 let snapshotOrder = messagesData.messagesOrder;
                 if (messagesData.haveMore) snapshotOrder = ['<PREV_MORE>', ...messagesData.messagesOrder];

@@ -49,9 +49,9 @@
      - 2
      - ``src/components/files/uploadPolicy.js``
    * - :doc:`src/components/markdown/CodeBlock </api/javascript/components/markdown/CodeBlock>`
-     - 1
      - 0
-     - 16
+     - 0
+     - 14
      - ``src/components/markdown/CodeBlock.jsx``
    * - :doc:`src/components/markdown/DocumentTaskControls </api/javascript/components/markdown/DocumentTaskControls>`
      - 2
@@ -59,9 +59,9 @@
      - 1
      - ``src/components/markdown/DocumentTaskControls.jsx``
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
-     - 17
+     - 9
      - 0
-     - 51
+     - 54
      - ``src/components/markdown/MarkdownRenderer.jsx``
    * - :doc:`src/components/markdown/ResourceImage </api/javascript/components/markdown/ResourceImage>`
      - 1
@@ -148,10 +148,15 @@
      - 0
      - 23
      - ``src/components/markdown/card-block/blocks/ToolLogBlock.jsx``
+   * - :doc:`src/components/markdown/card-block/blocks/outputScrollBatch </api/javascript/components/markdown/card-block/blocks/outputScrollBatch>`
+     - 1
+     - 0
+     - 4
+     - ``src/components/markdown/card-block/blocks/outputScrollBatch.js``
    * - :doc:`src/components/markdown/card-block/blocks/useFollowOutputScroll </api/javascript/components/markdown/card-block/blocks/useFollowOutputScroll>`
      - 2
      - 0
-     - 9
+     - 10
      - ``src/components/markdown/card-block/blocks/useFollowOutputScroll.js``
    * - :doc:`src/components/markdown/card-block/constants </api/javascript/components/markdown/card-block/constants>`
      - 1
@@ -196,7 +201,7 @@
    * - :doc:`src/components/markdown/card-block/status/StatusWidget </api/javascript/components/markdown/card-block/status/StatusWidget>`
      - 2
      - 0
-     - 19
+     - 20
      - ``src/components/markdown/card-block/status/StatusWidget.jsx``
    * - :doc:`src/components/markdown/card-block/status/StickyStatusHeader </api/javascript/components/markdown/card-block/status/StickyStatusHeader>`
      - 1
@@ -243,6 +248,11 @@
      - 0
      - 5
      - ``src/components/markdown/documentCardSpec.js``
+   * - :doc:`src/components/markdown/markdownCopy </api/javascript/components/markdown/markdownCopy>`
+     - 9
+     - 0
+     - 8
+     - ``src/components/markdown/markdownCopy.js``
    * - :doc:`src/components/markdown/markdownMediaUrl </api/javascript/components/markdown/markdownMediaUrl>`
      - 1
      - 0
@@ -278,6 +288,11 @@
      - 0
      - 4
      - ``src/components/markdown/remarkVideoDirective.js``
+   * - :doc:`src/components/markdown/replacementProjection </api/javascript/components/markdown/replacementProjection>`
+     - 3
+     - 0
+     - 5
+     - ``src/components/markdown/replacementProjection.js``
    * - :doc:`src/components/markdown/replacementProtocol </api/javascript/components/markdown/replacementProtocol>`
      - 10
      - 0
@@ -525,6 +540,7 @@
    /api/javascript/components/markdown/card-block/blocks/TextBlock
    /api/javascript/components/markdown/card-block/blocks/ToolCommandBlock
    /api/javascript/components/markdown/card-block/blocks/ToolLogBlock
+   /api/javascript/components/markdown/card-block/blocks/outputScrollBatch
    /api/javascript/components/markdown/card-block/blocks/useFollowOutputScroll
    /api/javascript/components/markdown/card-block/constants
    /api/javascript/components/markdown/card-block/expandedStore
@@ -544,6 +560,7 @@
    /api/javascript/components/markdown/card-block/widget/CanvasCardDeck
    /api/javascript/components/markdown/card-block/widget/WidgetHost
    /api/javascript/components/markdown/documentCardSpec
+   /api/javascript/components/markdown/markdownCopy
    /api/javascript/components/markdown/markdownMediaUrl
    /api/javascript/components/markdown/rehypeDocumentTasks
    /api/javascript/components/markdown/remarkCollapseExecutionStatuses
@@ -551,6 +568,7 @@
    /api/javascript/components/markdown/remarkDirectiveToComponent
    /api/javascript/components/markdown/remarkStudyDirectives
    /api/javascript/components/markdown/remarkVideoDirective
+   /api/javascript/components/markdown/replacementProjection
    /api/javascript/components/markdown/replacementProtocol
    /api/javascript/components/modal/UniversalModalHost
    /api/javascript/components/modal/universalModal

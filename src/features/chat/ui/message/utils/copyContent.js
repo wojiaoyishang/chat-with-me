@@ -1,7 +1,5 @@
-import {
-    MARKDOWN_COPY_CONTENT_COMPONENT_NAME,
-    resolveMarkdownCopyContent
-} from '@/components/markdown/MarkdownRenderer.jsx';
+import { MARKDOWN_COPY_CONTENT_COMPONENT_NAME } from '@/components/markdown/MarkdownRenderer.jsx';
+import { resolveMarkdownCopyContent } from '@/components/markdown/markdownCopy.js';
 
 export const getMountedCopyContent = (msg) => {
     const mountedComponent = msg?.getComponent?.(MARKDOWN_COPY_CONTENT_COMPONENT_NAME);

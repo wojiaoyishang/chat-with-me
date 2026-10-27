@@ -22,18 +22,18 @@ src/features/chat/ui/message/utils/copyContent 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/components/markdown/MarkdownRenderer.jsx``。
+``@/components/markdown/MarkdownRenderer.jsx``、``@/components/markdown/markdownCopy.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/copyContent.js:172:1088:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/copyContent.js:220:1136:FUNCTION
 
 .. js:function:: getMountedCopyContent(msg)
 
    读取与 ``Mounted Copy Content`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``6``—``27`` 行。
+   **性质**：同步函数；导出 API；源码第 ``4``—``25`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/chat/ui/message/utils/copyContent 模块
 
    **主要协作调用**：``msg?.getComponent``、``mountedComponent.getCopyContent``、``mountedComponent.getMarkdownContent``、``mountedComponent.getContent``、``mountedComponent.getText``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/copyContent.js:1217:1354:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/copyContent.js:1265:1402:FUNCTION
 
 .. js:function:: resolveMessageCopyContent(content, extraInfo)
 
    解析并确定与 ``Message Copy Content`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``33``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``31``—``35`` 行。
 
    **参数**
 
@@ -68,13 +68,13 @@ src/features/chat/ui/message/utils/copyContent 模块
 
    **主要协作调用**：``resolveMarkdownCopyContent``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/copyContent.js:1386:1800:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/utils/copyContent.js:1434:1848:FUNCTION
 
 .. js:function:: getCopyContent(msg)
 
    读取与 ``Copy Content`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``39``—``51`` 行。
+   **性质**：同步函数；导出 API；源码第 ``37``—``49`` 行。
 
    **参数**
 

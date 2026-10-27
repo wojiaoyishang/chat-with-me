@@ -341,6 +341,7 @@ const ExecutionWindow = memo(
                                                 <div
                                                     key={item.key}
                                                     className={`rounded-xl border border-gray-100 bg-white px-3 py-2 shadow-sm transition-shadow ${highlightedKey === item.key ? 'ring-2 ring-blue-200' : ''}`}
+                                                    style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 240px' }}
                                                     data-execution-navigation-active={highlightedKey === item.key || undefined}
                                                     data-execution-timeline-kind="tool_card"
                                                     data-execution-tool-call-id={card.toolCallId || undefined}
@@ -375,6 +376,7 @@ const ExecutionWindow = memo(
                                                             replacement={ownerReplacement}
                                                             msg={ownerMessage}
                                                             renderSurface="execution_window"
+                                                            copyContentComponentName={null}
                                                         />
                                                     ) : card?.toolCallRepair ? (
                                                         <div
