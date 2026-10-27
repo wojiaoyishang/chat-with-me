@@ -14,7 +14,7 @@
      - 局部/回调
      - 源码
    * - :doc:`src/runtime/backend/BackendBootstrapGate </api/javascript/runtime/backend/BackendBootstrapGate>`
-     - 1
+     - 2
      - 0
      - 10
      - ``src/runtime/backend/BackendBootstrapGate.jsx``
@@ -28,6 +28,11 @@
      - 0
      - 13
      - ``src/runtime/backend/connection.js``
+   * - :doc:`src/runtime/backend/connectionProbes </api/javascript/runtime/backend/connectionProbes>`
+     - 5
+     - 0
+     - 16
+     - ``src/runtime/backend/connectionProbes.js``
    * - :doc:`src/runtime/backend/session </api/javascript/runtime/backend/session>`
      - 2
      - 0
@@ -81,6 +86,7 @@
    /api/javascript/runtime/backend/BackendBootstrapGate
    /api/javascript/runtime/backend/clientAdapter
    /api/javascript/runtime/backend/connection
+   /api/javascript/runtime/backend/connectionProbes
    /api/javascript/runtime/backend/session
    /api/javascript/runtime/protocol/events
    /api/javascript/runtime/protocol/frame

@@ -17,23 +17,23 @@ Resource layout follows available content width, with at most two columns.
 * **模块标识**：``src/features/settings-runtime/SettingsCards``
 * **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：3
+* **局部函数与匿名回调**：4
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``lucide-react``、``@/components/ui/card``、``@/lib/virtualUrl.js``、``./model.js``、``./SettingsPresentation.jsx``、``./displayValue.js``。
+``lucide-react``、``@/components/ui/card``、``@/components/ui/spinner``、``@/lib/virtualUrl.js``、``./model.js``、``./SettingsPresentation.jsx``、``./displayValue.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:788:1137:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:857:1206:FUNCTION
 
 .. js:function:: SettingsCardGrid({ columns = 1, children })
 
    Resource layout follows available content width, with at most two columns.
 
-   **性质**：同步函数；导出 API；源码第 ``16``—``18`` 行。
+   **性质**：同步函数；导出 API；源码第 ``17``—``19`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ Resource layout follows available content width, with at most two columns.
 
    **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:1137:2815:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:1206:2884:FUNCTION
 
 .. js:function:: ProfileCard({ item, context, avatarControl, actions, children })
 
    渲染 ``ProfileCard`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``20``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``21``—``38`` 行。
 
    **参数**
 
@@ -67,13 +67,13 @@ Resource layout follows available content width, with at most two columns.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2815:5818:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2884:6058:FUNCTION
 
 .. js:function:: ConnectionCard({ item, context, record, actions })
 
    A connection card renders declared data only; no service names select UI.
 
-   **性质**：同步函数；导出 API；源码第 ``40``—``64`` 行。
+   **性质**：同步函数；导出 API；源码第 ``41``—``65`` 行。
 
    **参数**
 
@@ -84,26 +84,26 @@ Resource layout follows available content width, with at most two columns.
 
    根据执行分支返回结果；代表性返回表达式为 ``<Card className="min-w-0 gap-0 overflow-hidden rounded-lg py-0 shadow-none" data-settings-connection-card="true"> <div className="min-w-0 flex-1 space-y-3 p-4"> <div className="fl…``。
 
-   **主要协作调用**：``getValue``、``resolveValue``、``Object.hasOwn``、``String``、``formatSettingsValue``、``columns.filter``、``properties.map``。
+   **主要协作调用**：``getValue``、``resolveValue``、``Object.hasOwn``、``String``、``formatSettingsValue``、``(record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !…``、``columns.filter``、``item.state.busyValues?.includes``、``properties.map``。
 
-   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2377:2588:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2446:2657:FUNCTION
 
-.. rubric:: ``item.meta.map callback @ 31``
+.. rubric:: ``item.meta.map callback @ 32``
 
 .. code-block:: javascript
 
-   item.meta.map callback @ 31(entry, index)
+   item.meta.map callback @ 32(entry, index)
 
 作为 ``item.meta.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``31``—``31`` 行；所属函数 ``ProfileCard``。
+**性质**：同步局部函数；源码第 ``32``—``32`` 行；所属函数 ``ProfileCard``。
 
 **参数**
 
@@ -119,17 +119,17 @@ Resource layout follows available content width, with at most two columns.
 
 **主要协作调用**：``formatSettingsValue``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:3834:4029:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:3904:4099:FUNCTION
 
-.. rubric:: ``columns.filter callback @ 48``
+.. rubric:: ``columns.filter callback @ 49``
 
 .. code-block:: javascript
 
-   columns.filter callback @ 48(column)
+   columns.filter callback @ 49(column)
 
 作为 ``columns.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``ConnectionCard``。
+**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``ConnectionCard``。
 
 **参数**
 
@@ -140,17 +140,40 @@ Resource layout follows available content width, with at most two columns.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:5089:5673:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:4119:4167:FUNCTION
 
-.. rubric:: ``properties.map callback @ 56``
+.. rubric:: ``(record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !… callback @ 49``
 
 .. code-block:: javascript
 
-   properties.map callback @ 56(column, index)
+   (record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !… callback @ 49(column)
+
+实现 ``(record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !…`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``ConnectionCard``。
+
+**参数**
+
+``column``
+   调用方传入的 ``column`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``matchesCondition``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:5329:5913:FUNCTION
+
+.. rubric:: ``properties.map callback @ 57``
+
+.. code-block:: javascript
+
+   properties.map callback @ 57(column, index)
 
 作为 ``properties.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``56``—``60`` 行；所属函数 ``ConnectionCard``。
+**性质**：同步局部函数；源码第 ``57``—``61`` 行；所属函数 ``ConnectionCard``。
 
 **参数**
 

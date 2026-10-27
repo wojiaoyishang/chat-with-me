@@ -20,6 +20,10 @@
   animation: cwm-settings-reveal 180ms ease-out;
 }
 
+.cwm-backend-recovery {
+  animation-duration: 320ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cwm-settings-reveal { animation: none; }
 }
@@ -31,6 +35,41 @@
 
 .cwm-activity-spinner {
   animation: cwm-activity-spin 1s linear infinite;
+}
+
+@keyframes cwm-backend-connector-drift {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes cwm-backend-connector-flow {
+  to { stroke-dashoffset: -18; }
+}
+
+@keyframes cwm-backend-connector-breathe {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.cwm-backend-connector-port {
+  animation: cwm-backend-connector-drift 4.8s ease-in-out infinite;
+}
+
+.cwm-backend-connector-server {
+  animation-delay: -2.4s;
+}
+
+.cwm-backend-connector-signal {
+  animation: cwm-backend-connector-flow 3s linear infinite;
+}
+
+.cwm-backend-connector-light {
+  animation: cwm-backend-connector-breathe 3.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cwm-backend-connector-port,
+  .cwm-backend-connector-signal { animation: none; }
 }
 
 .dark {

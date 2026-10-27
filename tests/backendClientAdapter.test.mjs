@@ -56,3 +56,28 @@ test('backend scopes can only address the selected backend and current user', as
     assert.equal(await runtime.adapter.read('preferences', { scope: 'backend-user' }), undefined);
     await assert.rejects(runtime.adapter.read('preferences', { scope: 'arbitrary' }), /存储/);
 });
+
+test('the connection adapter exposes live measurements without persisting or changing the selected backend', async () => {
+    const before = runtime.getBackendConnection();
+    const profiles = window.localStorage.getItem(runtime.BACKEND_STORAGE_KEY);
+    const token = runtime.getConnectionToken();
+    const originalFetch = globalThis.fetch;
+    const notices = [];
+    const progress = [];
+    const off = runtime.adapter.subscribe(() => { notices.push(true); });
+    try {
+        globalThis.fetch = async () => ({ ok: true, json: async () => ({ success: true, data: { protocol: 'cwm.client.v1' } }) });
+        const result = await runtime.adapter.invoke('backend.probe', {}, { onProgress: value => progress.push(value) });
+        assert.deepEqual(result, { total: 1, available: 1, failed: 0 });
+        const row = (await runtime.adapter.read('backends')).items[0];
+        assert.equal(row.active, true);
+        assert.equal(row.probe.status, 'available');
+        assert.match(row.probe.latencyText, /\d+ ms/);
+        assert.equal(row.probeRunning, false);
+        assert.ok(notices.length >= 3);
+        assert.equal(progress.at(-1).percent, 100);
+        assert.deepEqual(runtime.getBackendConnection(), before);
+        assert.equal(runtime.getConnectionToken(), token);
+        assert.equal(window.localStorage.getItem(runtime.BACKEND_STORAGE_KEY), profiles);
+    } finally { off(); globalThis.fetch = originalFetch; }
+});

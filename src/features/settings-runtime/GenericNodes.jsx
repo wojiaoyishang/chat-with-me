@@ -314,12 +314,13 @@ export function ResourceNode({ item, context, renderFields }) {
     const confirm = context.confirm;
     const registerDraftGuard = context.runtimeContext.registerDraftGuard;
     const sourceKey = JSON.stringify([source, context.item?.id, cacheKey]);
-    const load = useCallback(async () => {
+    const load = useCallback(async ({ silent = false } = {}) => {
         const serial = ++epoch.current;
         requestController.current?.abort();
         const controller = new AbortController();
         requestController.current = controller;
-        setLoading(true); setError('');
+        if (!silent) setLoading(true);
+        setError('');
         try {
             const ctx = latestContext.current;
             const scope = { form: ctx.values, item: ctx.item, parentItem: ctx.parentItem };
@@ -351,7 +352,9 @@ export function ResourceNode({ item, context, renderFields }) {
     useEffect(() => registerResource(item.id || item.name, load), [registerResource, item.id, item.name, load]);
     useEffect(() => {
         const subscriptions = (item.events || []).map((event) => subscribe(event, () => { void load(); }));
-        const local = source.endpoint?.startsWith('client:') ? client.subscribe(() => { void load(); }) : null;
+        // Local observations already have their own progress. Reading their
+        // updated snapshot must not create a second collection-loading notice.
+        const local = source.endpoint?.startsWith('client:') ? client.subscribe(() => { void load({ silent: true }); }) : null;
         return () => { subscriptions.forEach((unsubscribe) => unsubscribe?.()); local?.(); };
     }, [subscribe, client, item.events, source.endpoint, load]);
     useEffect(() => {
@@ -438,6 +441,7 @@ export function ResourceNode({ item, context, renderFields }) {
     })}</SettingsCardGrid>;
     const resourceActions = <>
         <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="刷新列表" aria-busy={loading || undefined} onClick={() => { void load(); }}><RefreshCw className="size-4" /></Button>
+        {(item.toolbarActions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />)}
         {item.create && item.editor && <Button type="button" size="sm" className="rounded-md" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
     </>;
     return <SettingsSection title={<span className="flex items-center gap-2">{item.text || item.title}<span className="text-xs font-normal tabular-nums text-muted-foreground">{rows.length} 项</span></span>} description={item.description} variant={item.variant} actions={resourceActions} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>

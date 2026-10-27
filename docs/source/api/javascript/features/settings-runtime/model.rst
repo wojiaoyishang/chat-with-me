@@ -351,9 +351,9 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9689:11135:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9689:11183:FUNCTION
 
-.. js:function:: executeRequest(action, scope, { api, client, signal })
+.. js:function:: executeRequest(action, scope, { api, client, signal, onProgress })
 
    One operation executor shared by forms, resource cards and action bars.
 
@@ -367,12 +367,12 @@ References are data paths in a finite scope; descriptors never evaluate code.
    ``scope``
       调用方传入的 ``scope`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
-   ``{ api, client, signal }``
-      调用方传入的 ``api, client, signal`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ api, client, signal, onProgress }``
+      调用方传入的 ``api, client, signal, onProgress`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``undefined``、``response``、``client.invoke(action.clientAction, body || {})``、``api.get(endpoint, config)``。
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``、``response``、``client.invoke(action.clientAction, body || {}, { signal, onProgress })``、``api.get(endpoint, config)``。
 
    **副作用**
 

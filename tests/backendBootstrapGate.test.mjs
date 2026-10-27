@@ -50,7 +50,12 @@ test("an unavailable backend still offers local connection management without re
     throw new Error("连接不可达");
   });
   try {
-    assert.match(document.body.textContent, /连接不可达/);
+    assert.equal(document.querySelector('h1').textContent, 'Oops!');
+    assert.match(document.body.textContent, /Chat With Me 的后端貌似无法连接，您可以稍后重试或者选择新的后端地址。/);
+    assert.equal(document.querySelector('[role="alert"]').textContent, '连接不可达');
+    assert.match(document.body.textContent, /测试后端/);
+    assert.match(document.body.textContent, /\/api/);
+    assert.ok(button('重试当前连接'));
     assert.equal(document.querySelector("[data-application-ready]"), null);
     await click(button("管理连接"));
     await click(button("添加连接"));
@@ -58,6 +63,24 @@ test("an unavailable backend still offers local connection management without re
     assert.equal(settingsUI.calls.length, 1);
     assert.equal(settingsUI.sessionChecks, undefined);
     await click(button("取消"));
+  } finally {
+    await ui.close();
+  }
+});
+
+test("retrying from recovery uses the selected backend and returns to the application", async () => {
+  let attempts = 0;
+  const ui = await mountBootstrapGate(() => {
+    if (++attempts === 1) throw new Error('Request failed with status code 500');
+    return manifest;
+  });
+  try {
+    assert.equal(document.querySelector('[role="alert"]').textContent, 'Request failed with status code 500');
+    await click(button('重试当前连接'));
+    assert.ok(document.querySelector('[data-application-ready]'));
+    assert.equal(document.querySelector('h1'), null);
+    assert.equal(attempts, 2);
+    assert.equal(settingsUI.sessionChecks, 1);
   } finally {
     await ui.close();
   }

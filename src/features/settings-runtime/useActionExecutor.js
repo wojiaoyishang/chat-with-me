@@ -54,7 +54,13 @@ export function useActionExecutor(services) {
         const update = (value) => { snapshot = { ...snapshot, ...value }; if (mounted.current) setOperations((previous) => ({ ...previous, [key]: snapshot })); };
         update({ busy: true, watching: false, sequence: ++serial.current, message: action.pendingText || '正在执行…', error: '' });
         try {
-            let response = await executeRequest(action, scope, { api: source.api, client: source.client, signal: controller.signal });
+            let response = await executeRequest(action, scope, {
+                api: source.api, client: source.client, signal: controller.signal,
+                onProgress: ({ message, percent }) => {
+                    if (!mounted.current || controller.signal.aborted) return;
+                    update({ ...(typeof message === 'string' ? { message } : {}), ...(Number.isFinite(percent) ? { percent } : {}) });
+                },
+            });
             if (!mounted.current || controller.signal.aborted) return undefined;
             const initialResponse = response;
             update({ response: cloneData(initialResponse) });
@@ -124,7 +130,7 @@ export function useActionExecutor(services) {
                 else throw new Error(`不支持的操作结果：${effect.type}`);
             }
             const hasToastEffect = (action.effects || []).some((effect) => effect.type === 'toast');
-            update({ busy: false, response: cloneData(response), message: hasToastEffect ? '' : action.successText || '', error: '' });
+            update({ busy: false, response: cloneData(response), message: hasToastEffect ? '' : formatValue(action.successText || '', resultScope), error: '' });
             await callbacks.onSuccess?.(response);
             return response;
         } catch (error) {

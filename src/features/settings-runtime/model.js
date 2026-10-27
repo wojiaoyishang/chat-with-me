@@ -178,16 +178,16 @@ export function validateFields(fields, form, prefix = [], errors = {}, context =
 }
 
 /** One operation executor shared by forms, resource cards and action bars. */
-export async function executeRequest(action, scope, { api, client, signal }) {
+export async function executeRequest(action, scope, { api, client, signal, onProgress }) {
     if (!matchesCondition(action.when || action.showWhen, scope)) return undefined;
     if (action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))) throw new Error(action.disabledMessage || '该操作尚未满足执行条件。');
     let response = scope.response;
     if (action.steps?.length) {
-        for (const step of action.steps) response = await executeRequest(step, { ...scope, response }, { api, client, signal });
+        for (const step of action.steps) response = await executeRequest(step, { ...scope, response }, { api, client, signal, onProgress });
         return response;
     }
     const body = resolveValue(action.body, scope);
-    if (action.clientAction) return client.invoke(action.clientAction, body || {});
+    if (action.clientAction) return client.invoke(action.clientAction, body || {}, { signal, onProgress });
     const endpoint = requestEndpoint(action.endpoint, scope);
     const method = String(action.method || 'GET').toLowerCase();
     const config = { signal, params: resolveValue(action.params, scope), ...(action.timeoutMs ? { timeout: action.timeoutMs } : {}), ...(action.encoding === 'form' ? { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } } : {}) };

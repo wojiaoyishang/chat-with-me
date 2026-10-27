@@ -1,7 +1,8 @@
 import { CircleUserRound } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
-import { getValue, resolveValue } from './model.js';
+import { getValue, matchesCondition, resolveValue } from './model.js';
 import { SettingsIcon } from './SettingsPresentation.jsx';
 import { formatSettingsValue } from './displayValue.js';
 
@@ -45,13 +46,13 @@ export function ConnectionCard({ item, context, record, actions }) {
     const stateText = item.state && (Object.hasOwn(item.state.labels || {}, String(stateValue)) ? item.state.labels[String(stateValue)] : formatSettingsValue(stateValue));
     const stateTone = item.state?.tones?.[String(stateValue)];
     const columns = record ? item.columns || [] : item.fields || [];
-    const properties = record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !== item.descriptionField && (!item.state?.field || (column.key || column.field) !== item.state.field)) : columns;
+    const properties = (record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !== item.descriptionField && (!item.state?.field || (column.key || column.field) !== item.state.field)) : columns).filter((column) => matchesCondition(column.when, scope));
     return <Card className="min-w-0 gap-0 overflow-hidden rounded-lg py-0 shadow-none" data-settings-connection-card="true">
         <div className="min-w-0 flex-1 space-y-3 p-4">
             <div className="flex min-w-0 flex-wrap items-start gap-2">
                 {(item.recordIcon || item.icon) && <SettingsIcon icon={item.recordIcon || item.icon} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
                 <div className="min-w-0 flex-1"><h4 className="break-words text-sm font-semibold">{formatSettingsValue(title)}</h4>{description && <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{formatSettingsValue(description)}</p>}</div>
-                {stateText && <span className={`max-w-full rounded-md border px-2 py-0.5 text-xs leading-5 ${Object.hasOwn(STATE_TONES, stateTone) ? STATE_TONES[stateTone] : 'border-border bg-muted text-muted-foreground'}`} title={String(stateText)}>{stateText}</span>}
+                {stateText && <span className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs leading-5 ${Object.hasOwn(STATE_TONES, stateTone) ? STATE_TONES[stateTone] : 'border-border bg-muted text-muted-foreground'}`} title={String(stateText)}>{item.state.busyValues?.includes(stateValue) && <Spinner className="size-3" />}{stateText}</span>}
             </div>
             {properties.length > 0 && <dl className="space-y-2">{properties.map((column, index) => {
                 const value = record ? getValue(record, column.key || column.field) : resolveValue(column.value, scope);

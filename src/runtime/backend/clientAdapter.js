@@ -1,8 +1,9 @@
 import {
     BACKEND_MANAGE_EVENT, deleteBackendProfile, getBackendConnection,
-    readBackendProfiles, saveBackendProfile, subscribeBackend, switchBackend, backendStorageKey,
+    saveBackendProfile, subscribeBackend, switchBackend, backendStorageKey,
     isCurrentConnection, setConnectionToken,
 } from './connection.js';
+import { backendConnectionProbes } from './connectionProbes.js';
 import { getLocalSetting, setLocalSetting } from '../../lib/tools.jsx';
 
 const LOCAL_EVENT = 'chat-local-setting-change';
@@ -20,10 +21,11 @@ function storageKey(key, options) {
 }
 export const clientAdapter = {
     read: async (key, options) => key === 'backends' ? {
-        items: readBackendProfiles().profiles.map((profile) => ({ ...profile, active: profile.id === getBackendConnection().id })),
+        items: backendConnectionProbes.read().map((profile) => ({ ...profile, active: profile.id === getBackendConnection().id })),
     } : getLocalSetting(storageKey(key, options), undefined),
     write: async (key, value, options) => { setLocalSetting(storageKey(key, options), value); return value; },
-    invoke: async (name, payload = {}) => {
+    invoke: async (name, payload = {}, options = {}) => {
+        if (name === 'backend.probe') return backendConnectionProbes.run({ profileId: payload.profileId, signal: options.signal, onProgress: options.onProgress });
         if (name === 'backend.save') return saveBackendProfile(payload);
         if (name === 'backend.delete') return deleteBackendProfile(payload.profileId);
         if (name === 'backend.switch') return switchBackend(payload.profileId);
@@ -49,9 +51,10 @@ export const clientAdapter = {
     },
     subscribe: (callback) => {
         const off = subscribeBackend(callback);
+        const offProbes = backendConnectionProbes.subscribe(callback);
         window.addEventListener(LOCAL_EVENT, callback);
         window.addEventListener('storage', callback);
-        return () => { off(); window.removeEventListener(LOCAL_EVENT, callback); window.removeEventListener('storage', callback); };
+        return () => { off(); offProbes(); window.removeEventListener(LOCAL_EVENT, callback); window.removeEventListener('storage', callback); };
     },
 };
 export default clientAdapter;

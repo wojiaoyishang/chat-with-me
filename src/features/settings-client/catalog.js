@@ -113,6 +113,14 @@ function interfaceOptions() {
 }
 
 function connectionOptions() {
+  const probe = {
+    id: "probe-connections",
+    label: "全部测速",
+    icon: "gauge",
+    clientAction: "backend.probe",
+    pendingText: "正在测速后端…",
+    successText: "测速完成：{response.available} / {response.total} 个后端可连接",
+  };
   const save = {
     id: "save-connection",
     label: "保存连接",
@@ -132,9 +140,19 @@ function connectionOptions() {
       icon: "server",
       description: "当前选择会一直保留，刷新或断线都不会自动连接其他后端。",
       source: { endpoint: "client:backends", listPath: "items" },
+      cache: false,
       keyField: "id",
       titleField: "title",
       display: "cards",
+      recordView: {
+        type: "connection-card",
+        state: {
+          field: "probe.status",
+          labels: { idle: "未测速", queued: "等待测速", checking: "测速中", available: "可连接", unavailable: "无法连接", timeout: "超时", incompatible: "协议不匹配", cancelled: "已取消" },
+          tones: { available: "success", unavailable: "danger", timeout: "warning", incompatible: "warning" },
+          busyValues: ["checking"],
+        },
+      },
       columns: [
         { key: "url", label: "后端地址" },
         {
@@ -142,7 +160,10 @@ function connectionOptions() {
           label: "状态",
           labels: { true: "当前连接", false: "未选择" },
         },
+        { key: "probe.latencyText", label: "响应延迟" },
+        { key: "probe.detail", label: "检测说明", when: { left: ref("item.probe.detail"), op: "truthy" } },
       ],
+      toolbarActions: [probe],
       create: { label: "添加连接" },
       editor: {
         title: "连接信息",
@@ -171,6 +192,13 @@ function connectionOptions() {
         update: save,
       },
       actions: [
+        {
+          ...probe,
+          id: "probe-connection",
+          label: "测速",
+          body: { profileId: ref("item.id") },
+          disabledWhen: { left: ref("item.probeRunning"), op: "eq", right: true },
+        },
         { id: "edit", kind: "edit", label: "编辑" },
         {
           id: "switch-connection",
