@@ -22,7 +22,8 @@ test("client catalogs own only browser preferences and explicitly preserve stora
   assert.equal(page.layout.columns, 1);
   assert.ok(page.options.every((item) => item.variant === "divided"));
   const preferences = fields(page.options).filter((item) => item.storage);
-  assert.equal(preferences.length, 10);
+  assert.equal(preferences.length, 11);
+  assert.equal(preferences.find((item) => item.name === 'CacheSettingsPages').default, true);
   assert.equal(
     preferences.find((item) => item.name === "KnowledgeGraphPhysicsAnimation")
       .default,

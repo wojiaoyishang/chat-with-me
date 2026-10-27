@@ -1,6 +1,6 @@
 import {
     Check, CircleHelp, Copy, Database, Download, ExternalLink, KeyRound,
-    Loader2, LogOut, Pencil, Play, Plug, RefreshCw, Save, Server,
+    LogOut, Pencil, Play, Plug, RefreshCw, Save, Server,
     ShieldCheck, ShieldX, Trash2, Unplug, Upload, UserRound,
 } from 'lucide-react';
 
@@ -12,12 +12,11 @@ const ACTION_ICONS = {
     'external-link': ExternalLink, server: Server, database: Database,
 };
 
-/** A busy action owns one progress icon; its usual icon returns on completion. */
-export function SettingsActionLabel({ action = {}, label, busy = false }) {
+/** Progress belongs to the floating notice, leaving this label's size stable. */
+export function SettingsActionLabel({ action = {}, label }) {
     const Icon = Object.hasOwn(ACTION_ICONS, action.icon) ? ACTION_ICONS[action.icon] : null;
     return <>
-        {busy ? <Loader2 aria-hidden="true" className="size-4 shrink-0 animate-spin" data-slot="action-progress" />
-            : Icon && <Icon aria-hidden="true" className="size-4 shrink-0" data-slot="action-icon" />}
+        {Icon && <Icon aria-hidden="true" className="size-4 shrink-0" data-slot="action-icon" />}
         {label ?? action.label ?? action.text ?? '执行'}
     </>;
 }

@@ -15,25 +15,43 @@ src/features/settings-runtime/extensions 模块
 
 * **源码文件**：``src/features/settings-runtime/extensions.jsx``
 * **模块标识**：``src/features/settings-runtime/extensions``
-* **顶层函数/组件/Hook**：1
+* **顶层函数/组件/Hook**：2
 * **类**：0
 * **局部函数与匿名回调**：1
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``./registry.js``、``react``。
+``./registry.js``、``react``、``./loadingToasts.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:196:402:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:258:353:FUNCTION
+
+.. js:function:: LoadingExtension()
+
+   渲染 ``LoadingExtension`` React 组件，并协调该界面的状态、事件和子组件。
+
+   **性质**：同步函数；模块内部入口；源码第 ``9``—``12`` 行。
+
+   **参数**
+
+   无。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``null``。
+
+   **主要协作调用**：``useSettingsLoadingToast``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:353:558:FUNCTION
 
 .. js:function:: LazyNodeGraphField(props)
 
    渲染 ``LazyNodeGraphField`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``8``—``14`` 行。
+   **性质**：同步函数；导出 API；源码第 ``14``—``20`` 行。
 
    **参数**
 
@@ -42,24 +60,24 @@ src/features/settings-runtime/extensions 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <Suspense fallback={<p className="py-4 text-sm text-muted-foreground">正在加载图编辑组件…</p>}> <NodeGraphField {...props} /> </Suspense> )``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <Suspense fallback={<LoadingExtension />}> <div className="cwm-settings-reveal"><NodeGraphField {...props} /></div> </Suspense> )``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:128:192:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:190:254:FUNCTION
 
-.. rubric:: ``lazy callback @ 5``
+.. rubric:: ``lazy callback @ 6``
 
 .. code-block:: javascript
 
-   lazy callback @ 5()
+   lazy callback @ 6()
 
 实现 ``lazy`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``5``—``5`` 行。
+**性质**：同步局部函数；源码第 ``6``—``6`` 行。
 
 **参数**
 

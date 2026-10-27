@@ -28,7 +28,7 @@ test('Headless menus consume Escape inside a real resource dialog and leave its 
         builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => {
             if (name === 'framer-motion') return { loader: 'jsx', contents: `import {forwardRef,createElement} from 'react';const cache={};export const motion=new Proxy({}, {get(_,tag){return cache[tag]||(cache[tag]=forwardRef(({children,initial,animate,exit,transition,layout,...props},ref)=>createElement(tag,{...props,ref},children)));}});export const AnimatePresence=({children})=><>{children}</>;` };
             if (name === 'react-i18next') return { contents: "const t=value=>value;export const useTranslation=()=>({t});" };
-            if (name === 'sonner') return { contents: 'export const toast={error:()=>{},success:()=>{},info:()=>{}};' };
+            if (name === 'sonner') return { contents: 'export const toast={error:()=>{},success:()=>{},info:()=>{},loading:()=>{},warning:()=>{},dismiss:()=>{}};' };
             if (name.endsWith('/apiClient.js')) return { contents: "export default {get:async()=>({items:[{id:'source',title:'成员权限',permission:'view'}]})};" };
             if (name.endsWith('/clientAdapter.js')) return { contents: 'export default {read:async()=>undefined,write:async()=>{},invoke:async()=>{},subscribe:()=>()=>{}};' };
             if (name.endsWith('/extensions.jsx')) return { contents: '' };

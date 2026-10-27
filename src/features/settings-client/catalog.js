@@ -106,6 +106,9 @@ function interfaceOptions() {
         false,
       ),
     ]),
+    group("设置窗口", "settings", [
+      preference("CacheSettingsPages", "缓存已加载的设置页", "在本次设置窗口中复用已加载数据，关闭窗口后清除。"),
+    ]),
   ];
 }
 
@@ -143,6 +146,7 @@ function connectionOptions() {
       create: { label: "添加连接" },
       editor: {
         title: "连接信息",
+        dialog: { width: 480 },
         description: "连接地址创建后保持不变，连接其他地址时请新增一项。",
         defaults: { title: "", url: "" },
         options: [
@@ -312,6 +316,7 @@ export function clientSettingsPage(id, notificationData) {
     ...(id === "interface" ? { layout: { columns: 1 } } : {}),
     ...(id === "notifications"
       ? {
+          ...(notificationData?.error ? { cache: false } : {}),
           layout: { columns: 1 },
           search: {
             label: "搜索通知类型",

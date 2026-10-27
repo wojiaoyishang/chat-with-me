@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { Camera, ChevronDown, Loader2, Plus, RefreshCw, ExternalLink, Trash2, CircleUserRound, Inbox } from 'lucide-react';
+import { Camera, ChevronDown, Plus, RefreshCw, Trash2, CircleUserRound, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -17,12 +17,15 @@ import SettingsFormLayout from './SettingsFormLayout.jsx';
 import { SettingsActionLabel } from './SettingsActionLabel.jsx';
 import { getActionPresentation } from './actionPresentation.js';
 import { getSettingsDialogStyle } from './dialogSizing.js';
+import { useSettingsLoadingToast } from './loadingToasts.js';
+import { settingsResourceCacheKey } from './sessionCache.js';
 const EMPTY_MAP = Object.freeze({});
 
 export function FileNode({ item, value, onChange, context }) {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState('');
     const [uploadedPreview, setUploadedPreview] = useState(null);
+    useSettingsLoadingToast(busy, '正在读取附件…');
     const preview = uploadedPreview || resolveValue(item.previewValue, { form: context.values, item: context.item, parentItem: context.parentItem });
     const choose = async (event) => {
         const files = [...(event.target.files || [])];
@@ -49,7 +52,7 @@ export function FileNode({ item, value, onChange, context }) {
     if (item.appearance === 'avatar') return <div className="shrink-0" data-settings-pending={busy || undefined} data-settings-invalid={Boolean(error) || undefined} data-settings-message={error || undefined}>
         <label className={`group relative block size-16 cursor-pointer rounded-full bg-muted focus-within:ring-2 focus-within:ring-ring ${context.disabled || item.disabled ? 'cursor-default opacity-60' : ''}`}>
             <span className="flex size-full items-center justify-center overflow-hidden rounded-full">{preview ? <img src={resolveResourceUrl(preview)} alt={item.text || '头像'} className="size-full object-cover" /> : <CircleUserRound className="size-7 text-muted-foreground" />}</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -bottom-0.5 -right-0.5 rounded-full border bg-background p-1 text-muted-foreground">{busy ? <Loader2 className="size-3 animate-spin" /> : <Camera className="size-3" />}</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-0.5 -right-0.5 rounded-full border bg-background p-1 text-muted-foreground"><Camera className="size-3" /></span>
             <Input type="file" className="absolute inset-0 size-full cursor-pointer rounded-full opacity-0" accept={item.accept} aria-label={item.text || '更换头像'} disabled={busy || context.disabled || item.disabled} onChange={(event) => { void choose(event); }} />
         </label>
         {error && <p role="alert" className="mt-1 max-w-40 text-xs text-destructive">{error}</p>}
@@ -58,43 +61,22 @@ export function FileNode({ item, value, onChange, context }) {
         {preview && <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-background"><img src={resolveResourceUrl(preview)} alt={item.text || '预览'} className="size-full object-contain" /></div>}
         <div className="min-w-0 flex-1 space-y-2">
             <Input type="file" className="min-w-0 rounded-lg bg-background" accept={item.accept} multiple={item.multiple} aria-label={item.text || '选择文件'} disabled={busy || context.disabled || item.disabled} onChange={(event) => { void choose(event); }} />
-            {busy && <p className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" />正在读取文件…</p>}
             {value != null && value !== '' && <p className="break-all text-xs text-muted-foreground">{item.valueLabel || '已选择内容'}</p>}
             {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
         </div>
     </div>;
 }
 
-export function ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant, showStatus = true }) {
+export function ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant }) {
     const actualScope = { form: context.values, item: context.item, parentItem: context.parentItem, ...scope };
     if (!matchesCondition(action.when || action.showWhen, actualScope)) return null;
     const operation = context.operations?.[operationKey(action, actualScope)];
     const isDisabled = disabled || context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, actualScope));
     const presentation = getActionPresentation(action, variant || 'outline');
-    return <div className="min-w-0 space-y-2">
-        <Button type="button" size="sm" {...presentation} disabled={isDisabled || operation?.busy} aria-busy={operation?.busy || undefined}
+    return <Button type="button" size="sm" {...presentation} disabled={isDisabled || operation?.busy} aria-busy={operation?.busy || undefined}
             onClick={() => { void context.execute(action, actualScope, callbacks).catch(() => {}); }}>
-            <SettingsActionLabel action={action} label={formatValue(action.label || action.text || '执行', actualScope)} busy={Boolean(operation?.busy)} />
-        </Button>
-        {showStatus && operation && <OperationStatus operation={operation} context={context} showPending={Boolean(action.pendingText || operation.watching)} />}
-    </div>;
-}
-
-export function OperationStatus({ operation, context, showPending = true }) {
-    if (operation?.busy && !showPending && !operation.error) return null;
-    if (!operation?.busy && !operation?.error && !operation?.message) return null;
-    const percent = Number(operation.percent);
-    return <div className={`space-y-1.5 rounded-lg px-3 py-2 text-xs ${operation.error ? 'border border-destructive/30 bg-destructive/5 text-destructive' : 'bg-muted text-muted-foreground'}`} role={operation.error ? 'alert' : 'status'}>
-        <div className="flex flex-wrap items-center gap-2">
-            {operation.busy && <Loader2 className="size-3.5 animate-spin" />}
-            <span className="break-words">{operation.error || operation.message}</span>
-            {operation.readPaused && <button type="button" className="underline" onClick={() => operation.retry?.()}>继续读取进度</button>}
-            {operation.taskPage && <button type="button" className="inline-flex items-center gap-1 underline" onClick={() => context.navigate(operation.taskPage)}>查看详情<ExternalLink className="size-3" /></button>}
-        </div>
-        {operation.busy && operation.percent != null && Number.isFinite(percent) && <progress className="h-1.5 w-full" max="100" value={Math.max(0, Math.min(100, percent))} aria-label="操作进度" />}
-        {operation.conflict && <p>服务器版本已变化。当前编辑内容已保留，请重新获取最新数据后核对。</p>}
-        {operation.readError && <p>{operation.readError}</p>}
-    </div>;
+            <SettingsActionLabel action={action} label={formatValue(action.label || action.text || '执行', actualScope)} />
+        </Button>;
 }
 
 export function ActionsNode({ item, context }) {
@@ -188,12 +170,11 @@ export function AsyncOperationNode({ item, context }) {
     return <SettingsSection title={item.text} description={item.description} variant={item.variant} bodyClassName={item.variant === 'card' ? 'space-y-3 p-4' : 'space-y-3'}>
         {label && <p className="text-sm">{operation?.error && data === sourceData ? '上次记录：' : ''}{label}</p>}
         {phase && item.phaseLabels?.[phase] && <p className="text-xs text-muted-foreground">{item.phaseLabels[phase]}</p>}
-        {operation && <OperationStatus operation={operation} context={context} />}
         {submitError && (!operation?.error || operation.error !== submitError) && <p role="alert" className="text-xs text-destructive">{submitError}</p>}
         {unresolved && <p role="alert" className="text-xs text-destructive">暂时无法确认上次提交的结果。请继续读取状态，确认后再发起新操作。</p>}
         {item.summary?.length > 0 && <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">{item.summary.map((field) => <div key={field.path} className="rounded-xl border border-border/50 bg-muted/25 px-3 py-2.5"><dt className="text-xs text-muted-foreground">{field.label}</dt><dd className="mt-1.5 text-lg font-semibold tabular-nums tracking-tight">{displayValue(getValue(data, field.path))}</dd></div>)}</dl>}
         {item.errorsPath && getValue(data, item.errorsPath)?.length > 0 && <TableNode item={{ columns: item.errorColumns || [] }} value={getValue(data, item.errorsPath)} context={context} />}
-        <div className="flex flex-wrap items-start gap-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={{ ...context, disabled: context.disabled || busy || !ready || unresolved }} callbacks={callbacks} showStatus={false} />)}{item.source?.endpoint && <Button type="button" size="sm" variant="outline" disabled={busy} onClick={read}><RefreshCw className="size-3.5" />重新读取状态</Button>}</div>
+        <div className="flex flex-wrap items-start gap-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={{ ...context, disabled: context.disabled || busy || !ready || unresolved }} callbacks={callbacks} />)}{item.source?.endpoint && <Button type="button" size="sm" variant="outline" disabled={busy} onClick={read}><RefreshCw className="size-3.5" />重新读取状态</Button>}</div>
     </SettingsSection>;
 }
 
@@ -306,8 +287,11 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
 }
 
 export function ResourceNode({ item, context, renderFields }) {
-    const [rows, setRows] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const cache = context.runtimeContext.settingsCache;
+    const cacheKey = settingsResourceCacheKey(item, { form: context.values, item: context.item, parentItem: context.parentItem });
+    const [initialCache] = useState(() => cache?.get(cacheKey));
+    const [rows, setRows] = useState(initialCache || []);
+    const [loading, setLoading] = useState(initialCache === undefined);
     const [error, setError] = useState('');
     const [editor, setEditor] = useState(null);
     const [editorBusy, setEditorBusy] = useState(false);
@@ -325,7 +309,7 @@ export function ResourceNode({ item, context, renderFields }) {
     const { registerResource, subscribe, client } = context;
     const confirm = context.confirm;
     const registerDraftGuard = context.runtimeContext.registerDraftGuard;
-    const sourceKey = JSON.stringify([source, context.item?.id]);
+    const sourceKey = JSON.stringify([source, context.item?.id, cacheKey]);
     const load = useCallback(async () => {
         const serial = ++epoch.current;
         requestController.current?.abort();
@@ -340,13 +324,24 @@ export function ResourceNode({ item, context, renderFields }) {
                 : await ctx.api.get(requestEndpoint(source.endpoint, scope), { params: resolveValue(source.params, scope), signal: controller.signal });
             const data = getValue(response, source.listPath || '', response);
             if (!Array.isArray(data)) throw new Error('资源接口没有返回列表。');
-            if (alive.current && serial === epoch.current) { setRows(data); setConflictingActions(new Set()); }
+            if (alive.current && serial === epoch.current) { setRows(data); cache?.set(cacheKey, data, item.events); setConflictingActions(new Set()); }
         } catch (cause) { if (alive.current && serial === epoch.current) setError(cause.message); }
         finally { if (alive.current && serial === epoch.current) setLoading(false); }
     // Source descriptors are immutable until the page or parent record changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sourceKey]);
-    useEffect(() => { alive.current = true; void load(); const detail = detailRequest.current; return () => { alive.current = false; epoch.current += 1; requestController.current?.abort(); detail.serial += 1; detail.controller?.abort(); }; }, [load]);
+    }, [sourceKey, cache]);
+    useSettingsLoadingToast(loading, `正在加载${item.text || item.title || '列表'}…`, { error, retry: load });
+    useSettingsLoadingToast(editorBusy, '正在读取详情…');
+    useEffect(() => {
+        alive.current = true;
+        const cached = cache?.get(cacheKey);
+        if (cached !== undefined) { setRows(cached); setLoading(false); setError(''); }
+        else { setRows([]); void load(); }
+        const detail = detailRequest.current;
+        return () => { alive.current = false; epoch.current += 1; requestController.current?.abort(); detail.serial += 1; detail.controller?.abort(); };
+    // The load callback owns the source/cache identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [load]);
     useEffect(() => registerResource(item.id || item.name, load), [registerResource, item.id, item.name, load]);
     useEffect(() => {
         const subscriptions = (item.events || []).map((event) => subscribe(event, () => { void load(); }));
@@ -384,6 +379,7 @@ export function ResourceNode({ item, context, renderFields }) {
         if (editor && JSON.stringify(editor.initial) !== JSON.stringify(editor.values) && !(await context.confirm({ title: '放弃未保存的更改？', description: '关闭后本次编辑内容将被丢弃。', confirmText: '放弃更改' }))) return;
         detailRequest.current.serial += 1;
         detailRequest.current.controller?.abort();
+        setEditorBusy(false);
         setEditor(null);
     };
     const editorAction = editor?.record ? item.editor?.update : item.editor?.create;
@@ -435,22 +431,22 @@ export function ResourceNode({ item, context, renderFields }) {
         </article>;
     })}</SettingsCardGrid>;
     const resourceActions = <>
-        <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="刷新列表" onClick={() => { void load(); }}><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} /></Button>
+        <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="刷新列表" aria-busy={loading || undefined} onClick={() => { void load(); }}><RefreshCw className="size-4" /></Button>
         {item.create && item.editor && <Button type="button" size="sm" className="rounded-md" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
     </>;
     return <SettingsSection title={<span className="flex items-center gap-2">{item.text || item.title}<span className="text-xs font-normal tabular-nums text-muted-foreground">{rows.length} 项</span></span>} description={item.description} variant={item.variant} actions={resourceActions} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>
-        {error && <p role="alert" className="mb-3 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{error}</p>}
-        {loading && !rows.length ? <div className="flex min-h-24 items-center justify-center gap-2 py-6 text-sm text-muted-foreground"><Loader2 className="size-5 animate-spin" />正在加载…</div>
-            : !rows.length ? <div className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center"><Inbox className="size-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
+        <div className={loading ? '' : 'cwm-settings-reveal'} aria-busy={loading || undefined}>
+        {!rows.length ? !loading && !error && <div className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center"><Inbox className="size-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
                 : item.display === 'table' && columns.length ? <div className="overflow-auto rounded-xl border border-border/70"><table className="w-full text-left text-sm"><thead className="bg-muted/40 text-xs text-muted-foreground"><tr>{columns.map(column => <th key={column.key} className="px-4 py-3 font-medium">{column.label}</th>)}<th className="px-4 py-3 font-medium">操作</th></tr></thead><tbody>{rows.map((record, index) => <tr key={getValue(record, item.keyField || 'id', index)} className="border-t border-border/55 transition-colors hover:bg-muted/15">{columns.map(column => <td key={column.key} className="max-w-sm break-words px-4 py-3 text-sm">{valueText(record, column)}</td>)}<td className="px-4 py-3">{actionsFor(record)}</td></tr>)}</tbody></table></div>
                     : renderCards()}
+        </div>
         <Dialog open={Boolean(editor)} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
             <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(item.editor?.dialog, 960)}>
                 <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{formatValue((!editor?.record && item.editor?.createTitle) || item.editor?.title || '编辑', { item: editor?.record, form: editor?.values })}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{item.editor?.description}</DialogDescription></DialogHeader>
-                <div ref={editorScope} className="min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6">
+                <div ref={editorScope} className={`min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6 ${editorBusy ? '' : 'cwm-settings-reveal'}`}>
                     {editorError && <p role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive">{editorError}</p>}
                     {Object.entries(fieldErrors).map(([field, message]) => <p className="text-xs text-destructive" key={field}>{field}：{message}</p>)}
-                    {editorBusy ? <p className="flex min-h-28 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />正在读取详情…</p> : editor && <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor`, item: editor.record, disabled: context.disabled, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}</SettingsFormLayout>}
+                    {editor && <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor`, item: editor.record, disabled: context.disabled || editorBusy, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}</SettingsFormLayout>}
                 </div>
                 <DialogFooter className="shrink-0 border-t bg-background px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-md" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch((cause) => setEditorError(cause.message)); }}>保存</Button>}</DialogFooter>
             </DialogContent>

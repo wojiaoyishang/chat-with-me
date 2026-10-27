@@ -17,23 +17,23 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 * **模块标识**：``src/features/settings-runtime/useActionExecutor``
 * **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：12
+* **局部函数与匿名回调**：13
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``./model.js``。
+``react``、``./model.js``、``./loadingToasts.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:215:429:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:280:494:FUNCTION
 
 .. js:function:: operationKey(action, scope)
 
    实现 ``operationKey`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``4``—``4`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``5`` 行。
 
    **参数**
 
@@ -47,13 +47,13 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:455:929:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:520:994:FUNCTION
 
 .. js:function:: delay(milliseconds, signal)
 
    实现 ``delay`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``7``—``14`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``8``—``15`` 行。
 
    **参数**
 
@@ -73,13 +73,13 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:929:9327:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:994:9578:FUNCTION
 
 .. js:function:: useActionExecutor(services)
 
    Reads progress only. Retrying a read never repeats the submitted operation.
 
-   **性质**：同步函数；导出 API；源码第 ``17``—``138`` 行。
+   **性质**：同步函数；导出 API；源码第 ``18``—``141`` 行。
 
    **参数**
 
@@ -96,7 +96,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
    * 注册事件、DOM 或运行时订阅。
    * 改变前端路由或浏览器历史。
 
-   **主要协作调用**：``useRef``、``useState``、``useEffect``、``useCallback``。
+   **主要协作调用**：``useRef``、``useState``、``useSettingsOperationToasts``、``useEffect``、``useCallback``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -105,17 +105,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:519:925:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:584:990:FUNCTION
 
-.. rubric:: ``anonymous callback @ 8``
+.. rubric:: ``anonymous callback @ 9``
 
 .. code-block:: javascript
 
-   anonymous callback @ 8(resolve, reject)
+   anonymous callback @ 9(resolve, reject)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``8``—``13`` 行；所属函数 ``delay``。
+**性质**：同步局部函数；源码第 ``9``—``14`` 行；所属函数 ``delay``。
 
 **参数**
 
@@ -137,7 +137,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:655:737:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:720:802:FUNCTION
 
 .. rubric:: ``cancel``
 
@@ -147,7 +147,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 取消与 ``cancel`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``10``—``10`` 行；所属函数 ``anonymous callback @ 8``。
+**性质**：同步局部函数；源码第 ``11``—``11`` 行；所属函数 ``anonymous callback @ 9``。
 
 **参数**
 
@@ -159,17 +159,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``clearTimeout``、``reject``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:772:837:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:837:902:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 11``
+.. rubric:: ``setTimeout callback @ 12``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 11()
+   setTimeout callback @ 12()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``11``—``11`` 行；所属函数 ``anonymous callback @ 8``。
+**性质**：同步局部函数；源码第 ``12``—``12`` 行；所属函数 ``anonymous callback @ 9``。
 
 **参数**
 
@@ -181,17 +181,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``signal.removeEventListener``、``resolve``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1345:1554:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1473:1682:FUNCTION
 
-.. rubric:: ``useEffect callback @ 25``
+.. rubric:: ``useEffect callback @ 27``
 
 .. code-block:: javascript
 
-   useEffect callback @ 25()
+   useEffect callback @ 27()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``25``—``29`` 行；所属函数 ``useActionExecutor``。
+**性质**：同步局部函数；源码第 ``27``—``31`` 行；所属函数 ``useActionExecutor``。
 
 **参数**
 
@@ -203,17 +203,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1443:1547:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1571:1675:FUNCTION
 
-.. rubric:: ``returned callback @ 28``
+.. rubric:: ``returned callback @ 30``
 
 .. code-block:: javascript
 
-   returned callback @ 28()
+   returned callback @ 30()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``useEffect callback @ 25``。
+**性质**：同步局部函数；源码第 ``30``—``30`` 行；所属函数 ``useEffect callback @ 27``。
 
 **参数**
 
@@ -225,17 +225,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``controller.abort``、``active.clear``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1594:9283:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1722:9534:FUNCTION
 
-.. rubric:: ``useCallback callback @ 31``
+.. rubric:: ``useCallback callback @ 33``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 31(action, suppliedScope, callbacks)
+   async useCallback callback @ 33(action, suppliedScope, callbacks)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``31``—``136`` 行；所属函数 ``useActionExecutor``。
+**性质**：异步局部函数；源码第 ``33``—``139`` 行；所属函数 ``useActionExecutor``。
 
 **参数**
 
@@ -262,19 +262,19 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``source.scope``、``operationKey``、``inFlight.current.has``、``inFlight.current.add``、``Object.fromEntries``、``Object.entries(action.confirm).map``、``Object.entries``、``source.confirm``、``inFlight.current.delete``、``controllers.current.add``、``update``、``executeRequest``。
 
-**内部回调数量**：3。这些回调也会在本页逐项说明。
+**内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2198:2286:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2326:2414:FUNCTION
 
-.. rubric:: ``Object.entries(action.confirm).map callback @ 41``
+.. rubric:: ``Object.entries(action.confirm).map callback @ 43``
 
 .. code-block:: javascript
 
-   Object.entries(action.confirm).map callback @ 41([name, value])
+   Object.entries(action.confirm).map callback @ 43([name, value])
 
 作为 ``Object.entries(action.confirm).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``useCallback callback @ 31``。
+**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``useCallback callback @ 33``。
 
 **参数**
 
@@ -287,7 +287,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``formatValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2744:2883:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2872:3011:FUNCTION
 
 .. rubric:: ``update``
 
@@ -297,7 +297,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 更新与 ``update`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``useCallback callback @ 31``。
+**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``useCallback callback @ 33``。
 
 **参数**
 
@@ -312,17 +312,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2831:2879:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2959:3007:FUNCTION
 
-.. rubric:: ``setOperations callback @ 52``
+.. rubric:: ``setOperations callback @ 54``
 
 .. code-block:: javascript
 
-   setOperations callback @ 52(previous)
+   setOperations callback @ 54(previous)
 
 设置与 ``Operations`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``update``。
+**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``update``。
 
 **参数**
 
@@ -333,17 +333,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5399:5860:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5527:5988:FUNCTION
 
-.. rubric:: ``anonymous callback @ 86``
+.. rubric:: ``anonymous callback @ 88``
 
 .. code-block:: javascript
 
-   anonymous callback @ 86(resolve, reject)
+   anonymous callback @ 88(resolve, reject)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``86``—``90`` 行；所属函数 ``useCallback callback @ 31``。
+**性质**：同步局部函数；源码第 ``88``—``92`` 行；所属函数 ``useCallback callback @ 33``。
 
 **参数**
 
@@ -365,7 +365,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5464:5520:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5592:5648:FUNCTION
 
 .. rubric:: ``cancel``
 
@@ -375,7 +375,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 取消与 ``cancel`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``87``—``87`` 行；所属函数 ``anonymous callback @ 86``。
+**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``anonymous callback @ 88``。
 
 **参数**
 
@@ -387,7 +387,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``reject``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5680:5830:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5808:5958:FUNCTION
 
 .. rubric:: ``retry``
 
@@ -397,7 +397,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 实现 ``retry`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``anonymous callback @ 86``。
+**性质**：同步局部函数；源码第 ``91``—``91`` 行；所属函数 ``anonymous callback @ 88``。
 
 **参数**
 
@@ -408,3 +408,24 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``controller.signal.removeEventListener``、``update``、``resolve``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:8768:8803:FUNCTION
+
+.. rubric:: ``(action.effects || []).some callback @ 126``
+
+.. code-block:: javascript
+
+   (action.effects || []).some callback @ 126(effect)
+
+作为 ``(action.effects || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``useCallback callback @ 33``。
+
+**参数**
+
+``effect``
+   调用方传入的 ``effect`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。

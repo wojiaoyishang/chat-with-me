@@ -33,7 +33,10 @@ test('reopening restores a running operation and renders deletion progress and p
     const ui = await mount([descriptor], null, () => latest);
     try {
         assert.equal(postCount(), 0); assert.ok(settingsUI.calls.some(([, url]) => url === `${endpoint}/cleanup-one`));
-        assert.equal(document.querySelector('progress').value, 25);
+        assert.match(document.querySelector('[data-settings-test-toaster] [role="status"]').textContent, /25%/);
+        assert.equal(document.querySelector('progress'), null, 'progress is floating and adds no row to the settings layout');
+        const processed = [...document.querySelectorAll('dl div')].find(node => node.textContent.startsWith('已处理'));
+        assert.equal(processed.querySelector('dd').textContent, '25');
         assert.equal(button('清空 temp 缓存').disabled, true);
         latest = complete({ status: 'completed_with_errors', deleted: 99, failed: 1, total: 100, processed: 100, errors: [{ path: 'locked.tmp', error: '文件仍被占用' }] });
         await tick(t);

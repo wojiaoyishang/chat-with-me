@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   Bell,
   Check,
   ChevronRight,
   Layout,
-  Loader2,
   Maximize2,
   Minimize2,
   Monitor,
@@ -24,7 +23,7 @@ import { useConfirmation } from "@/components/ui/useConfirmation.jsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
 import { validateSettingsFields, validateSettingsScope } from "@/features/settings-runtime/validation.js";
 import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js";
-import { getLocalSetting, setLocalSetting, useIsMobile } from "@/lib/tools.jsx";
+import { getLocalSetting, setLocalSetting, useIsMobile, useLocalSetting } from "@/lib/tools.jsx";
 import { resolveResourceUrl } from "@/lib/virtualUrl.js";
 import apiClient from "@/lib/apiClient.js";
 import { onEvent } from "@/context/useEventStore.jsx";
@@ -40,7 +39,8 @@ import {
   cloneData,
   requestEndpoint,
 } from "@/features/settings-runtime/model.js";
-import { OperationStatus } from "@/features/settings-runtime/GenericNodes.jsx";
+import { useSettingsLoadingToast } from "@/features/settings-runtime/loadingToasts.js";
+import { createSettingsSessionCache, settingsCacheEvents } from "@/features/settings-runtime/sessionCache.js";
 import {
   operationKey,
   useActionExecutor,
@@ -91,10 +91,18 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const setUser = useUserStore((state) => state.setUser);
+  const userIdentity = useUserStore((state) => state.user?.id || state.user?.username || '');
   const [tabs, setTabs] = useState([]);
   const tabsRef = useRef([]);
   const [section, setSection] = useState("client");
   const [connection, setConnection] = useState(getBackendConnection);
+  const [cacheEnabled] = useLocalSetting('CacheSettingsPages', true);
+  const cacheScope = JSON.stringify([connection.id, connection.url, connection.epoch, userIdentity]);
+  const cache = useMemo(() => createSettingsSessionCache((event, callback) => onEvent({ event }).then(callback), cacheScope), [cacheScope]);
+  useEffect(() => {
+    cache.setEnabled(open && cacheEnabled);
+    return () => cache.setEnabled(false);
+  }, [cache, open, cacheEnabled]);
   const [selections, setSelections] = useState({
     client: "interface",
     backend: null,
@@ -102,6 +110,8 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   const selectedId = selections[section];
   const pageKey = `${section}:${selectedId || ""}`;
   const [loadedPageKey, setLoadedPageKey] = useState("");
+  const [loadedScope, setLoadedScope] = useState('');
+  const [catalogScope, setCatalogScope] = useState('');
   const [filterQuery, setFilterQuery] = useState("");
   const [description, setDescription] = useState(null);
   const [values, setValues] = useState({});
@@ -113,7 +123,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [catalogError, setCatalogError] = useState("");
-  const [pageError, setPageError] = useState("");
+  const [pageError, setPageError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [fullscreen, setFullscreen] = useState(false);
   const [size, setSize] = useState(() =>
@@ -136,19 +146,23 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   );
   useEffect(() => setFilterQuery(""), [pageKey]);
 
-  const loadCatalog = useCallback(async () => {
+  const loadCatalog = useCallback(async (force = false) => {
     const serial = ++catalogEpoch.current;
-    setCatalogLoading(true);
+    const cached = force ? undefined : cache.get('catalog');
+    if (force) cache.invalidate('catalog');
+    setCatalogLoading(cached === undefined);
     setCatalogError("");
     try {
       if (!base) throw new Error("当前后端没有提供设置功能。");
-      const data = await apiClient.get(requestEndpoint(base, {}));
+      const data = cached ?? await apiClient.get(requestEndpoint(base, {}));
       if (!Array.isArray(data)) throw new Error("后端未返回有效的设置目录。");
       if (data.some((entry) => entry?.scope !== "backend"))
         throw new Error(
           "当前后端的设置目录尚未区分前后端，请更新并重新加载后端服务。",
         );
       if (!mounted.current || serial !== catalogEpoch.current) return;
+      cache.set('catalog', data);
+      setCatalogScope(cache.scope);
       setTabs(data);
       tabsRef.current = data;
       setSelections((current) => ({
@@ -168,20 +182,23 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       if (mounted.current && serial === catalogEpoch.current)
         setCatalogLoading(false);
     }
-  }, [base]);
-  const loadPage = useCallback(async (id, origin) => {
+  }, [base, cache]);
+  const loadPage = useCallback(async (id, origin, force = false) => {
     if (!id) return;
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
     const serial = ++pageEpoch.current;
-    setPageLoading(true);
-    setPageError("");
-    setDescription(null);
+    const identity = `page:${origin}:${id}`;
+    const cached = force ? undefined : cache.get(identity);
+    if (force) cache.invalidate(identity);
+    setPageLoading(cached === undefined);
+    setPageError(null);
     setFieldErrors({});
     try {
       let data;
-      if (origin === "client") {
+      if (cached !== undefined) data = cached;
+      else if (origin === "client") {
         let notificationData;
         if (id === "notifications") {
           notificationData = {
@@ -221,8 +238,10 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         throw new Error(
           "后端设置页面缺少明确的后端作用域，请更新并重新加载后端服务。",
         );
+      if (data.cache !== false) cache.set(identity, data, settingsCacheEvents(data));
       setDescription(data);
       setLoadedPageKey(`${origin}:${id}`);
+      setLoadedScope(cache.scope);
       setValues(cloneData(data.defaultOptions || {}));
       setDirty(false);
     } catch (cause) {
@@ -231,14 +250,26 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         !controller.signal.aborted &&
         serial === pageEpoch.current
       )
-        setPageError(cause.message);
+        setPageError({ message: cause.message, key: identity, scope: cache.scope });
     } finally {
       if (mounted.current && serial === pageEpoch.current)
         setPageLoading(false);
     }
-  }, []);
+  }, [cache]);
   useEffect(() => {
     mounted.current = true;
+    if (!open) {
+      setDescription(null);
+      setLoadedPageKey('');
+      setLoadedScope('');
+      setCatalogScope('');
+      setTabs([]);
+      tabsRef.current = [];
+      setValues({});
+      setDirty(false);
+      setCatalogError('');
+      setPageError(null);
+    }
     return () => {
       mounted.current = false;
       catalogEpoch.current += 1;
@@ -251,8 +282,8 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     if (open && section === "backend") void loadCatalog();
   }, [open, section, loadCatalog]);
   useEffect(() => {
-    if (open && selectedId) void loadPage(selectedId, section);
-  }, [open, section, selectedId, loadPage]);
+    if (open && selectedId && (section === 'client' || catalogScope === cacheScope)) void loadPage(selectedId, section);
+  }, [open, section, selectedId, loadPage, catalogScope, cacheScope]);
   const guardDraft = useCallback(async () => {
     if (
       dirtyRef.current &&
@@ -275,11 +306,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   }, []);
   const close = useCallback(async () => {
     if (!(await guardDraft())) return;
+    cache.clear();
     onClose();
     const scopes = [...pendingRefresh.current];
     pendingRefresh.current.clear();
     if (scopes.length) onRefreshRequested?.(scopes);
-  }, [guardDraft, onClose, onRefreshRequested]);
+  }, [guardDraft, onClose, onRefreshRequested, cache]);
   useBrowserBackLayer(
     Boolean(open),
     () => {
@@ -307,7 +339,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       onEvent({ event }).then(() => {
         if (dirtyRef.current || draftGuards.current.size)
           toast.info("服务器设置已更新，当前编辑内容仍保留，请保存前核对。");
-        else if (selectedId) void loadPage(selectedId, section);
+        else if (selectedId) void loadPage(selectedId, section, true);
       }),
     );
     return () => subscriptions.forEach((unsubscribe) => unsubscribe());
@@ -319,10 +351,11 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   const refresh = useCallback(
     (target) => {
       markRefresh();
+      cache.invalidate(`page:${section}:${selectedId}`);
       if (section === "client" && target === "page" && selectedId)
-        return loadPage(selectedId, section);
+        return loadPage(selectedId, section, true);
     },
-    [markRefresh, section, selectedId, loadPage],
+    [markRefresh, section, selectedId, loadPage, cache],
   );
   const controller = useActionExecutor({
     api: apiClient,
@@ -348,6 +381,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   const save = async () => {
     if (!description?.save) return;
     setFieldErrors({});
+    let executed = false;
     try {
       validateSettingsScope(scopeRef.current);
       const form =
@@ -357,6 +391,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       if (Object.keys(errors).length) return;
       const submitted = cloneData(form);
       const requestPage = pageEpoch.current;
+      executed = true;
       const response = await controller.execute(
         description.save,
         { form },
@@ -369,10 +404,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       if (response === undefined) return;
       if (!mounted.current || requestPage !== pageEpoch.current) return;
       markRefresh();
+      const saved = cloneData(response.defaultOptions || response.values || submitted);
+      if (description.cache !== false) cache.set(`page:${section}:${selectedId}`, { ...description, defaultOptions: saved }, settingsCacheEvents(description));
       if (JSON.stringify(valuesRef.current) !== JSON.stringify(submitted))
         return;
       setValues(
-        cloneData(response.defaultOptions || response.values || submitted),
+        saved,
       );
       setDirty(false);
       scopeRef.current
@@ -380,14 +417,14 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         .forEach((node) => node._cwmJsonEditor?.markSaved());
       if (response.user) setUser(response.user);
       if (
+        !description.save.successText &&
         !(description.save.effects || []).some(
           (effect) => effect.type === "toast",
         )
       )
         toast.success(description.save.successText || "保存成功");
     } catch (cause) {
-      if (!controller.operations[operationKey(description.save, {})]?.error)
-        toast.error(cause.message);
+      if (!executed) toast.error(cause.message);
     }
   };
   const resize = (event) => {
@@ -432,10 +469,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     if (id !== selectedId && (await guardDraft()))
       setSelections((current) => ({ ...current, [section]: id }));
   };
+  useSettingsLoadingToast(open && catalogLoading, '正在加载设置目录…');
+  useSettingsLoadingToast(open && pageLoading, '正在加载设置页…');
   if (!open) return null;
   const isClient = section === "client";
-  const visibleTabs = isClient ? CLIENT_SETTINGS_TABS : tabs;
-  const currentDescription = loadedPageKey === pageKey ? description : null;
+  const visibleTabs = isClient ? CLIENT_SETTINGS_TABS : catalogScope === cacheScope ? tabs : [];
+  const currentDescription = loadedPageKey === pageKey && loadedScope === cacheScope ? description : null;
   const visibleOptions = currentDescription?.search
     ? filterClientSettingsOptions(currentDescription.options, filterQuery)
     : currentDescription?.options;
@@ -446,9 +485,9 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     Boolean(selectedId && (pageLoading || loadedPageKey !== pageKey)) ||
     (!isClient && catalogLoading && !tabs.length);
   const visibleError =
-    pageError || (!isClient && !tabs.length ? catalogError : "");
+    (pageError?.key === `page:${section}:${selectedId}` && pageError.scope === cacheScope ? pageError.message : '') || (!isClient && !tabs.length ? catalogError : "");
   const retry = () =>
-    selectedId ? loadPage(selectedId, section) : loadCatalog();
+    selectedId ? loadPage(selectedId, section, true) : loadCatalog(true);
   return (
     <div
       className="fixed inset-0 z-[50] flex items-center justify-center bg-black/40 p-2 sm:p-5"
@@ -583,35 +622,6 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                   : "min-h-0 flex-1 space-y-1 overflow-y-auto"
               }
             >
-              {!isClient && catalogLoading && !tabs.length && (
-                <div
-                  aria-label="正在加载后端设置目录"
-                  className="space-y-2 p-2"
-                >
-                  {[0, 1, 2, 3].map((id) => (
-                    <div
-                      key={id}
-                      className="h-10 animate-pulse rounded-lg bg-muted"
-                    />
-                  ))}
-                </div>
-              )}
-              {!isClient && catalogError && (
-                <div className="m-1 space-y-2 rounded-xl border border-destructive/15 bg-destructive/5 p-3 text-xs text-destructive">
-                  <p role="alert">{catalogError}</p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 w-full bg-background"
-                    onClick={() => {
-                      void loadCatalog();
-                    }}
-                  >
-                    <RefreshCw className="size-3" />
-                    重试
-                  </Button>
-                </div>
-              )}
               {visibleTabs.map((tab) => {
                 const Icon = CLIENT_ICONS[tab.icon] || Settings;
                 return (
@@ -654,42 +664,15 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
               </div>
             )}
           </nav>
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
             <main
               id="settings-page-panel"
               role="tabpanel"
               aria-labelledby={`settings-section-${section}`}
               className="@container/settings min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
             >
-              <div className="w-full space-y-4">
-                {isLoading ? (
-                  <div className="flex min-h-52 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
-                    <Loader2 className="size-5 animate-spin" />
-                    正在加载设置…
-                  </div>
-                ) : visibleError ? (
-                  <div className="flex min-h-52 flex-col items-center justify-center gap-3 rounded-2xl border bg-card p-7 text-center">
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-destructive/8 text-destructive">
-                      <AlertCircle className="size-5" />
-                    </span>
-                    <h3 className="font-semibold">设置暂时不可用</h3>
-                    <p
-                      role="alert"
-                      className="max-w-md text-sm text-muted-foreground"
-                    >
-                      {visibleError}
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        void retry();
-                      }}
-                    >
-                      <RefreshCw className="size-4" />
-                      重新加载
-                    </Button>
-                  </div>
-                ) : currentDescription ? (
+              <div className={`w-full space-y-4 ${isLoading ? '' : 'cwm-settings-reveal'}`} aria-busy={isLoading || undefined}>
+                {currentDescription ? (
                   <>
                     {Object.entries(fieldErrors).map(([name, message]) => (
                       <p
@@ -726,6 +709,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                           : "space-y-4"
                       }
                       initialValues={values}
+                      disabled={isLoading}
                       onChange={(next) => {
                         setValues(next);
                         if (
@@ -746,6 +730,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                         updateUser: setUser,
                         refresh,
                         registerDraftGuard,
+                        settingsCache: cache,
                       }}
                     />
                   </>
@@ -756,9 +741,15 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                 ) : null}
               </div>
             </main>
+            {visibleError && <div className="cwm-settings-reveal absolute inset-0 z-10 flex items-center justify-center bg-background/70 p-5 backdrop-blur-sm">
+              <div className="w-full max-w-sm space-y-4 rounded-xl border bg-background/95 p-6 shadow-sm">
+                <h3 className="flex items-center gap-2 font-semibold"><AlertCircle className="size-5 text-muted-foreground" />设置暂时不可用</h3>
+                <p role="alert" className="break-words text-sm text-muted-foreground">{visibleError}</p>
+                <Button variant="outline" onClick={() => { void retry(); }}><RefreshCw className="size-4" />重新加载</Button>
+              </div>
+            </div>}
             {currentDescription?.save ? (
               <footer className="shrink-0 space-y-2 border-t bg-background px-5 py-3">
-                <OperationStatus operation={saveState} context={{ navigate }} />
                 <div className="flex items-center justify-between gap-3">
                   <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     {dirty ? (

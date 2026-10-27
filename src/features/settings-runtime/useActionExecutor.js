@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cloneData, executeRequest, formatValue, getValue, matchesCondition, requestEndpoint, resolveValue } from './model.js';
+import { useSettingsOperationToasts } from './loadingToasts.js';
 
 const operationKey = (action, scope) => `${action.id || action.label || 'action'}:${action.endpoint || action.clientAction || action.steps?.[0]?.endpoint || ''}:${scope.parentItem?.id || ''}:${scope.item?.id || scope.item?.key || ''}`;
 export { operationKey };
@@ -22,6 +23,7 @@ export function useActionExecutor(services) {
     const inFlight = useRef(new Set());
     const serial = useRef(0);
     const [operations, setOperations] = useState({});
+    useSettingsOperationToasts(operations, services.navigate);
     useEffect(() => {
         mounted.current = true;
         const active = controllers.current;
@@ -121,7 +123,8 @@ export function useActionExecutor(services) {
                 else if (effect.type === 'user') source.updateUser?.(resolveValue(effect.value, resultScope));
                 else throw new Error(`不支持的操作结果：${effect.type}`);
             }
-            update({ busy: false, response: cloneData(response), message: action.successText || '', error: '' });
+            const hasToastEffect = (action.effects || []).some((effect) => effect.type === 'toast');
+            update({ busy: false, response: cloneData(response), message: hasToastEffect ? '' : action.successText || '', error: '' });
             await callbacks.onSuccess?.(response);
             return response;
         } catch (error) {

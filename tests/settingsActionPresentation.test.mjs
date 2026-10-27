@@ -42,11 +42,11 @@ test('only controlled icon and tone metadata is rendered and labels remain liter
     assert.deepEqual(getActionPresentation({ tone: 'text-red-600 arbitrary-css' }), { variant: 'outline', className: '' });
 });
 
-test('pending actions render one progress icon instead of duplicating their normal icon', () => {
+test('action labels retain one icon and leave progress to the floating notice', () => {
     const html = renderToStaticMarkup(React.createElement(SettingsActionLabel, {
-        action: { icon: 'shield-check', label: '全部允许' }, busy: true,
+        action: { icon: 'shield-check', label: '全部允许' },
     }));
-    assert.match(html, /data-slot="action-progress"/);
-    assert.doesNotMatch(html, /data-slot="action-icon"/);
+    assert.doesNotMatch(html, /data-slot="action-progress"/);
+    assert.match(html, /data-slot="action-icon"/);
     assert.equal((html.match(/<svg/g) || []).length, 1);
 });

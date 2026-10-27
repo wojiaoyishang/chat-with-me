@@ -11,6 +11,19 @@
     --pretty-scrollbar-track: transparent;
 }
 
+@keyframes cwm-settings-reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cwm-settings-reveal {
+  animation: cwm-settings-reveal 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cwm-settings-reveal { animation: none; }
+}
+
 .dark {
     --pretty-scrollbar-thumb: rgba(148, 163, 184, 0.36);
     --pretty-scrollbar-thumb-hover: rgba(203, 213, 225, 0.58);

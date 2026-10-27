@@ -969,9 +969,9 @@
      - 4
      - ``src/features/settings-client/catalog.js``
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
-     - 15
+     - 14
      - 0
-     - 119
+     - 118
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/SettingsActionLabel </api/javascript/features/settings-runtime/SettingsActionLabel>`
      - 1
@@ -1014,7 +1014,7 @@
      - 0
      - ``src/features/settings-runtime/displayValue.js``
    * - :doc:`src/features/settings-runtime/extensions </api/javascript/features/settings-runtime/extensions>`
-     - 1
+     - 2
      - 0
      - 1
      - ``src/features/settings-runtime/extensions.jsx``
@@ -1023,6 +1023,11 @@
      - 0
      - 0
      - ``src/features/settings-runtime/formLayout.js``
+   * - :doc:`src/features/settings-runtime/loadingToasts </api/javascript/features/settings-runtime/loadingToasts>`
+     - 2
+     - 0
+     - 9
+     - ``src/features/settings-runtime/loadingToasts.js``
    * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
      - 14
      - 0
@@ -1033,10 +1038,15 @@
      - 0
      - 1
      - ``src/features/settings-runtime/registry.js``
+   * - :doc:`src/features/settings-runtime/sessionCache </api/javascript/features/settings-runtime/sessionCache>`
+     - 3
+     - 0
+     - 10
+     - ``src/features/settings-runtime/sessionCache.js``
    * - :doc:`src/features/settings-runtime/useActionExecutor </api/javascript/features/settings-runtime/useActionExecutor>`
      - 3
      - 0
-     - 12
+     - 13
      - ``src/features/settings-runtime/useActionExecutor.js``
    * - :doc:`src/features/settings-runtime/validation </api/javascript/features/settings-runtime/validation>`
      - 3
@@ -1580,8 +1590,10 @@
    /api/javascript/features/settings-runtime/displayValue
    /api/javascript/features/settings-runtime/extensions
    /api/javascript/features/settings-runtime/formLayout
+   /api/javascript/features/settings-runtime/loadingToasts
    /api/javascript/features/settings-runtime/model
    /api/javascript/features/settings-runtime/registry
+   /api/javascript/features/settings-runtime/sessionCache
    /api/javascript/features/settings-runtime/useActionExecutor
    /api/javascript/features/settings-runtime/validation
    /api/javascript/features/story/StoriesPage

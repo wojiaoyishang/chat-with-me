@@ -11,7 +11,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const { createRoot } = await import('react-dom/client');
 
 const bundlePath = `temp/settings-runtime-ui-${process.pid}.mjs`;
-await build({ stdin: { contents: "export {default} from './src/components/setting/DynamicSettings.jsx';export {default as SettingPage} from './src/pages/SettingPage.jsx';export {default as BootstrapGate} from './src/runtime/backend/BackendBootstrapGate.jsx';export {registerSettingsComponent} from './src/features/settings-runtime/registry.js';", resolveDir: process.cwd() }, outfile: bundlePath, bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', plugins: [{ name: 'settings-ui', setup(builder) {
+await build({ stdin: { contents: "export {default} from './src/components/setting/DynamicSettings.jsx';export {default as SettingPage} from './src/pages/SettingPage.jsx';export {default as BootstrapGate} from './src/runtime/backend/BackendBootstrapGate.jsx';export {registerSettingsComponent} from './src/features/settings-runtime/registry.js';export {SettingsTestToaster,resetSettingsTestToasts} from 'sonner';", resolveDir: process.cwd() }, outfile: bundlePath, bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', plugins: [{ name: 'settings-ui', setup(builder) {
     builder.onResolve({ filter: /^(react(?:\/|$)|react-dom(?:\/|$))/ }, ({ path: name }) => ({ path: name, external: true }));
     builder.onResolve({ filter: /(?:apiClient\.js|session\.js|connection\.js|components\/ui\/[^/]+)$/ }, ({ path: name, importer }) => {
         if (!importer.endsWith('BackendBootstrapGate.jsx')) return null;
@@ -28,16 +28,24 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
     builder.onResolve({ filter: /JsonConfigEditor\.jsx$/ }, () => ({ path: 'json-editor', namespace: 'mock' }));
     builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => {
         if (name === 'bootstrap-session') return { loader: 'js', contents: 'export const ensureClientSession=async()=>{globalThis.settingsUI.sessionChecks=(globalThis.settingsUI.sessionChecks||0)+1;if(globalThis.settingsUI.sessionError)throw globalThis.settingsUI.sessionError;};' };
-        if (name === 'sonner') return { loader: 'js', contents: 'export const toast={error:(...args)=>globalThis.settingsUI.errors.push(args),success:(...args)=>(globalThis.settingsUI.successes||=[]).push(args),info:()=>{}};' };
+        if (name === 'sonner') return { loader: 'jsx', contents: `
+            import React,{useEffect,useState} from 'react';
+            const notices=new Map(), listeners=new Set(); let sequence=0;
+            const emit=()=>{for(const listener of listeners)listener([...notices.values()]);};
+            const show=kind=>(message,options={})=>{const id=options.id||'test-toast-'+(++sequence);notices.set(id,{id,kind,message,options});(globalThis.settingsUI.toastEvents||=[]).push({id,kind,message,options});if(kind==='error')globalThis.settingsUI.errors.push([message,options]);if(kind==='success')(globalThis.settingsUI.successes||=[]).push(options.id?[message,options]:[message]);emit();return id;};
+            export const toast={loading:show('loading'),warning:show('warning'),error:show('error'),success:show('success'),info:show('info'),dismiss:id=>{if(id===undefined){notices.clear();emit();}else if(notices.delete(id))emit();}};
+            export const resetSettingsTestToasts=()=>{notices.clear();sequence=0;};
+            export function SettingsTestToaster(){const [items,setItems]=useState(()=>[...notices.values()]);useEffect(()=>{listeners.add(setItems);setItems([...notices.values()]);return()=>listeners.delete(setItems);},[]);return <aside data-settings-test-toaster>{items.map(item=><div key={item.id} role={item.kind==='error'?'alert':'status'} data-settings-test-toast={item.id}><span>{item.message}</span>{item.options.description&&<p>{item.options.description}</p>}{[item.options.action,item.options.cancel].filter(Boolean).map((action,index)=><button key={index} onClick={action.onClick}>{action.label}</button>)}</div>)}</aside>;}
+        ` };
         if (name === 'react-i18next') return { loader: 'js', contents: 'const t=(key,options)=>options?.defaultValue??key;export const useTranslation=()=>({t});' };
         if (name === 'react-router-dom') return { loader: 'js', contents: 'export const useNavigate=()=>path=>globalThis.settingsUI.navigated.push(path);' };
         if (name === 'framer-motion') return { loader: 'jsx', contents: 'import React,{forwardRef} from "react";const cache={};export const motion=new Proxy({}, {get(_,tag){return cache[tag]||(cache[tag]=forwardRef(({children,initial,animate,exit,transition,layout,...props},ref)=>React.createElement(tag,{...props,ref},children)));}});export const AnimatePresence=({children})=><>{children}</>;' };
         if (name.endsWith('/apiClient.js')) return { loader: 'js', contents: 'export default Object.fromEntries(["get","post","put","patch","delete"].map(method=>[method,(...args)=>globalThis.settingsUI.api(method,...args)]));' };
-        if (name.endsWith('/tools.jsx')) return { loader: 'js', contents: 'export const useIsMobile=()=>false;export const getLocalSetting=(_key,fallback)=>fallback;export const setLocalSetting=()=>{};' };
-        if (name.endsWith('/connection.js')) return { loader: 'js', contents: 'export const BACKEND_MANAGE_EVENT="cwm:backend-manage";export const getBackendService=()=>globalThis.settingsUI.service;export const beforeBackendSwitch=()=>()=>{};export const subscribeBackend=()=>()=>{};export const getBackendConnection=()=>({id:"default",epoch:0,title:"测试后端",url:"/api"});export const setBackendManifest=value=>{globalThis.settingsUI.manifest=value;};' };
+        if (name.endsWith('/tools.jsx')) return { loader: 'js', contents: `import {useEffect,useState} from 'react';export const useIsMobile=()=>false;export const getLocalSetting=(key,fallback)=>globalThis.settingsUI.localSettings?.[key]??fallback;export const setLocalSetting=(key,value)=>{(globalThis.settingsUI.localSettings||={})[key]=value;window.dispatchEvent(new CustomEvent('chat-local-setting-change',{detail:{key,value}}));};export const useLocalSetting=(key,fallback)=>{const [value,setValue]=useState(()=>getLocalSetting(key,fallback));useEffect(()=>{const update=event=>{if(event.detail?.key===key)setValue(event.detail.value);};window.addEventListener('chat-local-setting-change',update);return()=>window.removeEventListener('chat-local-setting-change',update);},[key]);return[value,next=>setLocalSetting(key,next)];};` };
+        if (name.endsWith('/connection.js')) return { loader: 'js', contents: 'export const BACKEND_MANAGE_EVENT="cwm:backend-manage";export const getBackendService=()=>globalThis.settingsUI.service;export const beforeBackendSwitch=()=>()=>{};export const subscribeBackend=callback=>{(globalThis.settingsUI.backendSubscribers||=new Set()).add(callback);return()=>globalThis.settingsUI.backendSubscribers.delete(callback);};export const getBackendConnection=()=>globalThis.settingsUI.connection||({id:"default",epoch:0,title:"测试后端",url:"/api"});export const setBackendManifest=value=>{globalThis.settingsUI.manifest=value;};' };
         if (name.endsWith('/browserHistoryLayers.js')) return { loader: 'js', contents: 'export const useBrowserBackLayer=()=>{};' };
         if (name.endsWith('/userContext.jsx')) return { loader: 'js', contents: 'const user={setUser:value=>{globalThis.settingsUI.user=value;}};export const useUserStore=selector=>selector(user);' };
-        if (name.endsWith('/clientAdapter.js')) return { loader: 'js', contents: 'export default {read:async key=>key==="backends"?{items:globalThis.settingsUI.backendProfiles||[]}:undefined,write:async(...args)=>{(globalThis.settingsUI.localWrites||=[]).push(args);},invoke:async(...args)=>{(globalThis.settingsUI.clientCalls||=[]).push(args);return {};},subscribe:()=>()=>{}};' };
+        if (name.endsWith('/clientAdapter.js')) return { loader: 'js', contents: 'import {setLocalSetting} from "@/lib/tools.jsx";export default {read:async key=>key==="backends"?{items:globalThis.settingsUI.backendProfiles||[]}:globalThis.settingsUI.localSettings?.[key],write:async(...args)=>{(globalThis.settingsUI.localWrites||=[]).push(args);setLocalSetting(args[0],args[1]);},invoke:async(...args)=>{(globalThis.settingsUI.clientCalls||=[]).push(args);return {};},subscribe:()=>()=>{}};' };
         if (name.endsWith('/extensions.jsx')) return { loader: 'js', contents: '' };
         if (name.endsWith('/useEventStore.jsx')) return { loader: 'js', contents: 'export const onEvent=()=>({then:()=>()=>{}});' };
         if (name.endsWith('/virtualUrl.js')) return { loader: 'js', contents: 'export const resolveResourceUrl=value=>value;' };
@@ -58,7 +66,8 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
         throw new Error(`Unexpected dependency ${name}`);
     });
 } }] });
-const { default: DynamicSettings, SettingPage, BootstrapGate, registerSettingsComponent } = await import(pathToFileURL(path.resolve(bundlePath)).href);
+const { default: DynamicSettings, SettingPage, BootstrapGate, registerSettingsComponent, SettingsTestToaster, resetSettingsTestToasts } = await import(pathToFileURL(path.resolve(bundlePath)).href);
+const wrap = element => React.createElement(React.Fragment, null, element, React.createElement(SettingsTestToaster));
 
 async function mount(config, response, handler, runtime = {}, initialValues = {}) {
     const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -67,9 +76,10 @@ async function mount(config, response, handler, runtime = {}, initialValues = {}
         settingsUI.calls.push([method, url, body, options]);
         return handler ? handler(method, url, body, options) : method === 'get' ? response : { saved: true };
     } };
+    resetSettingsTestToasts();
     const root = createRoot(document.getElementById('root'));
-    await act(async () => root.render(React.createElement(DynamicSettings, { config, initialValues, onChange: value => settingsUI.changed.push(value), runtimeContext: { navigate: path => settingsUI.navigated.push(path), ...runtime } })));
-    return { render: async element => { await act(async () => root.render(element)); }, close: async () => { await act(async () => root.unmount()); dom.window.close(); } };
+    await act(async () => root.render(wrap(React.createElement(DynamicSettings, { config, initialValues, onChange: value => settingsUI.changed.push(value), runtimeContext: { navigate: path => settingsUI.navigated.push(path), ...runtime } }))));
+    return { render: async element => { await act(async () => root.render(wrap(element))); }, close: async () => { await act(async () => root.unmount()); dom.window.close(); } };
 }
 async function mountSettingsPage(handler, service = '/custom/settings-index') {
     const ui = await mount([], {}, handler);
@@ -91,4 +101,4 @@ const ref = value => ({ $ref: value });
 const resource = (extra = {}) => ({ type: 'resource', id: 'fixtures', text: '动态资源', source: { endpoint: '/fixtures', listPath: 'items' }, titleField: 'title', actions: [{ kind: 'edit', label: '编辑' }], editor: { options: [{ type: 'text', name: 'title', text: '名称', required: true }, { type: 'secret-map', name: 'connection.headers', text: '请求头' }], defaults: {}, update: { id: 'save', label: '保存', endpoint: '/fixtures/{item.id}', method: 'PATCH', body: { title: ref('form.title'), revision: ref('item.revision'), connection: ref('form.connection') } } }, ...extra });
 
 
-export { mount, mountSettingsPage, mountBootstrapGate, button, click, edit, upload, ref, resource, DynamicSettings, registerSettingsComponent, React, act };
+export { mount, mountSettingsPage, mountBootstrapGate, button, click, edit, upload, ref, resource, DynamicSettings, SettingPage, registerSettingsComponent, React, act };

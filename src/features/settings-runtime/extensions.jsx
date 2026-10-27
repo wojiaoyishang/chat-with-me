@@ -1,14 +1,20 @@
 import { registerSettingsComponent } from "./registry.js";
 import { lazy, Suspense } from "react";
+import { useSettingsLoadingToast } from "./loadingToasts.js";
 
 const NodeGraphField = lazy(
   () => import("@/components/configuration/NodeGraphField.jsx"),
 );
 
+function LoadingExtension() {
+  useSettingsLoadingToast(true, '正在加载图编辑组件…');
+  return null;
+}
+
 export function LazyNodeGraphField(props) {
   return (
-    <Suspense fallback={<p className="py-4 text-sm text-muted-foreground">正在加载图编辑组件…</p>}>
-      <NodeGraphField {...props} />
+    <Suspense fallback={<LoadingExtension />}>
+      <div className="cwm-settings-reveal"><NodeGraphField {...props} /></div>
     </Suspense>
   );
 }

@@ -84,9 +84,9 @@ const HistorySynchronizedRouter = () => {
 
 ReactDOM.createRoot(root).render(
     <StrictMode>
+        <MyToaster /> {/* 连接加载和恢复界面也可显示吐司 */}
         <BackendBootstrapGate>
         <ContextEvent /> {/* 跨页面事件 */}
-        <MyToaster /> {/* 跨页面的吐司组件 */}
         <FatalErrorPopoverElement /> {/* 错误提示 */}
         <UniversalModalHost /> {/* 后端驱动的通用弹窗 */}
         <ImageViewer />

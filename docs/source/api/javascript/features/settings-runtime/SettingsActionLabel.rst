@@ -3,7 +3,7 @@ src/features/settings-runtime/SettingsActionLabel 模块
 
 .. js:module:: src/features/settings-runtime/SettingsActionLabel
 
-A busy action owns one progress icon; its usual icon returns on completion.
+Progress belongs to the floating notice, leaving this label's size stable.
 
 .. note::
 
@@ -27,21 +27,21 @@ A busy action owns one progress icon; its usual icon returns on completion.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsActionLabel.jsx:636:1189:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsActionLabel.jsx:627:1044:FUNCTION
 
-.. js:function:: SettingsActionLabel({ action = {}, label, busy = false })
+.. js:function:: SettingsActionLabel({ action = {}, label })
 
-   A busy action owns one progress icon; its usual icon returns on completion.
+   Progress belongs to the floating notice, leaving this label's size stable.
 
-   **性质**：同步函数；导出 API；源码第 ``16``—``23`` 行。
+   **性质**：同步函数；导出 API；源码第 ``16``—``22`` 行。
 
    **参数**
 
-   ``{ action = {}, label, busy = false }``
-      调用方传入的 ``action = , label, busy = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ action = {}, label }``
+      调用方传入的 ``action = , label`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<> {busy ? <Loader2 aria-hidden="true" className="size-4 shrink-0 animate-spin" data-slot="action-progress" /> : Icon && <Icon aria-hidden="true" className="size-4 shrink-0" data-…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<> {Icon && <Icon aria-hidden="true" className="size-4 shrink-0" data-slot="action-icon" />} {label ?? action.label ?? action.text ?? '执行'} </>``。
 
    **主要协作调用**：``Object.hasOwn``。

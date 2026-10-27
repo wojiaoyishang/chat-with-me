@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { Loader2, Server, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Server, RefreshCw } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import {
   Dialog,
@@ -10,6 +10,8 @@ import {
 } from "../../components/ui/dialog";
 import DynamicSettings from "../../components/setting/DynamicSettings.jsx";
 import { clientSettingsPage } from "../../features/settings-client/catalog.js";
+import { useSettingsLoadingToast } from '../../features/settings-runtime/loadingToasts.js';
+import { getSettingsDialogStyle } from '../../features/settings-runtime/dialogSizing.js';
 import apiClient from "../../lib/apiClient.js";
 import { ensureClientSession } from "./session.js";
 import {
@@ -27,7 +29,13 @@ export default function BackendBootstrapGate({ children }) {
   const [error, setError] = useState("");
   const [managerOpen, setManagerOpen] = useState(false);
   const [connection, setConnection] = useState(getBackendConnection);
-  const load = useCallback(async (signal) => {
+  const request = useRef(null);
+  useSettingsLoadingToast(status === 'loading', '正在连接后端…');
+  const load = useCallback(async () => {
+    request.current?.abort();
+    const controller = new AbortController();
+    request.current = controller;
+    const { signal } = controller;
     setStatus("loading");
     setError("");
     try {
@@ -52,9 +60,8 @@ export default function BackendBootstrapGate({ children }) {
     }
   }, []);
   useEffect(() => {
-    const controller = new AbortController();
-    void load(controller.signal);
-    return () => controller.abort();
+    void load();
+    return () => request.current?.abort();
   }, [load]);
   useEffect(() => {
     const show = () => setManagerOpen(true);
@@ -70,15 +77,12 @@ export default function BackendBootstrapGate({ children }) {
       {status === "ready" ? (
         children
       ) : (
-        <div className="flex min-h-screen items-center justify-center bg-muted/20 p-6">
-          <div className="w-full max-w-lg space-y-5 rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+        <div className="min-h-screen bg-muted/15">
+        {status === 'error' && <div className="cwm-settings-reveal fixed inset-0 flex items-center justify-center bg-background/65 p-5 backdrop-blur-sm">
+          <div className="w-full max-w-md space-y-5 rounded-xl border bg-background/95 p-6 shadow-lg">
             <div className="flex items-center gap-2 text-lg font-semibold">
-              {status === "loading" ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
                 <Server className="size-5" />
-              )}
-              {status === "loading" ? "正在连接后端…" : "无法打开选定后端"}
+              无法打开选定后端
             </div>
             {error && (
               <p role="alert" className="text-sm text-destructive">
@@ -87,7 +91,7 @@ export default function BackendBootstrapGate({ children }) {
             )}
             {status === "error" && (
               <>
-                <div className="rounded-xl border bg-muted/25 p-3">
+                <div className="border-l-2 pl-3">
                   <p className="text-sm font-medium">{connection.title}</p>
                   <p className="mt-1 break-all text-xs text-muted-foreground">
                     {connection.url}
@@ -109,10 +113,11 @@ export default function BackendBootstrapGate({ children }) {
               </>
             )}
           </div>
+        </div>}
         </div>
       )}
       <Dialog open={managerOpen} onOpenChange={setManagerOpen}>
-        <DialogContent className="flex max-h-[88dvh] w-[min(58rem,95vw)] max-w-none flex-col gap-0 overflow-hidden p-0">
+        <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-none" style={getSettingsDialogStyle({ width: 640 })}>
           <DialogHeader className="shrink-0 border-b bg-background px-5 py-5 sm:px-6">
             <DialogTitle className="flex items-center gap-3">
               <span className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
