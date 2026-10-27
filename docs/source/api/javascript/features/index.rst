@@ -969,10 +969,25 @@
      - 4
      - ``src/features/settings-client/catalog.js``
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
-     - 13
+     - 15
      - 0
-     - 115
+     - 119
      - ``src/features/settings-runtime/GenericNodes.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsActionLabel </api/javascript/features/settings-runtime/SettingsActionLabel>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/settings-runtime/SettingsActionLabel.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsCards </api/javascript/features/settings-runtime/SettingsCards>`
+     - 3
+     - 0
+     - 3
+     - ``src/features/settings-runtime/SettingsCards.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsFormLayout </api/javascript/features/settings-runtime/SettingsFormLayout>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/settings-runtime/SettingsFormLayout.jsx``
    * - :doc:`src/features/settings-runtime/SettingsPresentation </api/javascript/features/settings-runtime/SettingsPresentation>`
      - 2
      - 0
@@ -983,11 +998,26 @@
      - 0
      - 20
      - ``src/features/settings-runtime/SettingsTabs.jsx``
+   * - :doc:`src/features/settings-runtime/actionPresentation </api/javascript/features/settings-runtime/actionPresentation>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/settings-runtime/actionPresentation.js``
+   * - :doc:`src/features/settings-runtime/displayValue </api/javascript/features/settings-runtime/displayValue>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/settings-runtime/displayValue.js``
    * - :doc:`src/features/settings-runtime/extensions </api/javascript/features/settings-runtime/extensions>`
      - 1
      - 0
      - 1
      - ``src/features/settings-runtime/extensions.jsx``
+   * - :doc:`src/features/settings-runtime/formLayout </api/javascript/features/settings-runtime/formLayout>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/settings-runtime/formLayout.js``
    * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
      - 14
      - 0
@@ -1535,9 +1565,15 @@
    /api/javascript/features/notification/widgetNotificationPolicy
    /api/javascript/features/settings-client/catalog
    /api/javascript/features/settings-runtime/GenericNodes
+   /api/javascript/features/settings-runtime/SettingsActionLabel
+   /api/javascript/features/settings-runtime/SettingsCards
+   /api/javascript/features/settings-runtime/SettingsFormLayout
    /api/javascript/features/settings-runtime/SettingsPresentation
    /api/javascript/features/settings-runtime/SettingsTabs
+   /api/javascript/features/settings-runtime/actionPresentation
+   /api/javascript/features/settings-runtime/displayValue
    /api/javascript/features/settings-runtime/extensions
+   /api/javascript/features/settings-runtime/formLayout
    /api/javascript/features/settings-runtime/model
    /api/javascript/features/settings-runtime/registry
    /api/javascript/features/settings-runtime/useActionExecutor

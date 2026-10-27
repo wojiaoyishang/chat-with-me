@@ -1,6 +1,7 @@
 import CryptoJS from 'crypto-js';
 
 const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+const TRANSPARENT_CONTAINERS = new Set(['tabs', 'form-layout', 'profile-card']);
 export const pathParts = (path) => Array.isArray(path) ? path : String(path || '').split('.').filter(Boolean);
 
 export function getValue(value, path, fallback) {
@@ -110,7 +111,7 @@ export function settingsChildFields(field) {
 
 export function findSettingsField(fields, path) {
     for (const field of fields || []) {
-        if (field.type === 'tabs') {
+        if (TRANSPARENT_CONTAINERS.has(field.type)) {
             const found = findSettingsField(settingsChildFields(field), path);
             if (found) return found;
             continue;
@@ -130,7 +131,7 @@ export function pageValues(options = [], initial = {}) {
     let result = cloneData(initial) || {};
     for (const field of options) {
         if (!field) continue;
-        if (field.type === 'tabs') { result = pageValues(settingsChildFields(field), result); continue; }
+        if (TRANSPARENT_CONTAINERS.has(field.type)) { result = pageValues(settingsChildFields(field), result); continue; }
         if (!field.name) {
             if (field.children || field.options) result = pageValues(field.children || field.options, result);
             continue;
@@ -159,7 +160,7 @@ export function validateFields(fields, form, prefix = [], errors = {}, context =
         if (!field) continue;
         const scope = { ...context, form: getValue(form, prefix, form), root: form };
         if (field.when && !matchesCondition(field.when, scope)) continue;
-        if (field.type === 'tabs') { validateFields(settingsChildFields(field), form, prefix, errors, context); continue; }
+        if (TRANSPARENT_CONTAINERS.has(field.type)) { validateFields(settingsChildFields(field), form, prefix, errors, context); continue; }
         if (!field.name) { if (field.children || field.options) validateFields(field.children || field.options, form, prefix, errors, context); continue; }
         const path = [...prefix, ...pathParts(field.name)];
         const value = getValue(form, path);

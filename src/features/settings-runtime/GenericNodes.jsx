@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { ChevronDown, Loader2, Plus, RefreshCw, ExternalLink, Trash2, CircleUserRound, Inbox } from 'lucide-react';
+import { Camera, ChevronDown, Loader2, Plus, RefreshCw, ExternalLink, Trash2, CircleUserRound, Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,6 +10,11 @@ import { cloneData, formatValue, getValue, matchesCondition, pageValues, request
 import { operationKey } from './useActionExecutor.js';
 import { validateSettingsFields, validateSettingsScope } from './validation.js';
 import { SettingsIcon, SettingsSection } from './SettingsPresentation.jsx';
+import { formatSettingsValue as displayValue } from './displayValue.js';
+import { ConnectionCard, ProfileCard, SettingsCardGrid } from './SettingsCards.jsx';
+import SettingsFormLayout from './SettingsFormLayout.jsx';
+import { SettingsActionLabel } from './SettingsActionLabel.jsx';
+import { getActionPresentation } from './actionPresentation.js';
 const EMPTY_MAP = Object.freeze({});
 
 export function FileNode({ item, value, onChange, context }) {
@@ -39,6 +44,14 @@ export function FileNode({ item, value, onChange, context }) {
         } catch (cause) { setError(cause.message); }
         finally { setBusy(false); }
     };
+    if (item.appearance === 'avatar') return <div className="shrink-0" data-settings-pending={busy || undefined} data-settings-invalid={Boolean(error) || undefined} data-settings-message={error || undefined}>
+        <label className={`group relative block size-16 cursor-pointer rounded-full bg-muted focus-within:ring-2 focus-within:ring-ring ${context.disabled || item.disabled ? 'cursor-default opacity-60' : ''}`}>
+            <span className="flex size-full items-center justify-center overflow-hidden rounded-full">{preview ? <img src={resolveResourceUrl(preview)} alt={item.text || '头像'} className="size-full object-cover" /> : <CircleUserRound className="size-7 text-muted-foreground" />}</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-0.5 -right-0.5 rounded-full border bg-background p-1 text-muted-foreground">{busy ? <Loader2 className="size-3 animate-spin" /> : <Camera className="size-3" />}</span>
+            <Input type="file" className="absolute inset-0 size-full cursor-pointer rounded-full opacity-0" accept={item.accept} aria-label={item.text || '更换头像'} disabled={busy || context.disabled || item.disabled} onChange={(event) => { void choose(event); }} />
+        </label>
+        {error && <p role="alert" className="mt-1 max-w-40 text-xs text-destructive">{error}</p>}
+    </div>;
     return <div className={`flex min-w-0 flex-col gap-3 rounded-xl border border-border/65 bg-muted/10 p-3 ${preview ? 'sm:flex-row sm:items-center sm:gap-4' : ''}`} data-settings-pending={busy || undefined} data-settings-invalid={Boolean(error) || undefined} data-settings-message={error || undefined}>
         {preview && <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-background"><img src={resolveResourceUrl(preview)} alt={item.text || '预览'} className="size-full object-contain" /></div>}
         <div className="min-w-0 flex-1 space-y-2">
@@ -55,12 +68,11 @@ export function ActionButton({ action, context, scope = {}, callbacks, disabled 
     if (!matchesCondition(action.when || action.showWhen, actualScope)) return null;
     const operation = context.operations?.[operationKey(action, actualScope)];
     const isDisabled = disabled || context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, actualScope));
+    const presentation = getActionPresentation(action, variant || 'outline');
     return <div className="min-w-0 space-y-2">
-        <Button type="button" size="sm" variant={variant || action.variant || 'outline'} disabled={isDisabled || operation?.busy}
-            className={`rounded-xl ${action.confirm?.danger ? 'text-destructive hover:bg-destructive/5 hover:text-destructive' : ''}`}
+        <Button type="button" size="sm" {...presentation} disabled={isDisabled || operation?.busy}
             onClick={() => { void context.execute(action, actualScope, callbacks).catch(() => {}); }}>
-            {operation?.busy && <Loader2 className="size-3.5 animate-spin" />}
-            {formatValue(action.label || action.text || '执行', actualScope)}
+            <SettingsActionLabel action={action} label={formatValue(action.label || action.text || '执行', actualScope)} busy={Boolean(operation?.busy)} />
         </Button>
         {showStatus && operation && <OperationStatus operation={operation} context={context} />}
     </div>;
@@ -107,6 +119,20 @@ export function ProfileSummaryNode({ item, context }) {
             {item.actions?.length > 0 && <div className="flex flex-wrap gap-2">{item.actions.map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />)}</div>}
         </div>
     </SettingsSection>;
+}
+
+function presentationActions(actions, context) {
+    const scope = { form: context.values, item: context.item, parentItem: context.parentItem };
+    const visible = (actions || []).filter((action) => matchesCondition(action.when || action.showWhen, scope));
+    return visible.length ? visible.map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />) : null;
+}
+
+export function ProfileCardNode({ item, context, avatarControl, children }) {
+    return <ProfileCard item={item} context={context} avatarControl={avatarControl} actions={presentationActions(item.actions, context)}>{children}</ProfileCard>;
+}
+
+export function ConnectionCardNode({ item, context }) {
+    return <ConnectionCard item={item} context={context} actions={presentationActions(item.actions, context)} />;
 }
 
 /** A persisted operation can be inspected again after the settings page reopens. */
@@ -166,13 +192,6 @@ export function AsyncOperationNode({ item, context }) {
         {item.errorsPath && getValue(data, item.errorsPath)?.length > 0 && <TableNode item={{ columns: item.errorColumns || [] }} value={getValue(data, item.errorsPath)} context={context} />}
         <div className="flex flex-wrap items-start gap-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={{ ...context, disabled: context.disabled || busy || !ready || unresolved }} callbacks={callbacks} showStatus={false} />)}{item.source?.endpoint && <Button type="button" size="sm" variant="outline" disabled={busy} onClick={read}><RefreshCw className="size-3.5" />重新读取状态</Button>}</div>
     </SettingsSection>;
-}
-
-function displayValue(value) {
-    if (value == null) return '—';
-    if (typeof value === 'boolean') return value ? '是' : '否';
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
 }
 
 export function TableNode({ item, value, context }) {
@@ -263,7 +282,7 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
         </RadioGroup>)}
     </div>;
     return <SettingsSection title={item.text} description={item.description || item.tips} variant={item.variant} bodyClassName={item.variant === 'card' ? 'space-y-3 p-4' : 'space-y-3'}>
-        <div className="flex flex-wrap items-center gap-2"><Input className="h-9 min-w-40 flex-1" aria-label={item.searchLabel || '搜索选项'} placeholder={item.searchPlaceholder || '搜索选项'} value={query} onChange={(event) => setQuery(event.target.value)} />{(item.bulkActions || []).map((action) => <Button type="button" size="sm" variant="outline" key={action.label} disabled={context.disabled} onClick={() => { void bulk(action); }}>{action.label}</Button>)}</div>
+        <div className="flex flex-wrap items-center gap-2"><Input className="h-9 min-w-40 flex-1" aria-label={item.searchLabel || '搜索选项'} placeholder={item.searchPlaceholder || '搜索选项'} value={query} onChange={(event) => setQuery(event.target.value)} />{(item.bulkActions || []).map((action) => <Button type="button" size="sm" {...getActionPresentation(action)} key={action.label} disabled={context.disabled} onClick={() => { void bulk(action); }}><SettingsActionLabel action={action} /></Button>)}</div>
         <div className="min-w-0">
             {!visibleGroups.length ? <p className="py-6 text-center text-sm text-muted-foreground">{item.emptyText || '没有匹配的选项'}</p> : grouped ? visibleGroups.map((group) => {
                 const open = Boolean(keyword) || expanded.has(group.id);
@@ -274,7 +293,7 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
                             <ChevronDown aria-hidden="true" className={`size-4 shrink-0 text-muted-foreground transition-transform ${open ? '' : '-rotate-90'}`} />
                             <span className="min-w-0 truncate text-sm font-medium">{group.label || group.id}</span><span className="shrink-0 text-xs font-normal tabular-nums text-muted-foreground">{keyword ? `${group.rows.length} / ${group.sourceRows.length}` : group.rows.length}</span>
                         </Button>
-                        {group.bulkActions?.length > 0 && <div className="flex shrink-0 flex-wrap items-center gap-1">{group.bulkActions.map((action, index) => <Button key={action.id || action.value || index} type="button" size="sm" variant="outline" className="h-7 px-2 text-xs" aria-label={`${group.label || group.id} ${action.label}`} title={`${action.label}：作用于本组全部 ${group.sourceRows.length} 项，遵循锁定与可选范围`} disabled={context.disabled || !group.sourceRows.some((row) => !row.disabled && (!row.allowedValues || row.allowedValues.includes(action.value)))} onClick={() => { void bulk(action, { rows: group.sourceRows, applyGlobalSet: false }); }}>{action.label}</Button>)}</div>}
+                        {group.bulkActions?.length > 0 && <div className="flex shrink-0 flex-wrap items-center gap-1">{group.bulkActions.map((action, index) => <Button key={action.id || action.value || index} type="button" size="sm" {...getActionPresentation(action)} className={`h-7 px-2 text-xs ${getActionPresentation(action).className}`} aria-label={`${group.label || group.id} ${action.label}`} title={`${action.label}：作用于本组全部 ${group.sourceRows.length} 项，遵循锁定与可选范围`} disabled={context.disabled || !group.sourceRows.some((row) => !row.disabled && (!row.allowedValues || row.allowedValues.includes(action.value)))} onClick={() => { void bulk(action, { rows: group.sourceRows, applyGlobalSet: false }); }}><SettingsActionLabel action={action} /></Button>)}</div>}
                     </div>
                     {open && <div id={regionId} className="pb-2 pl-6">{renderRows(group.rows)}</div>}
                 </section>;
@@ -378,19 +397,22 @@ export function ResourceNode({ item, context, renderFields }) {
             onError: (cause) => { setEditorError(cause.message); if (cause.data?.errors) setFieldErrors(cause.data.errors); },
         });
     };
-    const actionsFor = (record) => <div className="flex flex-wrap items-start gap-2">{(item.actions || []).map((action, index) => {
+    const actionsFor = (record) => {
         const scope = { form: context.values, item: record, parentItem: context.item };
-        if (!matchesCondition(action.when || action.showWhen, scope)) return null;
-        return action.kind === 'edit'
-            ? <Button key={action.id || index} type="button" size="sm" variant="outline" className="rounded-md" disabled={context.disabled || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}>{action.label || '编辑'}</Button>
-            : <ActionButton key={action.id || index} action={action} context={context} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />;
-    })}</div>;
+        const visible = (item.actions || []).filter((action) => matchesCondition(action.when || action.showWhen, scope));
+        if (!visible.length) return null;
+        return <div className="flex flex-wrap items-start gap-2">{visible.map((action, index) => action.kind === 'edit'
+            ? <Button key={action.id || index} type="button" size="sm" {...getActionPresentation(action)} disabled={context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}><SettingsActionLabel action={action} label={action.label || '编辑'} /></Button>
+            : <ActionButton key={action.id || index} action={action} context={context} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />)}</div>;
+    };
     const columns = item.columns || [];
     const valueText = (record, column) => {
         const value = getValue(record, column.key || column.field);
         return Object.hasOwn(column.labels || {}, String(value)) ? column.labels[String(value)] : displayValue(value);
     };
-    const renderCards = () => <div className={`grid gap-3 ${item.columnsCount === 2 ? 'xl:grid-cols-2' : ''}`}>{rows.map((record, index) => {
+    const renderCards = () => <SettingsCardGrid columns={item.columnsCount}>{rows.map((record, index) => {
+        const actions = actionsFor(record);
+        if (item.recordView?.type === 'connection-card') return <ConnectionCard key={getValue(record, item.keyField || 'id', index)} item={{ ...item, ...item.recordView }} record={record} context={context} actions={actions} />;
         const title = getValue(record, item.titleField || 'title', getValue(record, item.keyField || 'id'));
         const description = item.descriptionField && getValue(record, item.descriptionField);
         const properties = columns.filter(column => column.key !== (item.titleField || 'title') && column.key !== item.descriptionField);
@@ -406,9 +428,9 @@ export function ResourceNode({ item, context, renderFields }) {
                 </div>
                 {properties.length > 0 && <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">{properties.map(column => <div key={column.key} className="min-w-0"><dt className="text-[11px] leading-4 text-muted-foreground">{column.label}</dt><dd className="mt-1 break-words text-xs font-medium leading-5">{valueText(record, column)}</dd></div>)}</dl>}
             </div>
-            {item.actions?.length > 0 && <div className="border-t px-4 py-2.5">{actionsFor(record)}</div>}
+            {actions && <div className="border-t px-4 py-2.5">{actions}</div>}
         </article>;
-    })}</div>;
+    })}</SettingsCardGrid>;
     const resourceActions = <>
         <Button type="button" variant="ghost" size="icon" className="size-8 text-muted-foreground" aria-label="刷新列表" onClick={() => { void load(); }}><RefreshCw className={`size-4 ${loading ? 'animate-spin' : ''}`} /></Button>
         {item.create && item.editor && <Button type="button" size="sm" className="rounded-md" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
@@ -422,10 +444,10 @@ export function ResourceNode({ item, context, renderFields }) {
         <Dialog open={Boolean(editor)} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
             <DialogContent className="flex max-h-[90dvh] w-[min(60rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[60rem]">
                 <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{formatValue((!editor?.record && item.editor?.createTitle) || item.editor?.title || '编辑', { item: editor?.record, form: editor?.values })}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{item.editor?.description}</DialogDescription></DialogHeader>
-                <div ref={editorScope} className="min-h-0 flex-1 space-y-4 overflow-auto p-4">
+                <div ref={editorScope} className="min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6">
                     {editorError && <p role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive">{editorError}</p>}
                     {Object.entries(fieldErrors).map(([field, message]) => <p className="text-xs text-destructive" key={field}>{field}：{message}</p>)}
-                    {editorBusy ? <p className="flex min-h-28 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />正在读取详情…</p> : editor && renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor`, item: editor.record, disabled: context.disabled, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}
+                    {editorBusy ? <p className="flex min-h-28 items-center justify-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />正在读取详情…</p> : editor && <SettingsFormLayout layout={item.editor.layout || 'stacked'} columns={item.editor.columns}>{renderFields(item.editor.options || [], editor.values, (values) => setEditor((current) => current ? { ...current, values } : current), { key: `${item.id}:editor`, item: editor.record, disabled: context.disabled, runtimeContext: { parentItem: context.item, isCreate: !editor.record } })}</SettingsFormLayout>}
                 </div>
                 <DialogFooter className="shrink-0 border-t bg-background px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={() => { void closeEditor(); }}>取消</Button>{editorAction && <Button type="button" className="rounded-md" disabled={context.disabled || editorBusy || context.operations?.[operationKey(editorAction, { item: editor?.record, parentItem: context.item })]?.busy || (editorAction.disabledWhen && matchesCondition(editorAction.disabledWhen, { form: editor?.values, item: editor?.record, parentItem: context.item }))} onClick={() => { void onSave().catch((cause) => setEditorError(cause.message)); }}>保存</Button>}</DialogFooter>
             </DialogContent>
@@ -436,5 +458,5 @@ export function ResourceNode({ item, context, renderFields }) {
 export function DescriptorDialog({ descriptor, context, renderFields, onClose }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
     useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
-    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-h-[90dvh] w-[min(50rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[50rem]"><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
+    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-h-[90dvh] w-[min(50rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[50rem]"><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>{renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</SettingsFormLayout>}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
 }

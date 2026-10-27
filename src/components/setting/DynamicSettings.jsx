@@ -1,8 +1,10 @@
 import clientAdapter from '@/runtime/backend/clientAdapter.js';
 import { applyRules, findSettingsField as findField, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue, settingsChildFields } from '@/features/settings-runtime/model.js';
 import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
-import { ActionsNode, ActionButton, AsyncOperationNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileSummaryNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
+import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
 import { SettingsSection } from '@/features/settings-runtime/SettingsPresentation.jsx';
+import SettingsFormLayout from '@/features/settings-runtime/SettingsFormLayout.jsx';
+import { useSettingsFieldLayout } from '@/features/settings-runtime/formLayout.js';
 import SettingsTabs from '@/features/settings-runtime/SettingsTabs.jsx';
 import { useActionExecutor } from '@/features/settings-runtime/useActionExecutor.js';
 import { validateSettingsScope } from '@/features/settings-runtime/validation.js';
@@ -229,8 +231,10 @@ function SettingRow({
     onToggleNull = () => {},
     required = false,
 }) {
+    const fieldLayout = useSettingsFieldLayout();
+    const layout = fieldLayout === 'stacked' && controlCompact ? 'compact' : fieldLayout;
     if (fullWidth) {
-        return <div className={`w-full py-3 ${className || ''}`}>
+        return <div className={`w-full ${layout === 'rows' ? 'py-3' : 'py-2'} ${className || ''}`}>
             {text && <div className="mb-2.5 flex items-center gap-2 text-sm font-medium"><span>{text}</span><TipWrapper tips={tips} />{required && <span className="text-destructive">*</span>}</div>}
             {children}
         </div>;
@@ -238,9 +242,12 @@ function SettingRow({
 
     return (
         <div
-            className={`cwm-settings-row ${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between ${density === 'compact' ? 'min-h-[44px]' : 'min-h-[48px]'} gap-x-5 gap-y-2 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : density === 'compact' ? 'py-2.5' : 'py-3'}`}
+            data-field-layout={layout}
+            className={layout === 'rows'
+                ? `cwm-settings-row ${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between ${density === 'compact' ? 'min-h-[44px]' : 'min-h-[48px]'} gap-x-5 gap-y-2 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : density === 'compact' ? 'py-2.5' : 'py-3'}`
+                : `cwm-settings-row min-w-0 ${className || ''} grid items-center gap-x-4 gap-y-2 py-2 ${layout === 'compact' ? 'grid-cols-[minmax(5rem,8rem)_minmax(0,1fr)]' : 'grid-cols-1'}`}
         >
-            <div className="min-w-0 max-w-full flex-1" style={{ flexBasis: 'max-content' }}>
+            <div className="min-w-0 max-w-full flex-1" style={layout === 'rows' ? { flexBasis: 'max-content' } : undefined}>
                 <div className="flex items-center gap-1.5">
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
                     <AutoScrollText className="text-sm font-medium flex-1 min-w-0" title={text}>
@@ -253,7 +260,9 @@ function SettingRow({
             </div>
             <div
                 className={
-                    controlFillAvailable
+                    layout !== 'rows'
+                        ? 'flex min-w-0 max-w-full items-center justify-start [&>input]:w-full [&>input]:max-w-none [&>[role="combobox"]]:w-full [&>[role="combobox"]]:max-w-none'
+                        : controlFillAvailable
                         ? 'flex items-center justify-start sm:justify-end min-w-0 max-w-full flex-[1_1_180px] w-full sm:min-w-[180px] sm:ml-auto'
                         : controlCompact
                           ? 'flex items-center justify-end min-w-0 max-w-full flex-none ml-auto'
@@ -2139,6 +2148,20 @@ function SettingItemRenderer({ item, path }) {
     }
 
     const render = () => { switch (item.type) {
+        case 'form-layout': {
+            const prefix = item.name ? path.slice(0, -pathParts(item.name).length) : path;
+            return <SettingsFormLayout layout={item.layout} columns={item.columns}>{settingsChildFields(item).map((field, index) => <SettingItemRenderer key={field.id || `${field.name || field.type || 'field'}:${index}`} item={field} path={[...prefix, ...pathParts(field.name)]} />)}</SettingsFormLayout>;
+        }
+        case 'profile-card': {
+            const prefix = item.name ? path.slice(0, -pathParts(item.name).length) : path;
+            const fields = settingsChildFields(item);
+            const avatar = fields.find((field) => field.slot === 'avatar');
+            const content = fields.filter((field) => field !== avatar);
+            const renderField = (field, index) => <SettingItemRenderer key={field.id || `${field.name || field.type || 'field'}:${index}`} item={field} path={[...prefix, ...pathParts(field.name)]} />;
+            return <ProfileCardNode item={item} context={context} avatarControl={avatar ? renderField(avatar, 'avatar') : null}>{content.length > 0 && <SettingsFormLayout layout={item.layout || 'compact'} columns={item.columns}>{content.map(renderField)}</SettingsFormLayout>}</ProfileCardNode>;
+        }
+        case 'connection-card':
+            return <ConnectionCardNode item={item} context={context} />;
         case 'tabs': {
             const prefix = item.name ? path.slice(0, -pathParts(item.name).length) : path;
             return <SettingsTabs item={item} renderPane={(options) => options.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || field.type || 'field'}:${index}`} item={field} path={[...prefix, ...pathParts(field.name)]} />)} />;
@@ -2158,8 +2181,10 @@ function SettingItemRenderer({ item, path }) {
             return <ActionButton action={item.action || item} context={context} />;
         case 'secret-map':
             return <SettingRow fullWidth text={item.text} tips={item.tips}><SecretMapNode item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} /></SettingRow>;
-        case 'file-input':
-            return <SettingRow fullWidth text={item.text} tips={item.tips}><FileNode item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} /></SettingRow>;
+        case 'file-input': {
+            const control = <FileNode item={item.slot === 'avatar' ? { ...item, appearance: 'avatar' } : item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} />;
+            return item.slot === 'avatar' ? control : <SettingRow fullWidth text={item.text} tips={item.tips}>{control}</SettingRow>;
+        }
         case 'table':
             return <TableNode item={item} value={getValue(values, path)} context={context} />;
         case 'matrix':
@@ -2168,8 +2193,11 @@ function SettingItemRenderer({ item, path }) {
             return <DiffNode item={item} value={getValue(values, path)} context={context} />;
         case 'list':
             return <ListItem item={item} path={path} />;
-        case 'image':
-            return item.upload ? <SettingRow fullWidth text={item.text} tips={item.tips}><FileNode item={{ ...item, accept: item.accept || 'image/*' }} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} /></SettingRow> : <ImageItem item={item} path={path} />;
+        case 'image': {
+            if (!item.upload) return <ImageItem item={item} path={path} />;
+            const control = <FileNode item={{ ...item, accept: item.accept || 'image/*', ...(item.slot === 'avatar' ? { appearance: 'avatar' } : {}) }} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={context} />;
+            return item.slot === 'avatar' ? control : <SettingRow fullWidth text={item.text} tips={item.tips}>{control}</SettingRow>;
+        }
         case 'group':
             return <GroupItem item={item} path={path} />;
         case 'heading':
@@ -2209,7 +2237,7 @@ function SettingItemRenderer({ item, path }) {
                 return Registered ? <Registered item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={{ ...context, disabled: item.disabled }} renderFields={context.renderFields} />
                     : <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive">客户端暂不支持组件：{item.type || '未命名'}，请升级客户端。</p>; }
     } };
-    const presentationContainer = ['tabs', 'group', 'form', 'card'].includes(item.type);
+    const presentationContainer = ['tabs', 'group', 'form', 'card', 'form-layout', 'profile-card'].includes(item.type);
     return <SettingsContext.Provider value={context}>{presentationContainer
         ? <div className="contents min-w-0" data-settings-field={path.join('.')}>{render()}</div>
         : <fieldset disabled={isDisabled} className="contents min-w-0" data-settings-field={path.join('.')}>{render()}</fieldset>}</SettingsContext.Provider>;
