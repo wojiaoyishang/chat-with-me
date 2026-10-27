@@ -971,7 +971,7 @@
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
      - 14
      - 0
-     - 118
+     - 120
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/SettingsActionLabel </api/javascript/features/settings-runtime/SettingsActionLabel>`
      - 1
@@ -1028,6 +1028,11 @@
      - 0
      - 9
      - ``src/features/settings-runtime/loadingToasts.js``
+   * - :doc:`src/features/settings-runtime/matrixValues </api/javascript/features/settings-runtime/matrixValues>`
+     - 3
+     - 0
+     - 7
+     - ``src/features/settings-runtime/matrixValues.js``
    * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
      - 14
      - 0
@@ -1591,6 +1596,7 @@
    /api/javascript/features/settings-runtime/extensions
    /api/javascript/features/settings-runtime/formLayout
    /api/javascript/features/settings-runtime/loadingToasts
+   /api/javascript/features/settings-runtime/matrixValues
    /api/javascript/features/settings-runtime/model
    /api/javascript/features/settings-runtime/registry
    /api/javascript/features/settings-runtime/sessionCache

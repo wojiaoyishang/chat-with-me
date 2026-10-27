@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { cloneData, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
 import { operationKey } from './useActionExecutor.js';
@@ -19,6 +20,7 @@ import { getActionPresentation } from './actionPresentation.js';
 import { getSettingsDialogStyle } from './dialogSizing.js';
 import { useSettingsLoadingToast } from './loadingToasts.js';
 import { settingsResourceCacheKey } from './sessionCache.js';
+import { matrixRows, matrixStoredValue, matrixValueMap } from './matrixValues.js';
 const EMPTY_MAP = Object.freeze({});
 
 export function FileNode({ item, value, onChange, context }) {
@@ -220,12 +222,14 @@ export function SecretMapNode({ item, value = EMPTY_MAP, onChange, context }) {
     </div>;
 }
 
-export function MatrixNode({ item, value = {}, onChange, context }) {
+export function MatrixNode({ item, value, onChange, context }) {
     const [query, setQuery] = useState('');
     const [expanded, setExpanded] = useState(() => new Set(item.groups?.length ? [String(item.groups[0].id)] : []));
     const instanceId = useId();
     const confirming = useRef(false);
-    const allRows = resolveValue(item.rows, { form: context.values, item: context.item }) || [];
+    const values = matrixValueMap(item, value);
+    const commit = (next) => onChange(matrixStoredValue(item, next, value));
+    const allRows = matrixRows(item, resolveValue(item.rows, { form: context.values, item: context.item }) || [], values);
     const columns = item.columns || [];
     const keyword = query.trim().toLowerCase();
     const groupDefinitions = Array.isArray(item.groups) ? item.groups : [];
@@ -241,7 +245,7 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
         return { ...group, sourceRows: group.rows, rows: group.rows.filter((row) => !keyword || matchesGroup || `${row.label || ''} ${row.id || ''} ${row.description || ''}`.toLowerCase().includes(keyword)) };
     }).filter((group) => group.rows.length);
     const gridStyle = { gridTemplateColumns: `minmax(0,1fr) repeat(${columns.length}, minmax(2.75rem,4rem))` };
-    const setRow = (row, next, current = value) => {
+    const setRow = (row, next, current = values) => {
         if (context.disabled || row.disabled || (row.allowedValues && !row.allowedValues.includes(next))) return current;
         return { ...current, [row.id]: next };
     };
@@ -250,9 +254,9 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
         confirming.current = true;
         try {
             if (action.confirm && !(await context.confirm(action.confirm))) return;
-            let next = { ...value };
+            let next = { ...values };
             for (const row of rows) next = setRow(row, action.value, next);
-            onChange(next);
+            commit(next);
             // Only the page-level batch may update defaults for future entries.
             // A group batch changes existing row values within that group only.
             if (applyGlobalSet) for (const [path, updated] of Object.entries(action.set || {})) context.update(path.split('.'), resolveValue(updated, { form: context.values, item: context.item, parentItem: context.parentItem }));
@@ -260,7 +264,7 @@ export function MatrixNode({ item, value = {}, onChange, context }) {
     };
     const renderRows = (rows) => <div className="divide-y divide-border/50">
         <div aria-hidden="true" className="grid items-center gap-2 py-2 text-xs text-muted-foreground" style={gridStyle}><span>{item.rowLabel || '项目'}</span>{columns.map((column) => <span className="text-center" key={column.value}>{column.label}</span>)}</div>
-        {rows.map((row) => <RadioGroup key={row.id} value={String(value[row.id] ?? row.value ?? '')} disabled={context.disabled || row.disabled} aria-label={row.label || row.id} onValueChange={(next) => { const column = columns.find((entry) => String(entry.value) === next); if (column) onChange(setRow(row, column.value)); }} className="grid items-center gap-2 py-2.5" style={gridStyle}>
+        {rows.map((row) => <RadioGroup key={row.id} value={String(values[row.id] ?? row.value ?? item.valueStorage?.unsetValue ?? '')} disabled={context.disabled || row.disabled} aria-label={row.label || row.id} onValueChange={(next) => { const column = columns.find((entry) => String(entry.value) === next); if (column) commit(setRow(row, column.value)); }} className="grid items-center gap-2 py-2.5" style={gridStyle}>
             <div className="min-w-0 pr-2"><div className="text-sm font-medium">{row.label || row.id}</div>{row.description && <p className="mt-0.5 truncate text-xs leading-5 text-muted-foreground" title={row.description}>{row.description}</p>}</div>
             {columns.map((column) => <span className="flex justify-center" key={column.value}><RadioGroupItem value={String(column.value)} aria-label={`${row.label || row.id} ${column.label}`} disabled={context.disabled || row.disabled || (row.allowedValues && !row.allowedValues.includes(column.value))} /></span>)}
         </RadioGroup>)}
@@ -330,7 +334,9 @@ export function ResourceNode({ item, context, renderFields }) {
     // Source descriptors are immutable until the page or parent record changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sourceKey, cache]);
-    useSettingsLoadingToast(loading, `正在加载${item.text || item.title || '列表'}…`, { error, retry: load });
+    const inlineLoading = item.loadingMode === 'inline';
+    const loadingText = `正在加载${item.text || item.title || '列表'}…`;
+    useSettingsLoadingToast(!inlineLoading && loading, loadingText, { error: inlineLoading ? '' : error, retry: load });
     useSettingsLoadingToast(editorBusy, '正在读取详情…');
     useEffect(() => {
         alive.current = true;
@@ -435,10 +441,14 @@ export function ResourceNode({ item, context, renderFields }) {
         {item.create && item.editor && <Button type="button" size="sm" className="rounded-md" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
     </>;
     return <SettingsSection title={<span className="flex items-center gap-2">{item.text || item.title}<span className="text-xs font-normal tabular-nums text-muted-foreground">{rows.length} 项</span></span>} description={item.description} variant={item.variant} actions={resourceActions} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>
-        <div className={loading ? '' : 'cwm-settings-reveal'} aria-busy={loading || undefined}>
+        <div className={`relative ${inlineLoading && !rows.length && (loading || error) ? 'min-h-28 rounded-lg border bg-card' : ''} ${loading ? '' : 'cwm-settings-reveal'}`} aria-busy={loading || undefined}>
         {!rows.length ? !loading && !error && <div className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center"><Inbox className="size-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
                 : item.display === 'table' && columns.length ? <div className="overflow-auto rounded-xl border border-border/70"><table className="w-full text-left text-sm"><thead className="bg-muted/40 text-xs text-muted-foreground"><tr>{columns.map(column => <th key={column.key} className="px-4 py-3 font-medium">{column.label}</th>)}<th className="px-4 py-3 font-medium">操作</th></tr></thead><tbody>{rows.map((record, index) => <tr key={getValue(record, item.keyField || 'id', index)} className="border-t border-border/55 transition-colors hover:bg-muted/15">{columns.map(column => <td key={column.key} className="max-w-sm break-words px-4 py-3 text-sm">{valueText(record, column)}</td>)}<td className="px-4 py-3">{actionsFor(record)}</td></tr>)}</tbody></table></div>
                     : renderCards()}
+        {inlineLoading && (loading || error) && <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 p-4">
+            {loading ? <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Spinner />{loadingText}</div>
+                : <div className="space-y-2 text-center"><p role="alert" className="text-sm text-destructive">{error}</p><Button type="button" variant="outline" size="sm" onClick={() => { void load(); }}><RefreshCw className="size-3.5" />重新加载</Button></div>}
+        </div>}
         </div>
         <Dialog open={Boolean(editor)} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
             <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(item.editor?.dialog, 960)}>

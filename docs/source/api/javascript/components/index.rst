@@ -458,6 +458,11 @@
      - 0
      - 0
      - ``src/components/ui/sonner.tsx``
+   * - :doc:`src/components/ui/spinner </api/javascript/components/ui/spinner>`
+     - 1
+     - 0
+     - 0
+     - ``src/components/ui/spinner.tsx``
    * - :doc:`src/components/ui/switch </api/javascript/components/ui/switch>`
      - 1
      - 0
@@ -582,6 +587,7 @@
    /api/javascript/components/ui/sheet
    /api/javascript/components/ui/slider
    /api/javascript/components/ui/sonner
+   /api/javascript/components/ui/spinner
    /api/javascript/components/ui/switch
    /api/javascript/components/ui/textarea
    /api/javascript/components/ui/tooltip

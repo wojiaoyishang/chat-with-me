@@ -24,6 +24,15 @@
   .cwm-settings-reveal { animation: none; }
 }
 
+/* An activity indicator communicates ongoing work; it is not a transition. */
+@keyframes cwm-activity-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cwm-activity-spinner {
+  animation: cwm-activity-spin 1s linear infinite;
+}
+
 .dark {
     --pretty-scrollbar-thumb: rgba(148, 163, 184, 0.36);
     --pretty-scrollbar-thumb-hover: rgba(203, 213, 225, 0.58);

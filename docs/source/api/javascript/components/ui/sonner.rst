@@ -22,26 +22,26 @@ src/components/ui/sonner 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``next-themes``、``sonner``。
+``next-themes``、``sonner``、``./spinner``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ui/sonner.tsx:112:529:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/sonner.tsx:148:621:FUNCTION
 
-.. js:function:: Toaster({ ...props })
+.. js:function:: Toaster({ icons, ...props })
 
    渲染 ``Toaster`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``4``—``21`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``23`` 行。
 
    **参数**
 
-   ``{ ...props }`` （类型 ``ToasterProps``）
-      调用方传入的 ``...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ icons, ...props }`` （类型 ``ToasterProps``）
+      调用方传入的 ``icons, ...props`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <Sonner theme={theme as ToasterProps["theme"]} className="toaster group" style={ { "--normal-bg": "var(--popover)", "--normal-text": "var(--popover-foreground)", "--normal-borde…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <Sonner theme={theme as ToasterProps["theme"]} className="toaster group" icons={{ loading: <Spinner />, ...icons }} style={ { "--normal-bg": "var(--popover)", "--normal-text": "…``。
 
    **主要协作调用**：``useTheme``。
