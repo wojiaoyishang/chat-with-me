@@ -28,7 +28,7 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
     builder.onResolve({ filter: /JsonConfigEditor\.jsx$/ }, () => ({ path: 'json-editor', namespace: 'mock' }));
     builder.onLoad({ filter: /.*/, namespace: 'mock' }, ({ path: name }) => {
         if (name === 'bootstrap-session') return { loader: 'js', contents: 'export const ensureClientSession=async()=>{globalThis.settingsUI.sessionChecks=(globalThis.settingsUI.sessionChecks||0)+1;if(globalThis.settingsUI.sessionError)throw globalThis.settingsUI.sessionError;};' };
-        if (name === 'sonner') return { loader: 'js', contents: 'export const toast={error:(...args)=>globalThis.settingsUI.errors.push(args),success:()=>{},info:()=>{}};' };
+        if (name === 'sonner') return { loader: 'js', contents: 'export const toast={error:(...args)=>globalThis.settingsUI.errors.push(args),success:(...args)=>(globalThis.settingsUI.successes||=[]).push(args),info:()=>{}};' };
         if (name === 'react-i18next') return { loader: 'js', contents: 'const t=(key,options)=>options?.defaultValue??key;export const useTranslation=()=>({t});' };
         if (name === 'react-router-dom') return { loader: 'js', contents: 'export const useNavigate=()=>path=>globalThis.settingsUI.navigated.push(path);' };
         if (name === 'framer-motion') return { loader: 'jsx', contents: 'import React,{forwardRef} from "react";const cache={};export const motion=new Proxy({}, {get(_,tag){return cache[tag]||(cache[tag]=forwardRef(({children,initial,animate,exit,transition,layout,...props},ref)=>React.createElement(tag,{...props,ref},children)));}});export const AnimatePresence=({children})=><>{children}</>;' };

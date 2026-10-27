@@ -73,7 +73,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:929:9294:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:929:9327:FUNCTION
 
 .. js:function:: useActionExecutor(services)
 
@@ -225,7 +225,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``controller.abort``、``active.clear``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1594:9250:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:1594:9283:FUNCTION
 
 .. rubric:: ``useCallback callback @ 31``
 
@@ -333,7 +333,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5366:5827:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5399:5860:FUNCTION
 
 .. rubric:: ``anonymous callback @ 86``
 
@@ -365,7 +365,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5431:5487:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5464:5520:FUNCTION
 
 .. rubric:: ``cancel``
 
@@ -387,7 +387,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``reject``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5647:5797:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:5680:5830:FUNCTION
 
 .. rubric:: ``retry``
 

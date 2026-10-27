@@ -17,18 +17,23 @@ test('profile cards show one avatar upload and save edits through ordinary form 
         meta: [{ label: '身份', value: ref('form.role') }],
         options: [
             { type: 'image', name: 'avatarId', text: '更换头像', slot: 'avatar', previewValue: ref('form.avatar'), upload: { endpoint: '/avatar', resultPath: 'serverId', previewPath: 'url' } },
+        ],
+    }, {
+        type: 'group', text: '个人资料', variant: 'divided', children: [{ type: 'form-layout', layout: 'compact', options: [
             { type: 'text', name: 'nickname', text: '昵称', required: true },
             { type: 'action', label: '保存资料', icon: 'save', endpoint: '/profile', method: 'PATCH', body: { nickname: ref('form.nickname'), avatarId: ref('form.avatarId') } },
-        ],
+        ] }],
     }];
     const ui = await mount(config, {}, async (_method, endpoint) => endpoint === '/avatar' ? { serverId: 'new-image', url: '/previews/new-avatar.png' } : {}, {}, { username: 'demo', email: 'demo@example.test', role: '用户', nickname: '旧昵称', avatar: '/previews/avatar.png' });
     try {
         const card = document.querySelector('[data-settings-profile-card]');
         assert.equal(card.querySelectorAll('img').length, 1);
         assert.equal(card.querySelectorAll('input[type="file"]').length, 1);
-        assert.equal(card.querySelectorAll('[aria-label="昵称"]').length, 1);
-        assert.equal(card.querySelector('[data-field-layout]').dataset.fieldLayout, 'compact');
-        await edit(card.querySelector('[aria-label="昵称"]'), '新昵称');
+        assert.equal(card.querySelector('[aria-label="昵称"]'), null);
+        const nickname = document.querySelector('[aria-label="昵称"]');
+        assert.equal(nickname.closest('[data-field-layout]').dataset.fieldLayout, 'compact');
+        assert.match(nickname.closest('section').textContent, /个人资料.*保存资料/s);
+        await edit(nickname, '新昵称');
         await upload(card.querySelector('input[type="file"]'), new window.File(['image'], 'avatar.png', { type: 'image/png' }));
         assert.equal(card.querySelectorAll('img').length, 1);
         assert.equal(card.querySelector('img').getAttribute('src'), '/previews/new-avatar.png');

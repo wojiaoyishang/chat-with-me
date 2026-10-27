@@ -16,6 +16,7 @@ import { ConnectionCard, ProfileCard, SettingsCardGrid } from './SettingsCards.j
 import SettingsFormLayout from './SettingsFormLayout.jsx';
 import { SettingsActionLabel } from './SettingsActionLabel.jsx';
 import { getActionPresentation } from './actionPresentation.js';
+import { getSettingsDialogStyle } from './dialogSizing.js';
 const EMPTY_MAP = Object.freeze({});
 
 export function FileNode({ item, value, onChange, context }) {
@@ -71,15 +72,16 @@ export function ActionButton({ action, context, scope = {}, callbacks, disabled 
     const isDisabled = disabled || context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, actualScope));
     const presentation = getActionPresentation(action, variant || 'outline');
     return <div className="min-w-0 space-y-2">
-        <Button type="button" size="sm" {...presentation} disabled={isDisabled || operation?.busy}
+        <Button type="button" size="sm" {...presentation} disabled={isDisabled || operation?.busy} aria-busy={operation?.busy || undefined}
             onClick={() => { void context.execute(action, actualScope, callbacks).catch(() => {}); }}>
             <SettingsActionLabel action={action} label={formatValue(action.label || action.text || '执行', actualScope)} busy={Boolean(operation?.busy)} />
         </Button>
-        {showStatus && operation && <OperationStatus operation={operation} context={context} />}
+        {showStatus && operation && <OperationStatus operation={operation} context={context} showPending={Boolean(action.pendingText || operation.watching)} />}
     </div>;
 }
 
-export function OperationStatus({ operation, context }) {
+export function OperationStatus({ operation, context, showPending = true }) {
+    if (operation?.busy && !showPending && !operation.error) return null;
     if (!operation?.busy && !operation?.error && !operation?.message) return null;
     const percent = Number(operation.percent);
     return <div className={`space-y-1.5 rounded-lg px-3 py-2 text-xs ${operation.error ? 'border border-destructive/30 bg-destructive/5 text-destructive' : 'bg-muted text-muted-foreground'}`} role={operation.error ? 'alert' : 'status'}>
@@ -443,7 +445,7 @@ export function ResourceNode({ item, context, renderFields }) {
                 : item.display === 'table' && columns.length ? <div className="overflow-auto rounded-xl border border-border/70"><table className="w-full text-left text-sm"><thead className="bg-muted/40 text-xs text-muted-foreground"><tr>{columns.map(column => <th key={column.key} className="px-4 py-3 font-medium">{column.label}</th>)}<th className="px-4 py-3 font-medium">操作</th></tr></thead><tbody>{rows.map((record, index) => <tr key={getValue(record, item.keyField || 'id', index)} className="border-t border-border/55 transition-colors hover:bg-muted/15">{columns.map(column => <td key={column.key} className="max-w-sm break-words px-4 py-3 text-sm">{valueText(record, column)}</td>)}<td className="px-4 py-3">{actionsFor(record)}</td></tr>)}</tbody></table></div>
                     : renderCards()}
         <Dialog open={Boolean(editor)} onOpenChange={(open) => { if (!open) void closeEditor(); }}>
-            <DialogContent className="flex max-h-[90dvh] w-[min(60rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[60rem]">
+            <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(item.editor?.dialog, 960)}>
                 <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{formatValue((!editor?.record && item.editor?.createTitle) || item.editor?.title || '编辑', { item: editor?.record, form: editor?.values })}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{item.editor?.description}</DialogDescription></DialogHeader>
                 <div ref={editorScope} className="min-h-0 flex-1 space-y-4 overflow-auto p-5 sm:p-6">
                     {editorError && <p role="alert" className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive">{editorError}</p>}
@@ -459,5 +461,5 @@ export function ResourceNode({ item, context, renderFields }) {
 export function DescriptorDialog({ descriptor, context, renderFields, onClose }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
     useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
-    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-h-[90dvh] w-[min(50rem,95vw)] max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-[50rem]"><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>{renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</SettingsFormLayout>}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
+    return <Dialog open={Boolean(descriptor)} onOpenChange={(open) => { if (!open) onClose(); }}><DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)}><DialogHeader className="shrink-0 border-b px-4 py-4 pr-12"><DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle><DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription></DialogHeader><div className="min-h-0 flex-1 overflow-auto p-4">{descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>{renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}</SettingsFormLayout>}</div><DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter></DialogContent></Dialog>;
 }

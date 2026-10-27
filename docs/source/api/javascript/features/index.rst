@@ -1003,6 +1003,11 @@
      - 0
      - 0
      - ``src/features/settings-runtime/actionPresentation.js``
+   * - :doc:`src/features/settings-runtime/dialogSizing </api/javascript/features/settings-runtime/dialogSizing>`
+     - 2
+     - 0
+     - 0
+     - ``src/features/settings-runtime/dialogSizing.js``
    * - :doc:`src/features/settings-runtime/displayValue </api/javascript/features/settings-runtime/displayValue>`
      - 1
      - 0
@@ -1571,6 +1576,7 @@
    /api/javascript/features/settings-runtime/SettingsPresentation
    /api/javascript/features/settings-runtime/SettingsTabs
    /api/javascript/features/settings-runtime/actionPresentation
+   /api/javascript/features/settings-runtime/dialogSizing
    /api/javascript/features/settings-runtime/displayValue
    /api/javascript/features/settings-runtime/extensions
    /api/javascript/features/settings-runtime/formLayout

@@ -50,7 +50,7 @@ export function useActionExecutor(services) {
         controllers.current.add(controller);
         let snapshot = {};
         const update = (value) => { snapshot = { ...snapshot, ...value }; if (mounted.current) setOperations((previous) => ({ ...previous, [key]: snapshot })); };
-        update({ busy: true, sequence: ++serial.current, message: action.pendingText || '正在执行…', error: '' });
+        update({ busy: true, watching: false, sequence: ++serial.current, message: action.pendingText || '正在执行…', error: '' });
         try {
             let response = await executeRequest(action, scope, { api: source.api, client: source.client, signal: controller.signal });
             if (!mounted.current || controller.signal.aborted) return undefined;
@@ -63,7 +63,7 @@ export function useActionExecutor(services) {
                 if (!terminal.size) throw new Error('异步操作缺少终止状态定义。');
                 const success = new Set(watch.success || []);
                 const taskPage = watch.taskPage ? formatValue(watch.taskPage, { ...scope, response: initialResponse }, true) : null;
-                update({ taskPage, operationId: getValue(initialResponse, watch.taskIdPath || 'taskId') });
+                update({ watching: true, taskPage, operationId: getValue(initialResponse, watch.taskIdPath || 'taskId') });
                 let failures = 0;
                 let recovering = false;
                 while (!controller.signal.aborted) {
