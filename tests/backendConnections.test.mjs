@@ -51,6 +51,35 @@ test('tokens, resources and identical business IDs are isolated by backend and u
     assert.equal(localStorage.getItem(runtime.BACKEND_STORAGE_KEY).includes('token-a'), false);
 });
 
+test('renaming the selected connection notifies its title without switching or resetting credentials', () => {
+    const previousToken = runtime.getConnectionToken(), previousResource = runtime.getResourceTicket(), previousUser = runtime.getConnectionUserId();
+    runtime.setConnectionToken('rename-session-token'); runtime.setResourceTicket('rename-resource-ticket');
+    const before = runtime.getBackendConnection();
+    const token = runtime.getConnectionToken();
+    const resource = runtime.getResourceTicket();
+    const manifest = runtime.getBackendManifest();
+    const notices = [];
+    let switches = 0;
+    const off = runtime.subscribeBackend(() => notices.push(runtime.getBackendConnection()));
+    const switched = () => { switches += 1; };
+    window.addEventListener(runtime.BACKEND_CHANGE_EVENT, switched);
+    try {
+        runtime.saveBackendProfile({ id: before.id, title: '重新命名的当前连接', url: before.url });
+        assert.deepEqual(runtime.getBackendConnection(), { ...before, title: '重新命名的当前连接' });
+        assert.equal(notices.length, 1);
+        assert.equal(notices[0].title, '重新命名的当前连接');
+        assert.equal(runtime.getConnectionToken(), token);
+        assert.equal(runtime.getResourceTicket(), resource);
+        assert.equal(runtime.getBackendManifest(), manifest);
+        assert.equal(switches, 0);
+        assert.equal(JSON.parse(localStorage.getItem(runtime.BACKEND_STORAGE_KEY)).activeId, before.id);
+    } finally {
+        off(); window.removeEventListener(runtime.BACKEND_CHANGE_EVENT, switched);
+        runtime.saveBackendProfile(before);
+        runtime.setConnectionToken(previousToken); runtime.setResourceTicket(previousResource); runtime.setConnectionUserId(previousUser);
+    }
+});
+
 test('service origins, URL prefixes and socket paths come from the selected connection', async () => {
     await runtime.switchBackend('a', { reload: false });
     runtime.setBackendManifest({ transports: { socket: '/ws', voice: '/ws/realtime' } });

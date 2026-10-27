@@ -294,9 +294,9 @@
      - 7
      - ``src/components/modal/universalModal.js``
    * - :doc:`src/components/setting/DynamicSettings </api/javascript/components/setting/DynamicSettings>`
-     - 28
+     - 27
      - 0
-     - 189
+     - 196
      - ``src/components/setting/DynamicSettings.jsx``
    * - :doc:`src/components/setting/JsonConfigEditor </api/javascript/components/setting/JsonConfigEditor>`
      - 0
@@ -309,7 +309,7 @@
      - 14
      - ``src/components/setting/OrderedOptionsEditor.jsx``
    * - :doc:`src/components/setting/jsonEditorValidation </api/javascript/components/setting/jsonEditorValidation>`
-     - 0
+     - 1
      - 0
      - 0
      - ``src/components/setting/jsonEditorValidation.js``
@@ -396,7 +396,7 @@
    * - :doc:`src/components/ui/dialog </api/javascript/components/ui/dialog>`
      - 10
      - 0
-     - 7
+     - 8
      - ``src/components/ui/dialog.tsx``
    * - :doc:`src/components/ui/dropdown-menu </api/javascript/components/ui/dropdown-menu>`
      - 15

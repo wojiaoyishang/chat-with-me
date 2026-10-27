@@ -18,6 +18,13 @@ export const isOtherWindowTarget = (event, id) => {
     return Boolean(owner && owner !== id);
 };
 
+/** DOM controls can portal outside React while remaining inside one window. */
+export const isOwnedWindowPopoverTarget = (event, id) => {
+    const target = event.detail?.originalEvent?.target || event.target;
+    const surface = target?.closest?.('[data-window-popover="true"]');
+    return Boolean(id && surface?.dataset.windowLayer === id);
+};
+
 export function useWindowLayer(active) {
     const id = useId();
     const index = useWindowLayers((state) => state.windows.indexOf(id));

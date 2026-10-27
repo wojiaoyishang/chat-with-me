@@ -16,7 +16,7 @@
    * - :doc:`src/runtime/backend/BackendBootstrapGate </api/javascript/runtime/backend/BackendBootstrapGate>`
      - 1
      - 0
-     - 14
+     - 10
      - ``src/runtime/backend/BackendBootstrapGate.jsx``
    * - :doc:`src/runtime/backend/clientAdapter </api/javascript/runtime/backend/clientAdapter>`
      - 1
@@ -26,7 +26,7 @@
    * - :doc:`src/runtime/backend/connection </api/javascript/runtime/backend/connection>`
      - 27
      - 0
-     - 12
+     - 13
      - ``src/runtime/backend/connection.js``
    * - :doc:`src/runtime/backend/session </api/javascript/runtime/backend/session>`
      - 2

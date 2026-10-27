@@ -3,7 +3,7 @@ src/lib/windowLayers 模块
 
 .. js:module:: src/lib/windowLayers
 
-该模块提供跨 Feature 复用的浏览器或业务辅助函数。
+DOM controls can portal outside React while remaining inside one window.
 
 .. note::
 
@@ -15,7 +15,7 @@ src/lib/windowLayers 模块
 
 * **源码文件**：``src/lib/windowLayers.js``
 * **模块标识**：``src/lib/windowLayers``
-* **顶层函数/组件/Hook**：6
+* **顶层函数/组件/Hook**：7
 * **类**：0
 * **局部函数与匿名回调**：11
 
@@ -118,13 +118,35 @@ src/lib/windowLayers 模块
 
    **主要协作调用**：``target?.closest``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1097:1602:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1220:1445:FUNCTION
+
+.. js:function:: isOwnedWindowPopoverTarget(event, id)
+
+   判断与 ``Owned Window Popover Target`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``22``—``26`` 行。
+
+   **参数**
+
+   ``event``
+      语义事件名或 EventEnvelope。
+
+   ``id``
+      调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``Boolean(id && surface?.dataset.windowLayer === id)``。
+
+   **主要协作调用**：``target?.closest``、``Boolean``。
+
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1446:1951:FUNCTION
 
 .. js:function:: useWindowLayer(active)
 
    封装 ``useWindowLayer`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``21``—``32`` 行。
+   **性质**：同步函数；导出 API；源码第 ``28``—``39`` 行。
 
    **参数**
 
@@ -139,13 +161,13 @@ src/lib/windowLayers 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1602:1984:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1951:2333:FUNCTION
 
 .. js:function:: useWindowPopoverLayer()
 
    封装 ``useWindowPopoverLayer`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``35``—``40`` 行。
+   **性质**：同步函数；导出 API；源码第 ``42``—``47`` 行。
 
    **参数**
 
@@ -276,17 +298,17 @@ src/lib/windowLayers 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1198:1234:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1547:1583:FUNCTION
 
-.. rubric:: ``useWindowLayers callback @ 23``
+.. rubric:: ``useWindowLayers callback @ 30``
 
 .. code-block:: javascript
 
-   useWindowLayers callback @ 23(state)
+   useWindowLayers callback @ 30(state)
 
 封装 ``WindowLayers`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``30``—``30`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -299,17 +321,17 @@ src/lib/windowLayers 模块
 
 **主要协作调用**：``state.windows.indexOf``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1257:1361:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1606:1710:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 24``
+.. rubric:: ``useLayoutEffect callback @ 31``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 24()
+   useLayoutEffect callback @ 31()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``24``—``28`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``31``—``35`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -323,17 +345,17 @@ src/lib/windowLayers 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1337:1354:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1686:1703:FUNCTION
 
-.. rubric:: ``returned callback @ 27``
+.. rubric:: ``returned callback @ 34``
 
 .. code-block:: javascript
 
-   returned callback @ 27()
+   returned callback @ 34()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``useLayoutEffect callback @ 24``。
+**性质**：同步局部函数；源码第 ``34``—``34`` 行；所属函数 ``useLayoutEffect callback @ 31``。
 
 **参数**
 
@@ -345,17 +367,17 @@ src/lib/windowLayers 模块
 
 **主要协作调用**：``remove``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1411:1443:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1760:1792:FUNCTION
 
-.. rubric:: ``useCallback callback @ 29``
+.. rubric:: ``useCallback callback @ 36``
 
 .. code-block:: javascript
 
-   useCallback callback @ 29()
+   useCallback callback @ 36()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``29``—``29`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -367,17 +389,17 @@ src/lib/windowLayers 模块
 
 **主要协作调用**：``raise``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1479:1559:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:1828:1908:FUNCTION
 
-.. rubric:: ``useMemo callback @ 30``
+.. rubric:: ``useMemo callback @ 37``
 
 .. code-block:: javascript
 
-   useMemo callback @ 30()
+   useMemo callback @ 37()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``30``—``30`` 行；所属函数 ``useWindowLayer``。
+**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``useWindowLayer``。
 
 **参数**
 
@@ -389,17 +411,17 @@ src/lib/windowLayers 模块
 
 **主要协作调用**：``Math.max``。
 
-.. CWM-AST-FUNCTION src/lib/windowLayers.js:1800:1831:FUNCTION
+.. CWM-AST-FUNCTION src/lib/windowLayers.js:2149:2180:FUNCTION
 
-.. rubric:: ``useWindowLayers callback @ 37``
+.. rubric:: ``useWindowLayers callback @ 44``
 
 .. code-block:: javascript
 
-   useWindowLayers callback @ 37(state)
+   useWindowLayers callback @ 44(state)
 
 封装 ``WindowLayers`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``useWindowPopoverLayer``。
+**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``useWindowPopoverLayer``。
 
 **参数**
 

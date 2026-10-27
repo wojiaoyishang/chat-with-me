@@ -54,7 +54,7 @@
      - 3
      - ``src/lib/virtualUrl.js``
    * - :doc:`src/lib/windowLayers </api/javascript/lib/windowLayers>`
-     - 6
+     - 7
      - 0
      - 11
      - ``src/lib/windowLayers.js``

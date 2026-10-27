@@ -199,6 +199,8 @@
         "deleteConfirmMsg": "This action cannot be undone.",
         "model": "Model",
         "duplicate": "Duplicate",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
         "default": "Default",
         "addTagPlaceholder": "Type tag and press Enter"
     },

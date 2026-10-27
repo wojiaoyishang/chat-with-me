@@ -5,7 +5,7 @@ import { Dialog as DialogPrimitive } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js"
-import { useWindowLayer, WindowLayerContext, isTopWindowLayer, isOtherWindowTarget } from "@/lib/windowLayers.js"
+import { useWindowLayer, WindowLayerContext, isTopWindowLayer, isOtherWindowTarget, isOwnedWindowPopoverTarget } from "@/lib/windowLayers.js"
 
 function Dialog({
   open,
@@ -91,6 +91,7 @@ function DialogContent({
   overlayClassName,
   style,
   onPointerDownCapture,
+  onPointerDownOutside,
   onInteractOutside,
   onFocusOutside,
   onEscapeKeyDown,
@@ -117,8 +118,19 @@ function DialogContent({
           onPointerDownCapture?.(event)
         }}
         onInteractOutside={(event) => {
+          if (layer && isOwnedWindowPopoverTarget(event, layer.id)) {
+            event.preventDefault()
+            return
+          }
           onInteractOutside?.(event)
           if (layer && (!isTopWindowLayer(layer.id) || isOtherWindowTarget(event, layer.id))) event.preventDefault()
+        }}
+        onPointerDownOutside={(event) => {
+          if (layer && isOwnedWindowPopoverTarget(event, layer.id)) {
+            event.preventDefault()
+            return
+          }
+          onPointerDownOutside?.(event)
         }}
         onFocusOutside={(event) => {
           // Realtime updates can remove/refocus controls in another window. Focus
@@ -127,6 +139,10 @@ function DialogContent({
           onFocusOutside?.(event)
         }}
         onEscapeKeyDown={(event) => {
+          if (layer && isOwnedWindowPopoverTarget(event, layer.id)) {
+            event.preventDefault()
+            return
+          }
           onEscapeKeyDown?.(event)
           if (layer && !isTopWindowLayer(layer.id)) event.preventDefault()
         }}

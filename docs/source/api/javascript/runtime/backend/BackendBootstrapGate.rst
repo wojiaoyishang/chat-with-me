@@ -17,23 +17,23 @@ The only built-in page is connection recovery, available before any backend.
 * **模块标识**：``src/runtime/backend/BackendBootstrapGate``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：14
+* **局部函数与匿名回调**：10
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``../../components/ui/button``、``../../components/ui/input``、``../../components/ui/dialog``、``../../lib/apiClient.js``、``./session.js``、``./connection.js``。
+``react``、``lucide-react``、``../../components/ui/button``、``../../components/ui/dialog``、``../../components/setting/DynamicSettings.jsx``、``../../features/settings-client/catalog.js``、``../../lib/apiClient.js``、``./session.js``、``./connection.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:597:5331:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:735:5102:FUNCTION
 
 .. js:function:: BackendBootstrapGate({ children })
 
    The only built-in page is connection recovery, available before any backend.
 
-   **性质**：同步函数；导出 API；源码第 ``14``—``84`` 行。
+   **性质**：同步函数；导出 API；源码第 ``25``—``139`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ The only built-in page is connection recovery, available before any backend.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<> {status === 'ready' ? children : <div className="flex min-h-screen items-center justify-center bg-background p-6"><div className="w-full max-w-xl space-y-5 rounded-2xl border p…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <> {status === "ready" ? ( children ) : ( <div className="flex min-h-screen items-center justify-center bg-muted/20 p-6"> <div className="w-full max-w-lg space-y-5 rounded-2xl b…``。
 
    **副作用**
 
@@ -50,48 +50,26 @@ The only built-in page is connection recovery, available before any backend.
    * 注册事件、DOM 或运行时订阅。
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``useState``、``useCallback``、``useEffect``、``getBackendConnection``、``profiles.map``。
+   **主要协作调用**：``useState``、``useCallback``、``useEffect``。
 
-   **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:945:981:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:1129:1816:FUNCTION
 
-.. rubric:: ``useState callback @ 18``
-
-.. code-block:: javascript
-
-   useState callback @ 18()
-
-封装 ``State`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``BackendBootstrapGate``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``readBackendProfiles``。
-
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:1200:1884:FUNCTION
-
-.. rubric:: ``useCallback callback @ 23``
+.. rubric:: ``useCallback callback @ 30``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 23(signal)
+   async useCallback callback @ 30(signal)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``23``—``36`` 行；所属函数 ``BackendBootstrapGate``。
+**性质**：异步局部函数；源码第 ``30``—``53`` 行；所属函数 ``BackendBootstrapGate``。
 
 **参数**
 
@@ -106,21 +84,21 @@ The only built-in page is connection recovery, available before any backend.
 
 * 发起 HTTP 请求或访问外部服务。
 
-**显式抛出**：``new Error('该后端不支持当前客户端协议。')``、``cause``。
+**显式抛出**：``new Error("该后端不支持当前客户端协议。")``、``cause``。
 
 **主要协作调用**：``setStatus``、``setError``、``apiClient.get``、``setBackendManifest``、``ensureClientSession``、``Number``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:1905:2047:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:1835:1963:FUNCTION
 
-.. rubric:: ``useEffect callback @ 37``
+.. rubric:: ``useEffect callback @ 54``
 
 .. code-block:: javascript
 
-   useEffect callback @ 37()
+   useEffect callback @ 54()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``37``—``41`` 行；所属函数 ``BackendBootstrapGate``。
+**性质**：同步局部函数；源码第 ``54``—``58`` 行；所属函数 ``BackendBootstrapGate``。
 
 **参数**
 
@@ -134,17 +112,17 @@ The only built-in page is connection recovery, available before any backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2015:2040:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:1933:1958:FUNCTION
 
-.. rubric:: ``returned callback @ 40``
+.. rubric:: ``returned callback @ 57``
 
 .. code-block:: javascript
 
-   returned callback @ 40()
+   returned callback @ 57()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``40``—``40`` 行；所属函数 ``useEffect callback @ 37``。
+**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``useEffect callback @ 54``。
 
 **参数**
 
@@ -156,17 +134,17 @@ The only built-in page is connection recovery, available before any backend.
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2072:2343:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:1986:2172:FUNCTION
 
-.. rubric:: ``useEffect callback @ 42``
+.. rubric:: ``useEffect callback @ 59``
 
 .. code-block:: javascript
 
-   useEffect callback @ 42()
+   useEffect callback @ 59()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``42``—``46`` 行；所属函数 ``BackendBootstrapGate``。
+**性质**：同步局部函数；源码第 ``59``—``63`` 行；所属函数 ``BackendBootstrapGate``。
 
 **参数**
 
@@ -185,7 +163,7 @@ The only built-in page is connection recovery, available before any backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2100:2198:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2010:2037:FUNCTION
 
 .. rubric:: ``show``
 
@@ -195,7 +173,7 @@ The only built-in page is connection recovery, available before any backend.
 
 实现 ``show`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``useEffect callback @ 42``。
+**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``useEffect callback @ 59``。
 
 **参数**
 
@@ -205,19 +183,19 @@ The only built-in page is connection recovery, available before any backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setProfiles``、``readBackendProfiles``、``setManagerError``、``setManagerOpen``。
+**主要协作调用**：``setManagerOpen``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2275:2336:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2106:2167:FUNCTION
 
-.. rubric:: ``returned callback @ 45``
+.. rubric:: ``returned callback @ 62``
 
 .. code-block:: javascript
 
-   returned callback @ 45()
+   returned callback @ 62()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``45``—``45`` 行；所属函数 ``useEffect callback @ 42``。
+**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``useEffect callback @ 59``。
 
 **参数**
 
@@ -233,65 +211,17 @@ The only built-in page is connection recovery, available before any backend.
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2368:2569:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2191:2263:FUNCTION
 
-.. rubric:: ``choose``
-
-.. code-block:: javascript
-
-   async choose(id)
-
-实现 ``choose`` 对应的前端处理。
-
-**性质**：异步局部函数；源码第 ``47``—``52`` 行；所属函数 ``BackendBootstrapGate``。
-
-**参数**
-
-``id``
-   调用方传入的 ``id`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setBusy``、``setManagerError``、``switchBackend``。
-
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2842:3400:FUNCTION
-
-.. rubric:: ``profiles.map callback @ 57``
+.. rubric:: ``useEffect callback @ 65``
 
 .. code-block:: javascript
 
-   profiles.map callback @ 57(profile)
+   useEffect callback @ 65()
 
-作为 ``profiles.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``57``—``62`` 行；所属函数 ``BackendBootstrapGate``。
-
-**参数**
-
-``profile``
-   调用方传入的 ``profile`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``getBackendConnection``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:3258:3287:FUNCTION
-
-.. rubric:: ``onClick callback @ 60``
-
-.. code-block:: javascript
-
-   onClick callback @ 60()
-
-处理 ``Click`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``profiles.map callback @ 57``。
+**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``BackendBootstrapGate``。
 
 **参数**
 
@@ -301,88 +231,47 @@ The only built-in page is connection recovery, available before any backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``choose``。
+**副作用**
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:3486:3792:FUNCTION
+* 注册事件、DOM 或运行时订阅。
 
-.. rubric:: ``onSubmit callback @ 64``
+**主要协作调用**：``subscribeBackend``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:2219:2262:FUNCTION
+
+.. rubric:: ``subscribeBackend callback @ 65``
 
 .. code-block:: javascript
 
-   async onSubmit callback @ 64(event)
+   subscribeBackend callback @ 65()
 
-处理 ``Submit`` 用户交互或运行时事件。
+订阅与 ``Backend`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``64``—``68`` 行；所属函数 ``BackendBootstrapGate``。
+**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``useEffect callback @ 65``。
 
 **参数**
 
-``event``
-   语义事件名或 EventEnvelope。
+无。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``event.preventDefault``、``setManagerError``、``saveBackendProfile``、``setProfiles``、``readBackendProfiles``、``choose``。
+**主要协作调用**：``setConnection``、``getBackendConnection``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:3879:3918:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:3655:3672:FUNCTION
 
-.. rubric:: ``onChange callback @ 69``
-
-.. code-block:: javascript
-
-   onChange callback @ 69(event)
-
-处理 ``Change`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``69``—``69`` 行；所属函数 ``BackendBootstrapGate``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setTitle``。
-
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:4069:4106:FUNCTION
-
-.. rubric:: ``onChange callback @ 70``
+.. rubric:: ``onClick callback @ 100``
 
 .. code-block:: javascript
 
-   onChange callback @ 70(event)
-
-处理 ``Change`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``70``—``70`` 行；所属函数 ``BackendBootstrapGate``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setUrl``。
-
-.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:4980:4997:FUNCTION
-
-.. rubric:: ``onClick callback @ 80``
-
-.. code-block:: javascript
-
-   onClick callback @ 80()
+   onClick callback @ 100()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``BackendBootstrapGate``。
+**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``BackendBootstrapGate``。
 
 **参数**
 
@@ -393,3 +282,25 @@ The only built-in page is connection recovery, available before any backend.
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``load``。
+
+.. CWM-AST-FUNCTION src/runtime/backend/BackendBootstrapGate.jsx:3818:3844:FUNCTION
+
+.. rubric:: ``onClick callback @ 104``
+
+.. code-block:: javascript
+
+   onClick callback @ 104()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``BackendBootstrapGate``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setManagerOpen``。

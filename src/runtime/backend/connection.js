@@ -57,6 +57,10 @@ function persist(state) {
     const storage = browserStorage();
     if (!storage) throw new Error('无法保存后端选择，请检查浏览器存储权限。');
     storage.setItem(BACKEND_STORAGE_KEY, JSON.stringify(state));
+    // Renaming the selected profile updates its presentation immediately. URL,
+    // identity and epoch remain unchanged, so existing sessions stay attached.
+    const current = state.profiles.find((profile) => profile.id === activeProfile.id && profile.url === activeProfile.url);
+    if (current) activeProfile = Object.freeze({ ...current });
     notify();
 }
 

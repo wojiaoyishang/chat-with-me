@@ -1,199 +1,834 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Maximize2, Minimize2, Save, Settings, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { useConfirmation } from '@/components/ui/useConfirmation.jsx';
-import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
-import { validateSettingsScope } from '@/features/settings-runtime/validation.js';
-import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
-import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
-import { resolveResourceUrl } from '@/lib/virtualUrl.js';
-import apiClient from '@/lib/apiClient.js';
-import { onEvent } from '@/context/useEventStore.jsx';
-import { useUserStore } from '@/context/userContext.jsx';
-import { beforeBackendSwitch, getBackendService } from '@/runtime/backend/connection.js';
-import clientAdapter from '@/runtime/backend/clientAdapter.js';
-import { cloneData, requestEndpoint, validateFields } from '@/features/settings-runtime/model.js';
-import { OperationStatus } from '@/features/settings-runtime/GenericNodes.jsx';
-import { operationKey, useActionExecutor } from '@/features/settings-runtime/useActionExecutor.js';
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  AlertCircle,
+  Bell,
+  Check,
+  ChevronRight,
+  Layout,
+  Loader2,
+  Maximize2,
+  Minimize2,
+  Monitor,
+  RefreshCw,
+  Save,
+  Search,
+  Server,
+  Settings,
+  X,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useConfirmation } from "@/components/ui/useConfirmation.jsx";
+import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
+import { validateSettingsFields, validateSettingsScope } from "@/features/settings-runtime/validation.js";
+import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js";
+import { getLocalSetting, setLocalSetting, useIsMobile } from "@/lib/tools.jsx";
+import { resolveResourceUrl } from "@/lib/virtualUrl.js";
+import apiClient from "@/lib/apiClient.js";
+import { onEvent } from "@/context/useEventStore.jsx";
+import { useUserStore } from "@/context/userContext.jsx";
+import {
+  beforeBackendSwitch,
+  getBackendConnection,
+  getBackendService,
+  subscribeBackend,
+} from "@/runtime/backend/connection.js";
+import clientAdapter from "@/runtime/backend/clientAdapter.js";
+import {
+  cloneData,
+  requestEndpoint,
+} from "@/features/settings-runtime/model.js";
+import { OperationStatus } from "@/features/settings-runtime/GenericNodes.jsx";
+import {
+  operationKey,
+  useActionExecutor,
+} from "@/features/settings-runtime/useActionExecutor.js";
+import {
+  CLIENT_SETTINGS_TABS,
+  clientSettingsPage,
+  filterClientSettingsOptions,
+} from "@/features/settings-client/catalog.js";
+import { apiEndpoint } from "@/config.js";
 
-const WINDOW_SIZE_KEY = 'cwm:settings-window-size:v1';
-const DEFAULT_SIZE = { width: 900, height: 640 };
+const WINDOW_SIZE_KEY = "cwm:settings-window-size:v1";
+const DEFAULT_SIZE = { width: 1080, height: 760 };
+const CLIENT_ICONS = { layout: Layout, server: Server, bell: Bell };
 const clampWindow = (value) => ({
-    width: Math.min(Math.max(320, window.innerWidth - 24), Math.max(640, Number(value?.width) || DEFAULT_SIZE.width)),
-    height: Math.min(Math.max(360, window.innerHeight - 24), Math.max(440, Number(value?.height) || DEFAULT_SIZE.height)),
+  width: Math.min(
+    Math.max(320, window.innerWidth - 24),
+    Math.max(640, Number(value?.width) || DEFAULT_SIZE.width),
+  ),
+  height: Math.min(
+    Math.max(360, window.innerHeight - 24),
+    Math.max(440, Number(value?.height) || DEFAULT_SIZE.height),
+  ),
 });
 
-/** Loads one backend-defined component tree; no business page names live here. */
+/** Client-owned preferences and backend-defined pages share the same renderer,
+ * while their catalogs, persistence and availability remain independent. */
 export default function SettingPage({ open, onClose, onRefreshRequested }) {
-    const navigate = useNavigate();
-    const isMobile = useIsMobile();
-    const setUser = useUserStore((state) => state.setUser);
-    const [tabs, setTabs] = useState([]);
-    const tabsRef = useRef([]);
-    const [selectedId, setSelectedId] = useState(null);
-    const [description, setDescription] = useState(null);
-    const [values, setValues] = useState({});
-    const valuesRef = useRef(values);
-    valuesRef.current = values;
-    const [dirty, setDirty] = useState(false);
-    const dirtyRef = useRef(false);
-    dirtyRef.current = dirty;
-    const [catalogLoading, setCatalogLoading] = useState(false);
-    const [pageLoading, setPageLoading] = useState(false);
-    const [catalogError, setCatalogError] = useState('');
-    const [pageError, setPageError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState({});
-    const [fullscreen, setFullscreen] = useState(false);
-    const [size, setSize] = useState(() => clampWindow(getLocalSetting(WINDOW_SIZE_KEY, DEFAULT_SIZE)));
-    const [confirm, confirmation] = useConfirmation();
-    const scopeRef = useRef(null);
-    const catalogEpoch = useRef(0);
-    const pageEpoch = useRef(0);
-    const activeRequest = useRef(null);
-    const resizeCleanup = useRef(null);
-    const mounted = useRef(false);
-    const pendingRefresh = useRef(new Set());
-    const draftGuards = useRef(new Map());
-    const descriptionRef = useRef(null);
-    descriptionRef.current = description;
-    const base = getBackendService('settings');
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const setUser = useUserStore((state) => state.setUser);
+  const [tabs, setTabs] = useState([]);
+  const tabsRef = useRef([]);
+  const [section, setSection] = useState("client");
+  const [connection, setConnection] = useState(getBackendConnection);
+  const [selections, setSelections] = useState({
+    client: "interface",
+    backend: null,
+  });
+  const selectedId = selections[section];
+  const pageKey = `${section}:${selectedId || ""}`;
+  const [loadedPageKey, setLoadedPageKey] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
+  const [description, setDescription] = useState(null);
+  const [values, setValues] = useState({});
+  const valuesRef = useRef(values);
+  valuesRef.current = values;
+  const [dirty, setDirty] = useState(false);
+  const dirtyRef = useRef(false);
+  dirtyRef.current = dirty;
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState("");
+  const [pageError, setPageError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [fullscreen, setFullscreen] = useState(false);
+  const [size, setSize] = useState(() =>
+    clampWindow(getLocalSetting(WINDOW_SIZE_KEY, DEFAULT_SIZE)),
+  );
+  const [confirm, confirmation] = useConfirmation();
+  const scopeRef = useRef(null);
+  const catalogEpoch = useRef(0);
+  const pageEpoch = useRef(0);
+  const activeRequest = useRef(null);
+  const resizeCleanup = useRef(null);
+  const mounted = useRef(false);
+  const pendingRefresh = useRef(new Set());
+  const draftGuards = useRef(new Map());
+  const base = getBackendService("settings");
 
-    const loadCatalog = useCallback(async () => {
-        const serial = ++catalogEpoch.current;
-        setCatalogLoading(true); setCatalogError('');
-        try {
-            if (!base) throw new Error('当前后端没有提供设置功能。');
-            const data = await apiClient.get(requestEndpoint(base, {}));
-            if (!Array.isArray(data)) throw new Error('后端未返回有效的设置目录。');
-            if (!mounted.current || serial !== catalogEpoch.current) return;
-            setTabs(data);
-            tabsRef.current = data;
-            setSelectedId((current) => data.some((entry) => entry.id === current) ? current : data.find((entry) => entry.default)?.id || data[0]?.id || null);
-        } catch (cause) { if (mounted.current && serial === catalogEpoch.current) setCatalogError(cause.message); }
-        finally { if (mounted.current && serial === catalogEpoch.current) setCatalogLoading(false); }
-    }, [base]);
-    const loadPage = useCallback(async (id) => {
-        if (!id) return;
-        activeRequest.current?.abort();
-        const controller = new AbortController();
-        activeRequest.current = controller;
-        const serial = ++pageEpoch.current;
-        setPageLoading(true); setPageError(''); setDescription(null); setFieldErrors({});
-        try {
-            const link = tabsRef.current.find((entry) => entry.id === id)?.descriptor;
-            const data = await apiClient.get(requestEndpoint(link, {}), { signal: controller.signal });
-            if (!mounted.current || controller.signal.aborted || serial !== pageEpoch.current) return;
-            if (data.schema !== 'cwm.settings.v1' || !Array.isArray(data.options)) throw new Error('该后端设置页面使用了不支持的描述协议。');
-            setDescription(data);
-            setValues(cloneData(data.defaultOptions || {}));
-            setDirty(false);
-        } catch (cause) { if (mounted.current && !controller.signal.aborted && serial === pageEpoch.current) setPageError(cause.message); }
-        finally { if (mounted.current && serial === pageEpoch.current) setPageLoading(false); }
-    }, []);
-    useEffect(() => {
-        mounted.current = true;
-        if (open) void loadCatalog();
-        return () => { mounted.current = false; catalogEpoch.current += 1; pageEpoch.current += 1; activeRequest.current?.abort(); resizeCleanup.current?.(); };
-    }, [open, loadCatalog]);
-    useEffect(() => { if (open && selectedId) void loadPage(selectedId); }, [open, selectedId, loadPage]);
-    const guardDraft = useCallback(async () => {
-        if (dirtyRef.current && !(await confirm({ title: '有未保存的更改', description: '离开此页面将丢弃当前尚未保存的修改。', confirmText: '放弃更改' }))) return false;
-        for (const guard of draftGuards.current.values()) if (!(await guard())) return false;
-        return true;
-    }, [confirm]);
-    const registerDraftGuard = useCallback((id, guard) => {
-        draftGuards.current.set(id, guard);
-        return () => { if (draftGuards.current.get(id) === guard) draftGuards.current.delete(id); };
-    }, []);
-    const close = useCallback(async () => {
-        if (!(await guardDraft())) return;
-        onClose();
-        const scopes = [...pendingRefresh.current];
-        pendingRefresh.current.clear();
-        if (scopes.length) onRefreshRequested?.(scopes);
-    }, [guardDraft, onClose, onRefreshRequested]);
-    useBrowserBackLayer(Boolean(open), () => { void close(); return false; }, { kind: 'settings-layer' });
-    useEffect(() => {
-        if (!open) return undefined;
-        return beforeBackendSwitch(async () => { if (!(await guardDraft())) throw new Error('已取消切换后端。'); });
-    }, [open, guardDraft]);
-    useEffect(() => {
-        if (!open) return undefined;
-        const events = [...new Set((description?.events || []).map((entry) => typeof entry === 'string' ? entry : entry.event))];
-        const subscriptions = events.map((event) => onEvent({ event }).then(() => {
-            if (dirtyRef.current || draftGuards.current.size) toast.info('服务器设置已更新，当前编辑内容仍保留，请保存前核对。');
-            else if (selectedId) void loadPage(selectedId);
-        }));
-        return () => subscriptions.forEach((unsubscribe) => unsubscribe());
-    }, [description?.events, loadPage, open, selectedId]);
-    const markRefresh = useCallback(() => {
-        for (const entry of descriptionRef.current?.refreshOnClose || []) pendingRefresh.current.add(entry);
-    }, []);
-    const controller = useActionExecutor({
-        api: apiClient, client: clientAdapter, confirm,
-        scope: () => ({ form: valuesRef.current }),
-        refresh: async () => { markRefresh(); },
-        navigate: (path) => { onClose(); navigate(path); },
-        patchForm: (patch) => { setValues((previous) => ({ ...previous, ...patch })); setDirty(true); },
-        openDialog: () => {},
-        notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
-        updateUser: setUser,
+  useEffect(
+    () => subscribeBackend(() => setConnection(getBackendConnection())),
+    [],
+  );
+  useEffect(() => setFilterQuery(""), [pageKey]);
+
+  const loadCatalog = useCallback(async () => {
+    const serial = ++catalogEpoch.current;
+    setCatalogLoading(true);
+    setCatalogError("");
+    try {
+      if (!base) throw new Error("当前后端没有提供设置功能。");
+      const data = await apiClient.get(requestEndpoint(base, {}));
+      if (!Array.isArray(data)) throw new Error("后端未返回有效的设置目录。");
+      if (data.some((entry) => entry?.scope !== "backend"))
+        throw new Error(
+          "当前后端的设置目录尚未区分前后端，请更新并重新加载后端服务。",
+        );
+      if (!mounted.current || serial !== catalogEpoch.current) return;
+      setTabs(data);
+      tabsRef.current = data;
+      setSelections((current) => ({
+        ...current,
+        backend: data.some((entry) => entry.id === current.backend)
+          ? current.backend
+          : data.find((entry) => entry.default)?.id || data[0]?.id || null,
+      }));
+    } catch (cause) {
+      if (mounted.current && serial === catalogEpoch.current) {
+        setTabs([]);
+        tabsRef.current = [];
+        setSelections((current) => ({ ...current, backend: null }));
+        setCatalogError(cause.message);
+      }
+    } finally {
+      if (mounted.current && serial === catalogEpoch.current)
+        setCatalogLoading(false);
+    }
+  }, [base]);
+  const loadPage = useCallback(async (id, origin) => {
+    if (!id) return;
+    activeRequest.current?.abort();
+    const controller = new AbortController();
+    activeRequest.current = controller;
+    const serial = ++pageEpoch.current;
+    setPageLoading(true);
+    setPageError("");
+    setDescription(null);
+    setFieldErrors({});
+    try {
+      let data;
+      if (origin === "client") {
+        let notificationData;
+        if (id === "notifications") {
+          notificationData = {
+            permission: globalThis.Notification?.permission || "unsupported",
+          };
+          try {
+            const result = await apiClient.get(
+              apiEndpoint.NOTIFICATION_TYPES_ENDPOINT,
+              { signal: controller.signal, skipAuthCheck: true },
+            );
+            notificationData.types = Array.isArray(result.types)
+              ? result.types
+              : [];
+          } catch (cause) {
+            if (controller.signal.aborted) return;
+            notificationData.error = cause.message;
+          }
+        }
+        data = clientSettingsPage(id, notificationData);
+      } else {
+        const link = tabsRef.current.find(
+          (entry) => entry.id === id,
+        )?.descriptor;
+        data = await apiClient.get(requestEndpoint(link, {}), {
+          signal: controller.signal,
+        });
+      }
+      if (
+        !mounted.current ||
+        controller.signal.aborted ||
+        serial !== pageEpoch.current
+      )
+        return;
+      if (data.schema !== "cwm.settings.v1" || !Array.isArray(data.options))
+        throw new Error("该后端设置页面使用了不支持的描述协议。");
+      if (origin === "backend" && data.scope !== "backend")
+        throw new Error(
+          "后端设置页面缺少明确的后端作用域，请更新并重新加载后端服务。",
+        );
+      setDescription(data);
+      setLoadedPageKey(`${origin}:${id}`);
+      setValues(cloneData(data.defaultOptions || {}));
+      setDirty(false);
+    } catch (cause) {
+      if (
+        mounted.current &&
+        !controller.signal.aborted &&
+        serial === pageEpoch.current
+      )
+        setPageError(cause.message);
+    } finally {
+      if (mounted.current && serial === pageEpoch.current)
+        setPageLoading(false);
+    }
+  }, []);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      catalogEpoch.current += 1;
+      pageEpoch.current += 1;
+      activeRequest.current?.abort();
+      resizeCleanup.current?.();
+    };
+  }, [open]);
+  useEffect(() => {
+    if (open && section === "backend") void loadCatalog();
+  }, [open, section, loadCatalog]);
+  useEffect(() => {
+    if (open && selectedId) void loadPage(selectedId, section);
+  }, [open, section, selectedId, loadPage]);
+  const guardDraft = useCallback(async () => {
+    if (
+      dirtyRef.current &&
+      !(await confirm({
+        title: "有未保存的更改",
+        description: "离开此页面将丢弃当前尚未保存的修改。",
+        confirmText: "放弃更改",
+      }))
+    )
+      return false;
+    for (const guard of draftGuards.current.values())
+      if (!(await guard())) return false;
+    return true;
+  }, [confirm]);
+  const registerDraftGuard = useCallback((id, guard) => {
+    draftGuards.current.set(id, guard);
+    return () => {
+      if (draftGuards.current.get(id) === guard) draftGuards.current.delete(id);
+    };
+  }, []);
+  const close = useCallback(async () => {
+    if (!(await guardDraft())) return;
+    onClose();
+    const scopes = [...pendingRefresh.current];
+    pendingRefresh.current.clear();
+    if (scopes.length) onRefreshRequested?.(scopes);
+  }, [guardDraft, onClose, onRefreshRequested]);
+  useBrowserBackLayer(
+    Boolean(open),
+    () => {
+      void close();
+      return false;
+    },
+    { kind: "settings-layer" },
+  );
+  useEffect(() => {
+    if (!open) return undefined;
+    return beforeBackendSwitch(async () => {
+      if (!(await guardDraft())) throw new Error("已取消切换后端。");
     });
-    const save = async () => {
-        if (!description?.save) return;
-        setFieldErrors({});
-        try {
-            validateSettingsScope(scopeRef.current);
-            const form = scopeRef.current?._cwmSettingsValues?.current || valuesRef.current;
-            const errors = validateFields(description.options, form);
-            setFieldErrors(errors);
-            if (Object.keys(errors).length) return;
-            const submitted = cloneData(form);
-            const requestPage = pageEpoch.current;
-            const response = await controller.execute(description.save, { form }, { onError: (cause) => { if (cause.data?.errors) setFieldErrors(cause.data.errors); } });
-            if (response === undefined) return;
-            if (!mounted.current || requestPage !== pageEpoch.current) return;
-            markRefresh();
-            if (JSON.stringify(valuesRef.current) !== JSON.stringify(submitted)) return;
-            setValues(cloneData(response.defaultOptions || response.values || submitted));
-            setDirty(false);
-            scopeRef.current?.querySelectorAll('.cwm-json-editor').forEach((node) => node._cwmJsonEditor?.markSaved());
-            if (response.user) setUser(response.user);
-            if (!(description.save.effects || []).some((effect) => effect.type === 'toast')) toast.success(description.save.successText || '保存成功');
-        } catch (cause) { if (!controller.operations[operationKey(description.save, {})]?.error) toast.error(cause.message); }
+  }, [open, guardDraft]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const events = [
+      ...new Set(
+        (description?.events || []).map((entry) =>
+          typeof entry === "string" ? entry : entry.event,
+        ),
+      ),
+    ];
+    const subscriptions = events.map((event) =>
+      onEvent({ event }).then(() => {
+        if (dirtyRef.current || draftGuards.current.size)
+          toast.info("服务器设置已更新，当前编辑内容仍保留，请保存前核对。");
+        else if (selectedId) void loadPage(selectedId, section);
+      }),
+    );
+    return () => subscriptions.forEach((unsubscribe) => unsubscribe());
+  }, [description?.events, loadPage, open, section, selectedId]);
+  const markRefresh = useCallback(() => {
+    for (const entry of description?.refreshOnClose || [])
+      pendingRefresh.current.add(entry);
+  }, [description?.refreshOnClose]);
+  const refresh = useCallback(
+    (target) => {
+      markRefresh();
+      if (section === "client" && target === "page" && selectedId)
+        return loadPage(selectedId, section);
+    },
+    [markRefresh, section, selectedId, loadPage],
+  );
+  const controller = useActionExecutor({
+    api: apiClient,
+    client: clientAdapter,
+    confirm,
+    scope: () => ({ form: valuesRef.current }),
+    refresh: async () => {
+      refresh();
+    },
+    navigate: (path) => {
+      onClose();
+      navigate(path);
+    },
+    patchForm: (patch) => {
+      setValues((previous) => ({ ...previous, ...patch }));
+      setDirty(true);
+    },
+    openDialog: () => {},
+    notify: (message, tone) =>
+      tone === "error" ? toast.error(message) : toast.success(message),
+    updateUser: setUser,
+  });
+  const save = async () => {
+    if (!description?.save) return;
+    setFieldErrors({});
+    try {
+      validateSettingsScope(scopeRef.current);
+      const form =
+        scopeRef.current?._cwmSettingsValues?.current || valuesRef.current;
+      const errors = validateSettingsFields(scopeRef.current, description.options, form);
+      setFieldErrors(errors);
+      if (Object.keys(errors).length) return;
+      const submitted = cloneData(form);
+      const requestPage = pageEpoch.current;
+      const response = await controller.execute(
+        description.save,
+        { form },
+        {
+          onError: (cause) => {
+            if (cause.data?.errors) setFieldErrors(cause.data.errors);
+          },
+        },
+      );
+      if (response === undefined) return;
+      if (!mounted.current || requestPage !== pageEpoch.current) return;
+      markRefresh();
+      if (JSON.stringify(valuesRef.current) !== JSON.stringify(submitted))
+        return;
+      setValues(
+        cloneData(response.defaultOptions || response.values || submitted),
+      );
+      setDirty(false);
+      scopeRef.current
+        ?.querySelectorAll(".cwm-json-editor")
+        .forEach((node) => node._cwmJsonEditor?.markSaved());
+      if (response.user) setUser(response.user);
+      if (
+        !(description.save.effects || []).some(
+          (effect) => effect.type === "toast",
+        )
+      )
+        toast.success(description.save.successText || "保存成功");
+    } catch (cause) {
+      if (!controller.operations[operationKey(description.save, {})]?.error)
+        toast.error(cause.message);
+    }
+  };
+  const resize = (event) => {
+    if (fullscreen || isMobile) return;
+    event.preventDefault();
+    const start = { x: event.clientX, y: event.clientY, ...size };
+    const move = (next) =>
+      setSize(
+        clampWindow({
+          width: start.width + (next.clientX - start.x) * 2,
+          height: start.height + (next.clientY - start.y) * 2,
+        }),
+      );
+    resizeCleanup.current?.();
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      setSize((current) => {
+        setLocalSetting(WINDOW_SIZE_KEY, current);
+        return current;
+      });
+      resizeCleanup.current = null;
     };
-    const resize = (event) => {
-        if (fullscreen || isMobile) return;
-        event.preventDefault();
-        const start = { x: event.clientX, y: event.clientY, ...size };
-        const move = (next) => setSize(clampWindow({ width: start.width + next.clientX - start.x, height: start.height + next.clientY - start.y }));
-        resizeCleanup.current?.();
-        const end = () => { window.removeEventListener('pointermove', move); setSize((current) => { setLocalSetting(WINDOW_SIZE_KEY, current); return current; }); resizeCleanup.current = null; };
-        window.addEventListener('pointermove', move);
-        window.addEventListener('pointerup', end, { once: true });
-        resizeCleanup.current = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', end); };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end, { once: true });
+    resizeCleanup.current = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
     };
-    if (!open) return null;
-    const saveState = description?.save ? controller.operations[operationKey(description.save, {})] : null;
-    return <div className="fixed inset-0 z-[50] flex items-center justify-center bg-black/45 p-3" onClick={(event) => { if (event.target === event.currentTarget) void close(); }}>
-        <section role="dialog" aria-modal="true" aria-label="设置" className="relative flex max-h-full max-w-full flex-col overflow-hidden rounded-xl border bg-background shadow-2xl" style={fullscreen || isMobile ? { width: '100%', height: '100%' } : size} onClick={(event) => event.stopPropagation()}>
-            <header className="flex h-14 shrink-0 items-center justify-between border-b px-4"><h2 className="flex items-center gap-2 font-semibold"><Settings className="size-5" />设置</h2><div className="flex gap-1">{!isMobile && <Button variant="ghost" size="icon" aria-label={fullscreen ? '还原设置窗口' : '最大化设置窗口'} onClick={() => setFullscreen((current) => !current)}>{fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}</Button>}<Button variant="ghost" size="icon" aria-label="关闭设置" onClick={() => { void close(); }}><X className="size-4" /></Button></div></header>
-            <div className="flex min-h-0 flex-1"><nav aria-label="设置页面" className={`${isMobile ? 'w-16' : 'w-48'} shrink-0 space-y-1 overflow-y-auto border-r bg-muted/30 p-2`}>
-                {catalogLoading && <p className="p-2 text-xs text-muted-foreground">加载中…</p>}
-                {catalogError && <div className="space-y-2 p-2 text-xs text-destructive"><p role="alert">{catalogError}</p><Button size="sm" variant="outline" onClick={() => { void loadCatalog(); }}>重试</Button></div>}
-                {tabs.map((tab) => <button type="button" key={tab.id} aria-current={selectedId === tab.id ? 'page' : undefined} title={tab.name || tab.title} className={`flex w-full items-center gap-2 rounded-lg p-2.5 text-left text-sm ${selectedId === tab.id ? 'bg-accent font-medium text-accent-foreground' : 'hover:bg-muted'}`} onClick={async () => { if (tab.id !== selectedId && await guardDraft()) setSelectedId(tab.id); }}>
-                    {tab.preview ? <img alt="" src={resolveResourceUrl(tab.preview)} className="size-5 shrink-0" /> : <Settings className="size-5 shrink-0" />}{!isMobile && <span>{tab.name || tab.title}</span>}
-                </button>)}
-            </nav><div className="flex min-w-0 flex-1 flex-col"><main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
-                {pageLoading ? <p className="py-10 text-center text-sm text-muted-foreground">正在加载设置…</p> : pageError ? <div className="space-y-3 text-sm text-destructive"><p role="alert">{pageError}</p><Button variant="outline" onClick={() => { void loadPage(selectedId); }}>重新加载</Button></div> : description ? <>
-                    {description.title && <h3 className="mb-2 text-lg font-semibold">{description.title}</h3>}{description.description && <p className="mb-5 text-sm text-muted-foreground">{description.description}</p>}
-                    {Object.entries(fieldErrors).map(([name, message]) => <p key={name} className="mb-2 text-sm text-destructive">{name}：{message}</p>)}
-                    <DynamicSettings key={description.id} config={description.options} initialValues={values} onChange={(next) => { setValues(next); if (description.saveMode === 'page' || description.save) setDirty(true); }} validationRef={scopeRef} onSave={save} runtimeContext={{ api: apiClient, client: clientAdapter, navigate: (path) => { onClose(); navigate(path); }, updateUser: setUser, refresh: markRefresh, registerDraftGuard }} />
-                </> : !catalogLoading && !tabs.length ? <p className="py-10 text-center text-muted-foreground">当前后端没有可用的设置页面。</p> : null}
-            </main>{description?.save && <footer className="shrink-0 space-y-2 border-t p-3"><OperationStatus operation={saveState} context={{ navigate }} /><div className="flex items-center justify-end gap-3"><span className="text-xs text-muted-foreground">{dirty ? '有未保存的更改' : '已保存'}</span><Button disabled={saveState?.busy || !dirty} onClick={() => { void save(); }}><Save className="size-4" />{description.save.label || '保存'}</Button></div></footer>}</div></div>
-            {!fullscreen && !isMobile && <button type="button" aria-label="调整设置窗口大小" className="absolute bottom-1 right-1 size-4 cursor-se-resize opacity-50" onPointerDown={resize}><span className="absolute bottom-0 right-0 size-2 border-b-2 border-r-2 border-current" /></button>}
-        </section>{confirmation}
-    </div>;
+  };
+  useEffect(() => {
+    if (!open || fullscreen) return undefined;
+    const resizeWindow = () => setSize((current) => clampWindow(current));
+    window.addEventListener("resize", resizeWindow);
+    return () => window.removeEventListener("resize", resizeWindow);
+  }, [open, fullscreen]);
+  const selectSection = async (next) => {
+    if (next === section || !(await guardDraft())) return;
+    setSection(next);
+    document.getElementById(`settings-section-${next}`)?.focus();
+  };
+  const selectPage = async (id) => {
+    if (id !== selectedId && (await guardDraft()))
+      setSelections((current) => ({ ...current, [section]: id }));
+  };
+  if (!open) return null;
+  const isClient = section === "client";
+  const visibleTabs = isClient ? CLIENT_SETTINGS_TABS : tabs;
+  const selectedTab = visibleTabs.find((tab) => tab.id === selectedId);
+  const currentDescription = loadedPageKey === pageKey ? description : null;
+  const visibleOptions = currentDescription?.search
+    ? filterClientSettingsOptions(currentDescription.options, filterQuery)
+    : currentDescription?.options;
+  const saveState = currentDescription?.save
+    ? controller.operations[operationKey(currentDescription.save, {})]
+    : null;
+  const isLoading =
+    Boolean(selectedId && (pageLoading || loadedPageKey !== pageKey)) ||
+    (!isClient && catalogLoading && !tabs.length);
+  const visibleError =
+    pageError || (!isClient && !tabs.length ? catalogError : "");
+  const PageIcon =
+    CLIENT_ICONS[currentDescription?.icon || selectedTab?.icon] ||
+    (isClient ? Monitor : Settings);
+  const retry = () =>
+    selectedId ? loadPage(selectedId, section) : loadCatalog();
+  return (
+    <div
+      className="fixed inset-0 z-[50] flex items-center justify-center bg-slate-950/35 p-2 backdrop-blur-sm sm:p-5"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) void close();
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="设置"
+        className="relative flex max-h-full max-w-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-background shadow-2xl"
+        style={
+          fullscreen || isMobile ? { width: "100%", height: "100%" } : size
+        }
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/8 text-primary">
+              <Settings className="size-5" />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold tracking-tight">设置</h2>
+              <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
+                让界面与连接更适合你的使用习惯
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            {!isMobile && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 rounded-lg text-muted-foreground"
+                aria-label={fullscreen ? "还原设置窗口" : "最大化设置窗口"}
+                onClick={() => setFullscreen((current) => !current)}
+              >
+                {fullscreen ? (
+                  <Minimize2 className="size-4" />
+                ) : (
+                  <Maximize2 className="size-4" />
+                )}
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-lg text-muted-foreground"
+              aria-label="关闭设置"
+              onClick={() => {
+                void close();
+              }}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+        </header>
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6">
+          <div
+            role="tablist"
+            aria-label="设置范围"
+            className="inline-flex w-full rounded-xl bg-muted/65 p-1 sm:w-auto"
+          >
+            {[
+              { id: "client", label: "前端设置", Icon: Monitor },
+              { id: "backend", label: "后端设置", Icon: Server },
+            ].map((entry) => {
+              const { id, label, Icon } = entry;
+              return (
+                <button
+                  key={id}
+                  id={`settings-section-${id}`}
+                  type="button"
+                  role="tab"
+                  aria-label={label}
+                  aria-selected={section === id}
+                  aria-controls="settings-page-panel"
+                  tabIndex={section === id ? 0 : -1}
+                  onKeyDown={(event) => {
+                    if (
+                      ["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                        event.key,
+                      )
+                    ) {
+                      event.preventDefault();
+                      void selectSection(
+                        event.key === "Home"
+                          ? "client"
+                          : event.key === "End"
+                            ? "backend"
+                            : section === "client"
+                              ? "backend"
+                              : "client",
+                      );
+                    }
+                  }}
+                  onClick={() => {
+                    void selectSection(id);
+                  }}
+                  className={`flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition sm:flex-none ${section === id ? "bg-background text-foreground shadow-sm ring-1 ring-border/60" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  {label}
+                  {id === "backend" && (
+                    <span
+                      aria-hidden="true"
+                      className="hidden max-w-24 truncate rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground sm:inline-block"
+                    >
+                      {connection.title}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <span className="hidden shrink-0 text-xs text-muted-foreground lg:inline">
+            {isClient ? "仅保存在此浏览器" : "管理当前连接的服务"}
+          </span>
+        </div>
+        <div className={`flex min-h-0 flex-1 ${isMobile ? "flex-col" : ""}`}>
+          <nav
+            aria-label={isClient ? "前端设置页面" : "后端设置页面"}
+            className={`shrink-0 border-border/70 bg-muted/20 ${isMobile ? "flex gap-1 overflow-x-auto border-b p-2" : "flex w-56 flex-col border-r p-3"}`}
+          >
+            {!isMobile && (
+              <p className="px-3 pb-3 pt-2 text-[11px] font-medium tracking-wider text-muted-foreground">
+                {isClient ? "此浏览器" : "当前后端"}
+              </p>
+            )}
+            <div
+              className={
+                isMobile
+                  ? "flex gap-1"
+                  : "min-h-0 flex-1 space-y-1 overflow-y-auto"
+              }
+            >
+              {!isClient && catalogLoading && !tabs.length && (
+                <div
+                  aria-label="正在加载后端设置目录"
+                  className="space-y-2 p-2"
+                >
+                  {[0, 1, 2, 3].map((id) => (
+                    <div
+                      key={id}
+                      className="h-10 animate-pulse rounded-lg bg-muted"
+                    />
+                  ))}
+                </div>
+              )}
+              {!isClient && catalogError && (
+                <div className="m-1 space-y-2 rounded-xl border border-destructive/15 bg-destructive/5 p-3 text-xs text-destructive">
+                  <p role="alert">{catalogError}</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 w-full bg-background"
+                    onClick={() => {
+                      void loadCatalog();
+                    }}
+                  >
+                    <RefreshCw className="size-3" />
+                    重试
+                  </Button>
+                </div>
+              )}
+              {visibleTabs.map((tab) => {
+                const Icon = CLIENT_ICONS[tab.icon] || Settings;
+                return (
+                  <button
+                    type="button"
+                    key={tab.id}
+                    aria-current={selectedId === tab.id ? "page" : undefined}
+                    title={tab.description || tab.name || tab.title}
+                    className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition ${isMobile ? "shrink-0 whitespace-nowrap" : "w-full"} ${selectedId === tab.id ? "bg-background font-medium text-foreground shadow-sm ring-1 ring-border/70" : "text-muted-foreground hover:bg-background/65 hover:text-foreground"}`}
+                    onClick={() => {
+                      void selectPage(tab.id);
+                    }}
+                  >
+                    {tab.preview ? (
+                      <img
+                        alt=""
+                        src={resolveResourceUrl(tab.preview)}
+                        className="size-4 shrink-0"
+                      />
+                    ) : (
+                      <Icon className="size-4 shrink-0" />
+                    )}
+                    <span className="min-w-0 flex-1 truncate">
+                      {tab.name || tab.title}
+                    </span>
+                    {!isMobile && selectedId === tab.id && (
+                      <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            {!isMobile && (
+              <div className="mx-1 mt-4 rounded-xl border border-border/65 bg-background/70 p-3">
+                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                  <Server className="size-3" />
+                  当前连接
+                </div>
+                <p className="truncate text-xs font-medium">
+                  {connection.title}
+                </p>
+                <p
+                  title={connection.url}
+                  className="mt-1 truncate text-[10px] text-muted-foreground"
+                >
+                  {connection.url}
+                </p>
+              </div>
+            )}
+          </nav>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <main
+              id="settings-page-panel"
+              role="tabpanel"
+              aria-labelledby={`settings-section-${section}`}
+              className="@container/settings min-h-0 flex-1 overflow-y-auto bg-muted/20 p-4 sm:p-6 lg:p-8"
+            >
+              <div className="mx-auto w-full max-w-5xl space-y-6">
+                {isLoading ? (
+                  <div className="flex min-h-52 flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
+                    <Loader2 className="size-5 animate-spin" />
+                    正在加载设置…
+                  </div>
+                ) : visibleError ? (
+                  <div className="flex min-h-52 flex-col items-center justify-center gap-3 rounded-2xl border bg-card p-7 text-center">
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-destructive/8 text-destructive">
+                      <AlertCircle className="size-5" />
+                    </span>
+                    <h3 className="font-semibold">设置暂时不可用</h3>
+                    <p
+                      role="alert"
+                      className="max-w-md text-sm text-muted-foreground"
+                    >
+                      {visibleError}
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        void retry();
+                      }}
+                    >
+                      <RefreshCw className="size-4" />
+                      重新加载
+                    </Button>
+                  </div>
+                ) : currentDescription ? (
+                  <>
+                    <div className="flex items-start gap-3.5">
+                      <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border/70 bg-card text-muted-foreground shadow-sm">
+                        {selectedTab?.preview ? (
+                          <img
+                            alt=""
+                            src={resolveResourceUrl(selectedTab.preview)}
+                            className="size-5"
+                          />
+                        ) : (
+                          <PageIcon className="size-5" />
+                        )}
+                      </span>
+                      <div className="min-w-0 pt-0.5">
+                        <p className="mb-1 text-[10px] font-medium tracking-wider text-muted-foreground">
+                          {isClient
+                            ? "前端设置 · 仅此浏览器"
+                            : `后端设置 · ${connection.title}`}
+                        </p>
+                        <h3 className="text-xl font-semibold tracking-tight">
+                          {currentDescription.title}
+                        </h3>
+                        {currentDescription.description && (
+                          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                            {currentDescription.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    {Object.entries(fieldErrors).map(([name, message]) => (
+                      <p
+                        key={name}
+                        className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+                      >
+                        {name}：{message}
+                      </p>
+                    ))}
+                    {currentDescription.search && (
+                      <div className="relative">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          aria-label={
+                            currentDescription.search.label || "搜索设置"
+                          }
+                          placeholder={
+                            currentDescription.search.placeholder || "搜索设置"
+                          }
+                          value={filterQuery}
+                          onChange={(event) =>
+                            setFilterQuery(event.target.value)
+                          }
+                          className="h-10 rounded-xl bg-background pl-9"
+                        />
+                      </div>
+                    )}
+                    <DynamicSettings
+                      key={pageKey}
+                      config={visibleOptions}
+                      className={
+                        currentDescription.layout?.columns === 2
+                          ? "grid items-start gap-5 space-y-0! @3xl/settings:grid-cols-2"
+                          : "space-y-5"
+                      }
+                      initialValues={values}
+                      onChange={(next) => {
+                        setValues(next);
+                        if (
+                          currentDescription.saveMode === "page" ||
+                          currentDescription.save
+                        )
+                          setDirty(true);
+                      }}
+                      validationRef={scopeRef}
+                      onSave={save}
+                      runtimeContext={{
+                        api: apiClient,
+                        client: clientAdapter,
+                        navigate: (path) => {
+                          onClose();
+                          navigate(path);
+                        },
+                        updateUser: setUser,
+                        refresh,
+                        registerDraftGuard,
+                      }}
+                    />
+                  </>
+                ) : !catalogLoading && !visibleTabs.length ? (
+                  <div className="rounded-2xl border border-dashed bg-card p-10 text-center text-sm text-muted-foreground">
+                    当前后端没有可用的设置页面。
+                  </div>
+                ) : null}
+              </div>
+            </main>
+            {currentDescription?.save ? (
+              <footer className="shrink-0 space-y-2 border-t bg-background px-5 py-3">
+                <OperationStatus operation={saveState} context={{ navigate }} />
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    {dirty ? (
+                      <span className="size-1.5 rounded-full bg-amber-500" />
+                    ) : (
+                      <Check className="size-3.5" />
+                    )}
+                    {dirty ? "有未保存的更改" : "所有更改已保存"}
+                  </span>
+                  <Button
+                    disabled={saveState?.busy || !dirty}
+                    onClick={() => {
+                      void save();
+                    }}
+                    className="rounded-lg px-5"
+                  >
+                    <Save className="size-4" />
+                    {currentDescription.save.label || "保存"}
+                  </Button>
+                </div>
+              </footer>
+            ) : (
+              isClient &&
+              currentDescription && (
+                <footer className="flex shrink-0 items-center gap-1.5 border-t bg-background px-5 py-3 text-[11px] text-muted-foreground">
+                  <Check className="size-3.5" />
+                  {currentDescription.saveMode === "immediate"
+                    ? "更改会自动保存在此浏览器"
+                    : "连接信息保存在此浏览器，切换时会再次确认"}
+                </footer>
+              )
+            )}
+          </div>
+        </div>
+        {!fullscreen && !isMobile && (
+          <button
+            type="button"
+            aria-label="调整设置窗口大小"
+            className="absolute bottom-1 right-1 size-4 cursor-se-resize opacity-40 transition hover:opacity-80"
+            onPointerDown={resize}
+          >
+            <span className="absolute bottom-0 right-0 size-2 border-b-2 border-r-2 border-current" />
+          </button>
+        )}
+      </section>
+      {confirmation}
+    </div>
+  );
 }

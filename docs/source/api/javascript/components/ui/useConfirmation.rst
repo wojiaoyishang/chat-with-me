@@ -27,7 +27,7 @@ Each owner cancels pending requests on unmount; no browser-global dialogs.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/ui/useConfirmation.jsx:280:1878:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/useConfirmation.jsx:280:2206:FUNCTION
 
 .. js:function:: useConfirmation()
 
@@ -41,7 +41,7 @@ Each owner cancels pending requests on unmount; no browser-global dialogs.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``[ confirm, <AlertDialog open={Boolean(options)} onOpenChange={(open) => { if (!open) finish(false); }} > <AlertDialogContent className="z-[300] sm:max-w-[460px]"> <AlertDialogHead…``。
+   根据执行分支返回结果；代表性返回表达式为 ``[ confirm, <AlertDialog open={Boolean(options)} onOpenChange={(open) => { if (!open) finish(false); }} > <AlertDialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col gap…``。
 
    **主要协作调用**：``useState``、``useRef``、``useEffect``、``useCallback``、``Boolean``。
 
@@ -188,7 +188,7 @@ Each owner cancels pending requests on unmount; no browser-global dialogs.
 
 **主要协作调用**：``finish``。
 
-.. CWM-AST-FUNCTION src/components/ui/useConfirmation.jsx:1497:1516:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/useConfirmation.jsx:1784:1803:FUNCTION
 
 .. rubric:: ``onClick callback @ 55``
 
@@ -210,7 +210,7 @@ Each owner cancels pending requests on unmount; no browser-global dialogs.
 
 **主要协作调用**：``finish``。
 
-.. CWM-AST-FUNCTION src/components/ui/useConfirmation.jsx:1689:1707:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/useConfirmation.jsx:2017:2035:FUNCTION
 
 .. rubric:: ``onClick callback @ 60``
 

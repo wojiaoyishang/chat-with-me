@@ -41,7 +41,7 @@
    * - :doc:`src/pages/SettingPage </api/javascript/pages/SettingPage>`
      - 2
      - 0
-     - 54
+     - 75
      - ``src/pages/SettingPage.jsx``
 
 .. toctree::

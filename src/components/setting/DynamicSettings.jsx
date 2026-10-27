@@ -1,7 +1,9 @@
 import clientAdapter from '@/runtime/backend/clientAdapter.js';
-import { applyRules, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue } from '@/features/settings-runtime/model.js';
+import { applyRules, findSettingsField as findField, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue, settingsChildFields } from '@/features/settings-runtime/model.js';
 import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
-import { ActionsNode, ActionButton, AsyncOperationNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
+import { ActionsNode, ActionButton, AsyncOperationNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileSummaryNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
+import { SettingsSection } from '@/features/settings-runtime/SettingsPresentation.jsx';
+import SettingsTabs from '@/features/settings-runtime/SettingsTabs.jsx';
 import { useActionExecutor } from '@/features/settings-runtime/useActionExecutor.js';
 import { validateSettingsScope } from '@/features/settings-runtime/validation.js';
 import '@/features/settings-runtime/extensions.jsx';
@@ -17,7 +19,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -49,6 +52,7 @@ import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import apiClient from '@/lib/apiClient.js';
 import { toast } from 'sonner';
 import { onEvent } from '@/context/useEventStore.jsx';
+import { useWindowPopoverLayer } from '@/lib/windowLayers.js';
 
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -210,6 +214,8 @@ function TipWrapper({ tips, children, nullable, isNull, onToggleNull }) {
 function SettingRow({
     text,
     tips,
+    description,
+    density,
     children,
     expanded,
     className,
@@ -224,20 +230,26 @@ function SettingRow({
     required = false,
 }) {
     if (fullWidth) {
-        return <div className={`w-full px-3 sm:px-4 pt-3 pb-3 ${className || ''}`}>{children}</div>;
+        return <div className={`w-full px-4 py-4 sm:px-5 ${className || ''}`}>
+            {text && <div className="mb-2.5 flex items-center gap-2 text-sm font-medium"><span>{text}</span><TipWrapper tips={tips} />{required && <span className="text-destructive">*</span>}</div>}
+            {children}
+        </div>;
     }
 
     return (
         <div
-            className={`${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between min-h-[42px] gap-x-3 gap-y-2.5 last-of-type:border-b-0 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : 'py-3 px-3 sm:px-4'}`}
+            className={`cwm-settings-row ${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between ${density === 'compact' ? 'min-h-[48px]' : 'min-h-[58px]'} gap-x-5 gap-y-3 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : density === 'compact' ? 'px-1 py-3' : 'px-4 py-4 sm:px-5'}`}
         >
-            <div className="flex items-center gap-1.5 min-w-0 max-w-full flex-1" style={{ flexBasis: 'max-content' }}>
+            <div className="min-w-0 max-w-full flex-1" style={{ flexBasis: 'max-content' }}>
+                <div className="flex items-center gap-1.5">
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
                     <AutoScrollText className="text-sm font-medium flex-1 min-w-0" title={text}>
                         {text}
                         {required && <span className="text-red-500 ml-0.5 text-base leading-none">*</span>}
                     </AutoScrollText>
                 </TipWrapper>
+                </div>
+                {description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}
             </div>
             <div
                 className={
@@ -325,6 +337,8 @@ function ImageItem({ item, path }) {
         <SettingRow
             text={item.text}
             tips={item.tips}
+            description={item.description}
+            density={item.density}
             nullable={nullable}
             isNull={isNull}
             onToggleNull={toggleNull}
@@ -462,7 +476,8 @@ const SortableCard = memo(
                         <button
                             onClick={handleMoveUp}
                             className={`${iconButtonBase} text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]`}
-                            title={t('ds.moveUp')}
+                            title={t('ds.moveUp', { defaultValue: '上移' })}
+                            aria-label={t('ds.moveUp', { defaultValue: '上移' })}
                             disabled={index === 0}
                         >
                             <ArrowUp size={16} />
@@ -471,7 +486,8 @@ const SortableCard = memo(
                         <button
                             onClick={handleMoveDown}
                             className={`${iconButtonBase} text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]`}
-                            title={t('ds.moveDown')}
+                            title={t('ds.moveDown', { defaultValue: '下移' })}
+                            aria-label={t('ds.moveDown', { defaultValue: '下移' })}
                             disabled={index === list.length - 1}
                         >
                             <ArrowDown size={16} />
@@ -480,7 +496,8 @@ const SortableCard = memo(
                         <button
                             onClick={handleDuplicate}
                             className={`${iconButtonBase} text-[#656d76] hover:text-[#2563eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136]`}
-                            title={t('ds.duplicate')}
+                            title={t('ds.duplicate', { defaultValue: '复制' })}
+                            aria-label={t('ds.duplicate', { defaultValue: '复制' })}
                         >
                             <Copy size={16} />
                         </button>
@@ -488,7 +505,8 @@ const SortableCard = memo(
                         <button
                             onClick={handleDelete}
                             className={`${iconButtonBase} text-[#dc2626] hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30`}
-                            title={t('ds.delete')}
+                            title={t('delete', { defaultValue: '删除' })}
+                            aria-label={t('delete', { defaultValue: '删除' })}
                         >
                             <Trash2 size={16} />
                         </button>
@@ -540,6 +558,7 @@ function ListItem({ item, path }) {
     const [selectedTemplateId, setSelectedTemplateId] = useState(addTemplates[0]?.id || '');
     const [newEntryId, setNewEntryId] = useState(null);
     const [templateInputs, setTemplateInputs] = useState({});
+    const templateButtonRef = useRef(null);
     const selectedTemplate = addTemplates.find((entry) => entry.id === selectedTemplateId) || addTemplates[0];
 
     useEffect(() => {
@@ -714,13 +733,14 @@ function ListItem({ item, path }) {
 
             {addTemplates.length > 0 && (
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-                    <DialogContent className="z-[999] w-[min(92vw,620px)] max-w-none rounded-2xl border-[#e1e4e8] bg-white p-0 shadow-[0_20px_60px_rgba(0,0,0,0.28)] dark:border-[#3a3f45] dark:bg-[#1c1e21]">
-                        <DialogHeader className="border-b border-[#e1e4e8] px-5 py-4 pr-12 text-left dark:border-[#3a3f45]">
+                    <DialogContent className="flex max-h-[90dvh] w-[min(92vw,620px)] max-w-none flex-col gap-0 overflow-hidden rounded-2xl border-border bg-background p-0 shadow-xl sm:max-w-[620px]">
+                        <DialogHeader className="shrink-0 border-b border-border/60 bg-muted/20 px-5 py-4 pr-14 text-left">
                             <DialogTitle className="text-base font-semibold">
                                 {item.addDialogTitle || `${t('ds.add')} ${item.text || ''}`}
                             </DialogTitle>
+                            <DialogDescription className="text-xs leading-5">{item.addDialogDescription || '选择预设并补充配置，创建后仍可继续调整。'}</DialogDescription>
                         </DialogHeader>
-                        <div className="max-h-[65vh] overflow-y-auto space-y-4 px-5 py-4">
+                        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5">
                             {item.addDialogTips && (
                                 <div className="rounded-xl border border-[#d0d7de] bg-[#f8f9fa] px-3 py-2.5 text-xs leading-relaxed text-[#656d76] dark:border-[#3a3f45] dark:bg-[#25282c] dark:text-[#9ca3af]">
                                     {item.addDialogTips}
@@ -735,8 +755,8 @@ function ListItem({ item, path }) {
                                         setTemplateInputs({});
                                     }}
                                 >
-                                    <div className="relative">
-                                        <ListboxButton className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-[#d0d7de] bg-white px-3 py-2 text-left text-sm text-[#1a1d21] transition hover:border-[#2563eb] dark:border-[#3a3f45] dark:bg-[#25282c] dark:text-[#e4e7eb]">
+                                    {({ open }) => <div className="relative">
+                                        <ListboxButton ref={templateButtonRef} className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2 text-left text-sm transition hover:border-primary/50">
                                             <span className="min-w-0 flex-1 truncate">
                                                 {addTemplates.find((entry) => entry.id === selectedTemplateId)?.label ||
                                                     addTemplates[0]?.label ||
@@ -744,25 +764,8 @@ function ListItem({ item, path }) {
                                             </span>
                                             <ChevronDown size={16} className="shrink-0 text-[#656d76]" />
                                         </ListboxButton>
-                                        <ListboxOptions className="absolute z-[1001] mt-2 max-h-72 w-full overflow-auto rounded-xl border border-[#d0d7de] bg-white p-1 shadow-xl focus:outline-none dark:border-[#3a3f45] dark:bg-[#25282c]">
-                                            {addTemplates.map((template) => (
-                                                <ListboxOption
-                                                    key={template.id}
-                                                    value={template.id}
-                                                    className="group cursor-pointer rounded-lg px-3 py-2.5 text-sm data-[focus]:bg-[#f1f3f5] dark:data-[focus]:bg-[#2d3136]"
-                                                >
-                                                    <div className="font-medium text-[#1a1d21] dark:text-[#e4e7eb]">
-                                                        {template.label}
-                                                    </div>
-                                                    {template.description && (
-                                                        <div className="mt-0.5 text-xs leading-relaxed text-[#656d76] dark:text-[#9ca3af]">
-                                                            {template.description}
-                                                        </div>
-                                                    )}
-                                                </ListboxOption>
-                                            ))}
-                                        </ListboxOptions>
-                                    </div>
+                                        <SelectOptionsPortal open={open} anchorRef={templateButtonRef} options={addTemplates.map(template => ({ value: template.id, label: template.label, description: template.description }))} selectedValue={selectedTemplateId} />
+                                    </div>}
                                 </Listbox>
                             </div>
                             {(selectedTemplate?.fields || []).filter((field) => field.type !== 'switch').map((field) => (
@@ -829,23 +832,24 @@ function ListItem({ item, path }) {
                                 );
                             })()}
                         </div>
-                        <div className="flex justify-end gap-2 border-t border-[#e1e4e8] px-5 py-4 dark:border-[#3a3f45]">
-                            <button
+                        <DialogFooter className="shrink-0 border-t border-border/60 bg-muted/15 px-5 py-4">
+                            <Button
                                 type="button"
+                                variant="outline"
                                 onClick={() => setAddDialogOpen(false)}
-                                className="h-9 rounded-lg border border-[#d0d7de] px-4 text-sm font-medium text-[#1a1d21] transition hover:bg-[#f1f3f5] dark:border-[#3a3f45] dark:text-[#e4e7eb] dark:hover:bg-[#2d3136]"
+                                className="rounded-xl"
                             >
                                 取消
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 type="button"
                                 onClick={confirmTemplateAdd}
                                 disabled={!selectedTemplateId}
-                                className="h-9 rounded-lg bg-[#2563eb] px-4 text-sm font-medium text-white transition hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="rounded-xl"
                             >
                                 {item.createLabel || '创建项目'}
-                            </button>
-                        </div>
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             )}
@@ -938,6 +942,8 @@ function SwitchItem({ item, path }) {
             onToggleNull={toggleNull}
             required={item.required}
             controlCompact
+            description={item.description}
+            density={item.density}
         >
             <AnimatePresence mode="wait">
                 {isNull ? (
@@ -1182,7 +1188,7 @@ function TextInputItem({ item, path }) {
                     ) : (
                         <Dialog open={dialogOpen} onOpenChange={changeDialogOpen}>
                             <DialogTrigger asChild>
-                                <button className="h-8 px-4 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-md bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors">
+                                <Button type="button" variant="outline" size="sm" className="rounded-xl" aria-label={`编辑${item.text || '文本'}`}>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         width="20"
@@ -1196,35 +1202,39 @@ function TextInputItem({ item, path }) {
                                     >
                                         <path d="M5 12h.01M12 12h.01M19 12h.01" />
                                     </svg>
-                                </button>
+                                    {item.editLabel || '编辑文本'}
+                                </Button>
                             </DialogTrigger>
-                            <DialogContent className="w-[min(92vw,560px)] z-[999] max-w-none rounded-3xl border-[#e1e4e8] dark:border-[#3a3f45] bg-white dark:bg-[#1c1e21] p-4 sm:p-6 shadow-[0_20px_60px_rgba(0,0,0,0.3)]">
-                                <DialogHeader>
-                                    <DialogTitle className="text-base font-semibold mb-4">{item.text}</DialogTitle>
+                            <DialogContent className="flex max-h-[90dvh] w-[min(92vw,640px)] max-w-none flex-col gap-0 overflow-hidden rounded-2xl bg-background p-0 shadow-xl sm:max-w-[640px]">
+                                <DialogHeader className="shrink-0 border-b border-border/60 bg-muted/20 px-5 py-4 pr-14 text-left">
+                                    <DialogTitle className="text-base font-semibold">{item.text}</DialogTitle>
+                                    <DialogDescription className="text-xs leading-5">{item.tips || '确认后应用修改，取消将保留原有内容。'}</DialogDescription>
                                 </DialogHeader>
+                                <div className="min-h-0 flex-1 overflow-auto px-5 py-5">
                                 <MultilineEditor
                                     label={item.text}
                                     value={draft}
                                     onChange={(e) => setDraft(e.target.value)}
                                     rows={8}
                                 />
-                                <div className="flex justify-end gap-2 mt-4">
-                                    <button
-                                        className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium border border-[#e1e4e8] dark:border-[#3a3f45] bg-[#f8f9fa] dark:bg-[#25282c] text-[#1a1d21] dark:text-[#e4e7eb] hover:bg-[#f1f3f5] dark:hover:bg-[#2d3136] transition-colors"
+                                </div>
+                                <DialogFooter className="shrink-0 border-t border-border/60 bg-muted/15 px-5 py-4">
+                                    <Button
+                                        type="button" variant="outline" className="rounded-xl"
                                         onClick={() => setDialogOpen(false)}
                                     >
                                         {t('ds.cancel')}
-                                    </button>
-                                    <button
-                                        className="cursor-pointer h-9 px-4 rounded-md text-sm font-medium bg-[#2563eb] hover:bg-[#1d4ed8] text-white transition-colors"
+                                    </Button>
+                                    <Button
+                                        type="button" className="rounded-xl"
                                         onClick={() => {
                                             update(path, draft);
                                             setDialogOpen(false);
                                         }}
                                     >
                                         {t('ds.confirm')}
-                                    </button>
-                                </div>
+                                    </Button>
+                                </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     )}
@@ -1410,7 +1420,34 @@ function getVisualViewportMetrics() {
 }
 
 function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
+    const layer = useWindowPopoverLayer();
+    const surfaceRef = useRef(null);
     const [optionsPosition, setOptionsPosition] = useState(null);
+
+    useEffect(() => {
+        if (!open) return undefined;
+        // Headless UI ignores already-prevented Escape events. Handle the owned
+        // menu before the enclosing Radix dialog consumes Escape in capture.
+        const escape = (event) => {
+            if (event.key !== 'Escape' || event.isComposing) return;
+            if (!surfaceRef.current?.contains(event.target) && !anchorRef.current?.contains(event.target)) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const trigger = anchorRef.current;
+            if (trigger?.getAttribute('aria-expanded') === 'true') {
+                // ListboxButton toggles mouse interaction on pointerdown and
+                // deliberately ignores the following click. Reuse that public
+                // trigger interaction, including after a mouse-opened menu.
+                const PointerEventClass = window.PointerEvent || window.MouseEvent;
+                const pointer = new PointerEventClass('pointerdown', { bubbles: true, cancelable: true, button: 0, pointerType: 'mouse', isPrimary: true });
+                if (!pointer.pointerType) Object.defineProperty(pointer, 'pointerType', { value: 'mouse' });
+                trigger.dispatchEvent(pointer);
+            }
+            trigger?.focus({ preventScroll: true });
+        };
+        window.addEventListener('keydown', escape, true);
+        return () => window.removeEventListener('keydown', escape, true);
+    }, [open, anchorRef]);
 
     useEffect(() => {
         if (!open || !anchorRef.current) {
@@ -1507,8 +1544,11 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
         <AnimatePresence>
             {open && (
                 <ListboxOptions
+                    ref={surfaceRef}
                     static
                     as={motion.div}
+                    data-window-layer={layer['data-window-layer']}
+                    data-window-popover="true"
                     initial={{ opacity: 0, y: menuOffset, scale: 0.96 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: menuOffset, scale: 0.96 }}
@@ -1521,8 +1561,9 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
                         maxWidth: `${optionsPosition.maxWidth}px`,
                         maxHeight: `${optionsPosition.maxHeight}px`,
                         transformOrigin: optionsPosition.placement === 'top' ? 'bottom left' : 'top left',
+                        zIndex: layer.zIndex,
                     }}
-                    className="bg-white dark:bg-[#1c1e21] border border-[#e1e4e8] dark:border-[#3a3f45] rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] p-1 z-[9999] overflow-auto overscroll-contain outline-none"
+                    className="rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-xl outline-none overflow-auto overscroll-contain"
                 >
                     {options.map((opt) => (
                         <ListboxOption
@@ -1532,9 +1573,10 @@ function SelectOptionsPortal({ open, anchorRef, options, selectedValue }) {
                         >
                             {({ selected: isSel }) => (
                                 <>
-                                    <AutoScrollText className="flex-1 min-w-0" title={opt.label}>
+                                    <div className="min-w-0 flex-1"><AutoScrollText className="min-w-0" title={opt.label}>
                                         {opt.label}
                                     </AutoScrollText>
+                                    {opt.description && <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{opt.description}</p>}</div>
                                     {(isSel || selectedValue === opt.value) && (
                                         <svg
                                             className="w-4 h-4 text-[#2563eb] dark:text-[#3b82f6] flex-shrink-0"
@@ -1829,8 +1871,16 @@ function TagsItem({ item, path }) {
 
 // ─── Group Item ─────────────────────────────────────────────────────
 function GroupItem({ item, path }) {
-    const { values, update } = useSettings();
+    const context = useSettings();
+    const { values, update } = context;
     const groupValues = deepGet(values, path) ?? {};
+    const scope = { form: values, item: context.item, parentItem: context.parentItem };
+    const sectionProps = {
+        title: resolveValue(item.text || item.title || item.name, scope),
+        description: resolveValue(item.description, scope),
+        icon: item.icon || 'settings',
+        variant: item.variant,
+    };
     const hasRadios = item.children?.some((c) => c.type === 'radio');
     if (hasRadios) {
         const radioChildren = item.children.filter((c) => c.type === 'radio');
@@ -1840,12 +1890,9 @@ function GroupItem({ item, path }) {
                 ? groupValues
                 : radioChildren.find((c) => groupValues[c.name])?.name || radioChildren[0]?.name;
         return (
-            <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-                <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-3 sm:px-4 pt-3 pb-1">
-                    {item.text || item.name}
-                </div>
+            <SettingsSection {...sectionProps}>
                 <RadioGroup
-                    className="flex flex-wrap gap-x-4 gap-y-1 px-3 sm:px-4 pb-2.5"
+                    className="flex flex-wrap gap-x-5 gap-y-2 px-4 py-4 sm:px-5"
                     value={selectedRadio}
                     onValueChange={(v) => update(path, v)}
                 >
@@ -1854,25 +1901,20 @@ function GroupItem({ item, path }) {
                     ))}
                 </RadioGroup>
                 {nonRadioChildren.map((child, index) => (
-                    <SettingItemRenderer key={child.id || `${child.name || child.type || 'field'}:${index}`} item={child} path={[...path, ...pathParts(child.name)]} />
+                    <div className="border-t border-border/55" key={child.id || `${child.name || child.type || 'field'}:${index}`}><SettingItemRenderer item={child} path={[...path, ...pathParts(child.name)]} /></div>
                 ))}
-            </div>
+            </SettingsSection>
         );
     }
     const hasCheckboxes = item.children?.some((c) => c.type === 'checkbox');
     return (
-        <div className="border-b border-[#e1e4e8] dark:border-[#3a3f45] last:border-b-0">
-            <div className="text-xs font-semibold uppercase tracking-[0.5px] text-[#656d76] dark:text-[#9ca3af] px-3 sm:px-4 pt-3 pb-1">
-                {item.text || item.name}
-            </div>
-            <div
-                className={hasCheckboxes ? 'flex flex-wrap gap-x-4 gap-y-1 px-3 sm:px-4 pb-2.5' : 'px-3 sm:px-4 pb-2.5'}
-            >
+        <SettingsSection {...sectionProps}>
+            <div className={hasCheckboxes ? 'flex flex-wrap gap-x-5 gap-y-2 px-4 py-4 sm:px-5' : 'divide-y divide-border/55'}>
                 {item.children?.map((child, index) => (
-                    <SettingItemRenderer key={child.id || `${child.name || child.type || 'field'}:${index}`} item={child} path={[...path, ...pathParts(child.name)]} />
+                    <div key={child.id || `${child.name || child.type || 'field'}:${index}`} className={['card', 'group', 'resource', 'async-operation'].includes(child.type) ? 'p-3 sm:p-4' : item.variant === 'plain' ? 'transition-colors hover:bg-muted/15' : undefined}><SettingItemRenderer item={child} path={[...path, ...pathParts(child.name)]} /></div>
                 ))}
             </div>
-        </div>
+        </SettingsSection>
     );
 }
 
@@ -1883,11 +1925,11 @@ function HeadingItem({ item }) {
         return <div className="h-px bg-[#e1e4e8] dark:bg-[#3a3f45] mx-3 sm:mx-4 my-2" />;
     }
     return (
-        <div className="flex items-center gap-3 px-3 sm:px-4 py-4 pb-2">
-            <span className="text-xs font-bold uppercase tracking-[0.8px] text-[#656d76] dark:text-[#9ca3af] whitespace-nowrap">
+        <div className="flex items-center gap-3 px-1 pb-0.5 pt-2">
+            <span className="text-sm font-semibold text-foreground">
                 {item.text}
             </span>
-            <div className="flex-1 h-px bg-[#e1e4e8] dark:bg-[#3a3f45]" />
+            {item.description && <span className="text-xs leading-5 text-muted-foreground">{item.description}</span>}
         </div>
     );
 }
@@ -2095,8 +2137,15 @@ function SettingItemRenderer({ item, path }) {
     }
 
     const render = () => { switch (item.type) {
+        case 'tabs': {
+            const prefix = item.name ? path.slice(0, -pathParts(item.name).length) : path;
+            return <SettingsTabs item={item} renderPane={(options) => options.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || field.type || 'field'}:${index}`} item={field} path={[...prefix, ...pathParts(field.name)]} />)} />;
+        }
+        case 'card':
         case 'form':
             return <GroupItem item={{ ...item, children: item.options || item.children || [] }} path={path} />;
+        case 'profile-summary':
+            return <ProfileSummaryNode item={item} context={context} />;
         case 'resource':
             return <ResourceNode item={item} context={context} renderFields={context.renderFields} />;
         case 'actions':
@@ -2158,7 +2207,10 @@ function SettingItemRenderer({ item, path }) {
                 return Registered ? <Registered item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} context={{ ...context, disabled: item.disabled }} renderFields={context.renderFields} />
                     : <p role="alert" className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive">客户端暂不支持组件：{item.type || '未命名'}，请升级客户端。</p>; }
     } };
-    return <SettingsContext.Provider value={context}><fieldset disabled={isDisabled} className="contents min-w-0">{render()}</fieldset></SettingsContext.Provider>;
+    const presentationContainer = ['tabs', 'group', 'form', 'card'].includes(item.type);
+    return <SettingsContext.Provider value={context}>{presentationContainer
+        ? <div className="contents min-w-0" data-settings-field={path.join('.')}>{render()}</div>
+        : <fieldset disabled={isDisabled} className="contents min-w-0" data-settings-field={path.join('.')}>{render()}</fieldset>}</SettingsContext.Provider>;
 }
 
 // ─── Main Component ────────────────────────────────────────────────
@@ -2265,7 +2317,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     }, [config, initialValues]);
     return <SettingsContext.Provider value={ctx}>
         <div ref={(node) => { editorScope.current = node; if (node) node._cwmSettingsValues = valuesRef; if (validationRef) validationRef.current = node; }}
-            className={`w-full min-w-0 space-y-3 rounded-lg ${className || ''}`}>
+            className={`grid w-full min-w-0 grid-cols-1 gap-4 ${className || ''}`}>
             {config.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || 'field'}:${index}`} item={field} path={field.name ? pathParts(field.name) : []} />)}
         </div>
         <DescriptorDialog descriptor={descriptorDialog} context={ctx} renderFields={renderFields} onClose={() => setDescriptorDialog(null)} />
@@ -2273,27 +2325,20 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     </SettingsContext.Provider>;
 }
 
-function findField(fields, path) {
-    for (const field of fields || []) {
-        const parts = pathParts(field.name);
-        if (!parts.every((key, index) => String(key) === String(path[index]))) continue;
-        if (parts.length === path.length) return field;
-        const rest = path.slice(parts.length);
-        const nested = field.type === 'list' && /^\d+$/.test(String(rest[0])) ? rest.slice(1) : rest;
-        const found = findField(field.children || field.options, nested);
-        if (found) return found;
-    }
-    return null;
-}
-
 function buildDefaults(config, initialValues) {
     let values = pageValues(config, initialValues);
-    for (const field of config || []) {
-        if (!field.name) continue;
-        if (field.type === 'list') {
-            const list = getValue(values, field.name, []);
-            if (Array.isArray(list)) values = setValue(values, field.name, list.map((entry) => ({ ...entry, [ROW_KEY]: entry[ROW_KEY] || generateInternalId() })));
+    const assignRows = (fields, prefix = []) => {
+        for (const field of fields || []) {
+            if (field.type === 'tabs') { assignRows(settingsChildFields(field), prefix); continue; }
+            const path = [...prefix, ...pathParts(field.name)];
+            if (field.type === 'list') {
+                const list = getValue(values, path, []);
+                if (!Array.isArray(list)) continue;
+                values = setValue(values, path, list.map((entry) => ({ ...entry, [ROW_KEY]: entry?.[ROW_KEY] || generateInternalId() })));
+                list.forEach((_, index) => assignRows(settingsChildFields(field), [...path, index]));
+            } else if (['group', 'form', 'card'].includes(field.type)) assignRows(settingsChildFields(field), path);
         }
-    }
+    };
+    assignRows(config);
     return values;
 }

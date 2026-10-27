@@ -963,20 +963,35 @@
      - 0
      - 0
      - ``src/features/notification/widgetNotificationPolicy.js``
-   * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
-     - 12
+   * - :doc:`src/features/settings-client/catalog </api/javascript/features/settings-client/catalog>`
+     - 8
      - 0
-     - 96
+     - 4
+     - ``src/features/settings-client/catalog.js``
+   * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
+     - 13
+     - 0
+     - 102
      - ``src/features/settings-runtime/GenericNodes.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsPresentation </api/javascript/features/settings-runtime/SettingsPresentation>`
+     - 2
+     - 0
+     - 0
+     - ``src/features/settings-runtime/SettingsPresentation.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsTabs </api/javascript/features/settings-runtime/SettingsTabs>`
+     - 1
+     - 0
+     - 20
+     - ``src/features/settings-runtime/SettingsTabs.jsx``
    * - :doc:`src/features/settings-runtime/extensions </api/javascript/features/settings-runtime/extensions>`
      - 1
      - 0
      - 1
      - ``src/features/settings-runtime/extensions.jsx``
    * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
-     - 12
+     - 14
      - 0
-     - 10
+     - 12
      - ``src/features/settings-runtime/model.js``
    * - :doc:`src/features/settings-runtime/registry </api/javascript/features/settings-runtime/registry>`
      - 2
@@ -989,9 +1004,9 @@
      - 12
      - ``src/features/settings-runtime/useActionExecutor.js``
    * - :doc:`src/features/settings-runtime/validation </api/javascript/features/settings-runtime/validation>`
-     - 1
+     - 3
      - 0
-     - 0
+     - 4
      - ``src/features/settings-runtime/validation.js``
    * - :doc:`src/features/story/StoriesPage </api/javascript/features/story/StoriesPage>`
      - 2
@@ -1518,7 +1533,10 @@
    /api/javascript/features/notification/systemNotifications
    /api/javascript/features/notification/useNotificationStore
    /api/javascript/features/notification/widgetNotificationPolicy
+   /api/javascript/features/settings-client/catalog
    /api/javascript/features/settings-runtime/GenericNodes
+   /api/javascript/features/settings-runtime/SettingsPresentation
+   /api/javascript/features/settings-runtime/SettingsTabs
    /api/javascript/features/settings-runtime/extensions
    /api/javascript/features/settings-runtime/model
    /api/javascript/features/settings-runtime/registry

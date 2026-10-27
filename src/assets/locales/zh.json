@@ -199,6 +199,8 @@
         "deleteConfirmMsg": "此操作不可撤销。",
         "model": "模型",
         "duplicate": "复制",
+        "moveUp": "上移",
+        "moveDown": "下移",
         "default": "默认",
         "addTagPlaceholder": "输入标签后按 Enter"
     },

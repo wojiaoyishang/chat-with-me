@@ -102,17 +102,42 @@ export function applyRules(values, rules, scope = {}) {
     return result;
 }
 
+/** Presentation containers expose descendants without adding form identity. */
+export function settingsChildFields(field) {
+    if (field.type === 'tabs') return (Array.isArray(field.tabs) ? field.tabs : []).flatMap((tab) => Array.isArray(tab?.options) ? tab.options : []);
+    return field.children || field.options || [];
+}
+
+export function findSettingsField(fields, path) {
+    for (const field of fields || []) {
+        if (field.type === 'tabs') {
+            const found = findSettingsField(settingsChildFields(field), path);
+            if (found) return found;
+            continue;
+        }
+        const parts = pathParts(field.name);
+        if (!parts.every((key, index) => String(key) === String(path[index]))) continue;
+        if (parts.length === path.length && field.name) return field;
+        const rest = path.slice(parts.length);
+        const nested = field.type === 'list' && /^\d+$/.test(String(rest[0])) ? rest.slice(1) : rest;
+        const found = findSettingsField(settingsChildFields(field), nested);
+        if (found) return found;
+    }
+    return null;
+}
+
 export function pageValues(options = [], initial = {}) {
     let result = cloneData(initial) || {};
     for (const field of options) {
         if (!field) continue;
+        if (field.type === 'tabs') { result = pageValues(settingsChildFields(field), result); continue; }
         if (!field.name) {
             if (field.children || field.options) result = pageValues(field.children || field.options, result);
             continue;
         }
         const path = pathParts(field.name);
         const present = getValue(result, path);
-        if ((field.type === 'group' || field.type === 'form') && present && typeof present === 'object' && !Array.isArray(present)) {
+        if ((['group', 'form', 'card'].includes(field.type)) && present && typeof present === 'object' && !Array.isArray(present)) {
             result = setValue(result, path, pageValues(field.children || field.options || [], present));
             continue;
         }
@@ -123,7 +148,7 @@ export function pageValues(options = [], initial = {}) {
         if (present !== undefined) continue;
         if (field.defaultNull) result = setValue(result, path, null);
         else if (Object.hasOwn(field, 'default')) result = setValue(result, path, cloneData(field.default));
-        else if (field.type === 'group' || field.type === 'form') result = setValue(result, path, pageValues(field.children || field.options || [], {}));
+        else if (['group', 'form', 'card'].includes(field.type)) result = setValue(result, path, pageValues(field.children || field.options || [], {}));
         else if (field.nullable) result = setValue(result, path, null);
     }
     return result;
@@ -134,6 +159,7 @@ export function validateFields(fields, form, prefix = [], errors = {}, context =
         if (!field) continue;
         const scope = { ...context, form: getValue(form, prefix, form), root: form };
         if (field.when && !matchesCondition(field.when, scope)) continue;
+        if (field.type === 'tabs') { validateFields(settingsChildFields(field), form, prefix, errors, context); continue; }
         if (!field.name) { if (field.children || field.options) validateFields(field.children || field.options, form, prefix, errors, context); continue; }
         const path = [...prefix, ...pathParts(field.name)];
         const value = getValue(form, path);
@@ -145,7 +171,7 @@ export function validateFields(fields, form, prefix = [], errors = {}, context =
             if (field.pattern && !new RegExp(field.pattern).test(value)) errors[name] = field.validationMessage || `${field.text || field.name}格式不正确。`;
         }
         if (typeof value === 'number' && ((field.min != null && value < field.min) || (field.max != null && value > field.max))) errors[name] = `${field.text || field.name}超出允许范围。`;
-        if (field.type === 'group' || field.type === 'form') validateFields(field.children || field.options, form, path, errors, context);
+        if (['group', 'form', 'card'].includes(field.type)) validateFields(field.children || field.options, form, path, errors, context);
     }
     return errors;
 }
