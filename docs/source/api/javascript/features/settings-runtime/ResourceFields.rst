@@ -17,7 +17,7 @@ src/features/settings-runtime/ResourceFields 模块
 * **模块标识**：``src/features/settings-runtime/ResourceFields``
 * **顶层函数/组件/Hook**：6
 * **类**：0
-* **局部函数与匿名回调**：66
+* **局部函数与匿名回调**：72
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -88,13 +88,13 @@ src/features/settings-runtime/ResourceFields 模块
 
    **内部回调数量**：7。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:4762:7698:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:4762:9233:FUNCTION
 
 .. js:function:: DirectoryListField({ item, value, onChange, context })
 
    渲染 ``DirectoryListField`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``56``—``86`` 行。
+   **性质**：同步函数；导出 API；源码第 ``56``—``94`` 行。
 
    **参数**
 
@@ -103,19 +103,19 @@ src/features/settings-runtime/ResourceFields 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<FieldBlock item={item} invalid={invalid ? '虚拟目录名只能使用字母、数字、点、横线和下划线，且不能重复。' : ''}> <div className="divide-y rounded-lg border"> {list.map((entry, index) => <div key={entry.id || \x60…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<FieldBlock item={item} invalid={invalidAlias ? '虚拟目录名需以字母或数字开头，最多 64 个字符，且不能重复。' : overlap ? '不能选择重复或相互包含的目录。' : ''}> <div className="divide-y rounded-lg border"> {list.map((entr…``。
 
-   **主要协作调用**：``useTranslation``、``useState``、``Array.isArray``、``list.map``、``list.some``。
+   **主要协作调用**：``useTranslation``、``useState``、``Array.isArray``、``list.map``、``Boolean``、``resolveValue``、``list.some``、``aliases.map``。
 
-   **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：7。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7698:12150:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9233:13685:FUNCTION
 
 .. js:function:: PolicyRulesField({ item, value, onChange, context })
 
    渲染 ``PolicyRulesField`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``88``—``117`` 行。
+   **性质**：同步函数；导出 API；源码第 ``96``—``125`` 行。
 
    **参数**
 
@@ -130,13 +130,13 @@ src/features/settings-runtime/ResourceFields 模块
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12150:15288:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13685:17045:FUNCTION
 
 .. js:function:: CommandPermissionsField({ item, value, onChange, context })
 
    渲染 ``CommandPermissionsField`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``119``—``155`` 行。
+   **性质**：同步函数；导出 API；源码第 ``127``—``163`` 行。
 
    **参数**
 
@@ -602,17 +602,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5054:5109:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5159:5230:FUNCTION
 
-.. rubric:: ``list.some callback @ 61``
+.. rubric:: ``list.some callback @ 62``
 
 .. code-block:: javascript
 
-   list.some callback @ 61(entry)
+   list.some callback @ 62(entry)
 
 作为 ``list.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``61``—``61`` 行；所属函数 ``DirectoryListField``。
+**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``DirectoryListField``。
 
 **参数**
 
@@ -623,65 +623,42 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``/^[A-Za-z0-9._-]+$/.test``。
+**主要协作调用**：``/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5171:5612:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5255:5293:FUNCTION
 
-.. rubric:: ``add``
+.. rubric:: ``aliases.map callback @ 62``
 
 .. code-block:: javascript
 
-   add(folder)
+   aliases.map callback @ 62(alias)
 
-新增与 ``add`` 相关的数据或状态。
+作为 ``aliases.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``62``—``68`` 行；所属函数 ``DirectoryListField``。
+**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``DirectoryListField``。
 
 **参数**
 
-``folder``
-   调用方传入的 ``folder`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``alias``
+   调用方传入的 ``alias`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``list.some``、``folder.name?.normalize('NFKD').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice``、``folder.name?.normalize('NFKD').replace(/[^A-Za-z0-9._-]+/g, '-').replace``、``folder.name?.normalize('NFKD').replace``、``folder.name?.normalize``、``aliases.includes``、``onChange``。
+**主要协作调用**：``String(alias).toLowerCase``、``String``。
 
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5208:5295:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5351:5663:FUNCTION
 
 .. rubric:: ``list.some callback @ 63``
 
 .. code-block:: javascript
 
-   list.some callback @ 63(entry)
+   list.some callback @ 63(entry, index)
 
 作为 ``list.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``add``。
-
-**参数**
-
-``entry``
-   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5783:7118:FUNCTION
-
-.. rubric:: ``list.map callback @ 71``
-
-.. code-block:: javascript
-
-   list.map callback @ 71(entry, index)
-
-作为 ``list.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``71``—``79`` 行；所属函数 ``DirectoryListField``。
+**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``DirectoryListField``。
 
 **参数**
 
@@ -695,21 +672,166 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``item.roots?.find``。
+**主要协作调用**：``list.slice(0, index).some``、``list.slice``。
 
-**内部回调数量**：4。这些回调也会在本页逐项说明。
+**内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6396:6496:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5395:5662:FUNCTION
 
-.. rubric:: ``onChange callback @ 75``
+.. rubric:: ``list.slice(0, index).some callback @ 63``
 
 .. code-block:: javascript
 
-   onChange callback @ 75(event)
+   list.slice(0, index).some callback @ 63(other)
+
+作为 ``list.slice(0, index).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``list.some callback @ 63``。
+
+**参数**
+
+``other``
+   调用方传入的 ``other`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``entry.relativePath?.startsWith``、``other.relativePath?.startsWith``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5681:6433:FUNCTION
+
+.. rubric:: ``add``
+
+.. code-block:: javascript
+
+   add(folder)
+
+新增与 ``add`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``64``—``74`` 行；所属函数 ``DirectoryListField``。
+
+**参数**
+
+``folder``
+   调用方传入的 ``folder`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``list.some``、``folder.name?.normalize('NFKD').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice``、``folder.name?.normalize('NFKD').replace(/[^A-Za-z0-9._-]+/g, '-').replace``、``folder.name?.normalize('NFKD').replace``、``folder.name?.normalize``、``unavailable``、``onChange``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:5718:5805:FUNCTION
+
+.. rubric:: ``list.some callback @ 65``
+
+.. code-block:: javascript
+
+   list.some callback @ 65(entry)
+
+作为 ``list.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``add``。
+
+**参数**
+
+``entry``
+   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6021:6308:FUNCTION
+
+.. rubric:: ``unavailable``
+
+.. code-block:: javascript
+
+   unavailable(candidate)
+
+实现 ``unavailable`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``68``—``71`` 行；所属函数 ``add``。
+
+**参数**
+
+``candidate``
+   调用方传入的 ``candidate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``aliases.some((current) => current.toLowerCase() === candidate.toLowerCase()) || (previous && (previous[0] !== folder.rootId || previous[1] !== folder.relativePath))``。
+
+**主要协作调用**：``candidate.toLowerCase``、``aliases.some``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6146:6208:FUNCTION
+
+.. rubric:: ``aliases.some callback @ 70``
+
+.. code-block:: javascript
+
+   aliases.some callback @ 70(current)
+
+作为 ``aliases.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``70``—``70`` 行；所属函数 ``unavailable``。
+
+**参数**
+
+``current``
+   调用方传入的 ``current`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``current.toLowerCase``、``candidate.toLowerCase``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6640:8567:FUNCTION
+
+.. rubric:: ``list.map callback @ 77``
+
+.. code-block:: javascript
+
+   list.map callback @ 77(entry, index)
+
+作为 ``list.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``77``—``87`` 行；所属函数 ``DirectoryListField``。
+
+**参数**
+
+``entry``
+   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``index``
+   调用方传入的 ``index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``Boolean``、``item.roots?.find``。
+
+**内部回调数量**：5。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7362:7462:FUNCTION
+
+.. rubric:: ``onChange callback @ 81``
+
+.. code-block:: javascript
+
+   onChange callback @ 81(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``list.map callback @ 71``。
+**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``list.map callback @ 77``。
 
 **参数**
 
@@ -724,17 +846,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6425:6494:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7391:7460:FUNCTION
 
-.. rubric:: ``list.map callback @ 75``
+.. rubric:: ``list.map callback @ 81``
 
 .. code-block:: javascript
 
-   list.map callback @ 75(row, i)
+   list.map callback @ 81(row, i)
 
 作为 ``list.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``onChange callback @ 75``。
+**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``onChange callback @ 81``。
 
 **参数**
 
@@ -748,17 +870,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6693:6727:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7842:7876:FUNCTION
 
-.. rubric:: ``item.roots?.find callback @ 77``
+.. rubric:: ``item.roots?.find callback @ 84``
 
 .. code-block:: javascript
 
-   item.roots?.find callback @ 77(root)
+   item.roots?.find callback @ 84(root)
 
 作为 ``item.roots?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``list.map callback @ 71``。
+**性质**：同步局部函数；源码第 ``84``—``84`` 行；所属函数 ``list.map callback @ 77``。
 
 **参数**
 
@@ -769,17 +891,38 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6757:6843:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8008:8042:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 77``
+.. rubric:: ``item.roots?.find callback @ 84``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 77(readOnly)
+   item.roots?.find callback @ 84(root)
+
+作为 ``item.roots?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``84``—``84`` 行；所属函数 ``list.map callback @ 77``。
+
+**参数**
+
+``root``
+   调用方传入的 ``root`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8072:8158:FUNCTION
+
+.. rubric:: ``onCheckedChange callback @ 84``
+
+.. code-block:: javascript
+
+   onCheckedChange callback @ 84(readOnly)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``list.map callback @ 71``。
+**性质**：同步局部函数；源码第 ``84``—``84`` 行；所属函数 ``list.map callback @ 77``。
 
 **参数**
 
@@ -794,17 +937,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:6789:6841:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8104:8156:FUNCTION
 
-.. rubric:: ``list.map callback @ 77``
+.. rubric:: ``list.map callback @ 84``
 
 .. code-block:: javascript
 
-   list.map callback @ 77(row, i)
+   list.map callback @ 84(row, i)
 
 作为 ``list.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``onCheckedChange callback @ 77``。
+**性质**：同步局部函数；源码第 ``84``—``84`` 行；所属函数 ``onCheckedChange callback @ 84``。
 
 **参数**
 
@@ -818,17 +961,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7007:7057:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8433:8483:FUNCTION
 
-.. rubric:: ``onClick callback @ 78``
+.. rubric:: ``onClick callback @ 85``
 
 .. code-block:: javascript
 
-   onClick callback @ 78()
+   onClick callback @ 85()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``list.map callback @ 71``。
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``list.map callback @ 77``。
 
 **参数**
 
@@ -842,17 +985,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7034:7055:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8460:8481:FUNCTION
 
-.. rubric:: ``list.filter callback @ 78``
+.. rubric:: ``list.filter callback @ 85``
 
 .. code-block:: javascript
 
-   list.filter callback @ 78(_, i)
+   list.filter callback @ 85(_, i)
 
 作为 ``list.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``onClick callback @ 78``。
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``onClick callback @ 85``。
 
 **参数**
 
@@ -866,17 +1009,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7344:7363:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8816:8835:FUNCTION
 
-.. rubric:: ``onClick callback @ 82``
+.. rubric:: ``onClick callback @ 90``
 
 .. code-block:: javascript
 
-   onClick callback @ 82()
+   onClick callback @ 90()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``DirectoryListField``。
+**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``DirectoryListField``。
 
 **参数**
 
@@ -888,7 +1031,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``setOpen``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:7933:8008:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9468:9543:FUNCTION
 
 .. rubric:: ``update``
 
@@ -898,7 +1041,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 更新与 ``update`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``92``—``92`` 行；所属函数 ``PolicyRulesField``。
+**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``PolicyRulesField``。
 
 **参数**
 
@@ -911,7 +1054,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8028:8118:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9563:9653:FUNCTION
 
 .. rubric:: ``change``
 
@@ -921,7 +1064,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 实现 ``change`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``93``—``93`` 行；所属函数 ``PolicyRulesField``。
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``PolicyRulesField``。
 
 **参数**
 
@@ -939,17 +1082,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8064:8116:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9599:9651:FUNCTION
 
-.. rubric:: ``rules.map callback @ 93``
+.. rubric:: ``rules.map callback @ 101``
 
 .. code-block:: javascript
 
-   rules.map callback @ 93(row, i)
+   rules.map callback @ 101(row, i)
 
 作为 ``rules.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``93``—``93`` 行；所属函数 ``change``。
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``change``。
 
 **参数**
 
@@ -963,17 +1106,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8151:8191:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9686:9726:FUNCTION
 
-.. rubric:: ``rules.some callback @ 94``
+.. rubric:: ``rules.some callback @ 102``
 
 .. code-block:: javascript
 
-   rules.some callback @ 94(rule)
+   rules.some callback @ 102(rule)
 
 作为 ``rules.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``PolicyRulesField``。
+**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``PolicyRulesField``。
 
 **参数**
 
@@ -986,17 +1129,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``rule.matcher?.pattern?.trim``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8466:8522:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10001:10057:FUNCTION
 
-.. rubric:: ``onChange callback @ 96``
+.. rubric:: ``onChange callback @ 104``
 
 .. code-block:: javascript
 
-   onChange callback @ 96(defaultEffect)
+   onChange callback @ 104(defaultEffect)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``96``—``96`` 行；所属函数 ``PolicyRulesField``。
+**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``PolicyRulesField``。
 
 **参数**
 
@@ -1009,17 +1152,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8654:11656:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10189:13191:FUNCTION
 
-.. rubric:: ``rules.map callback @ 98``
+.. rubric:: ``rules.map callback @ 106``
 
 .. code-block:: javascript
 
-   rules.map callback @ 98(rule, index)
+   rules.map callback @ 106(rule, index)
 
 作为 ``rules.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``98``—``112`` 行；所属函数 ``PolicyRulesField``。
+**性质**：同步局部函数；源码第 ``106``—``120`` 行；所属函数 ``PolicyRulesField``。
 
 **参数**
 
@@ -1037,17 +1180,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:8923:8962:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10458:10497:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 100``
+.. rubric:: ``onCheckedChange callback @ 108``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 100(enabled)
+   onCheckedChange callback @ 108(enabled)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1060,17 +1203,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9096:9133:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10631:10668:FUNCTION
 
-.. rubric:: ``onChange callback @ 101``
+.. rubric:: ``onChange callback @ 109``
 
 .. code-block:: javascript
 
-   onChange callback @ 101(effect)
+   onChange callback @ 109(effect)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1083,17 +1226,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9303:9366:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10838:10901:FUNCTION
 
-.. rubric:: ``onChange callback @ 102``
+.. rubric:: ``onChange callback @ 110``
 
 .. code-block:: javascript
 
-   onChange callback @ 102(type)
+   onChange callback @ 110(type)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``102``—``102`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1106,17 +1249,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9653:9740:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11188:11275:FUNCTION
 
-.. rubric:: ``onChange callback @ 103``
+.. rubric:: ``onChange callback @ 111``
 
 .. code-block:: javascript
 
-   onChange callback @ 103(event)
+   onChange callback @ 111(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1129,17 +1272,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9898:9947:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11433:11482:FUNCTION
 
-.. rubric:: ``onClick callback @ 104``
+.. rubric:: ``onClick callback @ 112``
 
 .. code-block:: javascript
 
-   onClick callback @ 104()
+   onClick callback @ 112()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1153,17 +1296,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:9924:9945:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11459:11480:FUNCTION
 
-.. rubric:: ``rules.filter callback @ 104``
+.. rubric:: ``rules.filter callback @ 112``
 
 .. code-block:: javascript
 
-   rules.filter callback @ 104(_, i)
+   rules.filter callback @ 112(_, i)
 
 作为 ``rules.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``onClick callback @ 104``。
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``onClick callback @ 112``。
 
 **参数**
 
@@ -1177,17 +1320,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10334:10388:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11869:11923:FUNCTION
 
-.. rubric:: ``onChange callback @ 107``
+.. rubric:: ``onChange callback @ 115``
 
 .. code-block:: javascript
 
-   onChange callback @ 107(event)
+   onChange callback @ 115(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1200,17 +1343,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10512:10998:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12047:12533:FUNCTION
 
-.. rubric:: ``item.operations.map callback @ 108``
+.. rubric:: ``item.operations.map callback @ 116``
 
 .. code-block:: javascript
 
-   item.operations.map callback @ 108(operation)
+   item.operations.map callback @ 116(operation)
 
 作为 ``item.operations.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1225,17 +1368,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10721:10969:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12256:12504:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 108``
+.. rubric:: ``onCheckedChange callback @ 116``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 108(checked)
+   onCheckedChange callback @ 116(checked)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``item.operations.map callback @ 108``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``item.operations.map callback @ 116``。
 
 **参数**
 
@@ -1250,17 +1393,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10828:10844:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12363:12379:FUNCTION
 
-.. rubric:: ``item.operations.map callback @ 108``
+.. rubric:: ``item.operations.map callback @ 116``
 
 .. code-block:: javascript
 
-   item.operations.map callback @ 108(op)
+   item.operations.map callback @ 116(op)
 
 作为 ``item.operations.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``onCheckedChange callback @ 108``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``onCheckedChange callback @ 116``。
 
 **参数**
 
@@ -1271,17 +1414,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10909:10925:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12444:12460:FUNCTION
 
-.. rubric:: ``item.operations.map callback @ 108``
+.. rubric:: ``item.operations.map callback @ 116``
 
 .. code-block:: javascript
 
-   item.operations.map callback @ 108(op)
+   item.operations.map callback @ 116(op)
 
 作为 ``item.operations.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``onCheckedChange callback @ 108``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``onCheckedChange callback @ 116``。
 
 **参数**
 
@@ -1292,17 +1435,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:10935:10965:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12470:12500:FUNCTION
 
-.. rubric:: ``(rule.operations || item.operations.map((op) => op.value)).filter callback @ 108``
+.. rubric:: ``(rule.operations || item.operations.map((op) => op.value)).filter callback @ 116``
 
 .. code-block:: javascript
 
-   (rule.operations || item.operations.map((op) => op.value)).filter callback @ 108(op)
+   (rule.operations || item.operations.map((op) => op.value)).filter callback @ 116(op)
 
 作为 ``(rule.operations || item.operations.map((op) => op.value)).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``onCheckedChange callback @ 108``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``onCheckedChange callback @ 116``。
 
 **参数**
 
@@ -1313,17 +1456,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11207:11319:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12742:12854:FUNCTION
 
-.. rubric:: ``onChange callback @ 109``
+.. rubric:: ``onChange callback @ 117``
 
 .. code-block:: javascript
 
-   onChange callback @ 109(event)
+   onChange callback @ 117(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1338,17 +1481,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11276:11299:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12811:12834:FUNCTION
 
-.. rubric:: ``event.target.value.split(',').map callback @ 109``
+.. rubric:: ``event.target.value.split(',').map callback @ 117``
 
 .. code-block:: javascript
 
-   event.target.value.split(',').map callback @ 109(mount)
+   event.target.value.split(',').map callback @ 117(mount)
 
 作为 ``event.target.value.split(',').map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``onChange callback @ 109``。
+**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``onChange callback @ 117``。
 
 **参数**
 
@@ -1361,17 +1504,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``mount.trim``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11525:11591:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13060:13126:FUNCTION
 
-.. rubric:: ``onChange callback @ 110``
+.. rubric:: ``onChange callback @ 118``
 
 .. code-block:: javascript
 
-   onChange callback @ 110(event)
+   onChange callback @ 118(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``rules.map callback @ 98``。
+**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``rules.map callback @ 106``。
 
 **参数**
 
@@ -1384,17 +1527,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``change``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:11860:12087:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13395:13622:FUNCTION
 
-.. rubric:: ``onClick callback @ 115``
+.. rubric:: ``onClick callback @ 123``
 
 .. code-block:: javascript
 
-   onClick callback @ 115()
+   onClick callback @ 123()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``PolicyRulesField``。
+**性质**：同步局部函数；源码第 ``123``—``123`` 行；所属函数 ``PolicyRulesField``。
 
 **参数**
 
@@ -1408,17 +1551,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12058:12074:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13593:13609:FUNCTION
 
-.. rubric:: ``item.operations.map callback @ 115``
+.. rubric:: ``item.operations.map callback @ 123``
 
 .. code-block:: javascript
 
-   item.operations.map callback @ 115(op)
+   item.operations.map callback @ 123(op)
 
 作为 ``item.operations.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``onClick callback @ 115``。
+**性质**：同步局部函数；源码第 ``123``—``123`` 行；所属函数 ``onClick callback @ 123``。
 
 **参数**
 
@@ -1429,17 +1572,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12267:12300:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13802:13835:FUNCTION
 
-.. rubric:: ``useState callback @ 120``
+.. rubric:: ``useState callback @ 128``
 
 .. code-block:: javascript
 
-   useState callback @ 120()
+   useState callback @ 128()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1451,17 +1594,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``commandRows``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12464:12631:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13999:14166:FUNCTION
 
-.. rubric:: ``useEffect callback @ 124``
+.. rubric:: ``useEffect callback @ 132``
 
 .. code-block:: javascript
 
-   useEffect callback @ 124()
+   useEffect callback @ 132()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``124``—``126`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``132``—``134`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1473,17 +1616,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``setRows``、``commandRows``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12693:12715:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14228:14250:FUNCTION
 
-.. rubric:: ``rows.map callback @ 127``
+.. rubric:: ``rows.map callback @ 135``
 
 .. code-block:: javascript
 
-   rows.map callback @ 127(row)
+   rows.map callback @ 135(row)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1496,17 +1639,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``row.id.trim``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12849:13009:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14384:14544:FUNCTION
 
-.. rubric:: ``ids.filter callback @ 128``
+.. rubric:: ``ids.filter callback @ 136``
 
 .. code-block:: javascript
 
-   ids.filter callback @ 128(id)
+   ids.filter callback @ 136(id)
 
 作为 ``ids.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``136``—``136`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1521,17 +1664,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:12884:13008:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14419:14543:FUNCTION
 
-.. rubric:: ``value?.policy?.rules?.some callback @ 128``
+.. rubric:: ``value?.policy?.rules?.some callback @ 136``
 
 .. code-block:: javascript
 
-   value?.policy?.rules?.some callback @ 128(rule)
+   value?.policy?.rules?.some callback @ 136(rule)
 
 作为 ``value?.policy?.rules?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``ids.filter callback @ 128``。
+**性质**：同步局部函数；源码第 ``136``—``136`` 行；所属函数 ``ids.filter callback @ 136``。
 
 **参数**
 
@@ -1542,7 +1685,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13030:13216:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14565:14751:FUNCTION
 
 .. rubric:: ``policy``
 
@@ -1552,7 +1695,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 实现 ``policy`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1567,17 +1710,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13095:13212:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14630:14747:FUNCTION
 
-.. rubric:: ``next.map callback @ 129``
+.. rubric:: ``next.map callback @ 137``
 
 .. code-block:: javascript
 
-   next.map callback @ 129(id)
+   next.map callback @ 137(id)
 
 作为 ``next.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``policy``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``policy``。
 
 **参数**
 
@@ -1588,7 +1731,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13234:13647:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14769:15182:FUNCTION
 
 .. rubric:: ``edit``
 
@@ -1598,7 +1741,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 实现 ``edit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``130``—``141`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``138``—``149`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1611,7 +1754,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``setRows``、``commandProfileFromRows``、``setError``、``onChange``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:13667:14010:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:15202:15545:FUNCTION
 
 .. rubric:: ``detect``
 
@@ -1621,7 +1764,7 @@ src/features/settings-runtime/ResourceFields 模块
 
 实现 ``detect`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``142``—``149`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：异步局部函数；源码第 ``150``—``157`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1637,17 +1780,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **主要协作调用**：``setLoading``、``setError``、``context.api.post``、``requestEndpoint``、``setRows``、``commandRows``、``onChange``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14125:14642:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:15660:16399:FUNCTION
 
-.. rubric:: ``ids.map callback @ 151``
+.. rubric:: ``ids.map callback @ 159``
 
 .. code-block:: javascript
 
-   ids.map callback @ 151(id)
+   ids.map callback @ 159(id)
 
 作为 ``ids.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``CommandPermissionsField``。
+**性质**：同步局部函数；源码第 ``159``—``159`` 行；所属函数 ``CommandPermissionsField``。
 
 **参数**
 
@@ -1662,17 +1805,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14291:14451:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:15826:15986:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 151``
+.. rubric:: ``onCheckedChange callback @ 159``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 151(checked)
+   onCheckedChange callback @ 159(checked)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``ids.map callback @ 151``。
+**性质**：同步局部函数；源码第 ``159``—``159`` 行；所属函数 ``ids.map callback @ 159``。
 
 **参数**
 
@@ -1687,17 +1830,17 @@ src/features/settings-runtime/ResourceFields 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:14363:14386:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/ResourceFields.jsx:15898:15921:FUNCTION
 
-.. rubric:: ``allowed.filter callback @ 151``
+.. rubric:: ``allowed.filter callback @ 159``
 
 .. code-block:: javascript
 
-   allowed.filter callback @ 151(entry)
+   allowed.filter callback @ 159(entry)
 
 作为 ``allowed.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``151``—``151`` 行；所属函数 ``onCheckedChange callback @ 151``。
+**性质**：同步局部函数；源码第 ``159``—``159`` 行；所属函数 ``onCheckedChange callback @ 159``。
 
 **参数**
 

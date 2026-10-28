@@ -49,8 +49,9 @@ export function ConnectionCard({ item, context, record, actions }) {
     const columns = record ? item.columns || [] : item.fields || [];
     const properties = (record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !== item.descriptionField && (!item.state?.field || (column.key || column.field) !== item.state.field)) : columns).filter((column) => matchesCondition(column.when, scope));
     const primaryAction = item.primaryAction && matchesCondition(item.primaryAction.when || item.primaryAction.showWhen, scope) ? item.primaryAction : null;
-    return <Card className="min-w-0 gap-0 overflow-hidden rounded-lg py-0 shadow-none" data-settings-connection-card="true">
-        <div className="min-w-0 flex-1 space-y-3 p-4">
+    const summary = item.variant === 'summary';
+    return <Card className={`min-w-0 gap-0 overflow-hidden py-0 shadow-none ${summary ? 'rounded-none border-0 border-b bg-transparent' : 'rounded-lg'}`} data-settings-connection-card="true">
+        <div className={`min-w-0 flex-1 space-y-3 ${summary ? 'py-3' : 'p-4'}`}>
             <div className="flex min-w-0 flex-wrap items-start gap-2">
                 {(item.recordIcon || item.icon) && <SettingsIcon icon={item.recordIcon || item.icon} className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
                 <div className="min-w-0 flex-1"><h4 className="break-words text-sm font-semibold">{primaryAction
@@ -58,10 +59,10 @@ export function ConnectionCard({ item, context, record, actions }) {
                     : formatSettingsValue(title)}</h4>{description && <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{formatSettingsValue(description)}</p>}</div>
                 {stateText && <span className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs leading-5 ${Object.hasOwn(STATE_TONES, stateTone) ? STATE_TONES[stateTone] : 'border-border bg-muted text-muted-foreground'}`} title={String(stateText)}>{item.state.busyValues?.includes(stateValue) && <Spinner className="size-3" />}{stateText}</span>}
             </div>
-            {properties.length > 0 && <dl className="space-y-2">{properties.map((column, index) => {
+            {properties.length > 0 && <dl className={summary ? 'flex flex-wrap gap-x-6 gap-y-2' : 'space-y-2'}>{properties.map((column, index) => {
                 const value = record ? getValue(record, column.key || column.field) : resolveValue(column.value, scope);
                 const text = Object.hasOwn(column.labels || {}, String(value)) ? column.labels[String(value)] : formatSettingsValue(value);
-                return <div key={column.key || column.field || index} className="flex min-w-0 items-start gap-3 text-xs leading-5"><dt className="w-20 shrink-0 text-muted-foreground">{column.label}</dt><dd className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">{text}</dd></div>;
+                return <div key={column.key || column.field || index} className="flex min-w-0 items-start gap-3 text-xs leading-5"><dt className={`${summary ? '' : 'w-20'} shrink-0 text-muted-foreground`}>{column.label}</dt><dd className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">{text}</dd></div>;
             })}</dl>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2 border-t px-4 py-3">{actions}</div>}

@@ -981,12 +981,12 @@
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
      - 15
      - 0
-     - 140
+     - 141
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/ResourceFields </api/javascript/features/settings-runtime/ResourceFields>`
      - 6
      - 0
-     - 66
+     - 72
      - ``src/features/settings-runtime/ResourceFields.jsx``
    * - :doc:`src/features/settings-runtime/SettingsActionLabel </api/javascript/features/settings-runtime/SettingsActionLabel>`
      - 1
@@ -1381,7 +1381,7 @@
    * - :doc:`src/features/workspace/components/FolderBrowser </api/javascript/features/workspace/components/FolderBrowser>`
      - 2
      - 0
-     - 19
+     - 21
      - ``src/features/workspace/components/FolderBrowser.jsx``
    * - :doc:`src/features/workspace/components/FolderBrowserDialog </api/javascript/features/workspace/components/FolderBrowserDialog>`
      - 1

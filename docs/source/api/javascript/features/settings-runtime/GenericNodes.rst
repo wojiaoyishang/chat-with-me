@@ -17,7 +17,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 * **模块标识**：``src/features/settings-runtime/GenericNodes``
 * **顶层函数/组件/Hook**：15
 * **类**：0
-* **局部函数与匿名回调**：140
+* **局部函数与匿名回调**：141
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -94,13 +94,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7086:8604:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7086:9314:FUNCTION
 
 .. js:function:: ReadonlyTextNode({ item, value, context })
 
    Read-only content stays selectable; clipboard access occurs only on a user click.
 
-   **性质**：同步函数；导出 API；源码第 ``91``—``110`` 行。
+   **性质**：同步函数；导出 API；源码第 ``91``—``117`` 行。
 
    **参数**
 
@@ -109,19 +109,19 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<section className="min-w-0 space-y-2"> <div className="flex items-center justify-between gap-3"> <div className="min-w-0"><div className="text-sm font-medium">{item.text}</div>{i…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<section className="flex min-w-0 flex-wrap items-center justify-between gap-x-5 gap-y-2 py-3"> <div className="min-w-0"><div className="text-sm font-medium">{item.text}</div>{item…``、``<section className="min-w-0 space-y-2"> <div className="flex items-center justify-between gap-3"> <div className="min-w-0"><div className="text-sm font-medium">{item.text}</div>{i…``。
 
    **主要协作调用**：``displayValue``、``Number.isFinite``、``date.getTime``、``date.toLocaleString``。
 
-   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8604:10646:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:9314:11356:FUNCTION
 
 .. js:function:: ProfileSummaryNode({ item, context })
 
    A backend-authored summary remains presentation data, not an account page.
 
-   **性质**：同步函数；导出 API；源码第 ``113``—``133`` 行。
+   **性质**：同步函数；导出 API；源码第 ``120``—``140`` 行。
 
    **参数**
 
@@ -136,13 +136,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10646:11057:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11356:11767:FUNCTION
 
 .. js:function:: presentationActions(actions, context)
 
    实现 ``presentationActions`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``135``—``139`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``142``—``146`` 行。
 
    **参数**
 
@@ -160,13 +160,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11057:11305:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11767:12015:FUNCTION
 
 .. js:function:: ProfileCardNode({ item, context, avatarControl, children })
 
    渲染 ``ProfileCardNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``141``—``143`` 行。
+   **性质**：同步函数；导出 API；源码第 ``148``—``150`` 行。
 
    **参数**
 
@@ -179,13 +179,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **主要协作调用**：``presentationActions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11305:11482:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12015:12192:FUNCTION
 
 .. js:function:: ConnectionCardNode({ item, context })
 
    渲染 ``ConnectionCardNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``145``—``147`` 行。
+   **性质**：同步函数；导出 API；源码第 ``152``—``154`` 行。
 
    **参数**
 
@@ -198,13 +198,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **主要协作调用**：``presentationActions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11482:16456:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12192:17166:FUNCTION
 
 .. js:function:: AsyncOperationNode({ item, context })
 
    A persisted operation can be inspected again after the settings page reopens.
 
-   **性质**：同步函数；导出 API；源码第 ``150``—``208`` 行。
+   **性质**：同步函数；导出 API；源码第 ``157``—``215`` 行。
 
    **参数**
 
@@ -223,13 +223,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16456:17458:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17166:18168:FUNCTION
 
 .. js:function:: TableNode({ item, value, context })
 
    渲染 ``TableNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``210``—``214`` 行。
+   **性质**：同步函数；导出 API；源码第 ``217``—``221`` 行。
 
    **参数**
 
@@ -244,13 +244,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17458:18155:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18168:18865:FUNCTION
 
 .. js:function:: DiffNode({ item, value, context })
 
    渲染 ``DiffNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``216``—``220`` 行。
+   **性质**：同步函数；导出 API；源码第 ``223``—``227`` 行。
 
    **参数**
 
@@ -265,13 +265,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18155:20820:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18865:21530:FUNCTION
 
 .. js:function:: SecretMapNode({ item, value = EMPTY_MAP, onChange, context })
 
    渲染 ``SecretMapNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``222``—``250`` 行。
+   **性质**：同步函数；导出 API；源码第 ``229``—``257`` 行。
 
    **参数**
 
@@ -286,13 +286,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20820:28544:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21530:29254:FUNCTION
 
 .. js:function:: MatrixNode({ item, value, onChange, context })
 
    渲染 ``MatrixNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``252``—``318`` 行。
+   **性质**：同步函数；导出 API；源码第 ``259``—``325`` 行。
 
    **参数**
 
@@ -311,13 +311,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：12。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28544:48372:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29254:49082:FUNCTION
 
 .. js:function:: ResourceNode({ item, context, renderFields })
 
    渲染 ``ResourceNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``320``—``531`` 行。
+   **性质**：同步函数；导出 API；源码第 ``327``—``538`` 行。
 
    **参数**
 
@@ -338,13 +338,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：24。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48372:50677:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49082:51387:FUNCTION
 
 .. js:function:: DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited })
 
    渲染 ``DescriptorDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``533``—``559`` 行。
+   **性质**：同步函数；导出 API；源码第 ``540``—``566`` 行。
 
    **参数**
 
@@ -527,17 +527,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``copyTextToClipboard``、``toast.success``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8254:8276:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8355:8377:FUNCTION
 
-.. rubric:: ``onClick callback @ 106``
+.. rubric:: ``onClick callback @ 107``
 
 .. code-block:: javascript
 
-   onClick callback @ 106()
+   onClick callback @ 107()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``106``—``106`` 行；所属函数 ``ReadonlyTextNode``。
+**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``ReadonlyTextNode``。
 
 **参数**
 
@@ -549,17 +549,39 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``copy``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10146:10372:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8964:8986:FUNCTION
 
-.. rubric:: ``item.meta.map callback @ 128``
+.. rubric:: ``onClick callback @ 113``
 
 .. code-block:: javascript
 
-   item.meta.map callback @ 128(entry, index)
+   onClick callback @ 113()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``ReadonlyTextNode``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``copy``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10856:11082:FUNCTION
+
+.. rubric:: ``item.meta.map callback @ 135``
+
+.. code-block:: javascript
+
+   item.meta.map callback @ 135(entry, index)
 
 作为 ``item.meta.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``ProfileSummaryNode``。
+**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``ProfileSummaryNode``。
 
 **参数**
 
@@ -575,17 +597,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``displayValue``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10499:10593:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11209:11303:FUNCTION
 
-.. rubric:: ``item.actions.map callback @ 130``
+.. rubric:: ``item.actions.map callback @ 137``
 
 .. code-block:: javascript
 
-   item.actions.map callback @ 130(action, index)
+   item.actions.map callback @ 137(action, index)
 
 作为 ``item.actions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``130``—``130`` 行；所属函数 ``ProfileSummaryNode``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``ProfileSummaryNode``。
 
 **参数**
 
@@ -599,17 +621,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10840:10907:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11550:11617:FUNCTION
 
-.. rubric:: ``(actions || []).filter callback @ 137``
+.. rubric:: ``(actions || []).filter callback @ 144``
 
 .. code-block:: javascript
 
-   (actions || []).filter callback @ 137(action)
+   (actions || []).filter callback @ 144(action)
 
 作为 ``(actions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``presentationActions``。
+**性质**：同步局部函数；源码第 ``144``—``144`` 行；所属函数 ``presentationActions``。
 
 **参数**
 
@@ -622,17 +644,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10951:11045:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:11661:11755:FUNCTION
 
-.. rubric:: ``visible.map callback @ 138``
+.. rubric:: ``visible.map callback @ 145``
 
 .. code-block:: javascript
 
-   visible.map callback @ 138(action, index)
+   visible.map callback @ 145(action, index)
 
 作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``138``—``138`` 行；所属函数 ``presentationActions``。
+**性质**：同步局部函数；源码第 ``145``—``145`` 行；所属函数 ``presentationActions``。
 
 **参数**
 
@@ -646,7 +668,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12196:12391:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12906:13101:FUNCTION
 
 .. rubric:: ``read``
 
@@ -656,7 +678,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``read`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``159``—``163`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``166``—``170`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -670,17 +692,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12317:12325:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13027:13035:FUNCTION
 
-.. rubric:: ``latest.current.execute(readAction).catch callback @ 162``
+.. rubric:: ``latest.current.execute(readAction).catch callback @ 169``
 
 .. code-block:: javascript
 
-   latest.current.execute(readAction).catch callback @ 162()
+   latest.current.execute(readAction).catch callback @ 169()
 
 处理 ``latest.current.execute(readAction).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``162``—``162`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``169``—``169`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -690,17 +712,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12335:12382:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13045:13092:FUNCTION
 
-.. rubric:: ``latest.current.execute(readAction).catch(() => {}).finally callback @ 162``
+.. rubric:: ``latest.current.execute(readAction).catch(() => {}).finally callback @ 169``
 
 .. code-block:: javascript
 
-   latest.current.execute(readAction).catch(() => {}).finally callback @ 162()
+   latest.current.execute(readAction).catch(() => {}).finally callback @ 169()
 
 处理 ``latest.current.execute(readAction).catch(() => {}).finally callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``162``—``162`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``169``—``169`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -712,17 +734,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setReading``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12408:12690:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13118:13400:FUNCTION
 
-.. rubric:: ``useEffect callback @ 164``
+.. rubric:: ``useEffect callback @ 171``
 
 .. code-block:: javascript
 
-   useEffect callback @ 164()
+   useEffect callback @ 171()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``164``—``170`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``171``—``177`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -736,17 +758,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12506:12539:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13216:13249:FUNCTION
 
-.. rubric:: ``returned callback @ 167``
+.. rubric:: ``returned callback @ 174``
 
 .. code-block:: javascript
 
-   returned callback @ 167()
+   returned callback @ 174()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``167``—``167`` 行；所属函数 ``useEffect callback @ 164``。
+**性质**：同步局部函数；源码第 ``174``—``174`` 行；所属函数 ``useEffect callback @ 171``。
 
 **参数**
 
@@ -756,17 +778,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12770:12858:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13480:13568:FUNCTION
 
-.. rubric:: ``[readAction, ...(item.actions || [])].map callback @ 171``
+.. rubric:: ``[readAction, ...(item.actions || [])].map callback @ 178``
 
 .. code-block:: javascript
 
-   [readAction, ...(item.actions || [])].map callback @ 171(action)
+   [readAction, ...(item.actions || [])].map callback @ 178(action)
 
 作为 ``[readAction, ...(item.actions || [])].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``171``—``171`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``178``—``178`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -779,17 +801,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``operationKey``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12949:12981:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13659:13691:FUNCTION
 
-.. rubric:: ``keys.map callback @ 173``
+.. rubric:: ``keys.map callback @ 180``
 
 .. code-block:: javascript
 
-   keys.map callback @ 173(key)
+   keys.map callback @ 180(key)
 
 作为 ``keys.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``180``—``180`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -800,17 +822,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13004:13037:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13714:13747:FUNCTION
 
-.. rubric:: ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 173``
+.. rubric:: ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 180``
 
 .. code-block:: javascript
 
-   keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 173(a, b)
+   keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 180(a, b)
 
 作为 ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``180``—``180`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -824,7 +846,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13665:13715:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14375:14425:FUNCTION
 
 .. rubric:: ``onSuccess``
 
@@ -834,7 +856,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 处理 ``Success`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``182``—``182`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``189``—``189`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -846,7 +868,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setSubmitError``、``setUncertain``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13734:14115:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14444:14825:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -856,7 +878,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``183``—``191`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``190``—``198`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -869,17 +891,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setSubmitError``、``Number``、``setUncertain``、``read``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15342:15636:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16052:16346:FUNCTION
 
-.. rubric:: ``item.summary.map callback @ 204``
+.. rubric:: ``item.summary.map callback @ 211``
 
 .. code-block:: javascript
 
-   item.summary.map callback @ 204(field)
+   item.summary.map callback @ 211(field)
 
 作为 ``item.summary.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``204``—``204`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``211``—``211`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -892,17 +914,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``displayValue``、``getValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15923:16106:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16633:16816:FUNCTION
 
-.. rubric:: ``(item.actions || []).map callback @ 206``
+.. rubric:: ``(item.actions || []).map callback @ 213``
 
 .. code-block:: javascript
 
-   (item.actions || []).map callback @ 206(action, index)
+   (item.actions || []).map callback @ 213(action, index)
 
 作为 ``(item.actions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -916,17 +938,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16180:16212:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16890:16922:FUNCTION
 
-.. rubric:: ``onClick callback @ 206``
+.. rubric:: ``onClick callback @ 213``
 
 .. code-block:: javascript
 
-   onClick callback @ 206()
+   onClick callback @ 213()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``206``—``206`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -942,17 +964,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``context.navigate``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16957:17043:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17667:17753:FUNCTION
 
-.. rubric:: ``(item.columns || []).map callback @ 213``
+.. rubric:: ``(item.columns || []).map callback @ 220``
 
 .. code-block:: javascript
 
-   (item.columns || []).map callback @ 213(column)
+   (item.columns || []).map callback @ 220(column)
 
 作为 ``(item.columns || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``TableNode``。
+**性质**：同步局部函数；源码第 ``220``—``220`` 行；所属函数 ``TableNode``。
 
 **参数**
 
@@ -963,17 +985,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17075:17321:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17785:18031:FUNCTION
 
-.. rubric:: ``rows.map callback @ 213``
+.. rubric:: ``rows.map callback @ 220``
 
 .. code-block:: javascript
 
-   rows.map callback @ 213(row, index)
+   rows.map callback @ 220(row, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``TableNode``。
+**性质**：同步局部函数；源码第 ``220``—``220`` 行；所属函数 ``TableNode``。
 
 **参数**
 
@@ -991,17 +1013,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17192:17314:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17902:18024:FUNCTION
 
-.. rubric:: ``(item.columns || []).map callback @ 213``
+.. rubric:: ``(item.columns || []).map callback @ 220``
 
 .. code-block:: javascript
 
-   (item.columns || []).map callback @ 213(column)
+   (item.columns || []).map callback @ 220(column)
 
 作为 ``(item.columns || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``rows.map callback @ 213``。
+**性质**：同步局部函数；源码第 ``220``—``220`` 行；所属函数 ``rows.map callback @ 220``。
 
 **参数**
 
@@ -1014,17 +1036,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``displayValue``、``getValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17679:17709:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18389:18419:FUNCTION
 
-.. rubric:: ``Object.keys(data).map callback @ 218``
+.. rubric:: ``Object.keys(data).map callback @ 225``
 
 .. code-block:: javascript
 
-   Object.keys(data).map callback @ 218(key)
+   Object.keys(data).map callback @ 225(key)
 
 作为 ``Object.keys(data).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``218``—``218`` 行；所属函数 ``DiffNode``。
+**性质**：同步局部函数；源码第 ``225``—``225`` 行；所属函数 ``DiffNode``。
 
 **参数**
 
@@ -1035,17 +1057,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17802:18143:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18512:18853:FUNCTION
 
-.. rubric:: ``columns.map callback @ 219``
+.. rubric:: ``columns.map callback @ 226``
 
 .. code-block:: javascript
 
-   columns.map callback @ 219(column)
+   columns.map callback @ 226(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``219``—``219`` 行；所属函数 ``DiffNode``。
+**性质**：同步局部函数；源码第 ``226``—``226`` 行；所属函数 ``DiffNode``。
 
 **参数**
 
@@ -1060,17 +1082,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18044:18126:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18754:18836:FUNCTION
 
-.. rubric:: ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 219``
+.. rubric:: ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 226``
 
 .. code-block:: javascript
 
-   (Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 219(entry, index)
+   (Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 226(entry, index)
 
 作为 ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``219``—``219`` 行；所属函数 ``columns.map callback @ 219``。
+**性质**：同步局部函数；源码第 ``226``—``226`` 行；所属函数 ``columns.map callback @ 226``。
 
 **参数**
 
@@ -1086,17 +1108,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``displayValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18277:18386:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18987:19096:FUNCTION
 
-.. rubric:: ``useState callback @ 223``
+.. rubric:: ``useState callback @ 230``
 
 .. code-block:: javascript
 
-   useState callback @ 223()
+   useState callback @ 230()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``223``—``223`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1110,17 +1132,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18315:18385:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19025:19095:FUNCTION
 
-.. rubric:: ``Object.entries(value || {}).map callback @ 223``
+.. rubric:: ``Object.entries(value || {}).map callback @ 230``
 
 .. code-block:: javascript
 
-   Object.entries(value || {}).map callback @ 223([key, content])
+   Object.entries(value || {}).map callback @ 230([key, content])
 
 作为 ``Object.entries(value || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``223``—``223`` 行；所属函数 ``useState callback @ 223``。
+**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``useState callback @ 230``。
 
 **参数**
 
@@ -1133,17 +1155,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``crypto.randomUUID``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18441:18662:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19151:19372:FUNCTION
 
-.. rubric:: ``useEffect callback @ 225``
+.. rubric:: ``useEffect callback @ 232``
 
 .. code-block:: javascript
 
-   useEffect callback @ 225()
+   useEffect callback @ 232()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``225``—``229`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``232``—``236`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1157,17 +1179,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18582:18652:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19292:19362:FUNCTION
 
-.. rubric:: ``Object.entries(value || {}).map callback @ 228``
+.. rubric:: ``Object.entries(value || {}).map callback @ 235``
 
 .. code-block:: javascript
 
-   Object.entries(value || {}).map callback @ 228([key, content])
+   Object.entries(value || {}).map callback @ 235([key, content])
 
 作为 ``Object.entries(value || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``228``—``228`` 行；所属函数 ``useEffect callback @ 225``。
+**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``useEffect callback @ 232``。
 
 **参数**
 
@@ -1180,7 +1202,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``crypto.randomUUID``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18738:19217:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19448:19927:FUNCTION
 
 .. rubric:: ``commit``
 
@@ -1190,7 +1212,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``commit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``231``—``240`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``238``—``247`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1205,17 +1227,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18806:18822:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19516:19532:FUNCTION
 
-.. rubric:: ``next.map callback @ 233``
+.. rubric:: ``next.map callback @ 240``
 
 .. code-block:: javascript
 
-   next.map callback @ 233(row)
+   next.map callback @ 240(row)
 
 作为 ``next.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``233``—``233`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``240``—``240`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1226,17 +1248,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18864:18888:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19574:19598:FUNCTION
 
-.. rubric:: ``next.some callback @ 234``
+.. rubric:: ``next.some callback @ 241``
 
 .. code-block:: javascript
 
-   next.some callback @ 234(row)
+   next.some callback @ 241(row)
 
 作为 ``next.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``234``—``234`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1249,17 +1271,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``row.key.trim``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19093:19109:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19803:19819:FUNCTION
 
-.. rubric:: ``next.filter callback @ 237``
+.. rubric:: ``next.filter callback @ 244``
 
 .. code-block:: javascript
 
-   next.filter callback @ 237(row)
+   next.filter callback @ 244(row)
 
 作为 ``next.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``237``—``237`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``244``—``244`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1270,17 +1292,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19115:19144:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19825:19854:FUNCTION
 
-.. rubric:: ``next.filter((row) => row.key).map callback @ 237``
+.. rubric:: ``next.filter((row) => row.key).map callback @ 244``
 
 .. code-block:: javascript
 
-   next.filter((row) => row.key).map callback @ 237(row)
+   next.filter((row) => row.key).map callback @ 244(row)
 
 作为 ``next.filter((row) => row.key).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``237``—``237`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``244``—``244`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1291,17 +1313,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19424:20430:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20134:21140:FUNCTION
 
-.. rubric:: ``rows.map callback @ 242``
+.. rubric:: ``rows.map callback @ 249``
 
 .. code-block:: javascript
 
-   rows.map callback @ 242(row, index)
+   rows.map callback @ 249(row, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``242``—``246`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``249``—``253`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1317,17 +1339,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19679:19786:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20389:20496:FUNCTION
 
-.. rubric:: ``onChange callback @ 243``
+.. rubric:: ``onChange callback @ 250``
 
 .. code-block:: javascript
 
-   onChange callback @ 243(event)
+   onChange callback @ 250(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``243``—``243`` 行；所属函数 ``rows.map callback @ 242``。
+**性质**：同步局部函数；源码第 ``250``—``250`` 行；所属函数 ``rows.map callback @ 249``。
 
 **参数**
 
@@ -1342,17 +1364,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19706:19784:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20416:20494:FUNCTION
 
-.. rubric:: ``rows.map callback @ 243``
+.. rubric:: ``rows.map callback @ 250``
 
 .. code-block:: javascript
 
-   rows.map callback @ 243(entry)
+   rows.map callback @ 250(entry)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``243``—``243`` 行；所属函数 ``onChange callback @ 243``。
+**性质**：同步局部函数；源码第 ``250``—``250`` 行；所属函数 ``onChange callback @ 250``。
 
 **参数**
 
@@ -1363,17 +1385,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20069:20178:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20779:20888:FUNCTION
 
-.. rubric:: ``onChange callback @ 244``
+.. rubric:: ``onChange callback @ 251``
 
 .. code-block:: javascript
 
-   onChange callback @ 244(event)
+   onChange callback @ 251(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``244``—``244`` 行；所属函数 ``rows.map callback @ 242``。
+**性质**：同步局部函数；源码第 ``251``—``251`` 行；所属函数 ``rows.map callback @ 249``。
 
 **参数**
 
@@ -1388,17 +1410,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20096:20176:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20806:20886:FUNCTION
 
-.. rubric:: ``rows.map callback @ 244``
+.. rubric:: ``rows.map callback @ 251``
 
 .. code-block:: javascript
 
-   rows.map callback @ 244(entry)
+   rows.map callback @ 251(entry)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``244``—``244`` 行；所属函数 ``onChange callback @ 244``。
+**性质**：同步局部函数；源码第 ``251``—``251`` 行；所属函数 ``onChange callback @ 251``。
 
 **参数**
 
@@ -1409,17 +1431,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20317:20374:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21027:21084:FUNCTION
 
-.. rubric:: ``onClick callback @ 245``
+.. rubric:: ``onClick callback @ 252``
 
 .. code-block:: javascript
 
-   onClick callback @ 245()
+   onClick callback @ 252()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``245``—``245`` 行；所属函数 ``rows.map callback @ 242``。
+**性质**：同步局部函数；源码第 ``252``—``252`` 行；所属函数 ``rows.map callback @ 249``。
 
 **参数**
 
@@ -1433,17 +1455,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20342:20372:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21052:21082:FUNCTION
 
-.. rubric:: ``rows.filter callback @ 245``
+.. rubric:: ``rows.filter callback @ 252``
 
 .. code-block:: javascript
 
-   rows.filter callback @ 245(entry)
+   rows.filter callback @ 252(entry)
 
 作为 ``rows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``245``—``245`` 行；所属函数 ``onClick callback @ 245``。
+**性质**：同步局部函数；源码第 ``252``—``252`` 行；所属函数 ``onClick callback @ 252``。
 
 **参数**
 
@@ -1454,17 +1476,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20631:20739:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21341:21449:FUNCTION
 
-.. rubric:: ``onClick callback @ 248``
+.. rubric:: ``onClick callback @ 255``
 
 .. code-block:: javascript
 
-   onClick callback @ 248()
+   onClick callback @ 255()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``255``—``255`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1476,17 +1498,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setRows``、``crypto.randomUUID``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20980:21049:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21690:21759:FUNCTION
 
-.. rubric:: ``useState callback @ 254``
+.. rubric:: ``useState callback @ 261``
 
 .. code-block:: javascript
 
-   useState callback @ 254()
+   useState callback @ 261()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``254``—``254`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``261``—``261`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1498,7 +1520,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21192:21249:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21902:21959:FUNCTION
 
 .. rubric:: ``commit``
 
@@ -1508,7 +1530,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``commit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``258``—``258`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``265``—``265`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1521,17 +1543,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``onChange``、``matrixStoredValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21643:21718:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22353:22428:FUNCTION
 
-.. rubric:: ``groupDefinitions.map callback @ 264``
+.. rubric:: ``groupDefinitions.map callback @ 271``
 
 .. code-block:: javascript
 
-   groupDefinitions.map callback @ 264(group)
+   groupDefinitions.map callback @ 271(group)
 
 作为 ``groupDefinitions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``264``—``264`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``271``—``271`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1544,17 +1566,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22010:22364:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22720:23074:FUNCTION
 
-.. rubric:: ``[...groupMap.values()].map callback @ 270``
+.. rubric:: ``[...groupMap.values()].map callback @ 277``
 
 .. code-block:: javascript
 
-   [...groupMap.values()].map callback @ 270(group)
+   [...groupMap.values()].map callback @ 277(group)
 
 作为 ``[...groupMap.values()].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``270``—``273`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``277``—``280`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1569,17 +1591,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22223:22353:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22933:23063:FUNCTION
 
-.. rubric:: ``group.rows.filter callback @ 272``
+.. rubric:: ``group.rows.filter callback @ 279``
 
 .. code-block:: javascript
 
-   group.rows.filter callback @ 272(row)
+   group.rows.filter callback @ 279(row)
 
 作为 ``group.rows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``272``—``272`` 行；所属函数 ``[...groupMap.values()].map callback @ 270``。
+**性质**：同步局部函数；源码第 ``279``—``279`` 行；所属函数 ``[...groupMap.values()].map callback @ 277``。
 
 **参数**
 
@@ -1592,17 +1614,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase().includes``、``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22373:22401:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23083:23111:FUNCTION
 
-.. rubric:: ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''… callback @ 273``
+.. rubric:: ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''… callback @ 280``
 
 .. code-block:: javascript
 
-   [...groupMap.values()].map((group) => { const matchesGroup = grouped && `${group.label || ''} ${group.description || ''… callback @ 273(group)
+   [...groupMap.values()].map((group) => { const matchesGroup = grouped && `${group.label || ''} ${group.description || ''… callback @ 280(group)
 
 实现 ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``280``—``280`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1613,7 +1635,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22536:22749:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23246:23459:FUNCTION
 
 .. rubric:: ``setRow``
 
@@ -1623,7 +1645,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 设置与 ``Row`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``275``—``278`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``282``—``285`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1642,7 +1664,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22768:23629:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23478:24339:FUNCTION
 
 .. rubric:: ``bulk``
 
@@ -1652,7 +1674,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``bulk`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``279``—``291`` 行；所属函数 ``MatrixNode``。
+**性质**：异步局部函数；源码第 ``286``—``298`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1668,7 +1690,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``context.confirm``、``setRow``、``commit``、``Object.entries``、``context.update``、``path.split``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23654:24998:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24364:25708:FUNCTION
 
 .. rubric:: ``renderRows``
 
@@ -1678,7 +1700,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 渲染与 ``Rows`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``292``—``298`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``299``—``305`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1693,17 +1715,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23880:23962:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24590:24672:FUNCTION
 
-.. rubric:: ``columns.map callback @ 293``
+.. rubric:: ``columns.map callback @ 300``
 
 .. code-block:: javascript
 
-   columns.map callback @ 293(column)
+   columns.map callback @ 300(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``renderRows``。
+**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``renderRows``。
 
 **参数**
 
@@ -1714,17 +1736,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23990:24984:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24700:25694:FUNCTION
 
-.. rubric:: ``rows.map callback @ 294``
+.. rubric:: ``rows.map callback @ 301``
 
 .. code-block:: javascript
 
-   rows.map callback @ 294(row)
+   rows.map callback @ 301(row)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``294``—``297`` 行；所属函数 ``renderRows``。
+**性质**：同步局部函数；源码第 ``301``—``304`` 行；所属函数 ``renderRows``。
 
 **参数**
 
@@ -1739,17 +1761,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24199:24329:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24909:25039:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 294``
+.. rubric:: ``onValueChange callback @ 301``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 294(next)
+   onValueChange callback @ 301(next)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``294``—``294`` 行；所属函数 ``rows.map callback @ 294``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``rows.map callback @ 301``。
 
 **参数**
 
@@ -1764,17 +1786,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24239:24278:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24949:24988:FUNCTION
 
-.. rubric:: ``columns.find callback @ 294``
+.. rubric:: ``columns.find callback @ 301``
 
 .. code-block:: javascript
 
-   columns.find callback @ 294(entry)
+   columns.find callback @ 301(entry)
 
 作为 ``columns.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``294``—``294`` 行；所属函数 ``onValueChange callback @ 294``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``onValueChange callback @ 301``。
 
 **参数**
 
@@ -1787,17 +1809,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24670:24959:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25380:25669:FUNCTION
 
-.. rubric:: ``columns.map callback @ 296``
+.. rubric:: ``columns.map callback @ 303``
 
 .. code-block:: javascript
 
-   columns.map callback @ 296(column)
+   columns.map callback @ 303(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``296``—``296`` 行；所属函数 ``rows.map callback @ 294``。
+**性质**：同步局部函数；源码第 ``303``—``303`` 行；所属函数 ``rows.map callback @ 301``。
 
 **参数**
 
@@ -1810,17 +1832,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``String``、``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25397:25436:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26107:26146:FUNCTION
 
-.. rubric:: ``onChange callback @ 300``
+.. rubric:: ``onChange callback @ 307``
 
 .. code-block:: javascript
 
-   onChange callback @ 300(event)
+   onChange callback @ 307(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1833,17 +1855,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25470:25683:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26180:26393:FUNCTION
 
-.. rubric:: ``(item.bulkActions || []).map callback @ 300``
+.. rubric:: ``(item.bulkActions || []).map callback @ 307``
 
 .. code-block:: javascript
 
-   (item.bulkActions || []).map callback @ 300(action)
+   (item.bulkActions || []).map callback @ 307(action)
 
 作为 ``(item.bulkActions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1858,17 +1880,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25605:25633:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26315:26343:FUNCTION
 
-.. rubric:: ``onClick callback @ 300``
+.. rubric:: ``onClick callback @ 307``
 
 .. code-block:: javascript
 
-   onClick callback @ 300()
+   onClick callback @ 307()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``(item.bulkActions || []).map callback @ 300``。
+**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``(item.bulkActions || []).map callback @ 307``。
 
 **参数**
 
@@ -1880,17 +1902,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``bulk``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25901:28353:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26611:29063:FUNCTION
 
-.. rubric:: ``visibleGroups.map callback @ 302``
+.. rubric:: ``visibleGroups.map callback @ 309``
 
 .. code-block:: javascript
 
-   visibleGroups.map callback @ 302(group)
+   visibleGroups.map callback @ 309(group)
 
 作为 ``visibleGroups.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``302``—``315`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``309``—``322`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1905,17 +1927,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26653:26832:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27363:27542:FUNCTION
 
-.. rubric:: ``onClick callback @ 307``
+.. rubric:: ``onClick callback @ 314``
 
 .. code-block:: javascript
 
-   onClick callback @ 307()
+   onClick callback @ 314()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``visibleGroups.map callback @ 302``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``visibleGroups.map callback @ 309``。
 
 **参数**
 
@@ -1929,17 +1951,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26694:26828:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27404:27538:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 307``
+.. rubric:: ``setExpanded callback @ 314``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 307(previous)
+   setExpanded callback @ 314(previous)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``onClick callback @ 307``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``onClick callback @ 314``。
 
 **参数**
 
@@ -1952,17 +1974,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``next.has``、``next.delete``、``next.add``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27540:28156:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28250:28866:FUNCTION
 
-.. rubric:: ``group.bulkActions.map callback @ 311``
+.. rubric:: ``group.bulkActions.map callback @ 318``
 
 .. code-block:: javascript
 
-   group.bulkActions.map callback @ 311(action, index)
+   group.bulkActions.map callback @ 318(action, index)
 
 作为 ``group.bulkActions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``visibleGroups.map callback @ 302``。
+**性质**：同步局部函数；源码第 ``318``—``318`` 行；所属函数 ``visibleGroups.map callback @ 309``。
 
 **参数**
 
@@ -1980,17 +2002,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27925:28015:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28635:28725:FUNCTION
 
-.. rubric:: ``group.sourceRows.some callback @ 311``
+.. rubric:: ``group.sourceRows.some callback @ 318``
 
 .. code-block:: javascript
 
-   group.sourceRows.some callback @ 311(row)
+   group.sourceRows.some callback @ 318(row)
 
 作为 ``group.sourceRows.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``group.bulkActions.map callback @ 311``。
+**性质**：同步局部函数；源码第 ``318``—``318`` 行；所属函数 ``group.bulkActions.map callback @ 318``。
 
 **参数**
 
@@ -2003,17 +2025,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28027:28106:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28737:28816:FUNCTION
 
-.. rubric:: ``onClick callback @ 311``
+.. rubric:: ``onClick callback @ 318``
 
 .. code-block:: javascript
 
-   onClick callback @ 311()
+   onClick callback @ 318()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``group.bulkActions.map callback @ 311``。
+**性质**：同步局部函数；源码第 ``318``—``318`` 行；所属函数 ``group.bulkActions.map callback @ 318``。
 
 **参数**
 
@@ -2025,17 +2047,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``bulk``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28383:28497:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29093:29207:FUNCTION
 
-.. rubric:: ``allRows.filter callback @ 315``
+.. rubric:: ``allRows.filter callback @ 322``
 
 .. code-block:: javascript
 
-   allRows.filter callback @ 315(row)
+   allRows.filter callback @ 322(row)
 
 作为 ``allRows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``315``—``315`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``322``—``322`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -2048,17 +2070,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase().includes``、``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28838:28864:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29548:29574:FUNCTION
 
-.. rubric:: ``useState callback @ 323``
+.. rubric:: ``useState callback @ 330``
 
 .. code-block:: javascript
 
-   useState callback @ 323()
+   useState callback @ 330()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``323``—``323`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``330``—``330`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2074,17 +2096,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``cache?.get``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29541:29556:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30251:30266:FUNCTION
 
-.. rubric:: ``useState callback @ 334``
+.. rubric:: ``useState callback @ 341``
 
 .. code-block:: javascript
 
-   useState callback @ 334()
+   useState callback @ 341()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``334``—``334`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``341``—``341`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2094,17 +2116,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30177:31550:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30887:32260:FUNCTION
 
-.. rubric:: ``useCallback callback @ 347``
+.. rubric:: ``useCallback callback @ 354``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 347({ silent = false })
+   async useCallback callback @ 354({ silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``347``—``367`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``354``—``374`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2123,17 +2145,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``requestController.current?.abort``、``setLoading``、``setError``、``source.endpoint?.startsWith``、``ctx.client.read``、``source.endpoint.slice``、``ctx.api.get``、``requestEndpoint``、``resolveValue``、``getValue``、``Array.isArray``、``setRows``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31886:32430:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32596:33140:FUNCTION
 
-.. rubric:: ``useEffect callback @ 371``
+.. rubric:: ``useEffect callback @ 378``
 
 .. code-block:: javascript
 
-   useEffect callback @ 371()
+   useEffect callback @ 378()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``371``—``380`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``378``—``387`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2151,17 +2173,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32166:32303:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32876:33013:FUNCTION
 
-.. rubric:: ``returned callback @ 377``
+.. rubric:: ``returned callback @ 384``
 
 .. code-block:: javascript
 
-   returned callback @ 377()
+   returned callback @ 384()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``377``—``377`` 行；所属函数 ``useEffect callback @ 371``。
+**性质**：同步局部函数；源码第 ``384``—``384`` 行；所属函数 ``useEffect callback @ 378``。
 
 **参数**
 
@@ -2173,17 +2195,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``requestController.current?.abort``、``detail.controller?.abort``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32456:32506:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33166:33216:FUNCTION
 
-.. rubric:: ``useEffect callback @ 381``
+.. rubric:: ``useEffect callback @ 388``
 
 .. code-block:: javascript
 
-   useEffect callback @ 381()
+   useEffect callback @ 388()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``381``—``381`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``388``—``388`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2195,17 +2217,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``registerResource``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32570:33076:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33280:33786:FUNCTION
 
-.. rubric:: ``useEffect callback @ 382``
+.. rubric:: ``useEffect callback @ 389``
 
 .. code-block:: javascript
 
-   useEffect callback @ 382()
+   useEffect callback @ 389()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``382``—``388`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``389``—``395`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2223,17 +2245,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32633:32684:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33343:33394:FUNCTION
 
-.. rubric:: ``(item.events || []).map callback @ 383``
+.. rubric:: ``(item.events || []).map callback @ 390``
 
 .. code-block:: javascript
 
-   (item.events || []).map callback @ 383(event)
+   (item.events || []).map callback @ 390(event)
 
 作为 ``(item.events || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``383``—``383`` 行；所属函数 ``useEffect callback @ 382``。
+**性质**：同步局部函数；源码第 ``390``—``390`` 行；所属函数 ``useEffect callback @ 389``。
 
 **参数**
 
@@ -2252,17 +2274,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32660:32683:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33370:33393:FUNCTION
 
-.. rubric:: ``subscribe callback @ 383``
+.. rubric:: ``subscribe callback @ 390``
 
 .. code-block:: javascript
 
-   subscribe callback @ 383()
+   subscribe callback @ 390()
 
 订阅与 ``subscribe`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``383``—``383`` 行；所属函数 ``(item.events || []).map callback @ 383``。
+**性质**：同步局部函数；源码第 ``390``—``390`` 行；所属函数 ``(item.events || []).map callback @ 390``。
 
 **参数**
 
@@ -2274,17 +2296,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32927:32965:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33637:33675:FUNCTION
 
-.. rubric:: ``client.subscribe callback @ 386``
+.. rubric:: ``client.subscribe callback @ 393``
 
 .. code-block:: javascript
 
-   client.subscribe callback @ 386()
+   client.subscribe callback @ 393()
 
 实现 ``client.subscribe`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``386``—``386`` 行；所属函数 ``useEffect callback @ 382``。
+**性质**：同步局部函数；源码第 ``393``—``393`` 行；所属函数 ``useEffect callback @ 389``。
 
 **参数**
 
@@ -2296,17 +2318,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32990:33068:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33700:33778:FUNCTION
 
-.. rubric:: ``returned callback @ 387``
+.. rubric:: ``returned callback @ 394``
 
 .. code-block:: javascript
 
-   returned callback @ 387()
+   returned callback @ 394()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``387``—``387`` 行；所属函数 ``useEffect callback @ 382``。
+**性质**：同步局部函数；源码第 ``394``—``394`` 行；所属函数 ``useEffect callback @ 389``。
 
 **参数**
 
@@ -2324,17 +2346,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33021:33053:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33731:33763:FUNCTION
 
-.. rubric:: ``subscriptions.forEach callback @ 387``
+.. rubric:: ``subscriptions.forEach callback @ 394``
 
 .. code-block:: javascript
 
-   subscriptions.forEach callback @ 387(unsubscribe)
+   subscriptions.forEach callback @ 394(unsubscribe)
 
 作为 ``subscriptions.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``387``—``387`` 行；所属函数 ``returned callback @ 387``。
+**性质**：同步局部函数；源码第 ``394``—``394`` 行；所属函数 ``returned callback @ 394``。
 
 **参数**
 
@@ -2351,17 +2373,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33151:33491:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33861:34201:FUNCTION
 
-.. rubric:: ``useEffect callback @ 389``
+.. rubric:: ``useEffect callback @ 396``
 
 .. code-block:: javascript
 
-   useEffect callback @ 389()
+   useEffect callback @ 396()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``389``—``393`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``396``—``400`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2375,17 +2397,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33305:33482:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34015:34192:FUNCTION
 
-.. rubric:: ``registerDraftGuard callback @ 391``
+.. rubric:: ``registerDraftGuard callback @ 398``
 
 .. code-block:: javascript
 
-   async registerDraftGuard callback @ 391()
+   async registerDraftGuard callback @ 398()
 
 注册与 ``Draft Guard`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``391``—``392`` 行；所属函数 ``useEffect callback @ 389``。
+**性质**：异步局部函数；源码第 ``398``—``399`` 行；所属函数 ``useEffect callback @ 396``。
 
 **参数**
 
@@ -2397,17 +2419,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``JSON.stringify``、``confirm``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:33601:35580:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34311:36290:FUNCTION
 
-.. rubric:: ``useCallback callback @ 394``
+.. rubric:: ``useCallback callback @ 401``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 394(record)
+   async useCallback callback @ 401(record)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``394``—``418`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``401``—``425`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2427,17 +2449,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34228:34498:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34938:35208:FUNCTION
 
-.. rubric:: ``startTransition callback @ 404``
+.. rubric:: ``startTransition callback @ 411``
 
 .. code-block:: javascript
 
-   startTransition callback @ 404()
+   startTransition callback @ 411()
 
 启动与 ``Transition`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``404``—``407`` 行；所属函数 ``useCallback callback @ 394``。
+**性质**：同步局部函数；源码第 ``411``—``414`` 行；所属函数 ``useCallback callback @ 401``。
 
 **参数**
 
@@ -2451,17 +2473,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34364:34485:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35074:35195:FUNCTION
 
-.. rubric:: ``setEditor callback @ 406``
+.. rubric:: ``setEditor callback @ 413``
 
 .. code-block:: javascript
 
-   setEditor callback @ 406(current)
+   setEditor callback @ 413(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``406``—``406`` 行；所属函数 ``startTransition callback @ 404``。
+**性质**：同步局部函数；源码第 ``413``—``413`` 行；所属函数 ``startTransition callback @ 411``。
 
 **参数**
 
@@ -2472,17 +2494,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35063:35246:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35773:35956:FUNCTION
 
-.. rubric:: ``startTransition callback @ 413``
+.. rubric:: ``startTransition callback @ 420``
 
 .. code-block:: javascript
 
-   startTransition callback @ 413()
+   startTransition callback @ 420()
 
 启动与 ``Transition`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``413``—``414`` 行；所属函数 ``useCallback callback @ 394``。
+**性质**：同步局部函数；源码第 ``420``—``421`` 行；所属函数 ``useCallback callback @ 401``。
 
 **参数**
 
@@ -2496,17 +2518,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35079:35245:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35789:35955:FUNCTION
 
-.. rubric:: ``setEditor callback @ 413``
+.. rubric:: ``setEditor callback @ 420``
 
 .. code-block:: javascript
 
-   setEditor callback @ 413(current)
+   setEditor callback @ 420(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``413``—``414`` 行；所属函数 ``startTransition callback @ 413``。
+**性质**：同步局部函数；源码第 ``420``—``421`` 行；所属函数 ``startTransition callback @ 420``。
 
 **参数**
 
@@ -2519,17 +2541,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``cloneData``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35543:35569:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36253:36279:FUNCTION
 
-.. rubric:: ``startTransition callback @ 417``
+.. rubric:: ``startTransition callback @ 424``
 
 .. code-block:: javascript
 
-   startTransition callback @ 417()
+   startTransition callback @ 424()
 
 启动与 ``Transition`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``417``—``417`` 行；所属函数 ``useCallback callback @ 394``。
+**性质**：同步局部函数；源码第 ``424``—``424`` 行；所属函数 ``useCallback callback @ 401``。
 
 **参数**
 
@@ -2541,7 +2563,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setEditorBusy``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35622:35850:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36332:36560:FUNCTION
 
 .. rubric:: ``patchEditor``
 
@@ -2551,7 +2573,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``patchEditor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``419``—``421`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``426``—``428`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2569,17 +2591,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35661:35849:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36371:36559:FUNCTION
 
-.. rubric:: ``setEditor callback @ 419``
+.. rubric:: ``setEditor callback @ 426``
 
 .. code-block:: javascript
 
-   setEditor callback @ 419(current)
+   setEditor callback @ 426(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``419``—``421`` 行；所属函数 ``patchEditor``。
+**性质**：同步局部函数；源码第 ``426``—``428`` 行；所属函数 ``patchEditor``。
 
 **参数**
 
@@ -2592,7 +2614,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setValue``、``target.replace``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35878:36189:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36588:36899:FUNCTION
 
 .. rubric:: ``dismissEditor``
 
@@ -2602,7 +2624,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``dismissEditor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``422``—``428`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``429``—``435`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2617,17 +2639,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36101:36180:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36811:36890:FUNCTION
 
-.. rubric:: ``setEditor callback @ 427``
+.. rubric:: ``setEditor callback @ 434``
 
 .. code-block:: javascript
 
-   setEditor callback @ 427(current)
+   setEditor callback @ 434(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``427``—``427`` 行；所属函数 ``dismissEditor``。
+**性质**：同步局部函数；源码第 ``434``—``434`` 行；所属函数 ``dismissEditor``。
 
 **参数**
 
@@ -2638,7 +2660,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36215:36557:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36925:37267:FUNCTION
 
 .. rubric:: ``closeEditor``
 
@@ -2648,7 +2670,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 关闭与 ``Editor`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``429``—``434`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``436``—``441`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2660,7 +2682,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``JSON.stringify``、``context.confirm``、``dismissEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36664:37835:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37374:38545:FUNCTION
 
 .. rubric:: ``onSave``
 
@@ -2670,7 +2692,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 处理 ``Save`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``436``—``449`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``443``—``456`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2684,7 +2706,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37331:37427:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38041:38137:FUNCTION
 
 .. rubric:: ``patchForm``
 
@@ -2694,7 +2716,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``patchForm`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``445``—``445`` 行；所属函数 ``onSave``。
+**性质**：同步局部函数；源码第 ``452``—``452`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2710,7 +2732,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``patchEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37452:37633:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38162:38343:FUNCTION
 
 .. rubric:: ``onSuccess``
 
@@ -2720,7 +2742,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 处理 ``Success`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``446``—``446`` 行；所属函数 ``onSave``。
+**性质**：异步局部函数；源码第 ``453``—``453`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2734,17 +2756,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37529:37615:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38239:38325:FUNCTION
 
-.. rubric:: ``(editorAction.effects || []).some callback @ 446``
+.. rubric:: ``(editorAction.effects || []).some callback @ 453``
 
 .. code-block:: javascript
 
-   (editorAction.effects || []).some callback @ 446(effect)
+   (editorAction.effects || []).some callback @ 453(effect)
 
 作为 ``(editorAction.effects || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``446``—``446`` 行；所属函数 ``onSuccess``。
+**性质**：同步局部函数；源码第 ``453``—``453`` 行；所属函数 ``onSuccess``。
 
 **参数**
 
@@ -2755,7 +2777,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37656:37814:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38366:38524:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -2765,7 +2787,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``447``—``447`` 行；所属函数 ``onSave``。
+**性质**：同步局部函数；源码第 ``454``—``454`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2778,17 +2800,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setEditorError``、``setFieldErrors``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37944:42693:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38654:43403:FUNCTION
 
-.. rubric:: ``useMemo callback @ 451``
+.. rubric:: ``useMemo callback @ 458``
 
 .. code-block:: javascript
 
-   useMemo callback @ 451()
+   useMemo callback @ 458()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``451``—``488`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``458``—``495`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2802,7 +2824,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37979:39139:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38689:39849:FUNCTION
 
 .. rubric:: ``actionsFor``
 
@@ -2812,7 +2834,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``actionsFor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``452``—``459`` 行；所属函数 ``useMemo callback @ 451``。
+**性质**：同步局部函数；源码第 ``459``—``466`` 行；所属函数 ``useMemo callback @ 458``。
 
 **参数**
 
@@ -2827,17 +2849,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38144:38211:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38854:38921:FUNCTION
 
-.. rubric:: ``(item.actions || []).filter callback @ 454``
+.. rubric:: ``(item.actions || []).filter callback @ 461``
 
 .. code-block:: javascript
 
-   (item.actions || []).filter callback @ 454(action)
+   (item.actions || []).filter callback @ 461(action)
 
 作为 ``(item.actions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``454``—``454`` 行；所属函数 ``actionsFor``。
+**性质**：同步局部函数；源码第 ``461``—``461`` 行；所属函数 ``actionsFor``。
 
 **参数**
 
@@ -2850,17 +2872,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38344:39119:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39054:39829:FUNCTION
 
-.. rubric:: ``visible.map callback @ 456``
+.. rubric:: ``visible.map callback @ 463``
 
 .. code-block:: javascript
 
-   visible.map callback @ 456(action, index)
+   visible.map callback @ 463(action, index)
 
 作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``456``—``458`` 行；所属函数 ``actionsFor``。
+**性质**：同步局部函数；源码第 ``463``—``465`` 行；所属函数 ``actionsFor``。
 
 **参数**
 
@@ -2878,17 +2900,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38635:38669:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39345:39379:FUNCTION
 
-.. rubric:: ``onClick callback @ 457``
+.. rubric:: ``onClick callback @ 464``
 
 .. code-block:: javascript
 
-   onClick callback @ 457()
+   onClick callback @ 464()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``457``—``457`` 行；所属函数 ``visible.map callback @ 456``。
+**性质**：同步局部函数；源码第 ``464``—``464`` 行；所属函数 ``visible.map callback @ 463``。
 
 **参数**
 
@@ -2900,7 +2922,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38976:39113:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39686:39823:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -2910,7 +2932,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``458``—``458`` 行；所属函数 ``visible.map callback @ 456``。
+**性质**：同步局部函数；源码第 ``465``—``465`` 行；所属函数 ``visible.map callback @ 463``。
 
 **参数**
 
@@ -2925,17 +2947,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39044:39109:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39754:39819:FUNCTION
 
-.. rubric:: ``setConflictingActions callback @ 458``
+.. rubric:: ``setConflictingActions callback @ 465``
 
 .. code-block:: javascript
 
-   setConflictingActions callback @ 458(previous)
+   setConflictingActions callback @ 465(previous)
 
 设置与 ``Conflicting Actions`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``458``—``458`` 行；所属函数 ``onError``。
+**性质**：同步局部函数；源码第 ``465``—``465`` 行；所属函数 ``onError``。
 
 **参数**
 
@@ -2948,7 +2970,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``operationKey``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39212:39442:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39922:40152:FUNCTION
 
 .. rubric:: ``valueText``
 
@@ -2958,7 +2980,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 实现 ``valueText`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``461``—``464`` 行；所属函数 ``useMemo callback @ 451``。
+**性质**：同步局部函数；源码第 ``468``—``471`` 行；所属函数 ``useMemo callback @ 458``。
 
 **参数**
 
@@ -2974,7 +2996,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``getValue``、``Object.hasOwn``、``String``、``displayValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39472:41877:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40182:42587:FUNCTION
 
 .. rubric:: ``renderCards``
 
@@ -2984,7 +3006,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 渲染与 ``Cards`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``465``—``485`` 行；所属函数 ``useMemo callback @ 451``。
+**性质**：同步局部函数；源码第 ``472``—``492`` 行；所属函数 ``useMemo callback @ 458``。
 
 **参数**
 
@@ -2998,17 +3020,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39535:41856:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40245:42566:FUNCTION
 
-.. rubric:: ``rows.map callback @ 465``
+.. rubric:: ``rows.map callback @ 472``
 
 .. code-block:: javascript
 
-   rows.map callback @ 465(record, index)
+   rows.map callback @ 472(record, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``465``—``485`` 行；所属函数 ``renderCards``。
+**性质**：同步局部函数；源码第 ``472``—``492`` 行；所属函数 ``renderCards``。
 
 **参数**
 
@@ -3026,17 +3048,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40098:40191:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40808:40901:FUNCTION
 
-.. rubric:: ``columns.filter callback @ 470``
+.. rubric:: ``columns.filter callback @ 477``
 
 .. code-block:: javascript
 
-   columns.filter callback @ 470(column)
+   columns.filter callback @ 477(column)
 
 作为 ``columns.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``470``—``470`` 行；所属函数 ``rows.map callback @ 465``。
+**性质**：同步局部函数；源码第 ``477``—``477`` 行；所属函数 ``rows.map callback @ 472``。
 
 **参数**
 
@@ -3047,17 +3069,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41095:41270:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41805:41980:FUNCTION
 
-.. rubric:: ``item.badges.map callback @ 478``
+.. rubric:: ``item.badges.map callback @ 485``
 
 .. code-block:: javascript
 
-   item.badges.map callback @ 478(badge)
+   item.badges.map callback @ 485(badge)
 
 作为 ``item.badges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``478``—``478`` 行；所属函数 ``rows.map callback @ 465``。
+**性质**：同步局部函数；源码第 ``485``—``485`` 行；所属函数 ``rows.map callback @ 472``。
 
 **参数**
 
@@ -3070,17 +3092,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41472:41704:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42182:42414:FUNCTION
 
-.. rubric:: ``properties.map callback @ 481``
+.. rubric:: ``properties.map callback @ 488``
 
 .. code-block:: javascript
 
-   properties.map callback @ 481(column)
+   properties.map callback @ 488(column)
 
 作为 ``properties.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``481``—``481`` 行；所属函数 ``rows.map callback @ 465``。
+**性质**：同步局部函数；源码第 ``488``—``488`` 行；所属函数 ``rows.map callback @ 472``。
 
 **参数**
 
@@ -3093,17 +3115,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42128:42212:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42838:42922:FUNCTION
 
-.. rubric:: ``columns.map callback @ 486``
+.. rubric:: ``columns.map callback @ 493``
 
 .. code-block:: javascript
 
-   columns.map callback @ 486(column)
+   columns.map callback @ 493(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``486``—``486`` 行；所属函数 ``useMemo callback @ 451``。
+**性质**：同步局部函数；源码第 ``493``—``493`` 行；所属函数 ``useMemo callback @ 458``。
 
 **参数**
 
@@ -3114,17 +3136,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42289:42624:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42999:43334:FUNCTION
 
-.. rubric:: ``rows.map callback @ 486``
+.. rubric:: ``rows.map callback @ 493``
 
 .. code-block:: javascript
 
-   rows.map callback @ 486(record, index)
+   rows.map callback @ 493(record, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``486``—``486`` 行；所属函数 ``useMemo callback @ 451``。
+**性质**：同步局部函数；源码第 ``493``—``493`` 行；所属函数 ``useMemo callback @ 458``。
 
 **参数**
 
@@ -3142,17 +3164,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42452:42566:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43162:43276:FUNCTION
 
-.. rubric:: ``columns.map callback @ 486``
+.. rubric:: ``columns.map callback @ 493``
 
 .. code-block:: javascript
 
-   columns.map callback @ 486(column)
+   columns.map callback @ 493(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``486``—``486`` 行；所属函数 ``rows.map callback @ 486``。
+**性质**：同步局部函数；源码第 ``493``—``493`` 行；所属函数 ``rows.map callback @ 493``。
 
 **参数**
 
@@ -3165,17 +3187,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42837:42965:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43547:43675:FUNCTION
 
-.. rubric:: ``useCallback callback @ 490``
+.. rubric:: ``useCallback callback @ 497``
 
 .. code-block:: javascript
 
-   useCallback callback @ 490(values)
+   useCallback callback @ 497(values)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``490``—``491`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``497``—``498`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3190,17 +3212,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42859:42964:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43569:43674:FUNCTION
 
-.. rubric:: ``setEditor callback @ 490``
+.. rubric:: ``setEditor callback @ 497``
 
 .. code-block:: javascript
 
-   setEditor callback @ 490(current)
+   setEditor callback @ 497(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``490``—``491`` 行；所属函数 ``useCallback callback @ 490``。
+**性质**：同步局部函数；源码第 ``497``—``498`` 行；所属函数 ``useCallback callback @ 497``。
 
 **参数**
 
@@ -3211,17 +3233,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43178:43631:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43888:44341:FUNCTION
 
-.. rubric:: ``useMemo callback @ 494``
+.. rubric:: ``useMemo callback @ 501``
 
 .. code-block:: javascript
 
-   useMemo callback @ 494()
+   useMemo callback @ 501()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``494``—``498`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``501``—``505`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3233,17 +3255,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``renderFields``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43974:43996:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44684:44706:FUNCTION
 
-.. rubric:: ``onClick callback @ 500``
+.. rubric:: ``onClick callback @ 507``
 
 .. code-block:: javascript
 
-   onClick callback @ 500()
+   onClick callback @ 507()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``500``—``500`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``507``—``507`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3255,17 +3277,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44082:44176:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44792:44886:FUNCTION
 
-.. rubric:: ``(item.toolbarActions || []).map callback @ 501``
+.. rubric:: ``(item.toolbarActions || []).map callback @ 508``
 
 .. code-block:: javascript
 
-   (item.toolbarActions || []).map callback @ 501(action, index)
+   (item.toolbarActions || []).map callback @ 508(action, index)
 
 作为 ``(item.toolbarActions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``501``—``501`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``508``—``508`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3279,17 +3301,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44311:44343:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45021:45053:FUNCTION
 
-.. rubric:: ``onClick callback @ 502``
+.. rubric:: ``onClick callback @ 509``
 
 .. code-block:: javascript
 
-   onClick callback @ 502()
+   onClick callback @ 509()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``502``—``502`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``509``—``509`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3301,17 +3323,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45777:45799:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46487:46509:FUNCTION
 
-.. rubric:: ``onClick callback @ 510``
+.. rubric:: ``onClick callback @ 517``
 
 .. code-block:: javascript
 
-   onClick callback @ 510()
+   onClick callback @ 517()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``510``—``510`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``517``—``517`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3323,17 +3345,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45938:45982:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46648:46692:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 513``
+.. rubric:: ``onOpenChange callback @ 520``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 513(open)
+   onOpenChange callback @ 520(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``513``—``513`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``520``—``520`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3346,17 +3368,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``closeEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46193:46494:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46903:47204:FUNCTION
 
-.. rubric:: ``onCloseAutoFocus callback @ 515``
+.. rubric:: ``onCloseAutoFocus callback @ 522``
 
 .. code-block:: javascript
 
-   onCloseAutoFocus callback @ 515()
+   onCloseAutoFocus callback @ 522()
 
 处理 ``Close Auto Focus`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``515``—``519`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``522``—``526`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3370,17 +3392,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46391:46473:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47101:47183:FUNCTION
 
-.. rubric:: ``setEditor callback @ 518``
+.. rubric:: ``setEditor callback @ 525``
 
 .. code-block:: javascript
 
-   setEditor callback @ 518(current)
+   setEditor callback @ 525(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``518``—``518`` 行；所属函数 ``onCloseAutoFocus callback @ 515``。
+**性质**：同步局部函数；源码第 ``525``—``525`` 行；所属函数 ``onCloseAutoFocus callback @ 522``。
 
 **参数**
 
@@ -3391,17 +3413,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47296:47391:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48006:48101:FUNCTION
 
-.. rubric:: ``Object.entries(fieldErrors).map callback @ 523``
+.. rubric:: ``Object.entries(fieldErrors).map callback @ 530``
 
 .. code-block:: javascript
 
-   Object.entries(fieldErrors).map callback @ 523([field, message])
+   Object.entries(fieldErrors).map callback @ 530([field, message])
 
 作为 ``Object.entries(fieldErrors).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``523``—``523`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``530``—``530`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3412,17 +3434,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47809:47838:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48519:48548:FUNCTION
 
-.. rubric:: ``onClick callback @ 527``
+.. rubric:: ``onClick callback @ 534``
 
 .. code-block:: javascript
 
-   onClick callback @ 527()
+   onClick callback @ 534()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``527``—``527`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``534``—``534`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3434,17 +3456,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``closeEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48226:48266:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48936:48976:FUNCTION
 
-.. rubric:: ``onClick callback @ 527``
+.. rubric:: ``onClick callback @ 534``
 
 .. code-block:: javascript
 
-   onClick callback @ 527()
+   onClick callback @ 534()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``527``—``527`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``534``—``534`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3458,17 +3480,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48254:48262:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48964:48972:FUNCTION
 
-.. rubric:: ``onSave().catch callback @ 527``
+.. rubric:: ``onSave().catch callback @ 534``
 
 .. code-block:: javascript
 
-   onSave().catch callback @ 527()
+   onSave().catch callback @ 534()
 
 处理 ``onSave().catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``527``—``527`` 行；所属函数 ``onClick callback @ 527``。
+**性质**：同步局部函数；源码第 ``534``—``534`` 行；所属函数 ``onClick callback @ 534``。
 
 **参数**
 
@@ -3478,17 +3500,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48517:48594:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49227:49304:FUNCTION
 
-.. rubric:: ``useState callback @ 534``
+.. rubric:: ``useState callback @ 541``
 
 .. code-block:: javascript
 
-   useState callback @ 534()
+   useState callback @ 541()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``534``—``534`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``541``—``541`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3500,17 +3522,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``pageValues``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48780:48873:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49490:49583:FUNCTION
 
-.. rubric:: ``useEffect callback @ 538``
+.. rubric:: ``useEffect callback @ 545``
 
 .. code-block:: javascript
 
-   useEffect callback @ 538()
+   useEffect callback @ 545()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``538``—``538`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``545``—``545`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3522,17 +3544,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``setValues``、``pageValues``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48905:49072:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49615:49782:FUNCTION
 
-.. rubric:: ``useEffect callback @ 539``
+.. rubric:: ``useEffect callback @ 546``
 
 .. code-block:: javascript
 
-   useEffect callback @ 539()
+   useEffect callback @ 546()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``539``—``542`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``546``—``549`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3546,17 +3568,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49051:49063:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49761:49773:FUNCTION
 
-.. rubric:: ``registerDraftGuard callback @ 541``
+.. rubric:: ``registerDraftGuard callback @ 548``
 
 .. code-block:: javascript
 
-   registerDraftGuard callback @ 541()
+   registerDraftGuard callback @ 548()
 
 注册与 ``Draft Guard`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``541``—``541`` 行；所属函数 ``useEffect callback @ 539``。
+**性质**：同步局部函数；源码第 ``548``—``548`` 行；所属函数 ``useEffect callback @ 546``。
 
 **参数**
 
@@ -3566,17 +3588,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49146:49395:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49856:50105:FUNCTION
 
-.. rubric:: ``useMemo callback @ 543``
+.. rubric:: ``useMemo callback @ 550``
 
 .. code-block:: javascript
 
-   useMemo callback @ 543()
+   useMemo callback @ 550()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``543``—``545`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``550``—``552`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3588,17 +3610,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``renderFields``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49551:49586:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50261:50296:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 546``
+.. rubric:: ``onOpenChange callback @ 553``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 546(next)
+   onOpenChange callback @ 553(next)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``546``—``546`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``553``—``553`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3611,17 +3633,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``onClose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49931:49965:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50641:50675:FUNCTION
 
-.. rubric:: ``anonymous callback @ 549``
+.. rubric:: ``anonymous callback @ 556``
 
 .. code-block:: javascript
 
-   anonymous callback @ 549(event)
+   anonymous callback @ 556(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``549``—``549`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``556``—``556`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3634,17 +3656,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50017:50051:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50727:50761:FUNCTION
 
-.. rubric:: ``anonymous callback @ 550``
+.. rubric:: ``anonymous callback @ 557``
 
 .. code-block:: javascript
 
-   anonymous callback @ 550(event)
+   anonymous callback @ 557(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``550``—``550`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``557``—``557`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 

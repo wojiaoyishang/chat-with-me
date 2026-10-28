@@ -27,9 +27,9 @@ src/features/workspace/components/FolderBrowserDialog 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowserDialog.jsx:223:1733:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowserDialog.jsx:223:1771:FUNCTION
 
-.. js:function:: FolderBrowserDialog({open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint})
+.. js:function:: FolderBrowserDialog({open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint, title, description})
 
    渲染 ``FolderBrowserDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
@@ -37,8 +37,8 @@ src/features/workspace/components/FolderBrowserDialog 模块
 
    **参数**
 
-   ``{open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint}``
-      调用方传入的 ``open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint, title, description}``
+      调用方传入的 ``open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint, title, description`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -53,7 +53,7 @@ src/features/workspace/components/FolderBrowserDialog 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowserDialog.jsx:330:409:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/FolderBrowserDialog.jsx:350:429:FUNCTION
 
 .. rubric:: ``handleSelect``
 

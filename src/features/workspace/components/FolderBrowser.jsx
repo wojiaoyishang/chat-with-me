@@ -1,6 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowUp, Check, Folder, Home, Loader2, RefreshCw} from 'lucide-react';
-import {toast} from 'sonner';
 
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
@@ -31,6 +30,7 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
     const [currentPath, setCurrentPath] = useState('.');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const request = useRef({ serial: 0, controller: null });
     useEffect(() => {
         const current = request.current;
@@ -54,6 +54,7 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
         const serial = ++request.current.serial;
         request.current.controller = controller;
         setLoading(true);
+        setError('');
         try {
             const result = await apiClient.get(
                 requestEndpoint(browseEndpoint || `${apiEndpoint.WORKSPACES_ENDPOINT}/mount-roots/{root.id}/folders`, { root: { id: nextRootId } }),
@@ -66,7 +67,7 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
         } catch (error) {
             if (controller.signal.aborted || serial !== request.current.serial) return;
             setData(null);
-            toast.error(error?.message || t('workspace_folder_load_failed', '读取文件夹失败'));
+            setError(error?.message || t('workspace_folder_load_failed', '读取文件夹失败'));
         } finally {
             if (serial === request.current.serial) setLoading(false);
         }
@@ -138,6 +139,7 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
                         key={crumb.path}
                         type="button"
                         onClick={() => load(rootId, crumb.path)}
+                        disabled={disabled || currentRoot?.limits && !currentRoot.limits.some((base) => base === '.' || crumb.path === base || crumb.path.startsWith(base + '/'))}
                         className="shrink-0 rounded px-1.5 py-1 hover:bg-background"
                     >
                         / {crumb.name}
@@ -145,7 +147,9 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
                 ))}
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto rounded-md border bg-background p-1 pretty-scrollbar">
+            <div aria-busy={loading} className="relative min-h-0 flex-1 overflow-y-auto rounded-md border bg-background p-1 pretty-scrollbar">
+                {error && <div role="alert" className="flex min-h-32 flex-col items-center justify-center gap-3 p-4 text-sm"><p className="text-destructive">{error}</p><Button type="button" variant="outline" size="sm" disabled={disabled || loading} onClick={() => load()}><RefreshCw className="size-4" />{t('retry', '重试')}</Button></div>}
+                {loading && <div role="status" className="absolute inset-0 z-10 flex items-center justify-center gap-2 bg-background/80 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t('loading', '加载中…')}</div>}
                 {data?.parentPath !== null && data?.parentPath !== undefined ? (
                     <button
                         type="button"
@@ -167,7 +171,7 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
                         <span className="truncate">{entry.name}</span>
                     </button>
                 ))}
-                {!loading && (data?.entries || []).length === 0 ? (
+                {!loading && !error && (data?.entries || []).length === 0 ? (
                     <div className="flex h-full min-h-40 items-center justify-center text-xs text-muted-foreground">
                         {t('workspace_folder_empty', '当前目录没有子文件夹')}
                     </div>
@@ -181,14 +185,15 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
                 <Button
                     type="button"
                     className="w-full"
-                    disabled={disabled || !rootId || loading}
+                    disabled={disabled || !rootId || loading || !data || !!error || data.selectable === false}
                     onClick={() => onSelect?.({
                         rootId,
                         relativePath: currentPath,
                         name: currentName || 'mount',
                         rootName: currentRoot?.name,
                         displayPath: currentDisplayPath,
-                        readOnly: Boolean(currentRoot?.readOnly),
+                        readOnly: false,
+                        inheritedReadOnly: Boolean(currentRoot?.readOnly),
                     })}
                 >
                     <Check className="h-4 w-4"/>

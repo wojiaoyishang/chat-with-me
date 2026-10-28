@@ -100,6 +100,13 @@ export function ReadonlyTextNode({ item, value, context }) {
             toast.error('复制失败，请手动选择文本复制。');
         }
     };
+    if (item.variant === 'inline') {
+        return <section className="flex min-w-0 flex-wrap items-center justify-between gap-x-5 gap-y-2 py-3">
+            <div className="min-w-0"><div className="text-sm font-medium">{item.text}</div>{item.description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</p>}</div>
+            <span aria-label={item.text} className={`select-text break-all text-sm ${item.monospace ? 'font-mono' : ''}`}>{shown}</span>
+            {item.copyable && <Button type="button" variant="outline" size="sm" disabled={!raw || context.disabled} onClick={() => { void copy(); }}><Copy className="size-3.5" />复制</Button>}
+        </section>;
+    }
     return <section className="min-w-0 space-y-2">
         <div className="flex items-center justify-between gap-3">
             <div className="min-w-0"><div className="text-sm font-medium">{item.text}</div>{item.description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</p>}</div>

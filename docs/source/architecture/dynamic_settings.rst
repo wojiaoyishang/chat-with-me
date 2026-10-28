@@ -56,6 +56,9 @@
 属性列可以通过 ``when`` 条件隐藏无内容的诊断信息。
 ``recordView.primaryAction`` 将卡片名称呈现为可点击入口，复用同一个动作执行器及其
 ``when/disabledWhen`` 条件；未声明时仍显示普通文本。名称操作和页脚中的删除等动作互不触发。
+``connection-card.variant=summary`` 提供无外框摘要；``readonly-text.variant=inline`` 提供
+单行只读值。``text.multilineStyle=plain`` 使用简洁多行输入，保留一次标签及普通字段校验。
+开关和复选设置项使用控制靠右的单行布局，复杂目录字段在完整宽度中对齐操作区。
 
 资源的 ``toolbarActions`` 在刷新和新增旁声明集合操作，条目动作仍放在 ``actions``。
 二者复用同一个动作执行器、确认、禁用和吐司反馈，不按资源 ID 添加专用按钮。
@@ -101,6 +104,11 @@
 ``member-permissions`` 使用后端提供的 users、permissions 和 excludeUser，逐行选择成员与授权；
 ``policy-rules`` 编辑匹配器、操作范围和目录范围；``command-permissions`` 组合命令授权与既有
 参数编辑器。输入错误通过通用 data-settings-invalid 通道阻止保存并定位标签页。
+目录字段的 ``browseTitle/browseDescription/browseEndpoint`` 由后端描述提供，本地、远端共用
+选择器。``browseDisabled`` 表示协议能力尚未开放；``aliasHistory`` 防止新增时重新分配历史
+名称，``readOnlySource`` 展示工作区继承限制且不改写单目录原值。对 ``selectable=false``
+的虚拟层、读取失败或未完成读取均禁用确认；失败与重试留在选择器内，加载遮罩保留布局。
+客户端不按 Workspace 页面名推断远端路由或权限。
 
 标签页与表单值
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

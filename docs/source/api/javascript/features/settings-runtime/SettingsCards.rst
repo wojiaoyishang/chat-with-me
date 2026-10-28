@@ -67,13 +67,13 @@ Resource layout follows available content width, with at most two columns.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2933:6786:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2933:6996:FUNCTION
 
 .. js:function:: ConnectionCard({ item, context, record, actions })
 
    A connection card renders declared data only; no service names select UI.
 
-   **性质**：同步函数；导出 API；源码第 ``42``—``69`` 行。
+   **性质**：同步函数；导出 API；源码第 ``42``—``70`` 行。
 
    **参数**
 
@@ -82,7 +82,7 @@ Resource layout follows available content width, with at most two columns.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<Card className="min-w-0 gap-0 overflow-hidden rounded-lg py-0 shadow-none" data-settings-connection-card="true"> <div className="min-w-0 flex-1 space-y-3 p-4"> <div className="fl…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<Card className={\x60min-w-0 gap-0 overflow-hidden py-0 shadow-none ${summary ? 'rounded-none border-0 border-b bg-transparent' : 'rounded-lg'}\x60} data-settings-connection-card="true"…``。
 
    **主要协作调用**：``getValue``、``resolveValue``、``Object.hasOwn``、``String``、``formatSettingsValue``、``(record ? columns.filter((column) => (column.key || column.field) !== item.titleField && (column.key || column.field) !…``、``columns.filter``、``matchesCondition``、``item.state.busyValues?.includes``、``properties.map``。
 
@@ -163,17 +163,17 @@ Resource layout follows available content width, with at most two columns.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:5234:5348:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:5375:5489:FUNCTION
 
-.. rubric:: ``onClick callback @ 57``
+.. rubric:: ``onClick callback @ 58``
 
 .. code-block:: javascript
 
-   onClick callback @ 57()
+   onClick callback @ 58()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``ConnectionCard``。
+**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``ConnectionCard``。
 
 **参数**
 
@@ -187,17 +187,17 @@ Resource layout follows available content width, with at most two columns.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:5336:5344:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:5477:5485:FUNCTION
 
-.. rubric:: ``context.execute(primaryAction, { item: scope.item, parentItem: scope.parentItem }).catch callback @ 57``
+.. rubric:: ``context.execute(primaryAction, { item: scope.item, parentItem: scope.parentItem }).catch callback @ 58``
 
 .. code-block:: javascript
 
-   context.execute(primaryAction, { item: scope.item, parentItem: scope.parentItem }).catch callback @ 57()
+   context.execute(primaryAction, { item: scope.item, parentItem: scope.parentItem }).catch callback @ 58()
 
 处理 ``context.execute(primaryAction, { item: scope.item, parentItem: scope.parentItem }).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``onClick callback @ 57``。
+**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``onClick callback @ 58``。
 
 **参数**
 
@@ -207,17 +207,17 @@ Resource layout follows available content width, with at most two columns.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:6057:6641:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:6245:6851:FUNCTION
 
-.. rubric:: ``properties.map callback @ 61``
+.. rubric:: ``properties.map callback @ 62``
 
 .. code-block:: javascript
 
-   properties.map callback @ 61(column, index)
+   properties.map callback @ 62(column, index)
 
 作为 ``properties.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``61``—``65`` 行；所属函数 ``ConnectionCard``。
+**性质**：同步局部函数；源码第 ``62``—``66`` 行；所属函数 ``ConnectionCard``。
 
 **参数**
 
@@ -229,6 +229,6 @@ Resource layout follows available content width, with at most two columns.
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``<div key={column.key || column.field || index} className="flex min-w-0 items-start gap-3 text-xs leading-5"><dt className="w-20 shrink-0 text-muted-foreground">{column.label}</dt>…``。
+根据执行分支返回结果；代表性返回表达式为 ``<div key={column.key || column.field || index} className="flex min-w-0 items-start gap-3 text-xs leading-5"><dt className={\x60${summary ? '' : 'w-20'} shrink-0 text-muted-foreground…``。
 
 **主要协作调用**：``getValue``、``resolveValue``、``Object.hasOwn``、``String``、``formatSettingsValue``。

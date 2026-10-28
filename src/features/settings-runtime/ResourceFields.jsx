@@ -58,30 +58,38 @@ export function DirectoryListField({ item, value, onChange, context }) {
     const [open, setOpen] = useState(false);
     const list = Array.isArray(value) ? value : [];
     const aliases = list.map((entry) => entry.alias);
-    const invalid = list.some((entry) => !/^[A-Za-z0-9._-]+$/.test(entry.alias || '')) || new Set(aliases).size !== aliases.length;
+    const inheritedReadOnly = Boolean(resolveValue(item.readOnlySource, { form: context.values }));
+    const invalidAlias = list.some((entry) => !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(entry.alias || '')) || new Set(aliases.map((alias) => String(alias).toLowerCase())).size !== aliases.length;
+    const overlap = list.some((entry, index) => list.slice(0, index).some((other) => entry.rootId === other.rootId && (entry.relativePath === other.relativePath || entry.relativePath === '.' || other.relativePath === '.' || entry.relativePath?.startsWith(other.relativePath + '/') || other.relativePath?.startsWith(entry.relativePath + '/'))));
     const add = (folder) => {
         if (list.some((entry) => entry.rootId === folder.rootId && entry.relativePath === folder.relativePath)) return;
         const stem = folder.name?.normalize('NFKD').replace(/[^A-Za-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'workspace';
         let alias = stem, counter = 2;
-        while (aliases.includes(alias)) alias = `${stem}-${counter++}`;
+        const unavailable = (candidate) => {
+            const previous = item.aliasHistory?.[candidate.toLowerCase()];
+            return aliases.some((current) => current.toLowerCase() === candidate.toLowerCase()) || (previous && (previous[0] !== folder.rootId || previous[1] !== folder.relativePath));
+        };
+        while (unavailable(alias)) alias = `${stem}-${counter++}`;
         onChange([...list, { ...folder, alias }]);
     };
-    return <FieldBlock item={item} invalid={invalid ? '虚拟目录名只能使用字母、数字、点、横线和下划线，且不能重复。' : ''}>
+    return <FieldBlock item={item} invalid={invalidAlias ? '虚拟目录名需以字母或数字开头，最多 64 个字符，且不能重复。' : overlap ? '不能选择重复或相互包含的目录。' : ''}>
         <div className="divide-y rounded-lg border">
-            {list.map((entry, index) => <div key={entry.id || `${entry.rootId}:${entry.relativePath}`} className="flex items-start gap-2 px-3 py-3">
-                <Folder className="mt-0.5 size-4 shrink-0 text-amber-600" />
+            {list.map((entry, index) => <div key={entry.id || `${entry.rootId}:${entry.relativePath}`} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-3" data-settings-directory-row="true">
+                <Folder className="size-4 shrink-0 text-amber-600" />
                 <div className="min-w-0 flex-1 space-y-2">
                     <p className="break-all text-sm">{entry.displayPath || entry.relativePath}</p>
-                    {list.length > 1 && <label className="flex items-center gap-2 text-xs text-muted-foreground">虚拟目录 /<Input aria-label={`虚拟目录名 ${index + 1}`} className="h-7 max-w-52 text-xs" value={entry.alias} disabled={context.disabled} onChange={(event) => onChange(list.map((row, i) => i === index ? { ...row, alias: event.target.value } : row))} /></label>}
+                    <label className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><span>{entry.rootName || '目录'} · 虚拟目录 /</span><Input aria-label={`虚拟目录名 ${index + 1}`} className="h-7 w-40 max-w-full text-xs" value={entry.alias} disabled={context.disabled || item.browseDisabled} onChange={(event) => onChange(list.map((row, i) => i === index ? { ...row, alias: event.target.value } : row))} /></label>
                 </div>
-                <label className="flex shrink-0 items-center gap-1.5 text-xs"><Checkbox checked={entry.readOnly} disabled={context.disabled || item.roots?.find((root) => root.id === entry.rootId)?.readOnly} onCheckedChange={(readOnly) => onChange(list.map((row, i) => i === index ? { ...row, readOnly } : row))} />只读</label>
-                <Button type="button" variant="ghost" size="icon" className="size-6 shrink-0" aria-label="移除目录" disabled={context.disabled} onClick={() => onChange(list.filter((_, i) => i !== index))}><Trash2 className="size-3.5" /></Button>
+                <div className="ml-auto flex min-h-8 shrink-0 items-center gap-3">
+                    <label className="inline-flex min-h-8 items-center gap-2 whitespace-nowrap text-xs leading-none"><Checkbox aria-label={`目录 ${index + 1} 只读`} checked={Boolean(entry.readOnly || inheritedReadOnly || entry.inheritedReadOnly || item.roots?.find((root) => root.id === entry.rootId)?.readOnly)} disabled={context.disabled || item.browseDisabled || inheritedReadOnly || entry.inheritedReadOnly || item.roots?.find((root) => root.id === entry.rootId)?.readOnly} onCheckedChange={(readOnly) => onChange(list.map((row, i) => i === index ? { ...row, readOnly } : row))} />{inheritedReadOnly ? '工作区只读' : entry.inheritedReadOnly ? '设备只读' : '只读'}</label>
+                    <Button type="button" variant="ghost" size="icon" className="size-8 shrink-0" aria-label={`移除目录 ${index + 1}`} disabled={context.disabled || item.browseDisabled} onClick={() => onChange(list.filter((_, i) => i !== index))}><Trash2 className="size-3.5" /></Button>
+                </div>
             </div>)}
             {!list.length && <p className="p-3 text-sm text-muted-foreground">尚未选择目录</p>}
         </div>
-        <Button type="button" variant="outline" size="sm" disabled={context.disabled || !item.roots?.length} onClick={() => setOpen(true)}><Plus className="size-4" />选择目录</Button>
-        {!item.roots?.length && <p className="text-xs text-muted-foreground">管理员尚未开放可浏览的目录。</p>}
-        {open && <FolderBrowserDialog open onOpenChange={setOpen} roots={item.roots} onSelect={add} disabled={context.disabled} t={t} browseEndpoint={item.browseEndpoint} />}
+        <Button type="button" variant="outline" size="sm" disabled={context.disabled || item.browseDisabled || !item.roots?.length} onClick={() => setOpen(true)}><Plus className="size-4" />选择目录</Button>
+        {!item.roots?.length && <p className="text-xs text-muted-foreground">没有可浏览且有权配置的根目录。</p>}
+        {open && <FolderBrowserDialog open onOpenChange={setOpen} roots={item.roots} onSelect={add} disabled={context.disabled} t={t} browseEndpoint={item.browseEndpoint} title={item.browseTitle} description={item.browseDescription} />}
     </FieldBlock>;
 }
 
@@ -148,7 +156,7 @@ export function CommandPermissionsField({ item, value, onChange, context }) {
         finally { setLoading(false); }
     };
     return <FieldBlock item={item} invalid={error}>
-        <div className="divide-y rounded-lg border">{ids.map((id) => <label key={id} className="flex items-center gap-3 px-3 py-2.5 text-sm"><Checkbox checked={allowed.includes(id)} disabled={context.disabled} onCheckedChange={(checked) => { const next = checked ? [...allowed, id] : allowed.filter((entry) => entry !== id); onChange({ ...value, allowed: next, policy: policy(next) }); }} /><span className="min-w-0 flex-1 break-all">{id}</span><code className="max-w-[55%] truncate text-xs text-muted-foreground">{value?.profile?.commands?.[id]?.argv?.join(' ')}</code></label>)}{!ids.length && <p className="p-3 text-xs text-muted-foreground">尚无预设命令，可先检测项目或手动添加。</p>}</div>
+        <div className="divide-y rounded-lg border">{ids.map((id) => <label key={id} className="flex items-center gap-3 px-3 py-2.5 text-sm"><Checkbox checked={allowed.includes(id)} disabled={context.disabled} onCheckedChange={(checked) => { const next = checked ? [...allowed, id] : allowed.filter((entry) => entry !== id); onChange({ ...value, allowed: next, policy: policy(next) }); }} /><span className="min-w-0 flex-1 break-all">{id}{(value?.commandCatalog?.[id]?.description || value?.commandCatalog?.[id]?.cwd) && <span className="mt-0.5 block text-xs text-muted-foreground">{value.commandCatalog[id].description || value.commandCatalog[id].cwd}</span>}</span><code className="max-w-[55%] truncate text-xs text-muted-foreground">{value?.profile?.commands?.[id]?.argv?.join(' ')}</code></label>)}{!ids.length && <p className="p-3 text-xs text-muted-foreground">尚无预设命令，可先检测项目或手动添加。</p>}</div>
         {item.detectEndpoint && <Button type="button" variant="outline" size="sm" disabled={loading || context.disabled} onClick={detect}><Search className={`size-4 ${loading ? 'animate-pulse' : ''}`} />{loading ? '正在检测…' : '检测项目命令'}</Button>}
         <details className="pt-1 text-sm"><summary className="w-fit cursor-pointer text-muted-foreground">自定义命令</summary><fieldset disabled={context.disabled} className="min-w-0 pt-3"><WorkspaceCommandEditor rows={rows} onChange={edit} onSave={context.onSave} /></fieldset></details>
     </FieldBlock>;

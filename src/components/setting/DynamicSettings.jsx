@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -233,7 +234,7 @@ function SettingRow({
     required = false,
 }) {
     const fieldLayout = useSettingsFieldLayout();
-    const layout = fieldLayout === 'stacked' && controlCompact ? 'compact' : fieldLayout;
+    const layout = controlCompact ? 'rows' : fieldLayout;
     if (fullWidth) {
         return <div className={`w-full ${layout === 'rows' ? 'py-3' : 'py-2'} ${className || ''}`}>
             {text && <div className="mb-2.5 flex items-center gap-2 text-sm font-medium"><span>{text}</span><TipWrapper tips={tips} />{required && <span className="text-destructive">*</span>}</div>}
@@ -1139,6 +1140,14 @@ function TextInputItem({ item, path }) {
             return newIsNull;
         });
     };
+
+    if (item.multiline && item.multilineStyle === 'plain') {
+        return <SettingRow fullWidth text={item.text} tips={item.tips} required={item.required}>
+            <Textarea aria-label={item.text} value={val ?? ''} rows={item.rows || 3} placeholder={item.placeholder || ''}
+                required={item.required} maxLength={item.maxLength} disabled={!!item.disabled} className="min-h-24 w-full resize-y"
+                onChange={(event) => update(path, event.target.value)} />
+        </SettingRow>;
+    }
 
     if (item.multiline && item.inlineMultiline) {
         const fieldId = `setting-${path.join('-')}`;
