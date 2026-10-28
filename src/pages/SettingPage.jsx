@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
+  ArrowLeft,
   Bell,
   Check,
   ChevronRight,
@@ -51,6 +52,7 @@ import {
   filterClientSettingsOptions,
 } from "@/features/settings-client/catalog.js";
 import { apiEndpoint } from "@/config.js";
+import { requestSettingsNavigation } from '@/features/settings-runtime/navigation.js';
 
 const WINDOW_SIZE_KEY = "cwm:settings-window-size:v1";
 const DEFAULT_SIZE = { width: 1080, height: 760 };
@@ -87,7 +89,7 @@ const clampWindow = (value) => ({
 
 /** Client-owned preferences and backend-defined pages share the same renderer,
  * while their catalogs, persistence and availability remain independent. */
-export default function SettingPage({ open, onClose, onRefreshRequested }) {
+export default function SettingPage({ open, onClose, onRefreshRequested, navigationRequest }) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const setUser = useUserStore((state) => state.setUser);
@@ -108,7 +110,9 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     backend: null,
   });
   const selectedId = selections[section];
-  const pageKey = `${section}:${selectedId || ""}`;
+  const [detail, setDetail] = useState(null);
+  const detailKey = detail ? JSON.stringify([detail.endpoint, detail.params || {}]) : '';
+  const pageKey = `${section}:${selectedId || ""}${detailKey ? `:${detailKey}` : ''}`;
   const [loadedPageKey, setLoadedPageKey] = useState("");
   const [loadedScope, setLoadedScope] = useState('');
   const [catalogScope, setCatalogScope] = useState('');
@@ -184,12 +188,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     }
   }, [base, cache]);
   const loadPage = useCallback(async (id, origin, force = false) => {
-    if (!id) return;
+    if (!id || (detail && detail.scope !== cache.scope)) return;
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
     const serial = ++pageEpoch.current;
-    const identity = `page:${origin}:${id}`;
+    const identity = `page:${origin}:${id}${detailKey ? `:${detailKey}` : ''}`;
     const cached = force ? undefined : cache.get(identity);
     if (force) cache.invalidate(identity);
     setPageLoading(cached === undefined);
@@ -219,11 +223,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         }
         data = clientSettingsPage(id, notificationData);
       } else {
-        const link = tabsRef.current.find(
+        const link = detail?.endpoint || tabsRef.current.find(
           (entry) => entry.id === id,
         )?.descriptor;
         data = await apiClient.get(requestEndpoint(link, {}), {
           signal: controller.signal,
+          params: detail?.params,
         });
       }
       if (
@@ -240,7 +245,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         );
       if (data.cache !== false) cache.set(identity, data, settingsCacheEvents(data));
       setDescription(data);
-      setLoadedPageKey(`${origin}:${id}`);
+      setLoadedPageKey(`${origin}:${id}${detailKey ? `:${detailKey}` : ''}`);
       setLoadedScope(cache.scope);
       setValues(cloneData(data.defaultOptions || {}));
       setDirty(false);
@@ -255,10 +260,11 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       if (mounted.current && serial === pageEpoch.current)
         setPageLoading(false);
     }
-  }, [cache]);
+  }, [cache, detail, detailKey]);
   useEffect(() => {
     mounted.current = true;
     if (!open) {
+      setDetail(null);
       setDescription(null);
       setLoadedPageKey('');
       setLoadedScope('');
@@ -298,6 +304,31 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       if (!(await guard())) return false;
     return true;
   }, [confirm]);
+  const handledNavigation = useRef(0);
+  useEffect(() => {
+    if (!open || !navigationRequest || handledNavigation.current === navigationRequest.sequence) return;
+    const current = getBackendConnection();
+    if (navigationRequest.backend?.id !== current.id || navigationRequest.backend?.url !== current.url || navigationRequest.backend?.epoch !== current.epoch) return;
+    let active = true;
+    void guardDraft().then((allowed) => {
+      if (!active || !allowed) return;
+      handledNavigation.current = navigationRequest.sequence;
+      setDirty(false);
+      setSection('backend');
+      setSelections((previous) => ({ ...previous, backend: navigationRequest.pageId }));
+      setDetail(navigationRequest.endpoint ? {
+        endpoint: navigationRequest.endpoint, params: navigationRequest.params || {}, scope: cacheScope,
+      } : null);
+    });
+    return () => { active = false; };
+  }, [open, navigationRequest, guardDraft, cacheScope]);
+  const detailScope = useRef(cacheScope);
+  useEffect(() => {
+    if (detailScope.current !== cacheScope) {
+      detailScope.current = cacheScope;
+      setDetail(null);
+    }
+  }, [cacheScope]);
   const registerDraftGuard = useCallback((id, guard) => {
     draftGuards.current.set(id, guard);
     return () => {
@@ -374,6 +405,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
       setDirty(true);
     },
     openDialog: () => {},
+    openSettings: requestSettingsNavigation,
     notify: (message, tone) =>
       tone === "error" ? toast.error(message) : toast.success(message),
     updateUser: setUser,
@@ -412,6 +444,12 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
         saved,
       );
       setDirty(false);
+      if (description.returnTo) {
+        cache.invalidateEvents(description.invalidateOnSave);
+        cache.invalidate(`page:backend:${description.returnTo.pageId}`);
+        setDetail(null);
+        setSelections((previous) => ({ ...previous, backend: description.returnTo.pageId }));
+      }
       scopeRef.current
         ?.querySelectorAll(".cwm-json-editor")
         .forEach((node) => node._cwmJsonEditor?.markSaved());
@@ -462,12 +500,15 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
   }, [open, fullscreen]);
   const selectSection = async (next) => {
     if (next === section || !(await guardDraft())) return;
+    setDetail(null);
     setSection(next);
     document.getElementById(`settings-section-${next}`)?.focus();
   };
   const selectPage = async (id) => {
-    if (id !== selectedId && (await guardDraft()))
+    if ((id !== selectedId || detail) && (await guardDraft())) {
+      setDetail(null);
       setSelections((current) => ({ ...current, [section]: id }));
+    }
   };
   if (!open) return null;
   const isClient = section === "client";
@@ -483,7 +524,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
     Boolean(selectedId && (pageLoading || loadedPageKey !== pageKey || loadedScope !== cacheScope)) ||
     (!isClient && catalogLoading && !tabs.length);
   const visibleError =
-    (pageError?.key === `page:${section}:${selectedId}` && pageError.scope === cacheScope ? pageError.message : '') || (!isClient && !tabs.length ? catalogError : "");
+    (pageError?.key === `page:${pageKey}` && pageError.scope === cacheScope ? pageError.message : '') || (!isClient && !tabs.length ? catalogError : "");
   const retry = () =>
     selectedId ? loadPage(selectedId, section, true) : loadCatalog(true);
   return (
@@ -670,9 +711,15 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
               className="@container/settings relative min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
               aria-busy={(isLoading && !visibleError) || undefined}
             >
-              <div className={`w-full space-y-4 ${isLoading ? 'pointer-events-none opacity-40' : 'cwm-settings-reveal'}`}>
+              <div className={`w-full space-y-4 ${isLoading ? 'pointer-events-none opacity-40' : 'cwm-settings-reveal'}`} style={currentDescription?.layout?.maxWidth ? { maxWidth: `${Math.max(320, Math.min(1800, Number(currentDescription.layout.maxWidth)))}px` } : undefined}>
                 {currentDescription ? (
                   <>
+                    {detail && <div className="flex items-center gap-3 border-b pb-3">
+                      <Button variant="ghost" size="sm" onClick={async () => {
+                        if (await guardDraft()) { setDirty(false); setDetail(null); }
+                      }}><ArrowLeft className="size-4" />返回</Button>
+                      <h2 className="text-base font-semibold">{currentDescription.title}</h2>
+                    </div>}
                     {Object.entries(fieldErrors).map(([name, message]) => (
                       <p
                         key={name}
@@ -763,7 +810,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested }) {
                     {dirty ? "有未保存的更改" : "所有更改已保存"}
                   </span>
                   <Button
-                    disabled={saveState?.busy || !dirty}
+                    disabled={saveState?.busy || (!dirty && !detail)}
                     onClick={() => {
                       void save();
                     }}

@@ -42,6 +42,10 @@ Assistant 生成开始时数据库可能已有空占位。Runtime Inspector 的�
 
 会话默认工作区由后端 Conversation 元数据持久保存，和模型 options 快照分开。
 Workspace 挂载窗口以星形按钮选择默认项，Badge 展示当前默认；单个挂载自动生效。
+挂载窗口不再编辑配置；新建和配置入口使用后端给出的设置详情链接，设置页面集中管理目录、
+成员与规则。从聊天新建时保留会话上下文，保存后挂载并由 workspace.default.changed 更新选择。
+本地与远程工作区统一展示，删除只移除配置；已选择的失效条目保留，不能静默退回其他工作区。
+用户可显式替换挂载，替换默认项时同时更新默认 ID；历史 cwm:// 引用及正在执行调用的冻结范围不迁移。
 客户端通过 ``GET/PUT /workspace/conversation/{id}/default`` 读取和修改，PUT 使用
 ``{"workspaceId": "已挂载ID"}``，并监听 ``workspace.default.changed`` 重新核对。
 打开窗口、切换对话和操作后读取以请求序号隔离，迟到响应不能覆盖新状态。

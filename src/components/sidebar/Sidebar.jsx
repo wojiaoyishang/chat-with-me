@@ -33,6 +33,7 @@ import {
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import SettingPage from '@/pages/SettingPage.jsx';
+import { subscribeSettingsNavigation } from '@/features/settings-runtime/navigation.js';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { setOnChange } from './sidebarRegistry';
 import { useBrowserBackLayer } from '@/lib/browserHistoryLayers.js';
@@ -56,6 +57,11 @@ const Sidebar = ({
     const [preferredOpen, setIsOpen] = useState(false);
     const isOpen = preferredOpen && !forceClosed;
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [settingsNavigation, setSettingsNavigation] = useState(null);
+    useEffect(() => subscribeSettingsNavigation((request) => {
+        setSettingsNavigation(request);
+        setSettingsOpen(true);
+    }), []);
     const { user, clearUser } = useUserStore();
 
     const conversationsListRef = useRef();
@@ -163,6 +169,7 @@ const Sidebar = ({
         <>
             <SettingPage
                 open={settingsOpen}
+                navigationRequest={settingsNavigation}
                 onClose={() => setSettingsOpen(false)}
                 onRefreshRequested={onSettingsRefresh}
                 handleLogout={handleLogout}

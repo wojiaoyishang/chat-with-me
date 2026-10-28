@@ -1,9 +1,10 @@
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ArrowUp, Check, Folder, Home, Loader2, RefreshCw} from 'lucide-react';
 import {toast} from 'sonner';
 
 import apiClient from '@/lib/apiClient.js';
 import {apiEndpoint} from '@/config.js';
+import { requestEndpoint } from '@/features/settings-runtime/model.js';
 import {Button} from '@/components/ui/button';
 import {
     Select,
@@ -25,11 +26,16 @@ const joinDisplayPath = (rootPath, relativePath) => {
     return `${normalizedRoot}${separator}${normalizedRelative}`;
 };
 
-const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = ''}) => {
+const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '', browseEndpoint}) => {
     const [rootId, setRootId] = useState(roots[0]?.id || '');
     const [currentPath, setCurrentPath] = useState('.');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(false);
+    const request = useRef({ serial: 0, controller: null });
+    useEffect(() => {
+        const current = request.current;
+        return () => { current.serial++; current.controller?.abort(); };
+    }, []);
 
     useEffect(() => {
         if (!roots.some((item) => item.id === rootId)) {
@@ -43,22 +49,28 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
             setData(null);
             return;
         }
+        request.current.controller?.abort();
+        const controller = new AbortController();
+        const serial = ++request.current.serial;
+        request.current.controller = controller;
         setLoading(true);
         try {
-            const query = new URLSearchParams({path: nextPath || '.'});
             const result = await apiClient.get(
-                `${apiEndpoint.WORKSPACES_ENDPOINT}/mount-roots/${encodeURIComponent(nextRootId)}/folders?${query}`,
+                requestEndpoint(browseEndpoint || `${apiEndpoint.WORKSPACES_ENDPOINT}/mount-roots/{root.id}/folders`, { root: { id: nextRootId } }),
+                { params: { path: nextPath || '.' }, signal: controller.signal },
             );
+            if (controller.signal.aborted || serial !== request.current.serial) return;
             setData(result || null);
             setRootId(nextRootId);
             setCurrentPath(result?.path || '.');
         } catch (error) {
+            if (controller.signal.aborted || serial !== request.current.serial) return;
             setData(null);
             toast.error(error?.message || t('workspace_folder_load_failed', '读取文件夹失败'));
         } finally {
-            setLoading(false);
+            if (serial === request.current.serial) setLoading(false);
         }
-    }, [currentPath, rootId, t]);
+    }, [currentPath, rootId, t, browseEndpoint]);
 
     useEffect(() => {
         if (rootId) load(rootId, '.');
@@ -187,5 +199,4 @@ const FolderBrowser = ({roots = [], onSelect, disabled = false, t, className = '
     );
 };
 
-export {joinDisplayPath};
 export default FolderBrowser;

@@ -3,7 +3,7 @@ import {Search} from 'lucide-react';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import FolderBrowser from './FolderBrowser.jsx';
 
-const FolderBrowserDialog = ({open, onOpenChange, roots, onSelect, disabled = false, t}) => {
+const FolderBrowserDialog = ({open, onOpenChange, roots, onSelect, disabled = false, t, browseEndpoint}) => {
     const handleSelect = (folder) => {
         onSelect?.(folder);
         onOpenChange?.(false);
@@ -24,7 +24,7 @@ const FolderBrowserDialog = ({open, onOpenChange, roots, onSelect, disabled = fa
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex min-h-0 flex-1 p-3 sm:p-4">
-                    <FolderBrowser roots={roots} onSelect={handleSelect} disabled={disabled} t={t}/>
+                    <FolderBrowser roots={roots} onSelect={handleSelect} disabled={disabled} t={t} browseEndpoint={browseEndpoint}/>
                 </div>
             </DialogContent>
         </Dialog>

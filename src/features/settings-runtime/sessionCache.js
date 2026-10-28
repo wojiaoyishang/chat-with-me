@@ -33,6 +33,10 @@ export function createSettingsSessionCache(subscribe = () => () => {}, scope = '
             }));
         },
         invalidate: (key) => entries.delete(key),
+        invalidateEvents(events = []) {
+            const tags = new Set(events);
+            for (const [identity, entry] of entries) if ([...entry.tags].some((tag) => tags.has(tag))) entries.delete(identity);
+        },
         clear,
         setEnabled(value) { enabled = Boolean(value); if (!enabled) clear(); },
     };

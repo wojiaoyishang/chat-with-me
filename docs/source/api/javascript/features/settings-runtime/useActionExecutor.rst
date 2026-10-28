@@ -73,13 +73,13 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:994:10459:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:994:10579:FUNCTION
 
 .. js:function:: useActionExecutor(services)
 
    Reads progress only. Retrying a read never repeats the submitted operation.
 
-   **性质**：同步函数；导出 API；源码第 ``18``—``159`` 行。
+   **性质**：同步函数；导出 API；源码第 ``18``—``160`` 行。
 
    **参数**
 
@@ -249,7 +249,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``controller.abort``、``active.clear``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2089:10415:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2089:10535:FUNCTION
 
 .. rubric:: ``useCallback callback @ 43``
 
@@ -259,7 +259,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``43``—``157`` 行；所属函数 ``useActionExecutor``。
+**性质**：异步局部函数；源码第 ``43``—``158`` 行；所属函数 ``useActionExecutor``。
 
 **参数**
 
@@ -456,17 +456,17 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``controller.signal.removeEventListener``、``update``、``resolve``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:9592:9627:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:9712:9747:FUNCTION
 
-.. rubric:: ``(action.effects || []).some callback @ 144``
+.. rubric:: ``(action.effects || []).some callback @ 145``
 
 .. code-block:: javascript
 
-   (action.effects || []).some callback @ 144(effect)
+   (action.effects || []).some callback @ 145(effect)
 
 作为 ``(action.effects || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``144``—``144`` 行；所属函数 ``useCallback callback @ 43``。
+**性质**：同步局部函数；源码第 ``145``—``145`` 行；所属函数 ``useCallback callback @ 43``。
 
 **参数**
 

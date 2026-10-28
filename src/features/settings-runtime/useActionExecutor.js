@@ -134,6 +134,7 @@ export function useActionExecutor(services) {
                     const value = resolveValue(effect.value, resultScope);
                     (callbacks.patchForm || source.patchForm)(value, effect.target || 'form');
                 } else if (effect.type === 'open-page') source.navigate(formatValue(effect.path, resultScope, true));
+                else if (effect.type === 'open-settings') source.openSettings(resolveValue(effect.value, resultScope));
                 else if (effect.type === 'open-dialog') source.openDialog(resolveValue(effect.value || effect, resultScope));
                 else if (effect.type === 'toast') source.notify(formatValue(effect.message, resultScope), effect.tone);
                 else if (effect.type === 'client-write') await source.client.write(effect.key, resolveValue(effect.value, resultScope));

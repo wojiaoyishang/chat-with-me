@@ -983,6 +983,11 @@
      - 0
      - 140
      - ``src/features/settings-runtime/GenericNodes.jsx``
+   * - :doc:`src/features/settings-runtime/ResourceFields </api/javascript/features/settings-runtime/ResourceFields>`
+     - 6
+     - 0
+     - 66
+     - ``src/features/settings-runtime/ResourceFields.jsx``
    * - :doc:`src/features/settings-runtime/SettingsActionLabel </api/javascript/features/settings-runtime/SettingsActionLabel>`
      - 1
      - 0
@@ -1048,6 +1053,11 @@
      - 0
      - 12
      - ``src/features/settings-runtime/model.js``
+   * - :doc:`src/features/settings-runtime/navigation </api/javascript/features/settings-runtime/navigation>`
+     - 2
+     - 0
+     - 1
+     - ``src/features/settings-runtime/navigation.js``
    * - :doc:`src/features/settings-runtime/registry </api/javascript/features/settings-runtime/registry>`
      - 2
      - 0
@@ -1056,7 +1066,7 @@
    * - :doc:`src/features/settings-runtime/sessionCache </api/javascript/features/settings-runtime/sessionCache>`
      - 3
      - 0
-     - 10
+     - 12
      - ``src/features/settings-runtime/sessionCache.js``
    * - :doc:`src/features/settings-runtime/useActionExecutor </api/javascript/features/settings-runtime/useActionExecutor>`
      - 3
@@ -1364,14 +1374,14 @@
      - 0
      - ``src/features/workflows/workflowStatus.js``
    * - :doc:`src/features/workspace/WorkspaceSettingsDialog </api/javascript/features/workspace/WorkspaceSettingsDialog>`
-     - 10
+     - 3
      - 0
-     - 103
+     - 33
      - ``src/features/workspace/WorkspaceSettingsDialog.jsx``
    * - :doc:`src/features/workspace/components/FolderBrowser </api/javascript/features/workspace/components/FolderBrowser>`
      - 2
      - 0
-     - 17
+     - 19
      - ``src/features/workspace/components/FolderBrowser.jsx``
    * - :doc:`src/features/workspace/components/FolderBrowserDialog </api/javascript/features/workspace/components/FolderBrowserDialog>`
      - 1
@@ -1597,6 +1607,7 @@
    /api/javascript/features/notification/widgetNotificationPolicy
    /api/javascript/features/settings-client/catalog
    /api/javascript/features/settings-runtime/GenericNodes
+   /api/javascript/features/settings-runtime/ResourceFields
    /api/javascript/features/settings-runtime/SettingsActionLabel
    /api/javascript/features/settings-runtime/SettingsCards
    /api/javascript/features/settings-runtime/SettingsFormLayout
@@ -1610,6 +1621,7 @@
    /api/javascript/features/settings-runtime/loadingToasts
    /api/javascript/features/settings-runtime/matrixValues
    /api/javascript/features/settings-runtime/model
+   /api/javascript/features/settings-runtime/navigation
    /api/javascript/features/settings-runtime/registry
    /api/javascript/features/settings-runtime/sessionCache
    /api/javascript/features/settings-runtime/useActionExecutor

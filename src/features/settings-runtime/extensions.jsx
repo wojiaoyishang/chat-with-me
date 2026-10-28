@@ -1,6 +1,7 @@
 import { registerSettingsComponent } from "./registry.js";
 import { lazy, Suspense } from "react";
 import { Spinner } from "@/components/ui/spinner";
+import { DirectoryListField, PolicyRulesField, CommandPermissionsField, MemberPermissionsField } from './ResourceFields.jsx';
 
 const NodeGraphField = lazy(
   () => import("@/components/configuration/NodeGraphField.jsx"),
@@ -20,3 +21,7 @@ export function LazyNodeGraphField(props) {
 
 // Extensions are reusable controls, never business page names.
 registerSettingsComponent("node-graph", LazyNodeGraphField);
+registerSettingsComponent('directory-list', DirectoryListField);
+registerSettingsComponent('policy-rules', PolicyRulesField);
+registerSettingsComponent('command-permissions', CommandPermissionsField);
+registerSettingsComponent('member-permissions', MemberPermissionsField);

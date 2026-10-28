@@ -1,6 +1,6 @@
 import {
     Check, CircleHelp, Copy, Database, Download, ExternalLink, Gauge, KeyRound,
-    LogOut, Pencil, Play, Plug, RefreshCw, Save, Server,
+    LogOut, Pencil, Play, Plug, Plus, RefreshCw, Save, Server,
     ShieldCheck, ShieldX, Trash2, Unplug, Upload, UserRound,
 } from 'lucide-react';
 
@@ -10,7 +10,7 @@ const ACTION_ICONS = {
     play: Play, copy: Copy, download: Download, upload: Upload, save: Save,
     'log-out': LogOut, user: UserRound, key: KeyRound, check: Check,
     'external-link': ExternalLink, server: Server, database: Database,
-    gauge: Gauge,
+    gauge: Gauge, plus: Plus,
 };
 
 /** Progress belongs to the floating notice, leaving this label's size stable. */

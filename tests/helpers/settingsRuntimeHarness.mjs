@@ -13,7 +13,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const { createRoot } = await import('react-dom/client');
 
 const bundlePath = `temp/settings-runtime-ui-${process.pid}.mjs`;
-await build({ stdin: { contents: "export {default} from './src/components/setting/DynamicSettings.jsx';export {default as SettingPage} from './src/pages/SettingPage.jsx';export {default as BootstrapGate} from './src/runtime/backend/BackendBootstrapGate.jsx';export {registerSettingsComponent} from './src/features/settings-runtime/registry.js';export {SettingsTestToaster,resetSettingsTestToasts} from 'sonner';", resolveDir: process.cwd() }, outfile: bundlePath, bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', plugins: [{ name: 'settings-ui', setup(builder) {
+await build({ stdin: { contents: "export {default} from './src/components/setting/DynamicSettings.jsx';export {default as SettingPage} from './src/pages/SettingPage.jsx';export {default as BootstrapGate} from './src/runtime/backend/BackendBootstrapGate.jsx';export {registerSettingsComponent} from './src/features/settings-runtime/registry.js';export {requestSettingsNavigation,subscribeSettingsNavigation} from './src/features/settings-runtime/navigation.js';export {SettingsTestToaster,resetSettingsTestToasts} from 'sonner';", resolveDir: process.cwd() }, outfile: bundlePath, bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', plugins: [{ name: 'settings-ui', setup(builder) {
     builder.onResolve({ filter: /^(react(?:\/|$)|react-dom(?:\/|$))/ }, ({ path: name }) => ({ path: name, external: true }));
     builder.onResolve({ filter: /(?:apiClient\.js|session\.js|connection\.js|components\/ui\/[^/]+)$/ }, ({ path: name, importer }) => {
         if (!importer.endsWith('BackendBootstrapGate.jsx')) return null;
@@ -72,7 +72,7 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
         throw new Error(`Unexpected dependency ${name}`);
     });
 } }] });
-const { default: DynamicSettings, SettingPage, BootstrapGate, registerSettingsComponent, SettingsTestToaster, resetSettingsTestToasts } = await import(pathToFileURL(path.resolve(bundlePath)).href);
+const { default: DynamicSettings, SettingPage, BootstrapGate, registerSettingsComponent, SettingsTestToaster, resetSettingsTestToasts, requestSettingsNavigation, subscribeSettingsNavigation } = await import(pathToFileURL(path.resolve(bundlePath)).href);
 const wrap = element => React.createElement(React.Fragment, null, element, React.createElement(SettingsTestToaster));
 
 async function mount(config, response, handler, runtime = {}, initialValues = {}) {
@@ -113,4 +113,4 @@ const ref = value => ({ $ref: value });
 const resource = (extra = {}) => ({ type: 'resource', id: 'fixtures', text: '动态资源', source: { endpoint: '/fixtures', listPath: 'items' }, titleField: 'title', actions: [{ kind: 'edit', label: '编辑' }], editor: { options: [{ type: 'text', name: 'title', text: '名称', required: true }, { type: 'secret-map', name: 'connection.headers', text: '请求头' }], defaults: {}, update: { id: 'save', label: '保存', endpoint: '/fixtures/{item.id}', method: 'PATCH', body: { title: ref('form.title'), revision: ref('item.revision'), connection: ref('form.connection') } } }, ...extra });
 
 
-export { mount, mountSettingsPage, mountBootstrapGate, button, click, edit, upload, ref, resource, DynamicSettings, SettingPage, registerSettingsComponent, React, act };
+export { mount, mountSettingsPage, mountBootstrapGate, button, click, edit, upload, ref, resource, DynamicSettings, SettingPage, registerSettingsComponent, React, act, requestSettingsNavigation, subscribeSettingsNavigation };

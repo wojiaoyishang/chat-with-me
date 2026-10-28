@@ -17,23 +17,23 @@ src/components/sidebar/Sidebar 模块
 * **模块标识**：``src/components/sidebar/Sidebar``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：31
+* **局部函数与匿名回调**：33
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@/lib/virtualUrl.js``、``lucide-react``、``@/lib/tools.jsx``、``@headlessui/react``、``react-i18next``、``@/lib/apiClient.js``、``@/config.js``、``@/context/useEventStore.jsx``、``@/components/ui/avatar``、``@/context/userContext.jsx``、``@/components/ui/dropdown-menu``、``sonner``、``react-router-dom``、``@/pages/SettingPage.jsx``、``framer-motion``、``./sidebarRegistry``、``@/lib/browserHistoryLayers.js``、``./ConversationsList.jsx``。
+``react``、``@/lib/virtualUrl.js``、``lucide-react``、``@/lib/tools.jsx``、``@headlessui/react``、``react-i18next``、``@/lib/apiClient.js``、``@/config.js``、``@/context/useEventStore.jsx``、``@/components/ui/avatar``、``@/context/userContext.jsx``、``@/components/ui/dropdown-menu``、``sonner``、``react-router-dom``、``@/pages/SettingPage.jsx``、``@/features/settings-runtime/navigation.js``、``framer-motion``、``./sidebarRegistry``、``@/lib/browserHistoryLayers.js``、``./ConversationsList.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:1387:18661:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:1476:19024:FUNCTION
 
 .. js:function:: Sidebar({ conversationId, setConversationId, pageType, setPageType, settings, onConversationIdSelect, onSet…)
 
    渲染 ``Sidebar`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``42``—``395`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``43``—``402`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ src/components/sidebar/Sidebar 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <> <SettingPage open={settingsOpen} onClose={() => setSettingsOpen(false)} onRefreshRequested={onSettingsRefresh} handleLogout={handleLogout} /> <div className="fixed md:relativ…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <> <SettingPage open={settingsOpen} navigationRequest={settingsNavigation} onClose={() => setSettingsOpen(false)} onRefreshRequested={onSettingsRefresh} handleLogout={handleLogo…``。
 
    **副作用**
 
@@ -52,26 +52,77 @@ src/components/sidebar/Sidebar 模块
    * 更新 React 或全局 Store 状态。
    * 改变前端路由或浏览器历史。
 
-   **主要协作调用**：``useTranslation``、``useNavigate``、``useIsMobile``、``useState``、``useUserStore``、``useRef``、``useCallback``、``useEffect``、``useBrowserBackLayer``、``Boolean``、``resolveResourceUrl``、``t``。
+   **主要协作调用**：``useTranslation``、``useNavigate``、``useIsMobile``、``useState``、``useEffect``、``useUserStore``、``useRef``、``useCallback``、``useBrowserBackLayer``、``Boolean``、``resolveResourceUrl``、``t``。
 
-   **内部回调数量**：21。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：22。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2095:2335:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2029:2155:FUNCTION
 
-.. rubric:: ``useCallback callback @ 66``
+.. rubric:: ``useEffect callback @ 61``
 
 .. code-block:: javascript
 
-   useCallback callback @ 66(newValue)
+   useEffect callback @ 61()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``61``—``64`` 行；所属函数 ``Sidebar``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 注册事件、DOM 或运行时订阅。
+
+**主要协作调用**：``subscribeSettingsNavigation``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2063:2154:FUNCTION
+
+.. rubric:: ``subscribeSettingsNavigation callback @ 61``
+
+.. code-block:: javascript
+
+   subscribeSettingsNavigation callback @ 61(request)
+
+订阅与 ``Settings Navigation`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``61``—``64`` 行；所属函数 ``useEffect callback @ 61``。
+
+**参数**
+
+``request``
+   调用方传入的 ``request`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setSettingsNavigation``、``setSettingsOpen``。
+
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2403:2643:FUNCTION
+
+.. rubric:: ``useCallback callback @ 72``
+
+.. code-block:: javascript
+
+   useCallback callback @ 72(newValue)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``66``—``71`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``72``—``77`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -84,17 +135,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setIsOpen``、``setLocalSetting``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2379:2475:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2687:2783:FUNCTION
 
-.. rubric:: ``useEffect callback @ 75``
+.. rubric:: ``useEffect callback @ 81``
 
 .. code-block:: javascript
 
-   useEffect callback @ 75()
+   useEffect callback @ 81()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``75``—``78`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``81``—``84`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -108,17 +159,17 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2444:2468:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2752:2776:FUNCTION
 
-.. rubric:: ``returned callback @ 77``
+.. rubric:: ``returned callback @ 83``
 
 .. code-block:: javascript
 
-   returned callback @ 77()
+   returned callback @ 83()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``useEffect callback @ 75``。
+**性质**：同步局部函数；源码第 ``83``—``83`` 行；所属函数 ``useEffect callback @ 81``。
 
 **参数**
 
@@ -130,17 +181,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setOnChange``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2545:3161:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2853:3469:FUNCTION
 
-.. rubric:: ``useEffect callback @ 81``
+.. rubric:: ``useEffect callback @ 87``
 
 .. code-block:: javascript
 
-   useEffect callback @ 81()
+   useEffect callback @ 87()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``81``—``96`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``87``—``102`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -159,7 +210,7 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2649:2957:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:2957:3265:FUNCTION
 
 .. rubric:: ``updateSidebarState``
 
@@ -169,7 +220,7 @@ src/components/sidebar/Sidebar 模块
 
 更新与 ``Sidebar State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``84``—``90`` 行；所属函数 ``useEffect callback @ 81``。
+**性质**：同步局部函数；源码第 ``90``—``96`` 行；所属函数 ``useEffect callback @ 87``。
 
 **参数**
 
@@ -181,7 +232,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``getLocalSetting``、``setIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3013:3040:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3321:3348:FUNCTION
 
 .. rubric:: ``handler``
 
@@ -191,7 +242,7 @@ src/components/sidebar/Sidebar 模块
 
 实现 ``handler`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``93``—``93`` 行；所属函数 ``useEffect callback @ 81``。
+**性质**：同步局部函数；源码第 ``99``—``99`` 行；所属函数 ``useEffect callback @ 87``。
 
 **参数**
 
@@ -203,17 +254,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``updateSidebarState``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3105:3154:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3413:3462:FUNCTION
 
-.. rubric:: ``returned callback @ 95``
+.. rubric:: ``returned callback @ 101``
 
 .. code-block:: javascript
 
-   returned callback @ 95()
+   returned callback @ 101()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``95``—``95`` 行；所属函数 ``useEffect callback @ 81``。
+**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``useEffect callback @ 87``。
 
 **参数**
 
@@ -225,17 +276,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``mql.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3183:3293:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3491:3601:FUNCTION
 
-.. rubric:: ``useEffect callback @ 98``
+.. rubric:: ``useEffect callback @ 104``
 
 .. code-block:: javascript
 
-   useEffect callback @ 98()
+   useEffect callback @ 104()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``98``—``100`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``104``—``106`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -251,17 +302,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``document.documentElement.style.setProperty``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3368:3455:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3676:3763:FUNCTION
 
-.. rubric:: ``useBrowserBackLayer callback @ 104``
+.. rubric:: ``useBrowserBackLayer callback @ 110``
 
 .. code-block:: javascript
 
-   useBrowserBackLayer callback @ 104()
+   useBrowserBackLayer callback @ 110()
 
 封装 ``BrowserBackLayer`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``104``—``107`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``110``—``113`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -273,17 +324,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``handleSetIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3538:4424:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3846:4732:FUNCTION
 
-.. rubric:: ``useEffect callback @ 112``
+.. rubric:: ``useEffect callback @ 118``
 
 .. code-block:: javascript
 
-   useEffect callback @ 112()
+   useEffect callback @ 118()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``112``—``132`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``118``—``138`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -301,17 +352,17 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3611:4380:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3919:4688:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'sidebar.*' }).then callback @ 113``
+.. rubric:: ``onEvent({ event: 'sidebar.*' }).then callback @ 119``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'sidebar.*' }).then callback @ 113({ event, payload, eventConversationId })
+   onEvent({ event: 'sidebar.*' }).then callback @ 119({ event, payload, eventConversationId })
 
 处理 ``onEvent({ event: 'sidebar.*' }).then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``113``—``130`` 行；所属函数 ``useEffect callback @ 112``。
+**性质**：同步局部函数；源码第 ``119``—``136`` 行；所属函数 ``useEffect callback @ 118``。
 
 **参数**
 
@@ -324,17 +375,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``conversationsListRef.current?.reload``、``conversationsListRef.current?.updateDate``、``conversationsListRef.current?.updateTitle``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4397:4417:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4705:4725:FUNCTION
 
-.. rubric:: ``returned callback @ 131``
+.. rubric:: ``returned callback @ 137``
 
 .. code-block:: javascript
 
-   returned callback @ 131()
+   returned callback @ 137()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``131``—``131`` 行；所属函数 ``useEffect callback @ 112``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``useEffect callback @ 118``。
 
 **参数**
 
@@ -350,7 +401,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4468:4670:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4776:4978:FUNCTION
 
 .. rubric:: ``handleDeleteConversation``
 
@@ -360,7 +411,7 @@ src/components/sidebar/Sidebar 模块
 
 处理 ``Delete Conversation`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``134``—``140`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``140``—``146`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -378,7 +429,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setConversationId``、``setPageType``、``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4697:5029:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5005:5337:FUNCTION
 
 .. rubric:: ``handleLogout``
 
@@ -388,7 +439,7 @@ src/components/sidebar/Sidebar 模块
 
 处理 ``Logout`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``142``—``151`` 行；所属函数 ``Sidebar``。
+**性质**：异步局部函数；源码第 ``148``—``157`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -405,17 +456,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``apiClient.get``、``toast.success``、``t``、``clearUser``、``navigate``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5619:5647:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5982:6010:FUNCTION
 
-.. rubric:: ``onClose callback @ 166``
+.. rubric:: ``onClose callback @ 173``
 
 .. code-block:: javascript
 
-   onClose callback @ 166()
+   onClose callback @ 173()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``166``—``166`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -427,17 +478,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setSettingsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:6578:6606:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:6941:6969:FUNCTION
 
-.. rubric:: ``onClick callback @ 186``
+.. rubric:: ``onClick callback @ 193``
 
 .. code-block:: javascript
 
-   onClick callback @ 186()
+   onClick callback @ 193()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -449,17 +500,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``handleSetIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:7130:7237:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:7493:7600:FUNCTION
 
-.. rubric:: ``onClick callback @ 198``
+.. rubric:: ``onClick callback @ 205``
 
 .. code-block:: javascript
 
-   onClick callback @ 198()
+   onClick callback @ 205()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``198``—``200`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``205``—``207`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -471,17 +522,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``onConversationIdSelect``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:7727:8935:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:8090:9298:FUNCTION
 
-.. rubric:: ``registeredButtons.map callback @ 208``
+.. rubric:: ``registeredButtons.map callback @ 215``
 
 .. code-block:: javascript
 
-   registeredButtons.map callback @ 208({ id, component })
+   registeredButtons.map callback @ 215({ id, component })
 
 作为 ``registeredButtons.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``208``—``229`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``215``—``236`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -492,17 +543,17 @@ src/components/sidebar/Sidebar 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:9323:9815:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:9686:10178:FUNCTION
 
-.. rubric:: ``onClick callback @ 239``
+.. rubric:: ``onClick callback @ 246``
 
 .. code-block:: javascript
 
-   onClick callback @ 239()
+   onClick callback @ 246()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``239``—``248`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``246``—``255`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -519,17 +570,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``onOpenPage``、``handleSetIsOpen``、``setConversationId``、``navigate``、``setPageType``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:10593:11082:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:10956:11445:FUNCTION
 
-.. rubric:: ``onClick callback @ 261``
+.. rubric:: ``onClick callback @ 268``
 
 .. code-block:: javascript
 
-   onClick callback @ 261()
+   onClick callback @ 268()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``261``—``270`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``268``—``277`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -546,17 +597,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``onOpenPage``、``handleSetIsOpen``、``navigate``、``setPageType``、``setConversationId``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:11768:11972:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12131:12335:FUNCTION
 
-.. rubric:: ``onClick callback @ 281``
+.. rubric:: ``onClick callback @ 288``
 
 .. code-block:: javascript
 
-   onClick callback @ 281()
+   onClick callback @ 288()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``281``—``284`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``288``—``291`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -574,17 +625,17 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:11828:11852:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12191:12215:FUNCTION
 
-.. rubric:: ``anonymous callback @ 282``
+.. rubric:: ``anonymous callback @ 289``
 
 .. code-block:: javascript
 
-   anonymous callback @ 282()
+   anonymous callback @ 289()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``282``—``282`` 行；所属函数 ``onClick callback @ 281``。
+**性质**：同步局部函数；源码第 ``289``—``289`` 行；所属函数 ``onClick callback @ 288``。
 
 **参数**
 
@@ -600,17 +651,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12508:12720:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12871:13083:FUNCTION
 
-.. rubric:: ``onClick callback @ 292``
+.. rubric:: ``onClick callback @ 299``
 
 .. code-block:: javascript
 
-   onClick callback @ 292()
+   onClick callback @ 299()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``292``—``295`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``299``—``302`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -628,17 +679,17 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12568:12596:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12931:12959:FUNCTION
 
-.. rubric:: ``anonymous callback @ 293``
+.. rubric:: ``anonymous callback @ 300``
 
 .. code-block:: javascript
 
-   anonymous callback @ 293()
+   anonymous callback @ 300()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``onClick callback @ 292``。
+**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``onClick callback @ 299``。
 
 **参数**
 
@@ -654,17 +705,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13235:13347:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13598:13710:FUNCTION
 
-.. rubric:: ``onClick callback @ 302``
+.. rubric:: ``onClick callback @ 309``
 
 .. code-block:: javascript
 
-   onClick callback @ 302()
+   onClick callback @ 309()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``302``—``302`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``309``—``309`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -682,17 +733,17 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13259:13289:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13622:13652:FUNCTION
 
-.. rubric:: ``anonymous callback @ 302``
+.. rubric:: ``anonymous callback @ 309``
 
 .. code-block:: javascript
 
-   anonymous callback @ 302()
+   anonymous callback @ 309()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``302``—``302`` 行；所属函数 ``onClick callback @ 302``。
+**性质**：同步局部函数；源码第 ``309``—``309`` 行；所属函数 ``onClick callback @ 309``。
 
 **参数**
 
@@ -708,17 +759,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13800:13904:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:14163:14267:FUNCTION
 
-.. rubric:: ``onClick callback @ 307``
+.. rubric:: ``onClick callback @ 314``
 
 .. code-block:: javascript
 
-   onClick callback @ 307()
+   onClick callback @ 314()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -736,17 +787,17 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13824:13850:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:14187:14213:FUNCTION
 
-.. rubric:: ``anonymous callback @ 307``
+.. rubric:: ``anonymous callback @ 314``
 
 .. code-block:: javascript
 
-   anonymous callback @ 307()
+   anonymous callback @ 314()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``307``—``307`` 行；所属函数 ``onClick callback @ 307``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``onClick callback @ 314``。
 
 **参数**
 
@@ -762,17 +813,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:16366:16393:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:16729:16756:FUNCTION
 
-.. rubric:: ``onClick callback @ 345``
+.. rubric:: ``onClick callback @ 352``
 
 .. code-block:: javascript
 
-   onClick callback @ 345()
+   onClick callback @ 352()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``345``—``345`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``352``—``352`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -784,17 +835,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setSettingsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:17751:17779:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18114:18142:FUNCTION
 
-.. rubric:: ``onClick callback @ 374``
+.. rubric:: ``onClick callback @ 381``
 
 .. code-block:: javascript
 
-   onClick callback @ 374()
+   onClick callback @ 381()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``374``—``374`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``381``—``381`` 行；所属函数 ``Sidebar``。
 
 **参数**
 
@@ -806,17 +857,17 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``handleSetIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18196:18223:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18559:18586:FUNCTION
 
-.. rubric:: ``onClick callback @ 386``
+.. rubric:: ``onClick callback @ 393``
 
 .. code-block:: javascript
 
-   onClick callback @ 386()
+   onClick callback @ 393()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``386``—``386`` 行；所属函数 ``Sidebar``。
+**性质**：同步局部函数；源码第 ``393``—``393`` 行；所属函数 ``Sidebar``。
 
 **参数**
 

@@ -188,6 +188,7 @@ export async function executeRequest(action, scope, { api, client, signal, onPro
     }
     const body = resolveValue(action.body, scope);
     if (action.clientAction) return client.invoke(action.clientAction, body || {}, { signal, onProgress });
+    if (!action.endpoint && action.effects?.length) return {};
     const endpoint = requestEndpoint(action.endpoint, scope);
     const method = String(action.method || 'GET').toLowerCase();
     const config = { signal, params: resolveValue(action.params, scope), ...(action.timeoutMs ? { timeout: action.timeoutMs } : {}), ...(action.encoding === 'form' ? { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } } : {}) };

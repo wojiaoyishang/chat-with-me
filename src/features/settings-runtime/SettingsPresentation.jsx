@@ -1,6 +1,6 @@
 import {
     Bell, Cpu, Database, FolderOpen, KeyRound, Palette, Plug, Server,
-    Settings2, ShieldCheck, Sparkles, Terminal, UserRound,
+    Settings2, ShieldCheck, Sparkles, Terminal, UserRound, Users,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
@@ -8,7 +8,7 @@ import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 const ICONS = {
     settings: Settings2, palette: Palette, server: Server, bell: Bell,
     user: UserRound, shield: ShieldCheck, database: Database, plug: Plug,
-    sparkles: Sparkles, folder: FolderOpen, cpu: Cpu, terminal: Terminal, key: KeyRound,
+    sparkles: Sparkles, folder: FolderOpen, cpu: Cpu, terminal: Terminal, key: KeyRound, users: Users,
 };
 
 /** Icon names are presentation vocabulary; pages never select a business renderer. */

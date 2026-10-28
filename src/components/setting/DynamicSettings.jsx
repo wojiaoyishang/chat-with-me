@@ -4,6 +4,7 @@ import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
 import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ReadonlyTextNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
 import { SettingsSection } from '@/features/settings-runtime/SettingsPresentation.jsx';
 import SettingsFormLayout from '@/features/settings-runtime/SettingsFormLayout.jsx';
+import { requestSettingsNavigation } from '@/features/settings-runtime/navigation.js';
 import { useSettingsFieldLayout } from '@/features/settings-runtime/formLayout.js';
 import SettingsTabs from '@/features/settings-runtime/SettingsTabs.jsx';
 import { useActionExecutor } from '@/features/settings-runtime/useActionExecutor.js';
@@ -2309,6 +2310,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     }, []);
     const controller = useActionExecutor({
         api: runtimeContext.api || apiClient, client, confirm, refresh, navigate, patchForm,
+        openSettings: requestSettingsNavigation,
         scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {} }),
         openDialog: (value) => setDescriptorDialog((current) => ({ open: true, value, serial: current.serial + 1 })),
         notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
@@ -2366,7 +2368,7 @@ function buildDefaults(config, initialValues) {
     let values = pageValues(config, initialValues);
     const assignRows = (fields, prefix = []) => {
         for (const field of fields || []) {
-            if (field.type === 'tabs') { assignRows(settingsChildFields(field), prefix); continue; }
+            if (['tabs', 'form-layout', 'profile-card'].includes(field.type)) { assignRows(settingsChildFields(field), prefix); continue; }
             const path = [...prefix, ...pathParts(field.name)];
             if (field.type === 'list') {
                 const list = getValue(values, path, []);

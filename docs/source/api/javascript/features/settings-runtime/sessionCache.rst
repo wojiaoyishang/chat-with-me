@@ -17,7 +17,7 @@ Private to one settings window and connection/user; never persisted to disk.
 * **模块标识**：``src/features/settings-runtime/sessionCache``
 * **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：10
+* **局部函数与匿名回调**：12
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -48,13 +48,13 @@ Private to one settings window and connection/user; never persisted to disk.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:623:1831:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:623:2053:FUNCTION
 
 .. js:function:: createSettingsSessionCache(subscribe, scope)
 
    Private to one settings window and connection/user; never persisted to disk.
 
-   **性质**：同步函数；导出 API；源码第 ``19``—``39`` 行。
+   **性质**：同步函数；导出 API；源码第 ``19``—``43`` 行。
 
    **参数**
 
@@ -73,15 +73,15 @@ Private to one settings window and connection/user; never persisted to disk.
    * 发起 HTTP 请求或访问外部服务。
    * 注册事件、DOM 或运行时订阅。
 
-   **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：7。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:1831:2299:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:2053:2521:FUNCTION
 
 .. js:function:: settingsResourceCacheKey(item, scope)
 
    实现 ``settingsResourceCacheKey`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``41``—``48`` 行。
+   **性质**：同步函数；导出 API；源码第 ``45``—``52`` 行。
 
    **参数**
 
@@ -317,7 +317,55 @@ Private to one settings window and connection/user; never persisted to disk.
 
 **主要协作调用**：``entries.delete``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:1742:1821:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:1727:1948:FUNCTION
+
+.. rubric:: ``invalidateEvents``
+
+.. code-block:: javascript
+
+   invalidateEvents(events)
+
+实现 ``invalidateEvents`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``36``—``39`` 行；所属函数 ``createSettingsSessionCache``。
+
+**参数**
+
+``events`` （默认值 ``[]``）
+   调用方传入的 ``events`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``[...entry.tags].some``、``entries.delete``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:1888:1910:FUNCTION
+
+.. rubric:: ``[...entry.tags].some callback @ 38``
+
+.. code-block:: javascript
+
+   [...entry.tags].some callback @ 38(tag)
+
+作为 ``[...entry.tags].some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``38``—``38`` 行；所属函数 ``invalidateEvents``。
+
+**参数**
+
+``tag``
+   调用方传入的 ``tag`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``tags.has``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/sessionCache.js:1964:2043:FUNCTION
 
 .. rubric:: ``setEnabled``
 
@@ -327,7 +375,7 @@ Private to one settings window and connection/user; never persisted to disk.
 
 设置与 ``Enabled`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``createSettingsSessionCache``。
+**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``createSettingsSessionCache``。
 
 **参数**
 

@@ -44,6 +44,12 @@ test('generic actions select payload fields, keep revision, and reuse current AP
     assert.deepEqual(response, { saved: true });
 });
 
+test('pure navigation actions do not issue a dummy HTTP request', async () => {
+    const api = new Proxy({}, { get: () => { throw new Error('No HTTP request expected'); } });
+    assert.deepEqual(await executeRequest({ id: 'configure', effects: [{ type: 'open-settings', value: { pageId: 'plugin', endpoint: '/plugin/editor' } }] }, {}, { api }), {});
+    await assert.rejects(executeRequest({ id: 'invalid' }, {}, { api }), /无效/);
+});
+
 test('sequential actions pass response references and client actions use the adapter', async () => {
     const calls = [];
     const api = { post: async () => ({ id: 'created' }), put: async (url, body) => { calls.push([url, body]); return { done: true }; } };
