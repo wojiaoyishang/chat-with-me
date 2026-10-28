@@ -30,6 +30,42 @@
   const tokenNames = { inputTokens: "输入", outputTokens: "输出", totalTokens: "总量", cachedTokens: "缓存输入", reasoningTokens: "推理" };
   const css = `
 .cwm-observation{min-width:0;display:grid;gap:14px;color:inherit;font:inherit}.cwm-observation *{box-sizing:border-box}.observation-group,.observation-section{min-width:0;display:grid;gap:10px}.observation-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:10px}.observation-title{margin:0;font-size:14px;font-weight:600}.observation-note{margin:0;color:#7b879c;font-size:12px;line-height:1.6}.observation-indicator{min-width:0;display:grid;align-content:start;gap:6px;padding:14px 16px;border:1px solid #e4eaf3;border-radius:12px;background:#f7f9fc}.observation-indicator .stat-label{color:#7b879c;font-size:12px}.observation-indicator .stat-value{font-size:22px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}.observation-indicator[data-tone=success]{border-color:#d2eadf}.observation-indicator[data-tone=warning]{border-color:#f3dfb7}.observation-indicator[data-tone=danger]{border-color:#f4ced1}.observation-progress{display:grid;gap:7px;min-width:0;padding:12px;border:1px solid #e4eaf3;border-radius:10px}.observation-progress-head{display:flex;justify-content:space-between;gap:10px;font-size:12px}.observation-progress progress{display:block;width:100%;height:6px;accent-color:#5e7ad2}.observation-indeterminate{height:6px;overflow:hidden;border-radius:3px;background:#e8edf7}.observation-indeterminate:after{content:"";display:block;width:35%;height:100%;background:#9babce;animation:observation-pending 1.5s ease-in-out infinite alternate}@keyframes observation-pending{to{transform:translateX(180%)}}.observation-details{min-width:0;padding:12px;border:1px solid #e4eaf3;border-radius:10px}.observation-details>summary{cursor:pointer;font-size:13px;font-weight:500}.observation-details[open]>summary{margin-bottom:12px}.observation-table-scroll{max-width:100%;overflow:auto}.observation-table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}.observation-table th,.observation-table td{padding:9px 11px;text-align:left;border-bottom:1px solid #e8edf4;vertical-align:top}.observation-table th{color:#7b879c;font-weight:500;background:#f7f9fc}.observation-table td:last-child{white-space:normal;min-width:80px}.observation-source-fields{display:grid;gap:5px;margin-top:6px;white-space:normal;min-width:150px}.observation-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:12px;color:#7b879c}.cwm-observation button{cursor:pointer;padding:5px 10px;border:1px solid #e4eaf3;border-radius:7px;background:transparent;color:inherit;font:inherit}.cwm-observation button:disabled{opacity:.4;cursor:default}.observation-empty{color:#7b879c;font-size:12px}.observation-phase-list{display:flex;overflow-x:auto;gap:12px;padding:4px 0 10px}.observation-phase{flex:0 0 145px;padding:10px 12px;border-left:2px solid #cad5ec;display:grid;gap:6px;font-size:12px}.observation-phase[data-status=running]{border-color:#5e7ad2}.observation-phase[data-status=failed]{border-color:#d65b66}.observation-artifact-list{display:grid;gap:8px}.observation-artifact{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:10px;border:1px solid #e4eaf3;border-radius:8px}.observation-artifact a{color:#5977ce;text-decoration:none;overflow-wrap:anywhere}.observation-compact{gap:7px;font-size:11px}.observation-compact .observation-grid{display:flex;flex-wrap:wrap;gap:5px 12px}.observation-compact .observation-indicator{display:flex;gap:5px;align-items:baseline;padding:0;border:0;background:transparent}.observation-compact .observation-indicator .stat-label{font-size:11px}.observation-compact .observation-indicator .stat-value{font-size:12px;font-weight:500}.observation-compact .observation-note,.observation-compact .observation-title{display:none}.observation-compact .observation-progress{padding:0;border:0}.observation-compact .observation-progress-head{font-size:11px}.observation-compact .observation-phase-list{padding:0}.observation-compact .observation-phase{flex:auto;border:0;padding:0}.observation-error{color:#b83e4e;font-size:12px}.observation-unknown{font-size:12px;color:#7b879c}@media(prefers-reduced-motion:reduce){.observation-indeterminate:after{animation:none}}`;
+  const extraCss = `
+.observation-timeline-list{list-style:none;margin:0;padding:3px 0 0;max-height:420px;overflow-y:auto}
+.observation-timeline-item{display:grid;grid-template-columns:22px minmax(0,1fr);column-gap:10px;min-width:0}
+.observation-timeline-rail{display:flex;align-items:center;flex-direction:column}
+.observation-timeline-dot{width:12px;height:12px;flex:none;margin-top:4px;border:2px solid #9eacc1;border-radius:50%;background:#fff}
+.observation-timeline-line{width:2px;min-height:20px;flex:1;margin:5px 0;background:#e2e8f1}
+.observation-timeline-item:last-child .observation-timeline-line{visibility:hidden;min-height:0}
+.observation-timeline-item[data-status=running] .observation-timeline-dot{border-color:#526fd2;background:#526fd2;box-shadow:0 0 0 4px #edf1fc}
+.observation-timeline-item[data-status=completed] .observation-timeline-dot,.observation-timeline-item[data-status=succeeded] .observation-timeline-dot{border-color:#288c6c;background:#288c6c}
+.observation-timeline-item[data-status=failed] .observation-timeline-dot,.observation-timeline-item[data-status=interrupted] .observation-timeline-dot{border-color:#d05a62;background:#d05a62}
+.observation-timeline-content{min-width:0;padding:0 0 18px;font-size:13px;line-height:1.5}
+.observation-timeline-item:last-child .observation-timeline-content{padding-bottom:0}
+.observation-timeline-heading{display:flex;align-items:baseline;flex-wrap:wrap;gap:5px 10px}
+.observation-timeline-heading strong{overflow-wrap:anywhere}
+.observation-timeline-status{font-size:12px;color:#77849a}
+.observation-timeline-item[data-status=running] .observation-timeline-status{color:#526fd2}
+.observation-timeline-item[data-status=failed] .observation-timeline-status{color:#c64b56}
+.observation-timeline-meta{display:flex;flex-wrap:wrap;gap:3px 14px;margin-top:4px;color:#7b879c;font-size:12px}
+.observation-timeline-content button{margin-top:7px}
+.observation-compact .observation-timeline-content{padding-bottom:0}
+.observation-compact .observation-timeline-meta,.observation-compact .observation-timeline-line{display:none}
+.observation-artifact-list{grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:10px}
+.observation-artifact-card{min-width:0;border:1px solid #dfe6f0;border-radius:10px;background:#fff;overflow:hidden}
+.observation-artifact-body{display:flex;align-items:center;gap:12px;min-width:0;padding:13px 14px}
+.observation-artifact-icon{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:9px;background:#eef3ff;color:#526fd2}
+.observation-artifact-icon svg,.observation-artifact-download svg{width:18px;height:18px;display:block}
+.observation-artifact-info{display:grid;gap:3px;min-width:0;flex:1}
+.observation-artifact-name{font-size:13px;font-weight:600;overflow-wrap:anywhere;color:#253149}
+.observation-artifact-size{font-size:12px;color:#7b879c}
+.observation-artifact-download{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;padding:7px 11px;border:1px solid #ced9f5;border-radius:8px;color:#4164c6;text-decoration:none;font-size:12px;font-weight:600;white-space:nowrap}
+.observation-artifact-download:hover{background:#f0f4ff;border-color:#aabfeb}
+.observation-artifact-download[aria-busy=true]{opacity:.6;cursor:wait}
+.observation-artifact-preview{display:block;max-width:calc(100% - 28px);max-height:220px;margin:0 14px 14px;border-radius:8px;object-fit:contain}
+.observation-artifact-card .observation-error{margin:0 14px 12px;overflow-wrap:anywhere}
+@media(max-width:400px){.observation-artifact-body{flex-wrap:wrap}.observation-artifact-download{margin-left:52px}}
+`;
   function scope(observation, scopeId = "task") {
     return observation?.version === 1 && observation.scopes && typeof observation.scopes === "object"
       ? observation.scopes[scopeId] : undefined;
@@ -43,7 +79,7 @@
     let options = initialOptions, observation, disposed = false, epoch = 0, renderedKey;
     if (!doc.getElementById("cwm-observation-styles")) {
       const style = doc.createElement("style"); style.id = "cwm-observation-styles";
-      style.textContent = `${css}\n.observation-current-item{margin:0;color:#7b879c;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.observation-compact .observation-current-item{font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`;
+      style.textContent = `${css}\n${extraCss}\n.observation-current-item{margin:0;color:#7b879c;font-size:12px;line-height:1.6;overflow-wrap:anywhere}.observation-compact .observation-current-item{font-size:11px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`;
       doc.head.append(style);
     }
     const el = (tag, content, className) => {
@@ -53,6 +89,22 @@
       return node;
     };
     const note = (value) => el("p", value, "observation-note");
+    function icon(kind) {
+      const svg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("fill", "none");
+      svg.setAttribute("stroke", "currentColor"); svg.setAttribute("stroke-width", "1.7");
+      svg.setAttribute("stroke-linecap", "round"); svg.setAttribute("stroke-linejoin", "round");
+      svg.setAttribute("aria-hidden", "true");
+      const path = doc.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", kind === "download" ? "M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3" : "M6 3h8l4 4v14H6zM14 3v5h4M9 13h6M9 17h6");
+      svg.append(path); return svg;
+    }
+    function timestamp(value) {
+      if (typeof value !== "string" || !value) return null;
+      const date = new Date(value);
+      if (!Number.isFinite(date.getTime())) return null;
+      return date.toLocaleString("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    }
     function rememberOpen() {
       host.querySelectorAll("details[data-observation-key]").forEach((node) => {
         const entry = viewState.get(node.dataset.observationKey) || {};
@@ -60,7 +112,7 @@
       });
       host.querySelectorAll("[data-observation-scroll]").forEach((node) => {
         const key = node.dataset.observationScroll, entry = viewState.get(key) || {};
-        entry.scrollLeft = node.scrollLeft; viewState.set(key, entry);
+        entry.scrollLeft = node.scrollLeft; entry.scrollTop = node.scrollTop; viewState.set(key, entry);
       });
     }
     function details(title, key) {
@@ -252,6 +304,34 @@
           });
           node.append(list); break;
         }
+        case "timeline": {
+          const items = Array.isArray(component.items) ? component.items : [];
+          if (!items.length) return null;
+          node = el("section", null, "observation-section");
+          if (!options.compact) node.append(el("h4", component.title, "observation-title"));
+          const list = el("ol", null, "observation-timeline-list");
+          list.dataset.observationScroll = `${key}:scroll`;
+          const selected = options.compact ? [items.find((item) => item.status === "running") || items.at(-1)] : items;
+          selected.forEach((item) => {
+            const entry = el("li", null, "observation-timeline-item"); entry.dataset.status = text(item.status);
+            const rail = el("div", null, "observation-timeline-rail"); rail.setAttribute("aria-hidden", "true");
+            rail.append(el("span", null, "observation-timeline-dot"), el("span", null, "observation-timeline-line"));
+            const content = el("div", null, "observation-timeline-content");
+            const heading = el("div", null, "observation-timeline-heading");
+            heading.append(el("strong", item.title), el("span", statuses[item.status] || text(item.status), "observation-timeline-status"));
+            content.append(heading);
+            const meta = el("div", null, "observation-timeline-meta");
+            const start = timestamp(item.startedAt), end = timestamp(item.finishedAt);
+            if (start) meta.append(el("span", `开始 ${start}`));
+            if (end) meta.append(el("span", `结束 ${end}`));
+            if (finite(item.elapsedSeconds) && item.elapsedSeconds >= 0) meta.append(el("span", `耗时 ${format(item.elapsedSeconds, "duration")}`));
+            if (meta.childNodes.length) content.append(meta);
+            const action = options.phaseAction?.(item);
+            if (action) { const button = el("button", "此阶段后暂停"); button.type = "button"; button.dataset.key = `pause-after:${item.id}`; button.addEventListener("click", action); content.append(button); }
+            entry.append(rail, content); list.append(entry);
+          });
+          node.append(list); break;
+        }
         case "request-activity": {
           node = el("section", null, "observation-section");
           if (!options.compact) node.append(el("h4", component.title, "observation-title"));
@@ -278,20 +358,40 @@
           node = el("section", null, "observation-section"); node.append(el("h4", component.title, "observation-title"));
           const list = el("div", null, "observation-artifact-list");
           items.forEach((item) => {
-            const row = el("div", null, "observation-artifact"), match = /^cwm:\/\/artifact\/([A-Za-z0-9._-]+)$/.exec(item.url || "");
+            const card = el("div", null, "observation-artifact-card"), body = el("div", null, "observation-artifact-body");
+            const match = /^cwm:\/\/artifact\/([A-Za-z0-9._-]+)$/.exec(item.url || "");
+            const filename = typeof item.filename === "string" && item.filename ? item.filename : "附件";
+            const fileIcon = el("span", null, "observation-artifact-icon"); fileIcon.setAttribute("aria-hidden", "true"); fileIcon.append(icon("file"));
+            const info = el("div", null, "observation-artifact-info");
+            info.append(el("span", filename, "observation-artifact-name"), el("span", format(item.size, "bytes"), "observation-artifact-size"));
+            body.append(fileIcon, info);
             if (match && options.artifactUrl) {
               const url = options.artifactUrl(match[1]);
-              if (typeof item.mimeType === "string" && (item.mimeType.startsWith("image/") || item.mimeType.startsWith("video/"))) {
-                const preview = el(item.mimeType.startsWith("image/") ? "img" : "video");
-                preview.src = url; preview.style.cssText = "max-width:100%;max-height:220px;border-radius:8px;object-fit:contain";
-                if (preview.tagName === "IMG") { preview.alt = item.filename || "图片产物"; preview.loading = "lazy"; }
-                else { preview.controls = true; preview.preload = "metadata"; }
-                row.style.flexWrap = "wrap"; row.append(preview);
+              const link = el("a", null, "observation-artifact-download");
+              link.href = url; link.download = filename; link.setAttribute("aria-label", `下载 ${filename}`);
+              link.append(icon("download"), el("span", "下载"));
+              if (typeof options.downloadArtifact === "function") {
+                let busy = false;
+                link.addEventListener("click", (event) => {
+                  event.preventDefault();
+                  if (busy) return;
+                  busy = true; link.setAttribute("aria-busy", "true");
+                  card.querySelector(".observation-error")?.remove();
+                  Promise.resolve().then(() => options.downloadArtifact(item.url, filename)).catch((error) => {
+                    card.append(el("p", error?.message || "下载失败，请重试。", "observation-error"));
+                  }).finally(() => { busy = false; link.removeAttribute("aria-busy"); });
+                });
               }
-              const link = el("a", item.filename || "下载附件"); link.href = url; link.target = "_blank"; link.rel = "noopener"; row.append(link);
-            }
-            else row.append(el("span", item.filename || "附件"));
-            row.append(el("small", format(item.size, "bytes"))); list.append(row);
+              body.append(link); card.append(body);
+              if (typeof item.mimeType === "string" && (item.mimeType.startsWith("image/") || item.mimeType.startsWith("video/"))) {
+                const preview = el(item.mimeType.startsWith("image/") ? "img" : "video", null, "observation-artifact-preview");
+                preview.src = url;
+                if (preview.tagName === "IMG") { preview.alt = filename; preview.loading = "lazy"; }
+                else { preview.controls = true; preview.preload = "metadata"; }
+                card.append(preview);
+              }
+            } else card.append(body);
+            list.append(card);
           });
           node.append(list); break;
         }
@@ -317,6 +417,7 @@
       host.replaceChildren(fragment);
       host.querySelectorAll("[data-observation-scroll]").forEach((node) => {
         node.scrollLeft = viewState.get(node.dataset.observationScroll)?.scrollLeft || 0;
+        node.scrollTop = viewState.get(node.dataset.observationScroll)?.scrollTop || 0;
       });
     }
     return {

@@ -5,6 +5,7 @@ import path from 'node:path';
 import { JSDOM } from 'jsdom';
 
 const bridge = await readFile(path.resolve(import.meta.dirname, '../../../Python/Chat-With-Me-Backend/application/management_pages/static/client-bridge.js'), 'utf8');
+const observation = await readFile(path.resolve(import.meta.dirname, '../../../Python/Chat-With-Me-Backend/application/management_pages/static/observation-components.js'), 'utf8');
 
 test('cross-origin frame fetches use the exact parent channel without receiving a login token', async (t) => {
     const config = { apiBase: '', hostOrigin: 'https://client.example', clientChannel: 'frame-channel-123' };
@@ -37,6 +38,28 @@ test('cross-origin frame fetches use the exact parent channel without receiving 
     assert.equal(new URL(image.src).searchParams.get('client_ticket'), 'read-only-ticket');
     assert.equal(new URL(unrelated.href).searchParams.has('client_ticket'), false);
     assert.equal(native.length, 0);
+});
+
+test('task artifact download links receive the frame resource ticket and keep their filename', async (t) => {
+    const config = { apiBase: '/api', hostOrigin: 'https://client.example', clientChannel: 'task-frame-123' };
+    const dom = new JSDOM(`<script id="management-config" type="application/json">${JSON.stringify(config)}</script><div id="host"></div>`, { url: 'https://backend.example/api/tasks/page', runScripts: 'outside-only' });
+    t.after(() => dom.window.close());
+    const window = dom.window, parent = { postMessage: () => {} };
+    Object.defineProperty(window, 'parent', { value: parent });
+    window.fetch = async () => new Response('unused'); window.Headers = Headers; window.Request = Request; window.Response = Response;
+    window.eval(bridge);
+    window.dispatchEvent(new window.MessageEvent('message', { source: parent, origin: config.hostOrigin, data: { type: 'cwm.client-session', clientChannel: config.clientChannel, resourceTicket: 'resource-ticket' } }));
+    window.eval(observation);
+    const renderer = window.CWMObservation.createRenderer(window.document.getElementById('host'));
+    t.after(() => renderer.dispose());
+    renderer.update({ version: 1, revision: 1, scopes: { task: { components: [{
+        id: 'files', type: 'artifacts', title: '产物', items: [{ url: 'cwm://artifact/file-1', filename: 'story-85.zip', size: 90071992 }],
+    }] } } }, { artifactUrl: (id) => `/api/upload/${id}` });
+    await new Promise((resolve) => setImmediate(resolve));
+    const link = window.document.querySelector('.observation-artifact-download');
+    assert.equal(new URL(link.href).pathname, '/api/upload/file-1');
+    assert.equal(new URL(link.href).searchParams.get('client_ticket'), 'resource-ticket');
+    assert.equal(link.download, 'story-85.zip');
 });
 
 test('frame cancellation is forwarded only on its own scoped request channel', async (t) => {

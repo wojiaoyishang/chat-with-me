@@ -12,7 +12,7 @@ function setup(t, options = {}) {
   t.after(() => { renderer.dispose(); dom.window.close(); });
   return { host, renderer, dom };
 }
-const click = (node, dom) => node.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+const click = (node, dom) => node.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true, cancelable: true }));
 const settle = () => new Promise((resolve) => setTimeout(resolve, 10));
 
 test("new node metrics, nested groups and visibility render without a frontend field list", (t) => {
@@ -139,6 +139,53 @@ test("artifact references never turn untrusted URL schemes into links", (t) => {
   ] }]), { artifactUrl: (id) => `/api/upload/${id}` });
   assert.equal(host.querySelectorAll("a").length, 1);
   assert.equal(host.querySelector("a").getAttribute("href"), "/api/upload/abc");
+  assert.equal(host.querySelector("a").getAttribute("download"), "计划.pdf");
+  assert.equal(host.querySelector("a").getAttribute("aria-label"), "下载 计划.pdf");
+  assert.match(host.textContent, /2\.0 KB/);
+  assert.ok(host.querySelector("a svg"), "download action has a visible icon");
+  assert.equal(host.querySelectorAll(".observation-artifact-card").length, 2);
+});
+
+test("timeline renders backend-ordered stages, preserves scrolling and keeps pause action", (t) => {
+  const { host, renderer, dom } = setup(t);
+  const paused = [];
+  const value = snapshot([{ id: "stages", type: "timeline", title: "执行阶段", description: "并行阶段可能重叠", items: [
+    { id: "first", title: "导出 <script>文本</script>", status: "running", startedAt: "2026-10-28T08:00:00Z", elapsedSeconds: 3 },
+    { id: "second", title: "保存", status: "completed", startedAt: "invalid", elapsedSeconds: 1 },
+  ] }]);
+  const options = { taskId: "task", phaseAction: (item) => item.id === "first" ? () => paused.push(item.id) : null };
+  renderer.update(value, options);
+  assert.deepEqual([...host.querySelectorAll(".observation-timeline-heading strong")].map((node) => node.textContent), ["导出 <script>文本</script>", "保存"]);
+  assert.equal(host.querySelector("script"), null);
+  assert.match(host.textContent, /运行中/);
+  assert.match(host.textContent, /耗时 3 秒/);
+  assert.match(host.textContent, /并行阶段可能重叠/);
+  assert.equal(host.querySelectorAll(".observation-timeline-meta")[1].textContent, "耗时 1 秒");
+  click(host.querySelector("button"), dom);
+  assert.deepEqual(paused, ["first"]);
+  host.querySelector("ol").scrollTop = 50;
+  const next = structuredClone(value); next.revision++; next.scopes.task.components[0].items[0].elapsedSeconds = 4;
+  renderer.update(next, options);
+  assert.equal(host.querySelector("ol").scrollTop, 50);
+  renderer.update(next, { ...options, compact: true });
+  assert.equal(host.querySelectorAll("li").length, 1);
+  assert.match(host.textContent, /导出/);
+});
+
+test("artifact download adapter receives the authorized reference and reports errors without navigating", async (t) => {
+  const { host, renderer, dom } = setup(t);
+  const calls = [];
+  const value = snapshot([{ id: "files", type: "artifacts", title: "产物", items: [
+    { url: "cwm://artifact/abc", filename: "story-85.zip", size: 90071992 },
+  ] }]);
+  renderer.update(value, { artifactUrl: (id) => `https://backend.example/upload/${id}`,
+    downloadArtifact: async (...args) => { calls.push(args); throw new Error("下载失败：权限已过期"); } });
+  const link = host.querySelector("a");
+  assert.equal(click(link, dom), false, "adapter prevents cross-origin navigation");
+  await settle();
+  assert.deepEqual(calls, [["cwm://artifact/abc", "story-85.zip"]]);
+  assert.match(host.textContent, /下载失败：权限已过期/);
+  assert.equal(link.hasAttribute("aria-busy"), false);
 });
 
 test("the React renderer copy is generated from the backend canonical source", async () => {

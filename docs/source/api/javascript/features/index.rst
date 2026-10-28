@@ -1121,7 +1121,7 @@
    * - :doc:`src/features/tasks/RunObservation </api/javascript/features/tasks/RunObservation>`
      - 1
      - 0
-     - 5
+     - 6
      - ``src/features/tasks/RunObservation.jsx``
    * - :doc:`src/features/tasks/TaskCenter </api/javascript/features/tasks/TaskCenter>`
      - 2
@@ -1131,7 +1131,7 @@
    * - :doc:`src/features/tasks/observation-components </api/javascript/features/tasks/observation-components>`
      - 0
      - 0
-     - 48
+     - 56
      - ``src/features/tasks/observation-components.js``
    * - :doc:`src/features/tasks/useTaskStore </api/javascript/features/tasks/useTaskStore>`
      - 0

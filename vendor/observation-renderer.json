@@ -1,6 +1,6 @@
 {
   "schema": "cwm.observation-renderer.v1",
   "protocolVersion": 1,
-  "sourceSha256": "b587ca954c86af1a129ba52e13ad2cfbd74ff1b5fa99edf30768d11db52b153c",
-  "contentSha256": "14417205141ade13f93d9df238a48ef3fbf9752ec5c8f6be59aaac996a322a9b"
+  "sourceSha256": "2a2dfc8a5586dcd6739ea10a7479eb8daf8d4ac42e727bf359b471d5bbf723c1",
+  "contentSha256": "5dfbc95a6d6cac05cf5e7a6de8ade65991664adc8590ce0fec988523d3e2f4a4"
 }

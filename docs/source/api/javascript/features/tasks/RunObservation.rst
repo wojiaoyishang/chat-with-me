@@ -17,23 +17,23 @@ React and the backend task page mount the same observation component tree.
 * **模块标识**：``src/features/tasks/RunObservation``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：5
+* **局部函数与匿名回调**：6
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@/lib/apiClient.js``、``@/lib/virtualUrl.js``、``./observation-components.js``。
+``react``、``@/lib/apiClient.js``、``@/lib/virtualUrl.js``、``@/lib/resourceDownload.js``、``./observation-components.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:199:1227:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:271:1385:FUNCTION
 
 .. js:function:: RunObservation({ observation, scopeId = "task", taskId, view = "detail", compact = false })
 
    React and the backend task page mount the same observation component tree.
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``24`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``26`` 行。
 
    **参数**
 
@@ -57,17 +57,17 @@ React and the backend task page mount the same observation component tree.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:475:627:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:547:699:FUNCTION
 
-.. rubric:: ``useEffect callback @ 10``
+.. rubric:: ``useEffect callback @ 11``
 
 .. code-block:: javascript
 
-   useEffect callback @ 10()
+   useEffect callback @ 11()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``10``—``13`` 行；所属函数 ``RunObservation``。
+**性质**：同步局部函数；源码第 ``11``—``14`` 行；所属函数 ``RunObservation``。
 
 **参数**
 
@@ -81,17 +81,17 @@ React and the backend task page mount the same observation component tree.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:558:622:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:630:694:FUNCTION
 
-.. rubric:: ``returned callback @ 12``
+.. rubric:: ``returned callback @ 13``
 
 .. code-block:: javascript
 
-   returned callback @ 12()
+   returned callback @ 13()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``12``—``12`` 行；所属函数 ``useEffect callback @ 10``。
+**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -103,17 +103,17 @@ React and the backend task page mount the same observation component tree.
 
 **主要协作调用**：``renderer.current?.dispose``。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:646:1075:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:718:1233:FUNCTION
 
-.. rubric:: ``useEffect callback @ 14``
+.. rubric:: ``useEffect callback @ 15``
 
 .. code-block:: javascript
 
-   useEffect callback @ 14()
+   useEffect callback @ 15()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``14``—``22`` 行；所属函数 ``RunObservation``。
+**性质**：同步局部函数；源码第 ``15``—``24`` 行；所属函数 ``RunObservation``。
 
 **参数**
 
@@ -129,9 +129,9 @@ React and the backend task page mount the same observation component tree.
 
 **主要协作调用**：``renderer.current?.update``。
 
-**内部回调数量**：2。这些回调也会在本页逐项说明。
+**内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:754:825:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:826:897:FUNCTION
 
 .. rubric:: ``artifactUrl``
 
@@ -141,7 +141,7 @@ React and the backend task page mount the same observation component tree.
 
 实现 ``artifactUrl`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``useEffect callback @ 14``。
+**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``useEffect callback @ 15``。
 
 **参数**
 
@@ -154,7 +154,33 @@ React and the backend task page mount the same observation component tree.
 
 **主要协作调用**：``resolveResourceUrl``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:842:1062:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:922:983:FUNCTION
+
+.. rubric:: ``downloadArtifact``
+
+.. code-block:: javascript
+
+   downloadArtifact(url, filename)
+
+实现 ``downloadArtifact`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``19``—``19`` 行；所属函数 ``useEffect callback @ 15``。
+
+**参数**
+
+``url``
+   目标 HTTP、WebSocket 或虚拟资源地址。
+
+``filename``
+   调用方传入的 ``filename`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``downloadAttachmentResource``。
+
+.. CWM-AST-FUNCTION src/features/tasks/RunObservation.jsx:1000:1220:FUNCTION
 
 .. rubric:: ``loadRows``
 
@@ -164,7 +190,7 @@ React and the backend task page mount the same observation component tree.
 
 加载与 ``Rows`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``18``—``20`` 行；所属函数 ``useEffect callback @ 14``。
+**性质**：同步局部函数；源码第 ``20``—``22`` 行；所属函数 ``useEffect callback @ 15``。
 
 **参数**
 
