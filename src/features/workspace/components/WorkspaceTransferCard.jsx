@@ -163,8 +163,8 @@ const WorkspaceTransferCard = memo(({
     return (
         <div
             className={compact
-                ? 'mt-2 w-full min-w-0 border-t border-border/60 bg-info-surface px-2 py-2'
-                : 'my-3 w-full min-w-0 border-y border-border/60 bg-info-surface px-3 py-3'}
+                ? 'mt-2 w-full min-w-0 rounded-xl border border-border/80 bg-card/95 px-3 py-2'
+                : 'my-3 w-full min-w-0 rounded-2xl border border-border bg-card/95 px-3 py-2.5'}
             data-workspace-transfer-card="true"
             data-workspace-transfer-id={liveTransfer?.transferId || undefined}
             data-workspace-transfer-tool-call-id={resolvedToolCallId || undefined}
@@ -176,23 +176,41 @@ const WorkspaceTransferCard = memo(({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <StateIcon
-                            className={`h-4 w-4 shrink-0 ${running ? 'animate-spin text-primary' : failed ? 'text-destructive' : completed ? 'text-emerald-500' : 'text-muted-foreground'}`}
-                            aria-hidden="true"
-                        />
-                        <div className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-                            {directionTitle}
+                    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+                        <div className="min-w-0 flex-1 basis-48 break-all text-sm font-medium text-foreground" title={fileName}>
+                            {fileName}
                         </div>
-                        {showProgress && progressPercent !== null ? (
-                            <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">{progressPercent}%</span>
-                        ) : null}
+                        <div className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-xs text-muted-foreground">
+                            <StateIcon
+                                className={`h-3.5 w-3.5 shrink-0 ${running ? 'animate-spin text-primary' : failed ? 'text-destructive' : completed ? 'text-emerald-500' : 'text-muted-foreground'}`}
+                                aria-hidden="true"
+                            />
+                            <span className="truncate">{directionTitle}</span>
+                            {showProgress && progressPercent !== null ? (
+                                <span className="shrink-0 font-medium tabular-nums">{progressPercent}%</span>
+                            ) : null}
+                        </div>
                     </div>
 
-                    <div className="mt-1 break-all text-sm text-foreground" title={fileName}>
-                        {fileName}
+                    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        <span className="min-w-0 truncate" title={routeLabel}>{routeLabel}</span>
+                        {completed && totalBytes !== null ? <span>{formatFileSize(totalBytes)}</span> : null}
+                        {completed && target && resolvedDirection === 'artifact_to_workspace' ? (
+                            <span className="max-w-full break-all font-mono" title={String(target)}>{String(target)}</span>
+                        ) : null}
+                        {resolvedDownloadUrl ? (
+                            <a
+                                href={resolvedDownloadUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
+                                onClick={(event) => event.stopPropagation()}
+                            >
+                                <ArrowDownToLine className="h-3.5 w-3.5" aria-hidden="true" />
+                                {t('download_file', '下载文件')}
+                            </a>
+                        ) : null}
                     </div>
-                    <div className="mt-0.5 truncate text-xs text-muted-foreground" title={routeLabel}>{routeLabel}</div>
 
                     {showProgress ? (
                         <div className="mt-2">
@@ -214,27 +232,6 @@ const WorkspaceTransferCard = memo(({
                         </div>
                     ) : running ? (
                         <div className="mt-1.5 text-xs text-muted-foreground">{stageCopy(stage, resolvedDirection, t)}</div>
-                    ) : null}
-
-                    {completed ? (
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                            {totalBytes !== null ? <span>{formatFileSize(totalBytes)}</span> : null}
-                            {target && resolvedDirection === 'artifact_to_workspace' ? (
-                                <span className="max-w-full break-all font-mono" title={String(target)}>{String(target)}</span>
-                            ) : null}
-                            {resolvedDownloadUrl ? (
-                                <a
-                                    href={resolvedDownloadUrl}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
-                                    onClick={(event) => event.stopPropagation()}
-                                >
-                                    <ArrowDownToLine className="h-3.5 w-3.5" aria-hidden="true" />
-                                    {t('download_file', '下载文件')}
-                                </a>
-                            ) : null}
-                        </div>
                     ) : null}
 
                     {failed ? (

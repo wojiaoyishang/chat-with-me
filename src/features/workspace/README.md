@@ -25,11 +25,12 @@ variant; `ExecutionWindow` reuses the same component in `compact` mode beneath t
 card. Upload and download directions share the same implementation and show stage, percentage, transferred /
 total bytes, terminal result, target path or download entry as available.
 
-Conversation transfers fill the available message width and use the theme-aware pale blue `info-surface`
-background (a dark blue tint in dark mode) to distinguish them from prose. They use only subtle
-horizontal separators, without a raised frame, shadow or fixed maximum width. The compact execution variant
-uses a top separator instead of a nested card. Long filenames and result paths wrap within the message;
-completed exports expose an explicit download icon alongside their existing authorized download link.
+Conversation transfers fill the available message width, using the same understated rounded outline and
+neutral surface as pending user guidance, without a shadow or fixed maximum width. The filename leads the
+first row, with transfer status to the right; route, size, result path and download entry share a secondary
+row. The compact execution variant uses the same treatment with smaller padding and corner radius. Long
+filenames and result paths wrap within the message; completed exports expose an explicit download icon
+alongside their existing authorized download link. Both variants follow the existing light/dark card theme.
 
 ## Attachment boundary
 

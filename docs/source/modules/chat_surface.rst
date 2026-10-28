@@ -189,10 +189,10 @@ Workspace 文件交换不再把进度状态挂在 ``AttachmentShowcase``。``wor
 Transfer 并原地刷新。因此进度变化不会持续改写 Conversation Message。Execution Window 复用同一个
 ``WorkspaceTransferCard`` 的 compact variant，不维护第二份进度状态。
 
-正文传输区域铺满消息可用宽度，使用主题化 ``info-surface`` 浅蓝背景（暗色主题为深蓝底），
-仅保留轻量上下分隔线，不使用阴影、外框或独立最大宽度。
-Execution Window 的 compact variant 仅使用上分隔线，避免在工具卡片内再次嵌套卡片。
-长文件名与结果路径可换行；导出完成后的原有下载入口增加下载图标，授权链接及进度状态来源保持不变。
+正文传输区域铺满消息可用宽度，参照待接收用户补充使用中性浅底、圆角细边框，无阴影及独立最大宽度。
+首行突出文件名，状态靠右；次行紧凑展示传输方向、大小、结果路径及下载入口。
+Execution Window 的 compact variant 使用相同风格，缩小内边距与圆角；两种变体均跟随已有明暗主题。
+窄屏时自动换行；导出完成后的原有下载入口保留下载图标，授权链接及进度状态来源保持不变。
 
 ``AttachmentShowcase`` 现在只表示文件实体：名称、大小、预览/下载与图片视觉开关。Workspace ->
 Conversation 导出完成后仍会生成标准聊天 Attachment，但“传输过程”和“最终文件实体”已彻底解耦。
