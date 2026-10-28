@@ -54,13 +54,13 @@ One floating notice per operation, including paused reads and task links.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:1509:3756:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:1509:3793:FUNCTION
 
 .. js:function:: useSettingsOperationToasts(operations, navigate)
 
    One floating notice per operation, including paused reads and task links.
 
-   **性质**：同步函数；导出 API；源码第 ``33``—``69`` 行。
+   **性质**：同步函数；导出 API；源码第 ``33``—``70`` 行。
 
    **参数**
 
@@ -178,7 +178,7 @@ One floating notice per operation, including paused reads and task links.
 
 **主要协作调用**：``toast.dismiss``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:1849:3554:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:1849:3591:FUNCTION
 
 .. rubric:: ``useEffect callback @ 39``
 
@@ -188,7 +188,7 @@ One floating notice per operation, including paused reads and task links.
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``39``—``64`` 行；所属函数 ``useSettingsOperationToasts``。
+**性质**：同步局部函数；源码第 ``39``—``65`` 行；所属函数 ``useSettingsOperationToasts``。
 
 **参数**
 
@@ -202,7 +202,7 @@ One floating notice per operation, including paused reads and task links.
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``Object.entries``、``notices.current.get``、``toast.dismiss``、``notices.current.set``、``Number``、``Number.isFinite``、``Math.round``、``Math.max``、``Math.min``、``render``、``toast.error``、``toast.success``。
+**主要协作调用**：``Object.entries``、``notices.current.get``、``toast.dismiss``、``notices.current.set``、``Number``、``Number.isFinite``、``Math.floor``、``Math.max``、``Math.min``、``render``、``toast.error``、``toast.success``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
@@ -251,17 +251,17 @@ One floating notice per operation, including paused reads and task links.
 
 **主要协作调用**：``event?.preventDefault``、``operation.retry``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:3592:3748:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:3629:3785:FUNCTION
 
-.. rubric:: ``useEffect callback @ 65``
+.. rubric:: ``useEffect callback @ 66``
 
 .. code-block:: javascript
 
-   useEffect callback @ 65()
+   useEffect callback @ 66()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``65``—``68`` 行；所属函数 ``useSettingsOperationToasts``。
+**性质**：同步局部函数；源码第 ``66``—``69`` 行；所属函数 ``useSettingsOperationToasts``。
 
 **参数**
 
@@ -273,17 +273,17 @@ One floating notice per operation, including paused reads and task links.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:3653:3741:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/loadingToasts.js:3690:3778:FUNCTION
 
-.. rubric:: ``returned callback @ 67``
+.. rubric:: ``returned callback @ 68``
 
 .. code-block:: javascript
 
-   returned callback @ 67()
+   returned callback @ 68()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``useEffect callback @ 65``。
+**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``useEffect callback @ 66``。
 
 **参数**
 

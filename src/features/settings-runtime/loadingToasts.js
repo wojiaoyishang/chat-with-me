@@ -49,14 +49,15 @@ export function useSettingsOperationToasts(operations, navigate) {
             const details = operation.taskPage ? { label: '查看详情', onClick: () => navigateRef.current?.(operation.taskPage) } : undefined;
             const retry = operation.readPaused ? { label: '继续读取进度', onClick: (event) => { event?.preventDefault?.(); operation.retry?.(); } } : undefined;
             const percent = Number(operation.percent);
+            const progressLabel = operation.percent != null && Number.isFinite(percent)
+                ? `（${Math.floor(Math.max(0, Math.min(100, percent)))}%）` : '';
             const options = {
                 id: notice.id, position: 'top-center',
-                description: operation.percent != null && Number.isFinite(percent) ? `${Math.round(Math.max(0, Math.min(100, percent)))}%` : undefined,
                 action: retry || details, cancel: retry ? details : undefined,
             };
             if (operation.busy) {
                 const render = operation.readPaused ? toast.warning : toast.loading;
-                render(operation.message || '正在处理…', { ...options, duration: Infinity });
+                render(`${operation.message || '正在处理…'}${progressLabel}`, { ...options, duration: Infinity });
             } else if (operation.error) toast.error(operation.error, { ...options, duration: NOTICE_DURATION_MS });
             else if (operation.message) toast.success(operation.message, { ...options, duration: NOTICE_DURATION_MS });
             else toast.dismiss(notice.id);

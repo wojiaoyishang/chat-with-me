@@ -594,6 +594,38 @@ test("task popup gets phase names from backend definitions and exposes paused ta
   }
 });
 
+test("task popup honors server capabilities and does not offer unsafe cleanup retry", async () => {
+  const dom = environment();
+  const task = {
+    taskId: "cleanup-1", revision: 1, kind: "maintenance.temp_cleanup",
+    title: "清理 temp 缓存", status: "completed", stage: "completed",
+    result: { partial: true }, history: [],
+  };
+  globalThis.extractionTest = {
+    navigate: () => {},
+    get: async (url) => url.endsWith("/definitions")
+      ? { definitions: [{ kind: task.kind, stages: [], capabilities: { retry: false, cancel: true } }] }
+      : url === "/tasks" ? { tasks: [task] } : task,
+    taskState: {
+      tasks: { [task.taskId]: task }, open: true, selectedId: null,
+      setOpen: () => {}, show: () => {}, merge: () => {},
+    },
+  };
+  const Component = await bundled("src/features/tasks/TaskCenter.jsx", "temp/task-capability-popup-test.mjs");
+  const root = createRoot(document.getElementById("root"));
+  try {
+    await act(async () => {
+      root.render(React.createElement(Component));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    assert.match(document.body.textContent, /部分完成/);
+    assert.ok(![...document.querySelectorAll("button")].some((node) => /retry|重试/i.test(node.textContent)));
+  } finally {
+    await act(async () => root.unmount());
+    dom.window.close();
+  }
+});
+
 test("source history selects captured commit rather than latest document version", async () => {
   const dom = environment(),
     calls = [];

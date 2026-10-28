@@ -981,7 +981,7 @@
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
      - 15
      - 0
-     - 139
+     - 140
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/SettingsActionLabel </api/javascript/features/settings-runtime/SettingsActionLabel>`
      - 1

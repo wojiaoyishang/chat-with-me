@@ -219,7 +219,7 @@ export default function TaskCenter() {
                                         </Button>
                                     ))}
                                 </div>
-                                {['queued', 'pending', 'running', 'pause_requested', 'paused'].includes(task.status) && task.stage !== 'registering' && (
+                                {definitions[task.kind]?.capabilities?.cancel !== false && ['queued', 'pending', 'running', 'pause_requested', 'paused'].includes(task.status) && task.stage !== 'registering' && (
                                     <Button
                                         size="sm"
                                         variant="outline"
@@ -230,7 +230,7 @@ export default function TaskCenter() {
                                         {t('taskCenter.cancel')}
                                     </Button>
                                 )}
-                                {(['failed', 'cancelled'].includes(task.status) || task.status === 'completed' && task.result?.partial) && (
+                                {definitions[task.kind]?.capabilities?.retry === true && (['failed', 'cancelled'].includes(task.status) || task.status === 'completed' && task.result?.partial) && (
                                     <Button
                                         size="sm"
                                         variant="outline"

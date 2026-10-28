@@ -1,5 +1,5 @@
 import { startTransition, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Camera, ChevronDown, Copy, Plus, RefreshCw, Trash2, CircleUserRound, Inbox } from 'lucide-react';
+import { Camera, ChevronDown, Copy, ExternalLink, Plus, RefreshCw, Trash2, CircleUserRound, Inbox } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -193,6 +193,9 @@ export function AsyncOperationNode({ item, context }) {
     const status = getValue(data, item.watch?.statusPath || 'status');
     const phase = getValue(data, item.phasePath || 'phase');
     const label = item.statusLabels?.[status] || item.phaseLabels?.[phase];
+    const taskIdentity = getValue(data, item.watch?.taskIdPath || 'taskId');
+    const taskPage = taskIdentity && item.watch?.taskPage
+        ? formatValue(item.watch.taskPage, { response: data }, true) : null;
     return <SettingsSection title={item.text} description={item.description} variant={item.variant} bodyClassName={item.variant === 'card' ? 'space-y-3 p-4' : 'space-y-3'}>
         {label && <p className="text-sm">{operation?.error && data === sourceData ? '上次记录：' : ''}{label}</p>}
         {phase && item.phaseLabels?.[phase] && <p className="text-xs text-muted-foreground">{item.phaseLabels[phase]}</p>}
@@ -200,7 +203,7 @@ export function AsyncOperationNode({ item, context }) {
         {unresolved && <p role="alert" className="text-xs text-destructive">暂时无法确认上次提交的结果。请继续读取状态，确认后再发起新操作。</p>}
         {item.summary?.length > 0 && <dl className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">{item.summary.map((field) => <div key={field.path} className="rounded-xl border border-border/50 bg-muted/25 px-3 py-2.5"><dt className="text-xs text-muted-foreground">{field.label}</dt><dd className="mt-1.5 text-lg font-semibold tabular-nums tracking-tight">{displayValue(getValue(data, field.path))}</dd></div>)}</dl>}
         {item.errorsPath && getValue(data, item.errorsPath)?.length > 0 && <TableNode item={{ columns: item.errorColumns || [] }} value={getValue(data, item.errorsPath)} context={context} />}
-        <div className="flex flex-wrap items-start gap-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={{ ...context, disabled: context.disabled || busy || !ready || unresolved }} callbacks={callbacks} />)}{item.source?.endpoint && <Button type="button" size="sm" variant="outline" disabled={busy} onClick={read}><RefreshCw className="size-3.5" />重新读取状态</Button>}</div>
+        <div className="flex flex-wrap items-start gap-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={{ ...context, disabled: context.disabled || busy || !ready || unresolved }} callbacks={callbacks} />)}{taskPage && <Button type="button" size="sm" variant="outline" onClick={() => context.navigate(taskPage)}><ExternalLink className="size-3.5" />查看任务</Button>}{item.source?.endpoint && <Button type="button" size="sm" variant="outline" disabled={busy} onClick={read}><RefreshCw className="size-3.5" />重新读取状态</Button>}</div>
     </SettingsSection>;
 }
 

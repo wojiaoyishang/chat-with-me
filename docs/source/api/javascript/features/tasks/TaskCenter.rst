@@ -48,7 +48,7 @@ src/features/tasks/TaskCenter 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2173:14351:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2173:14465:FUNCTION
 
 .. js:function:: TaskCenter()
 
@@ -698,7 +698,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``openManagement``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6582:14267:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6582:14381:FUNCTION
 
 .. rubric:: ``list.map callback @ 137``
 
@@ -963,7 +963,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13159:13192:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13217:13250:FUNCTION
 
 .. rubric:: ``onClick callback @ 227``
 
@@ -985,7 +985,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13873:13905:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13987:14019:FUNCTION
 
 .. rubric:: ``onClick callback @ 238``
 

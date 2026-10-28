@@ -5,10 +5,10 @@ import { mount, button, click, ref, act, DynamicSettings, React } from './helper
 // Domain metadata comes from the backend. The UI under test is the same
 // persisted-operation component used by any asynchronously submitted action.
 const endpoint = '/setting/debug/temp-cleanup';
-const watch = { endpoint: `${endpoint}/{response.operationId}`, taskIdPath: 'operationId', statusPath: 'status', messagePath: 'currentPath', progressPath: 'percent', terminal: ['completed', 'completed_with_errors', 'failed', 'cancelled'], success: ['completed', 'completed_with_errors'], timeoutMs: 15000, intervalMs: 800, recovery: { endpoint, statusCodes: [404] } };
+const watch = { endpoint: `${endpoint}/{response.operationId}`, taskIdPath: 'operationId', statusPath: 'status', messagePath: 'message', progressPath: 'percent', taskPage: '/tasks?taskId={response.taskId}', terminal: ['completed', 'completed_with_errors', 'failed', 'cancelled'], success: ['completed', 'completed_with_errors'], timeoutMs: 15000, intervalMs: 800, recovery: { endpoint, statusCodes: [404] } };
 const descriptor = { type: 'async-operation', id: 'cleanup', text: 'temp 缓存清理', source: { endpoint, identityPath: 'operationId' }, watch: { ...watch, when: { left: ref('response.status'), op: 'in', right: ['queued', 'running'] } }, statusLabels: { idle: '尚未执行', queued: '等待清理', running: '正在清理', completed: '清理完成', completed_with_errors: '清理完成，部分文件未删除', failed: '清理失败' }, phasePath: 'phase', phaseLabels: { scanning: '扫描临时文件', deleting: '删除临时文件', finished: '清理结束' }, summary: [{ label: '已处理', path: 'processed' }, { label: '总数', path: 'total' }, { label: '已删除', path: 'deleted' }, { label: '删除失败', path: 'failed' }, { label: '剩余文件', path: 'remaining' }], errorsPath: 'errors', errorColumns: [{ key: 'path', label: '路径' }, { key: 'error', label: '原因' }], actions: [{ id: 'clear', label: '清空 temp 缓存', method: 'POST', endpoint, body: { confirmed: true }, timeoutMs: 15000, confirm: { title: '清空全部 temp 缓存？', description: '危险操作：删除所有文件和子目录，检查点将不可用。删除后无法恢复。', danger: true, confirmText: '确认永久删除' }, watch }] };
 const idle = { operationId: null, status: 'idle', processed: 0, total: 0, deleted: 0, failed: 0, remaining: 0, errors: [] };
-const snapshot = (changes = {}) => ({ ...idle, operationId: 'cleanup-one', status: 'running', phase: 'scanning', ...changes });
+const snapshot = (changes = {}) => ({ ...idle, operationId: 'cleanup-one', taskId: 'cleanup-one', status: 'running', phase: 'scanning', message: '正在扫描临时文件', ...changes });
 const complete = changes => snapshot({ status: 'completed', phase: 'finished', processed: 3, total: 3, deleted: 3, percent: 100, ...changes });
 const tick = async (t, time = 800) => act(async () => t.mock.timers.tick(time));
 const postCount = () => settingsUI.calls.filter(([method]) => method === 'post').length;
@@ -77,11 +77,13 @@ test('cleanup metadata requires danger confirmation and cancel never submits del
 
 test('reopening restores a running operation and renders deletion progress and partial errors', async t => {
     t.mock.timers.enable({ apis: ['setTimeout'] });
-    let latest = snapshot({ phase: 'deleting', processed: 25, total: 100, deleted: 24, failed: 1, percent: 25 });
+    let latest = snapshot({ phase: 'deleting', processed: 25, total: 100, deleted: 24, failed: 1, percent: 25, message: '正在清理：nested/cache.bin' });
     const ui = await mount([descriptor], null, () => latest);
     try {
         assert.equal(postCount(), 0); assert.ok(settingsUI.calls.some(([, url]) => url === `${endpoint}/cleanup-one`));
-        assert.match(document.querySelector('[data-settings-test-toaster] [role="status"]').textContent, /25%/);
+        assert.match(document.querySelector('[data-settings-test-toaster] [role="status"]').textContent, /正在清理：nested\/cache\.bin（25%）/);
+        await click(button('查看任务'));
+        assert.equal(settingsUI.navigated.at(-1), '/tasks?taskId=cleanup-one');
         assert.equal(document.querySelector('progress'), null, 'progress is floating and adds no row to the settings layout');
         const processed = [...document.querySelectorAll('dl div')].find(node => node.textContent.startsWith('已处理'));
         assert.equal(processed.querySelector('dd').textContent, '25');
@@ -92,6 +94,22 @@ test('reopening restores a running operation and renders deletion progress and p
         assert.equal(button('清空 temp 缓存').disabled, false);
         const count = settingsUI.calls.length; await tick(t, 10000); assert.equal(settingsUI.calls.length, count);
     } finally { await ui.close(); t.mock.timers.reset(); }
+});
+
+test('scanning is indeterminate and task navigation survives completed status restoration', async () => {
+    const ui = await mount([descriptor], null, () => snapshot({ currentPath: 'nested', message: '正在扫描：nested', percent: null }));
+    try {
+        const toast = document.querySelector('[data-settings-test-toaster] [role="status"]');
+        assert.match(toast.textContent, /正在扫描：nested/);
+        assert.doesNotMatch(toast.textContent, /\d+%/);
+        await click(button('查看任务'));
+        assert.equal(settingsUI.navigated.at(-1), '/tasks?taskId=cleanup-one');
+    } finally { await ui.close(); }
+    const completed = await mount([descriptor], null, () => complete());
+    try {
+        await click(button('查看任务'));
+        assert.equal(settingsUI.navigated.at(-1), '/tasks?taskId=cleanup-one');
+    } finally { await completed.close(); }
 });
 
 test('disconnected progress reads back off and resume without submitting another operation', async t => {
