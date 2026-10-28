@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mount, button, click, act } from './helpers/settingsRuntimeHarness.mjs';
+import { mount, button, click, act, ref, registerSettingsComponent } from './helpers/settingsRuntimeHarness.mjs';
 
 const config = [{ type: 'actions', actions: [{
     id: 'verify', label: '验证连接', icon: 'plug', method: 'POST', endpoint: '/verify',
@@ -43,5 +43,22 @@ test('an explicit toast takes precedence over a fallback success label', async (
     try {
         await click(button('验证连接'));
         assert.deepEqual(settingsUI.successes, [['连接验证成功']]);
+    } finally { await ui.close(); }
+});
+
+test('transient response data remains available to effects without persisting in watched operation state', async () => {
+    const snapshots = [];
+    registerSettingsComponent('transient-operation-probe', ({ context }) => { snapshots.push(JSON.stringify(context.operations)); return null; });
+    const action = { id: 'watch-secret', label: '启动临时操作', endpoint: '/start', method: 'POST', retainResponse: false,
+        watch: { endpoint: '/jobs/{response.taskId}', terminal: ['completed'], success: ['completed'] },
+        effects: [{ type: 'open-dialog', value: { title: '临时结果', options: [{ type: 'readonly-text', name: 'value', text: '结果' }], defaultOptions: { value: ref('response.token') } } }] };
+    const ui = await mount([{ type: 'actions', actions: [action] }, { type: 'transient-operation-probe' }], null,
+        (method) => method === 'post' ? { taskId: 'job', token: 'private-token' } : { status: 'completed', extra: 'private-progress' });
+    try {
+        await click(button('启动临时操作'));
+        assert.equal(document.querySelector('[aria-label="结果"]').textContent, 'private-token');
+        assert.deepEqual(settingsUI.calls.map(([method, endpoint]) => [method, endpoint]), [['post', '/start'], ['get', '/jobs/job']]);
+        assert.ok(snapshots.every(value => !value.includes('private-token') && !value.includes('private-progress')));
+        await click(button('关闭'));
     } finally { await ui.close(); }
 });

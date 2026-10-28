@@ -58,6 +58,7 @@ export function useActionExecutor(services) {
             throw cause;
         }
         if (!mounted.current) { inFlight.current.delete(key); return undefined; }
+        const retainResponse = action.retainResponse !== false;
         const controller = new AbortController();
         controllers.current.add(controller);
         let snapshot = {};
@@ -73,7 +74,7 @@ export function useActionExecutor(services) {
             });
             if (!mounted.current || controller.signal.aborted) return undefined;
             const initialResponse = response;
-            update({ response: cloneData(initialResponse) });
+            if (retainResponse) update({ response: cloneData(initialResponse) });
             if (action.watch && matchesCondition(action.watch.when, { ...scope, response: initialResponse })) {
                 const watch = action.watch;
                 let endpoint = requestEndpoint(watch.endpoint, { ...scope, response: initialResponse });
@@ -110,7 +111,8 @@ export function useActionExecutor(services) {
                     }
                     const status = getValue(progress, watch.statusPath || 'status');
                     update({ busy: true, status, message: getValue(progress, watch.messagePath || 'message', '正在处理…'),
-                        percent: watch.progressPath ? getValue(progress, watch.progressPath) : null, taskPage, progress, response: progress, error: '', readError: '', readPaused: false, retry: null });
+                        percent: watch.progressPath ? getValue(progress, watch.progressPath) : null, taskPage,
+                        ...(retainResponse ? { progress, response: progress } : {}), error: '', readError: '', readPaused: false, retry: null });
                     if (recovering && (!getValue(progress, watch.taskIdPath || 'taskId') || (watch.when && !matchesCondition(watch.when, { ...scope, response: progress })))) {
                         response = { ...initialResponse, operation: progress };
                         break;
@@ -140,7 +142,7 @@ export function useActionExecutor(services) {
                 else throw new Error(`不支持的操作结果：${effect.type}`);
             }
             const hasToastEffect = (action.effects || []).some((effect) => effect.type === 'toast');
-            update({ busy: false, response: cloneData(response), message: hasToastEffect ? '' : formatValue(action.successText || '', resultScope), error: '' });
+            update({ busy: false, ...(retainResponse ? { response: cloneData(response) } : {}), message: hasToastEffect ? '' : formatValue(action.successText || '', resultScope), error: '' });
             await callbacks.onSuccess?.(response);
             return response;
         } catch (error) {

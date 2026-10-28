@@ -1,5 +1,6 @@
 import { startTransition, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Camera, ChevronDown, Plus, RefreshCw, Trash2, CircleUserRound, Inbox } from 'lucide-react';
+import { Camera, ChevronDown, Copy, Plus, RefreshCw, Trash2, CircleUserRound, Inbox } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -8,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
+import { copyTextToClipboard } from '@/lib/tools.jsx';
 import { cloneData, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
 import { operationKey } from './useActionExecutor.js';
 import { validateSettingsFields, validateSettingsScope } from './validation.js';
@@ -83,6 +85,28 @@ export function ActionButton({ action, context, scope = {}, callbacks, disabled 
 
 export function ActionsNode({ item, context }) {
     return <div className="flex flex-wrap items-start gap-2 py-2">{(item.actions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={context} />)}</div>;
+}
+
+/** Read-only content stays selectable; clipboard access occurs only on a user click. */
+export function ReadonlyTextNode({ item, value, context }) {
+    const raw = value == null ? '' : typeof value === 'string' ? value : displayValue(value);
+    const date = item.format === 'datetime' && raw ? new Date(raw) : null;
+    const shown = date && Number.isFinite(date.getTime()) ? date.toLocaleString() : raw || '—';
+    const copy = async () => {
+        try {
+            await copyTextToClipboard(raw);
+            toast.success(`${item.text || '内容'}已复制`);
+        } catch {
+            toast.error('复制失败，请手动选择文本复制。');
+        }
+    };
+    return <section className="min-w-0 space-y-2">
+        <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0"><div className="text-sm font-medium">{item.text}</div>{item.description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.description}</p>}</div>
+            {item.copyable && <Button type="button" variant="outline" size="sm" className="shrink-0 gap-1.5" aria-label={`复制${item.text || '内容'}`} disabled={!raw || context.disabled} onClick={() => { void copy(); }}><Copy className="size-3.5" />复制</Button>}
+        </div>
+        <pre aria-label={item.text} tabIndex={0} className={`max-h-44 select-text overflow-auto whitespace-pre-wrap break-all rounded-md border bg-muted/30 px-3 py-2.5 text-sm leading-6 ${item.monospace ? 'font-mono' : 'font-sans'}`}>{shown}</pre>
+    </section>;
 }
 
 /** A backend-authored summary remains presentation data, not an account page. */
@@ -505,12 +529,22 @@ export function ResourceNode({ item, context, renderFields }) {
 
 export function DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
+    const guardId = useId();
+    const locked = descriptor?.dialog?.dismissible === false;
+    const registerDraftGuard = context.runtimeContext.registerDraftGuard;
     useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
+    useEffect(() => {
+        if (!open || !locked || !registerDraftGuard) return undefined;
+        return registerDraftGuard(`descriptor-dialog:${guardId}`, () => false);
+    }, [open, locked, guardId, registerDraftGuard]);
     const form = useMemo(() => descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>
         {renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}
     </SettingsFormLayout>, [descriptor, values, renderFields, context.runtimeContext]);
-    return <Dialog open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
-        <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited}>
+    return <Dialog open={open} closeOnBack={!locked} lockInteraction={locked} onOpenChange={(next) => { if (!next) onClose(); }}>
+        <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited} aria-modal={locked || undefined}
+            overlayStyle={locked ? { pointerEvents: 'auto' } : undefined}
+            onPointerDownOutside={locked ? (event) => event.preventDefault() : undefined}
+            onEscapeKeyDown={locked ? (event) => event.preventDefault() : undefined}>
             <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12">
                 <DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle>
                 <DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription>

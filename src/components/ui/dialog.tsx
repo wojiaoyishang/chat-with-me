@@ -12,8 +12,10 @@ function Dialog({
   defaultOpen,
   onOpenChange,
   modal = true,
+  closeOnBack = true,
+  lockInteraction = false,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Root>) {
+}: React.ComponentProps<typeof DialogPrimitive.Root> & { closeOnBack?: boolean; lockInteraction?: boolean }) {
   const controlled = open !== undefined
   const [internalOpen, setInternalOpen] = React.useState(Boolean(defaultOpen))
   const actualOpen = controlled ? Boolean(open) : internalOpen
@@ -26,6 +28,7 @@ function Dialog({
   }, [controlled, onOpenChange])
 
   useBrowserBackLayer(actualOpen, () => {
+    if (!closeOnBack) return false
     handleOpenChange(false)
     return true
   }, {kind: "dialog"})
@@ -37,7 +40,7 @@ function Dialog({
       open={actualOpen}
       onOpenChange={handleOpenChange}
       {...props}
-      modal={false}
+      modal={lockInteraction}
     />
     </WindowLayerContext.Provider>
   )
@@ -88,6 +91,7 @@ function DialogContent({
   children,
   showCloseButton = true,
   overlayClassName,
+  overlayStyle,
   style,
   onPointerDownCapture,
   onPointerDownOutside,
@@ -98,11 +102,12 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
   overlayClassName?: string
+  overlayStyle?: React.CSSProperties
 }) {
   const layer = React.useContext(WindowLayerContext)
   return (
     <DialogPortal data-slot="dialog-portal">
-      {layer?.backdrop && <DialogOverlay className={overlayClassName} />}
+      {layer?.backdrop && <DialogOverlay className={overlayClassName} style={overlayStyle} />}
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(

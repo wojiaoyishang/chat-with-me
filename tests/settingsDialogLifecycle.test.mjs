@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.CWM_TEST_REAL_SETTINGS_DIALOGS = '1';
-const { mount, mountBootstrapGate, resource, click, button, act, edit, ref, React, DynamicSettings, registerSettingsComponent } = await import('./helpers/settingsRuntimeHarness.mjs');
+const { mount, mountSettingsPage, mountBootstrapGate, resource, click, button, act, edit, ref, React, DynamicSettings, registerSettingsComponent } = await import('./helpers/settingsRuntimeHarness.mjs');
 
 const resourceEditor = (extra = {}) => resource({
     create: { label: '添加用户' },
@@ -223,6 +223,84 @@ test('response-authored detail dialogs retain their description, values and size
         assert.equal(renders, openingRenders, 'closing a detail window must reuse the outgoing fields');
         await finishExit();
         assert.equal(currentDialog(), null);
+    } finally { await ui.close(); }
+});
+
+const enrollmentAction = {
+    id: 'enroll', label: '生成连接凭据', endpoint: '/setting/actions/workspace/enrollment', method: 'POST',
+    body: { expiresMinutes: ref('form.expiresMinutes') }, retainResponse: false,
+    effects: [{ type: 'open-dialog', value: {
+        title: '远程设备连接凭据', description: '关闭后无法再次查看。', dialog: { width: 640, dismissible: false },
+        options: [
+            { type: 'readonly-text', name: 'command', text: '设备启动命令', copyable: true, monospace: true },
+            { type: 'readonly-text', name: 'token', text: '一次性凭据', copyable: true, monospace: true },
+            { type: 'readonly-text', name: 'expiresAt', text: '有效期至', format: 'datetime' },
+        ],
+        defaultOptions: { command: ref('response.command'), token: ref('response.token'), expiresAt: ref('response.expiresAt') },
+    } }],
+};
+const enrollmentFields = [
+    { type: 'number', name: 'expiresMinutes', text: '有效期', default: 10 },
+    { type: 'actions', actions: [enrollmentAction] },
+];
+
+test('one-time result remains only in its locked dialog and supports explicit copying', async () => {
+    const snapshots = [];
+    registerSettingsComponent('credential-operation-probe', ({ context }) => { snapshots.push(JSON.stringify(context.operations)); return null; });
+    const ui = await mount([...enrollmentFields, { type: 'credential-operation-probe' }], null,
+        () => ({ command: 'agent --token-stdin', token: 'cwm_enroll_test_secret', expiresAt: '2026-10-28T09:00:00Z' }));
+    animateExit();
+    try {
+        await click(button('生成连接凭据'));
+        assert.deepEqual(settingsUI.calls[0].slice(0, 3), ['post', '/setting/actions/workspace/enrollment', { expiresMinutes: 10 }]);
+        const dialog = currentDialog();
+        assert.match(dialog.textContent, /关闭后无法再次查看/);
+        assert.equal(dialog.getAttribute('aria-modal'), 'true');
+        assert.equal(dialog.querySelector('[aria-label="设备启动命令"]').textContent, 'agent --token-stdin');
+        assert.equal(dialog.querySelector('[aria-label="一次性凭据"]').textContent, 'cwm_enroll_test_secret');
+        assert.equal(document.querySelector('[data-slot="dialog-overlay"][data-state="open"]').style.pointerEvents, 'auto');
+        const overlay = document.querySelector('[data-slot="dialog-overlay"][data-state="open"]');
+        await act(async () => { overlay.dispatchEvent(new window.MouseEvent('pointerdown', { bubbles: true, button: 0 })); });
+        await act(async () => document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })));
+        assert.equal(currentDialog().getAttribute('data-state'), 'open');
+        await act(async () => button('生成连接凭据').focus());
+        assert.ok(dialog.contains(document.activeElement), 'keyboard focus remains inside the locked dialog');
+        await click(dialog.querySelector('[aria-label="复制设备启动命令"]'));
+        await click(dialog.querySelector('[aria-label="复制一次性凭据"]'));
+        assert.deepEqual(settingsUI.copied, ['agent --token-stdin', 'cwm_enroll_test_secret']);
+        settingsUI.copyError = true;
+        await click(dialog.querySelector('[aria-label="复制一次性凭据"]'));
+        assert.match(settingsUI.errors.at(-1)[0], /复制失败/);
+        assert.equal(currentDialog().getAttribute('data-state'), 'open');
+        assert.equal(settingsUI.calls.length, 1);
+        assert.ok(snapshots.every(value => !value.includes('cwm_enroll_test_secret')), 'operation state must not retain the response');
+        assert.ok(settingsUI.changed.every(value => !JSON.stringify(value).includes('cwm_enroll_test_secret')), 'parent form must not retain the credential');
+        await click(button('关闭'));
+        assert.equal(currentDialog().getAttribute('data-state'), 'closed');
+        await finishExit();
+        assert.equal(currentDialog(), null);
+        assert.doesNotMatch(document.body.textContent, /cwm_enroll_test_secret/);
+    } finally { await ui.close(); }
+});
+
+test('a locked detail dialog prevents the enclosing settings window from closing or switching pages', async () => {
+    const catalog = [{ scope: 'backend', id: 'enrollment', name: '设备注册', descriptor: '/settings/enrollment' }];
+    const page = { schema: 'cwm.settings.v1', scope: 'backend', id: 'enrollment', saveMode: 'actions', options: enrollmentFields, defaultOptions: { expiresMinutes: 10 } };
+    const ui = await mountSettingsPage((_method, endpoint) => endpoint === '/custom/settings-index' ? catalog
+        : endpoint === '/settings/enrollment' ? page : { command: 'agent', token: 'secret', expiresAt: '2026-10-28T09:00:00Z' });
+    animateExit();
+    try {
+        await click(document.querySelector('[role="tab"][aria-label="后端设置"]'));
+        await click(button('生成连接凭据'));
+        await click(document.querySelector('[aria-label="关闭设置"]'));
+        assert.equal(settingsUI.closed, undefined);
+        await click(document.querySelector('[role="tab"][aria-label="前端设置"]'));
+        assert.equal(document.querySelector('[role="tab"][aria-label="后端设置"]').getAttribute('aria-selected'), 'true');
+        assert.equal(currentDialog().getAttribute('data-state'), 'open');
+        await click(button('关闭'));
+        await finishExit();
+        await click(document.querySelector('[aria-label="关闭设置"]'));
+        assert.equal(settingsUI.closed, true);
     } finally { await ui.close(); }
 });
 

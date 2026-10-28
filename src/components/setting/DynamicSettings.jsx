@@ -1,7 +1,7 @@
 import clientAdapter from '@/runtime/backend/clientAdapter.js';
 import { applyRules, findSettingsField as findField, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue, settingsChildFields } from '@/features/settings-runtime/model.js';
 import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
-import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
+import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ReadonlyTextNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
 import { SettingsSection } from '@/features/settings-runtime/SettingsPresentation.jsx';
 import SettingsFormLayout from '@/features/settings-runtime/SettingsFormLayout.jsx';
 import { useSettingsFieldLayout } from '@/features/settings-runtime/formLayout.js';
@@ -2210,6 +2210,8 @@ function SettingItemRenderer({ item, path }) {
             return <NumberSliderItem item={item} path={path} />;
         case 'text':
             return <TextInputItem item={item} path={path} />;
+        case 'readonly-text':
+            return <ReadonlyTextNode item={item} value={getValue(values, path)} context={context} />;
         case 'checkbox':
             return <CheckboxItem item={item} path={path} />;
         case 'radio':
