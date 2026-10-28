@@ -163,46 +163,46 @@ const WorkspaceTransferCard = memo(({
     return (
         <div
             className={compact
-                ? 'mt-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5'
-                : 'my-3 w-full max-w-2xl rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm'}
+                ? 'mt-2 w-full min-w-0 border-t border-border/60 bg-info-surface px-2 py-2'
+                : 'my-3 w-full min-w-0 border-y border-border/60 bg-info-surface px-3 py-3'}
             data-workspace-transfer-card="true"
             data-workspace-transfer-id={liveTransfer?.transferId || undefined}
             data-workspace-transfer-tool-call-id={resolvedToolCallId || undefined}
             data-workspace-transfer-replacement-id={id || undefined}
         >
             <div className="flex items-start gap-3">
-                <div className={`mt-0.5 flex shrink-0 items-center justify-center rounded-lg ${compact ? 'h-8 w-8' : 'h-9 w-9'} ${failed ? 'bg-red-50 text-red-600' : completed ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center ${failed ? 'text-destructive' : completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
                     <DirectionIcon className="h-4 w-4" aria-hidden="true"/>
                 </div>
 
                 <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 items-center gap-2">
                         <StateIcon
-                            className={`h-4 w-4 shrink-0 ${running ? 'animate-spin text-blue-500' : failed ? 'text-red-500' : completed ? 'text-emerald-500' : 'text-slate-400'}`}
+                            className={`h-4 w-4 shrink-0 ${running ? 'animate-spin text-primary' : failed ? 'text-destructive' : completed ? 'text-emerald-500' : 'text-muted-foreground'}`}
                             aria-hidden="true"
                         />
-                        <div className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-800">
+                        <div className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
                             {directionTitle}
                         </div>
                         {showProgress && progressPercent !== null ? (
-                            <span className="shrink-0 text-xs font-medium tabular-nums text-slate-500">{progressPercent}%</span>
+                            <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground">{progressPercent}%</span>
                         ) : null}
                     </div>
 
-                    <div className={`${compact ? 'mt-1' : 'mt-1.5'} truncate text-sm font-medium text-slate-700`} title={fileName}>
+                    <div className="mt-1 break-all text-sm text-foreground" title={fileName}>
                         {fileName}
                     </div>
-                    <div className="mt-0.5 truncate text-xs text-slate-400" title={routeLabel}>{routeLabel}</div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground" title={routeLabel}>{routeLabel}</div>
 
                     {showProgress ? (
                         <div className="mt-2">
-                            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                                 <div
-                                    className="h-full rounded-full bg-blue-500 transition-[width] duration-300 ease-out"
+                                    className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
                                     style={{width: `${progressPercent || 0}%`}}
                                 />
                             </div>
-                            <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-slate-400">
+                            <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
                                 <span className="truncate">{stageCopy(stage, resolvedDirection, t)}</span>
                                 {(transferredBytes !== null || totalBytes !== null) ? (
                                     <span className="shrink-0 tabular-nums">
@@ -213,23 +213,24 @@ const WorkspaceTransferCard = memo(({
                             </div>
                         </div>
                     ) : running ? (
-                        <div className="mt-1.5 text-xs text-slate-500">{stageCopy(stage, resolvedDirection, t)}</div>
+                        <div className="mt-1.5 text-xs text-muted-foreground">{stageCopy(stage, resolvedDirection, t)}</div>
                     ) : null}
 
                     {completed ? (
-                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                             {totalBytes !== null ? <span>{formatFileSize(totalBytes)}</span> : null}
                             {target && resolvedDirection === 'artifact_to_workspace' ? (
-                                <span className="min-w-0 truncate font-mono" title={String(target)}>{String(target)}</span>
+                                <span className="max-w-full break-all font-mono" title={String(target)}>{String(target)}</span>
                             ) : null}
                             {resolvedDownloadUrl ? (
                                 <a
                                     href={resolvedDownloadUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                                    className="inline-flex items-center gap-1.5 font-medium text-primary underline-offset-4 hover:underline"
                                     onClick={(event) => event.stopPropagation()}
                                 >
+                                    <ArrowDownToLine className="h-3.5 w-3.5" aria-hidden="true" />
                                     {t('download_file', '下载文件')}
                                 </a>
                             ) : null}
@@ -237,13 +238,13 @@ const WorkspaceTransferCard = memo(({
                     ) : null}
 
                     {failed ? (
-                        <div className="mt-1.5 text-xs leading-5 text-red-600">
+                        <div className="mt-1.5 break-words text-xs leading-5 text-destructive">
                             {errorMessage || t('workspace_transfer_failed', '文件传输失败')}
                         </div>
                     ) : null}
 
                     {cancelled ? (
-                        <div className="mt-1.5 text-xs text-slate-500">{t('workspace_transfer_cancelled', '文件传输已取消')}</div>
+                        <div className="mt-1.5 text-xs text-muted-foreground">{t('workspace_transfer_cancelled', '文件传输已取消')}</div>
                     ) : null}
                 </div>
             </div>

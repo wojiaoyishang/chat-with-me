@@ -207,7 +207,7 @@ src/features/workspace/components/WorkspaceTransferCard 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/WorkspaceTransferCard.jsx:3736:12005:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/WorkspaceTransferCard.jsx:3736:12106:FUNCTION
 
 .. rubric:: ``memo callback @ 102``
 
@@ -217,7 +217,7 @@ src/features/workspace/components/WorkspaceTransferCard 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``102``—``252`` 行。
+**性质**：同步局部函数；源码第 ``102``—``253`` 行。
 
 **参数**
 
@@ -226,7 +226,7 @@ src/features/workspace/components/WorkspaceTransferCard 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className={compact ? 'mt-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2.5' : 'my-3 w-full max-w-2xl rounded-xl border border-slate-200 bg-white px-4 py-3 sha…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className={compact ? 'mt-2 w-full min-w-0 border-t border-border/60 bg-info-surface px-2 py-2' : 'my-3 w-full min-w-0 border-y border-border/60 bg-info-surface px-3 py-3'}…``。
 
 **主要协作调用**：``useTranslation``、``useMemo``、``String(toolCallId || config.toolCallId || config.tool_call_id || '').trim``、``String``、``useWorkspaceTransferStore``、``normalizeDirection``、``String(snapshot.status || fallbackStatus || 'running').trim().toLowerCase``、``String(snapshot.status || fallbackStatus || 'running').trim``、``String(snapshot.stage || (status === 'running' ? 'preparing' : status)).trim().toLowerCase``、``String(snapshot.stage || (status === 'running' ? 'preparing' : status)).trim``、``TERMINAL_STATUSES.has``、``transferFileName``。
 
@@ -277,7 +277,7 @@ src/features/workspace/components/WorkspaceTransferCard 模块
 
 **主要协作调用**：``selectToolCallTransfer``。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/WorkspaceTransferCard.jsx:11218:11252:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/WorkspaceTransferCard.jsx:11197:11231:FUNCTION
 
 .. rubric:: ``onClick callback @ 231``
 
