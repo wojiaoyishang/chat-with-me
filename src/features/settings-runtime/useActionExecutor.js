@@ -27,7 +27,17 @@ export function useActionExecutor(services) {
     useEffect(() => {
         mounted.current = true;
         const active = controllers.current;
-        return () => { mounted.current = false; for (const controller of active) controller.abort(); active.clear(); };
+        return () => {
+            mounted.current = false;
+            // StrictMode immediately replays effects on the same mounted tree.
+            // Preserve the original read in that replay; a real unmount still
+            // aborts owned requests in the next microtask.
+            queueMicrotask(() => {
+                if (mounted.current) return;
+                for (const controller of active) controller.abort();
+                active.clear();
+            });
+        };
     }, []);
 
     const execute = useCallback(async (action, suppliedScope = {}, callbacks = {}) => {

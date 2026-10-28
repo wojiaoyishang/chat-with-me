@@ -1061,7 +1061,7 @@
    * - :doc:`src/features/settings-runtime/useActionExecutor </api/javascript/features/settings-runtime/useActionExecutor>`
      - 3
      - 0
-     - 14
+     - 15
      - ``src/features/settings-runtime/useActionExecutor.js``
    * - :doc:`src/features/settings-runtime/validation </api/javascript/features/settings-runtime/validation>`
      - 3

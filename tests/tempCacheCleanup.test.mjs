@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mount, button, click, ref, act } from './helpers/settingsRuntimeHarness.mjs';
+import { mount, button, click, ref, act, DynamicSettings, React } from './helpers/settingsRuntimeHarness.mjs';
 
 // Domain metadata comes from the backend. The UI under test is the same
 // persisted-operation component used by any asynchronously submitted action.
@@ -12,6 +12,54 @@ const snapshot = (changes = {}) => ({ ...idle, operationId: 'cleanup-one', statu
 const complete = changes => snapshot({ status: 'completed', phase: 'finished', processed: 3, total: 3, deleted: 3, percent: 100, ...changes });
 const tick = async (t, time = 800) => act(async () => t.mock.timers.tick(time));
 const postCount = () => settingsUI.calls.filter(([method]) => method === 'post').length;
+
+test('StrictMode can restore the idle cleanup state without leaving a loading toast', async () => {
+    const ui = await mount([], null, () => idle);
+    try {
+        await ui.render(React.createElement(React.StrictMode, null,
+            React.createElement(DynamicSettings, { config: [descriptor] })));
+        assert.match(document.body.textContent, /尚未执行/);
+        assert.equal(button('清空 temp 缓存').disabled, false);
+        assert.doesNotMatch(document.querySelector('[data-settings-test-toaster]').textContent, /正在执行/);
+        assert.equal(postCount(), 0);
+    } finally { await ui.close(); }
+});
+
+test('StrictMode keeps an in-flight read alive without issuing a duplicate request', async () => {
+    let release, signal;
+    const ui = await mount([], null, (_method, _url, options) => {
+        signal = options.signal;
+        return new Promise(resolve => { release = resolve; });
+    });
+    try {
+        await ui.render(React.createElement(React.StrictMode, null,
+            React.createElement(DynamicSettings, { config: [descriptor] })));
+        assert.equal(settingsUI.calls.length, 1);
+        assert.equal(signal.aborted, false);
+        assert.equal(button('清空 temp 缓存').disabled, true);
+        await act(async () => release(idle));
+        assert.match(document.body.textContent, /尚未执行/);
+        assert.equal(button('清空 temp 缓存').disabled, false);
+        assert.equal(postCount(), 0);
+    } finally { await ui.close(); }
+});
+
+test('StrictMode resumes an active cleanup and reaches its terminal state', async t => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    let latest = snapshot({ phase: 'deleting', percent: 25 });
+    const ui = await mount([], null, () => latest);
+    try {
+        await ui.render(React.createElement(React.StrictMode, null,
+            React.createElement(DynamicSettings, { config: [descriptor] })));
+        assert.match(document.body.textContent, /正在清理/);
+        assert.equal(button('清空 temp 缓存').disabled, true);
+        latest = complete();
+        await tick(t);
+        assert.match(document.body.textContent, /清理完成/);
+        assert.equal(button('清空 temp 缓存').disabled, false);
+        assert.equal(postCount(), 0);
+    } finally { await ui.close(); t.mock.timers.reset(); }
+});
 
 test('cleanup metadata requires danger confirmation and cancel never submits deletion', async () => {
     const ui = await mount([descriptor], null, () => idle);
