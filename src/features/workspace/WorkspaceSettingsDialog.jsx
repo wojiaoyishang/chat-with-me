@@ -12,6 +12,7 @@ import {
     RotateCcw,
     Save,
     ShieldCheck,
+    Star,
     Terminal,
     Trash2,
     X,
@@ -141,6 +142,9 @@ const WorkspaceSettingsDialog = ({
     t,
 }) => {
     const [workspaces, setWorkspaces] = useState([]);
+    const [defaultWorkspaceId, setDefaultWorkspaceId] = useState(null);
+    const [changingDefault, setChangingDefault] = useState(false);
+    const loadSequenceRef = useRef(0);
     const [roots, setRoots] = useState([]);
     const [defaultAccessPolicy, setDefaultAccessPolicy] = useState({ version: 2, defaultEffect: 'allow', rules: [] });
     const [defaultVisibilityPolicy, setDefaultVisibilityPolicy] = useState({ version: 1, ignoredRules: [] });
@@ -192,17 +196,23 @@ const WorkspaceSettingsDialog = ({
 
     const load = useCallback(
         async ({ quiet = false } = {}) => {
+            const requestSequence = ++loadSequenceRef.current;
             if (!quiet) setLoading(true);
             try {
                 const query = conversationId ? `?conversationId=${encodeURIComponent(conversationId)}` : '';
                 const remoteUrl = `${apiEndpoint.REMOTE_WORKSPACES_ENDPOINT}/workspaces${query}`;
                 const localUrl = `${apiEndpoint.WORKSPACES_ENDPOINT}/${query}`;
-                const [workspaceData, rootData, policyData, remoteWorkspaceData] = await Promise.all([
+                const [workspaceData, rootData, policyData, remoteWorkspaceData, defaultData] = await Promise.all([
                     apiClient.get(localUrl),
                     apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/mount-roots`),
                     apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/policy-defaults`),
                     apiClient.get(remoteUrl),
+                    conversationId
+                        ? apiClient.get(`${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(conversationId)}/default`)
+                        : Promise.resolve(null),
                 ]);
+                if (requestSequence !== loadSequenceRef.current) return;
+                setDefaultWorkspaceId(defaultData?.defaultWorkspaceId || null);
                 const localWorkspaces = Array.isArray(workspaceData) ? workspaceData : [];
                 const remoteWorkspaces = Array.isArray(remoteWorkspaceData) ? remoteWorkspaceData : [];
                 setWorkspaces(
@@ -223,9 +233,10 @@ const WorkspaceSettingsDialog = ({
                     ),
                 );
             } catch (error) {
+                if (requestSequence !== loadSequenceRef.current) return;
                 toast.error(error?.message || t('workspace_load_failed', '读取 Workspace 失败'));
             } finally {
-                if (!quiet) setLoading(false);
+                if (requestSequence === loadSequenceRef.current) setLoading(false);
             }
         },
         [conversationId, t],
@@ -238,17 +249,24 @@ const WorkspaceSettingsDialog = ({
             load({ quiet: true }),
         );
         const unsubscribeAccess = onEvent({ event: 'workspace.access.changed' }).then(() => load({ quiet: true }));
+        const unsubscribeDefault = onEvent({
+            event: 'workspace.default.changed', conversationId,
+        }).then(() => load({ quiet: true }));
         // Semantic events are primary. A low-frequency reconcile covers abrupt
         // Gateway/process death where a Redis TTL may expire without a final event.
         const timer = window.setInterval(() => load({ quiet: true }), 60_000);
         return () => {
+            loadSequenceRef.current += 1;
             unsubscribeConnection?.();
             unsubscribeAccess?.();
+            unsubscribeDefault?.();
             window.clearInterval(timer);
         };
-    }, [load, open]);
+    }, [conversationId, load, open]);
 
     const persistWorkspaceSelection = async (nextWorkspaceIds) => {
+        loadSequenceRef.current += 1;
+        setLoading(false);
         const nextIds = [
             ...new Set(
                 (Array.isArray(nextWorkspaceIds) ? nextWorkspaceIds : [])
@@ -265,15 +283,38 @@ const WorkspaceSettingsDialog = ({
                     workspaceIds: nextIds,
                 });
             if (typeof runWorkspaceSelectionMutation === 'function') {
-                await runWorkspaceSelectionMutation(persist);
+                const state = await runWorkspaceSelectionMutation(persist);
+                if (state) setDefaultWorkspaceId(state.defaultWorkspaceId || null);
             } else {
-                await persist();
+                const state = await persist();
+                setDefaultWorkspaceId(state?.defaultWorkspaceId || null);
             }
             return true;
         } catch (error) {
             onWorkspaceChange?.(previousIds);
             toast.error(error?.message || t('workspace_select_failed', '更新 Workspace 挂载失败'));
             return false;
+        }
+    };
+
+    const changeDefaultWorkspace = async (workspaceId) => {
+        if (!conversationId || changingDefault) return;
+        loadSequenceRef.current += 1;
+        setLoading(false);
+        setChangingDefault(true);
+        try {
+            const persist = () => apiClient.put(
+                `${apiEndpoint.WORKSPACES_ENDPOINT}/conversation/${encodeURIComponent(conversationId)}/default`,
+                { workspaceId },
+            );
+            const state = typeof runWorkspaceSelectionMutation === 'function'
+                ? await runWorkspaceSelectionMutation(persist)
+                : await persist();
+            if (state) setDefaultWorkspaceId(state.defaultWorkspaceId || null);
+        } catch (error) {
+            toast.error(error?.message || '设置默认 Workspace 失败');
+        } finally {
+            setChangingDefault(false);
         }
     };
 
@@ -613,6 +654,11 @@ const WorkspaceSettingsDialog = ({
                                                                 ? `远程 · ${item.name}`
                                                                 : `${t('workspace_backend_connection')} · ${item.name}`}
                                                         </span>
+                                                        {checked && (defaultWorkspaceId === item.id || (!defaultWorkspaceId && selectedIds.length === 1)) ? (
+                                                            <Badge variant="outline" className="shrink-0 gap-1 text-[10px]">
+                                                                <Star className="h-2.5 w-2.5 fill-current" /> 默认
+                                                            </Badge>
+                                                        ) : null}
                                                         {item.readOnly ? (
                                                             <Badge variant="outline" className="shrink-0 text-[10px]">
                                                                 只读
@@ -666,6 +712,21 @@ const WorkspaceSettingsDialog = ({
                                                                   .join(' · ')}
                                                     </div>
                                                 </div>
+                                                {checked && conversationId && defaultWorkspaceId !== item.id && selectedIds.length > 1 ? (
+                                                    <Button
+                                                        type="button" size="icon" variant="ghost"
+                                                        className="h-7 w-7 shrink-0 text-muted-foreground"
+                                                        disabled={changingDefault || item.permission === 'view' || item.permission === 'none' || item.status === 'revoked'}
+                                                        aria-label={`设为默认 Workspace：${item.name}`}
+                                                        title="设为默认 Workspace"
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            changeDefaultWorkspace(item.id);
+                                                        }}
+                                                    >
+                                                        <Star className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                ) : null}
                                                 <Button
                                                     type="button"
                                                     size="icon"
@@ -687,8 +748,8 @@ const WorkspaceSettingsDialog = ({
                                 )}
                             </div>
                             <div className="text-[11px] leading-relaxed text-muted-foreground">
-                                可同时勾选多个 Workspace。只选一个时 AI 可像以前一样直接操作；选择多个时 AI 会先识别
-                                Workspace，并在每次文件或命令调用中指定目标。
+                                可同时挂载多个 Workspace，并选择一个默认工作区。AI 设置默认项后，文件、搜索和命令调用
+                                可省略工作区 ID；完整文件 URI 仍可明确指定其他已挂载的工作区。
                             </div>
 
                             <div className="rounded-lg border border-blue-500/20 bg-blue-500/[0.03] p-3 text-xs leading-relaxed text-muted-foreground">

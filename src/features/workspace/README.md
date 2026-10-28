@@ -47,4 +47,10 @@ land frontend store, Execution UI and backend transfer payload changes together.
 Workspace paths shown by tools are opaque model/runtime resource ids. The canonical form is now strictly
 `cwm://workspace/@<workspaceId>/<path>`; the root ends with `/`. Frontend components must not convert these
 values into `.`/relative/host paths. Browser URL resolution also remains forbidden for Workspace URIs.
-The strict URI policy is enforced by the backend Tool boundary and does not change transfer-card identity.
+Model tools may also submit a path relative to their explicit/default Workspace; the backend binds it to a
+canonical URI before execution. This does not change transfer-card identity or permit host paths.
+
+The conversation's default Workspace is backend-owned metadata, independent of the browser's model
+options snapshot. The attachment dialog displays a star/badge for the effective default and lets users
+choose another mounted Workspace. It reads `/workspace/conversation/:id/default` and reconciles on
+`workspace.default.changed`; changing the default does not mount a new resource or grant permissions.

@@ -37,6 +37,21 @@ Runtime Inspector 简要模式
 Assistant 生成开始时数据库可能已有空占位。Runtime Inspector 的“简要模式”继续使用消息摘要缓存；摘要增量加载必须重读尾部并按 ``orderIndex`` 替换，
 不能只追加新 messageId。``turn.completed/cancelled/failed`` 后需要静默校准。
 
+默认 Workspace
+--------------------------------------------------------------------------------
+
+会话默认工作区由后端 Conversation 元数据持久保存，和模型 options 快照分开。
+Workspace 挂载窗口以星形按钮选择默认项，Badge 展示当前默认；单个挂载自动生效。
+客户端通过 ``GET/PUT /workspace/conversation/{id}/default`` 读取和修改，PUT 使用
+``{"workspaceId": "已挂载ID"}``，并监听 ``workspace.default.changed`` 重新核对。
+打开窗口、切换对话和操作后读取以请求序号隔离，迟到响应不能覆盖新状态。
+默认项不保存在 localStorage；后端仍检查挂载、ACL 与访问策略，离线不自动切换设备。
+
+AI 可通过 ``code_workspace_set_default`` 选择默认项，再省略文件、rg 与命令工具的
+``workspace_id``，使用工作区内相对路径；每次调用由服务端固定目标后执行。
+工具返回的 ``cwm://workspace/@<workspaceId>/<path>`` 仍是明确资源身份，客户端不得
+把返回 URI 改成浏览器 URL、宿主路径或依赖当前默认的相对路径。
+
 Zustand 与 React State
 --------------------------------------------------------------------------------
 

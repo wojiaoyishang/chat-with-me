@@ -1366,7 +1366,7 @@
    * - :doc:`src/features/workspace/WorkspaceSettingsDialog </api/javascript/features/workspace/WorkspaceSettingsDialog>`
      - 10
      - 0
-     - 99
+     - 103
      - ``src/features/workspace/WorkspaceSettingsDialog.jsx``
    * - :doc:`src/features/workspace/components/FolderBrowser </api/javascript/features/workspace/components/FolderBrowser>`
      - 2
