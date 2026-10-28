@@ -8,6 +8,9 @@ const MarkdownBlock = memo(({
     allowTts = false,
     renderMarkdown = defaultRenderMarkdown,
 }) => {
+    // Cleared tool/control replacements stay in history but have no visible
+    // body. An empty wrapper's margins would still spread nearby status rows.
+    if (!String(content || '').trim()) return null;
     return (
         <div
             className="my-3"

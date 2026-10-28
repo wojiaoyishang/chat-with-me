@@ -48,7 +48,7 @@ src/features/execution/ExecutionStatus 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-1 w-full" data-execution-status-id={nodeStatusId || undefined}> <button type="button" onClick={openAtNode} className="group flex max-w-full flex-col items-sta…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="w-full py-1" data-execution-status-id={nodeStatusId || undefined}> <button type="button" onClick={openAtNode} className="group flex max-w-full flex-col items-sta…``。
 
 **主要协作调用**：``useTranslation``、``useMemo``、``useExecutionStore``、``useEffect``、``projectExecutionStatus``、``String(displayExecution.status || '').toLowerCase``、``String``、``String(displayExecution.label || '').trim``、``getExecutionDisplayState``、``Boolean``、``String(displayExecution.action || '').trim``、``action.replace``。
 

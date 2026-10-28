@@ -158,3 +158,18 @@ test('replacement-only updates regroup without a final message snapshot and neve
     assert.ok(first.compareDocumentPosition(paragraph) & ui.dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.ok(paragraph.compareDocumentPosition(second) & ui.dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
 });
+
+test('cleared tool placeholders leave no spaced Markdown block and can later display a result', async (t) => {
+    const ui = await setup(t);
+    const source = token('read', 'executionStatus') + token('empty') + token('write', 'executionStatus');
+    const replacement = {read: status('read', {toolNames: ['code_read']}),
+        write: status('write', {toolNames: ['code_write']}), empty: {frontend: '[markdown]\n  \n'}};
+    await ui.render(source, replacement);
+    const first = ui.host.querySelector('[data-execution-status-id="read"]');
+    const empty = ui.host.querySelector('[data-tts-source-id="empty"]');
+    assert.ok(empty, 'the stable replacement slot remains available');
+    assert.equal(empty.childElementCount, 0, 'a cleared slot must not leave a margin-bearing Markdown wrapper');
+    await ui.render(source, {...replacement, empty: {frontend: '[markdown]\n实际产物说明'}});
+    assert.match(ui.host.textContent, /实际产物说明/);
+    assert.equal(ui.host.querySelector('[data-execution-status-id="read"]'), first);
+});

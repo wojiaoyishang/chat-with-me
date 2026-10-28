@@ -83,6 +83,10 @@ Execution Mode 中每个可见 Tool Call 都拥有独立 ``executionStatus`` 节
 
 Execution Window 中的完整 Tool Calling Card 与主聊天中的轻量 status 属于同一个 ``toolCallId``。
 
+轻量状态行使用相同的垂直内边距，避免独立行与折叠组的外边距发生不同程度的折叠。已经清空的
+Markdown 工具/控制 replacement 保留稳定的外层引用位置，但内部不生成带间距的空 MarkdownBlock；
+后续真实正文到达仍可显示，既有状态行和媒体组件不因清空占位而重建。
+
 执行结束兜底
 --------------------------------------------------------------------------------
 

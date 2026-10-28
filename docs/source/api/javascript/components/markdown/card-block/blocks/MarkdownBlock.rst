@@ -29,7 +29,7 @@ src/components/markdown/card-block/blocks/MarkdownBlock 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/MarkdownBlock.jsx:117:507:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/MarkdownBlock.jsx:117:715:FUNCTION
 
 .. rubric:: ``memo callback @ 5``
 
@@ -39,7 +39,7 @@ src/components/markdown/card-block/blocks/MarkdownBlock 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``5``—``21`` 行。
+**性质**：同步局部函数；源码第 ``5``—``24`` 行。
 
 **参数**
 
@@ -48,21 +48,21 @@ src/components/markdown/card-block/blocks/MarkdownBlock 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="my-3" data-tts-source-id={id || undefined} data-tts-source-type="replacement" data-tts-ignore={allowTts ? undefined : 'true'} > {renderMarkdown(content)} </div> )``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-3" data-tts-source-id={id || undefined} data-tts-source-type="replacement" data-tts-ignore={allowTts ? undefined : 'true'} > {renderMarkdown(content)} </div> )``。
 
-**主要协作调用**：``renderMarkdown``。
+**主要协作调用**：``String(content || '').trim``、``String``、``renderMarkdown``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/MarkdownBlock.jsx:508:715:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/blocks/MarkdownBlock.jsx:716:923:FUNCTION
 
-.. rubric:: ``memo callback @ 21``
+.. rubric:: ``memo callback @ 24``
 
 .. code-block:: javascript
 
-   memo callback @ 21(prev, next)
+   memo callback @ 24(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``21``—``28`` 行。
+**性质**：同步局部函数；源码第 ``24``—``31`` 行。
 
 **参数**
 

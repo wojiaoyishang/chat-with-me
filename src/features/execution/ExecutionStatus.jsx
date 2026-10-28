@@ -93,7 +93,7 @@ const ExecutionStatus = memo(({ content = '', conversationId = null, navigateOve
     });
 
     return (
-        <div className="my-1 w-full" data-execution-status-id={nodeStatusId || undefined}>
+        <div className="w-full py-1" data-execution-status-id={nodeStatusId || undefined}>
             <button
                 type="button"
                 onClick={openAtNode}
