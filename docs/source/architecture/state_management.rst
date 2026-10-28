@@ -75,3 +75,13 @@ Zustand 与 React State
 
    不要把 WebSocket 收到的每个 Envelope 无界追加到数组。当前 Context 只保留最近记录用于调试，
    业务历史由数据库负责。
+
+连接恢复的所有权
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+WebSocketProvider 的单次挂载拥有 Socket、票据准备 Promise 和重连计时器。异常断开、握手失败、
+票据准备失败及首次连接失败走同一条有等待上限的退避链路，网络恢复或手动重试可以提前唤醒。
+旧挂载、旧 Socket 或旧后端的异步回调必须在写共享 Channel、Context 或 Event Store 前失效。
+恢复后仍使用服务端 ``transport.connected`` 驱动各领域现有快照订阅，不重复提交生成、工具或导出。
+
+详情见 :doc:`../modules/websocket_context`。

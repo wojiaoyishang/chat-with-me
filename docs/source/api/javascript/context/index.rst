@@ -36,7 +36,7 @@
    * - :doc:`src/context/WebSocketContext </api/javascript/context/WebSocketContext>`
      - 4
      - 0
-     - 25
+     - 32
      - ``src/context/WebSocketContext.jsx``
    * - :doc:`src/context/WebSocketReconnectPrompt </api/javascript/context/WebSocketReconnectPrompt>`
      - 1

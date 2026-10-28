@@ -17,7 +17,7 @@ src/runtime/transport/WebSocketTransport 模块
 * **模块标识**：``src/runtime/transport/WebSocketTransport``
 * **顶层函数/组件/Hook**：0
 * **类**：1
-* **局部函数与匿名回调**：5
+* **局部函数与匿名回调**：10
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -31,17 +31,17 @@ src/runtime/transport/WebSocketTransport 模块
 
    封装 ``WebSocketTransport`` 的状态和方法。
 
-   **性质**：导出类；源码第 ``3`` 行。
+   **性质**：导出类；源码第 ``5`` 行。
 
    .. rubric:: 方法
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:131:331:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:174:409:FUNCTION
 
    .. js:method:: constructor(url, handlers)
 
       初始化类实例并建立运行状态。
 
-      **性质**：同步函数；导出 API；源码第 ``4``—``10`` 行。
+      **性质**：同步函数；导出 API；源码第 ``6``—``13`` 行。
 
       **参数**
 
@@ -55,13 +55,13 @@ src/runtime/transport/WebSocketTransport 模块
 
       无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:331:426:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:409:504:FUNCTION
 
    .. js:method:: setHandlers(handlers)
 
       设置与 ``Handlers`` 相关的数据或状态。
 
-      **性质**：同步函数；导出 API；源码第 ``12``—``15`` 行。
+      **性质**：同步函数；导出 API；源码第 ``15``—``18`` 行。
 
       **参数**
 
@@ -72,13 +72,13 @@ src/runtime/transport/WebSocketTransport 模块
 
       根据执行分支返回结果；代表性返回表达式为 ``this``。
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:426:511:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:504:589:FUNCTION
 
    .. js:method:: isOpen()
 
       判断与 ``Open`` 相关的数据或状态。
 
-      **性质**：同步函数；导出 API；源码第 ``17``—``19`` 行。
+      **性质**：同步函数；导出 API；源码第 ``20``—``22`` 行。
 
       **参数**
 
@@ -92,38 +92,39 @@ src/runtime/transport/WebSocketTransport 模块
 
       * 创建或控制浏览器实时媒体资源。
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:511:2300:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:589:3709:FUNCTION
 
-   .. js:method:: connect()
+   .. js:method:: connect({timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS})
 
       建立连接与 ``connect`` 相关的数据或状态。
 
-      **性质**：同步函数；导出 API；源码第 ``21``—``58`` 行。
+      **性质**：同步函数；导出 API；源码第 ``24``—``86`` 行。
 
       **参数**
 
-      无。
+      ``{timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS}`` （默认值 ``{}``）
+         调用方传入的 ``timeoutMs = DEFAULT_CONNECT_TIMEOUT_MS`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
       **返回值**
 
-      根据执行分支返回结果；代表性返回表达式为 ``Promise.resolve(this)``、``this.connectPromise``。
+      根据执行分支返回结果；代表性返回表达式为 ``Promise.resolve(this)``、``this.connectPromise``、``attempt``。
 
       **副作用**
 
       * 注册事件、DOM 或运行时订阅。
       * 创建或控制浏览器实时媒体资源。
 
-      **主要协作调用**：``Promise.resolve``。
+      **主要协作调用**：``Promise.resolve``、``connecting.finally``。
 
-      **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+      **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:2300:2400:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:3709:3858:FUNCTION
 
    .. js:method:: close(code, reason)
 
       关闭与 ``close`` 相关的数据或状态。
 
-      **性质**：同步函数；导出 API；源码第 ``60``—``62`` 行。
+      **性质**：同步函数；导出 API；源码第 ``88``—``91`` 行。
 
       **参数**
 
@@ -137,15 +138,15 @@ src/runtime/transport/WebSocketTransport 模块
 
       无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-      **主要协作调用**：``this.socket?.close``。
+      **主要协作调用**：``this.cancelConnect``、``this.socket?.close``。
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:2400:2569:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:3858:4027:FUNCTION
 
    .. js:method:: sendEvent(envelope)
 
       发送与 ``Event`` 相关的数据或状态。
 
-      **性质**：同步函数；导出 API；源码第 ``64``—``67`` 行。
+      **性质**：同步函数；导出 API；源码第 ``93``—``96`` 行。
 
       **参数**
 
@@ -164,13 +165,13 @@ src/runtime/transport/WebSocketTransport 模块
 
       **主要协作调用**：``this.socket.send``、``encodeEventFrame``。
 
-   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:2569:2746:FUNCTION
+   .. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:4027:4204:FUNCTION
 
    .. js:method:: sendMedia(header, body)
 
       发送与 ``Media`` 相关的数据或状态。
 
-      **性质**：同步函数；导出 API；源码第 ``69``—``72`` 行。
+      **性质**：同步函数；导出 API；源码第 ``98``—``101`` 行。
 
       **参数**
 
@@ -197,17 +198,17 @@ src/runtime/transport/WebSocketTransport 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:687:2256:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:807:3498:FUNCTION
 
-.. rubric:: ``anonymous callback @ 24``
+.. rubric:: ``anonymous callback @ 27``
 
 .. code-block:: javascript
 
-   anonymous callback @ 24(resolve, reject)
+   anonymous callback @ 27(resolve, reject)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``24``—``56`` 行；所属函数 ``connect``。
+**性质**：同步局部函数；源码第 ``27``—``80`` 行；所属函数 ``connect``。
 
 **参数**
 
@@ -226,19 +227,113 @@ src/runtime/transport/WebSocketTransport 模块
 * 注册事件、DOM 或运行时订阅。
 * 创建或控制浏览器实时媒体资源。
 
-**内部回调数量**：4。这些回调也会在本页逐项说明。
+**主要协作调用**：``globalThis.setTimeout``、``Math.max``、``Number``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:904:1047:FUNCTION
+**内部回调数量**：8。这些回调也会在本页逐项说明。
 
-.. rubric:: ``anonymous callback @ 30``
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1025:1054:FUNCTION
+
+.. rubric:: ``isCurrent``
 
 .. code-block:: javascript
 
-   anonymous callback @ 30(event)
+   isCurrent()
+
+判断与 ``Current`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``32``—``32`` 行；所属函数 ``anonymous callback @ 27``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1082:1401:FUNCTION
+
+.. rubric:: ``finish``
+
+.. code-block:: javascript
+
+   finish(error)
+
+实现 ``finish`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``33``—``40`` 行；所属函数 ``anonymous callback @ 27``。
+
+**参数**
+
+``error``
+   调用方传入的 ``error`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``false``、``true``。
+
+**主要协作调用**：``globalThis.clearTimeout``、``reject``、``resolve``。
+
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1429:1454:FUNCTION
+
+.. rubric:: ``cancel``
+
+.. code-block:: javascript
+
+   cancel(error)
+
+取消与 ``cancel`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``anonymous callback @ 27``。
+
+**参数**
+
+``error``
+   调用方传入的 ``error`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``finish``。
+
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1703:1839:FUNCTION
+
+.. rubric:: ``globalThis.setTimeout callback @ 45``
+
+.. code-block:: javascript
+
+   globalThis.setTimeout callback @ 45()
+
+实现 ``globalThis.setTimeout`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``45``—``47`` 行；所属函数 ``anonymous callback @ 27``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 创建或控制浏览器实时媒体资源。
+
+**主要协作调用**：``finish``、``socket.close``。
+
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1932:2172:FUNCTION
+
+.. rubric:: ``anonymous callback @ 49``
+
+.. code-block:: javascript
+
+   anonymous callback @ 49(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``30``—``34`` 行；所属函数 ``anonymous callback @ 24``。
+**性质**：同步局部函数；源码第 ``49``—``55`` 行；所属函数 ``anonymous callback @ 27``。
 
 **参数**
 
@@ -247,21 +342,21 @@ src/runtime/transport/WebSocketTransport 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``this.handlers.onOpen``、``resolve``。
+**主要协作调用**：``isCurrent``、``finish``、``socket.close``、``this.handlers.onOpen``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1079:1718:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:2204:2948:FUNCTION
 
-.. rubric:: ``anonymous callback @ 35``
+.. rubric:: ``anonymous callback @ 56``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 35(event)
+   async anonymous callback @ 56(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``35``—``45`` 行；所属函数 ``anonymous callback @ 24``。
+**性质**：异步局部函数；源码第 ``56``—``68`` 行；所属函数 ``anonymous callback @ 27``。
 
 **参数**
 
@@ -270,25 +365,25 @@ src/runtime/transport/WebSocketTransport 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
 **副作用**
 
 * 注册事件、DOM 或运行时订阅。
 
-**主要协作调用**：``event.data.arrayBuffer``、``decodeFrame``、``this.handlers.onEvent``、``this.handlers.onMedia``、``this.handlers.onBinary``、``this.handlers.onProtocolError``。
+**主要协作调用**：``isCurrent``、``event.data.arrayBuffer``、``decodeFrame``、``this.handlers.onEvent``、``this.handlers.onMedia``、``this.handlers.onBinary``、``this.handlers.onProtocolError``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1748:1909:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:2978:3167:FUNCTION
 
-.. rubric:: ``anonymous callback @ 46``
+.. rubric:: ``anonymous callback @ 69``
 
 .. code-block:: javascript
 
-   anonymous callback @ 46(event)
+   anonymous callback @ 69(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``46``—``49`` 行；所属函数 ``anonymous callback @ 24``。
+**性质**：同步局部函数；源码第 ``69``—``73`` 行；所属函数 ``anonymous callback @ 27``。
 
 **参数**
 
@@ -297,25 +392,25 @@ src/runtime/transport/WebSocketTransport 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
 **副作用**
 
 * 创建或控制浏览器实时媒体资源。
 
-**主要协作调用**：``this.handlers.onError``、``reject``。
+**主要协作调用**：``isCurrent``、``finish``、``this.handlers.onError``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:1939:2245:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:3197:3487:FUNCTION
 
-.. rubric:: ``anonymous callback @ 50``
+.. rubric:: ``anonymous callback @ 74``
 
 .. code-block:: javascript
 
-   anonymous callback @ 50(event)
+   anonymous callback @ 74(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``50``—``55`` 行；所属函数 ``anonymous callback @ 24``。
+**性质**：同步局部函数；源码第 ``74``—``79`` 行；所属函数 ``anonymous callback @ 27``。
 
 **参数**
 
@@ -324,10 +419,30 @@ src/runtime/transport/WebSocketTransport 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
 **副作用**
 
 * 创建或控制浏览器实时媒体资源。
 
-**主要协作调用**：``this.handlers.onClose``、``reject``。
+**主要协作调用**：``isCurrent``、``finish``、``this.handlers.onClose``。
+
+.. CWM-AST-FUNCTION src/runtime/transport/WebSocketTransport.js:3544:3638:FUNCTION
+
+.. rubric:: ``connecting.finally callback @ 81``
+
+.. code-block:: javascript
+
+   connecting.finally callback @ 81()
+
+处理 ``connecting.finally callback`` 对应的事件或订阅结果。
+
+**性质**：同步局部函数；源码第 ``81``—``83`` 行；所属函数 ``connect``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。

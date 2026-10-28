@@ -27,13 +27,13 @@ src/runtime/backend/session 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/runtime/backend/session.js:206:682:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/session.js:248:761:FUNCTION
 
 .. js:function:: ensureClientSession()
 
    确保与 ``Client Session`` 相关的数据或状态。
 
-   **性质**：异步函数；导出 API；源码第 ``5``—``13`` 行。
+   **性质**：异步函数；导出 API；源码第 ``6``—``14`` 行。
 
    **参数**
 
@@ -47,17 +47,17 @@ src/runtime/backend/session 模块
 
    * 发起 HTTP 请求或访问外部服务。
 
-   **主要协作调用**：``getBackendConnection``、``getConnectionToken``、``apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then((data) => setConnectionToken(data.accessToken, sco…``、``apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then``、``apiClient.post``。
+   **主要协作调用**：``getBackendConnection``、``getConnectionToken``、``apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then((data) => set…``、``apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then``、``apiClient.post``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/runtime/backend/session.js:682:1134:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/session.js:761:1250:FUNCTION
 
 .. js:function:: authenticatedSocketUrl()
 
    实现 ``authenticatedSocketUrl`` 对应的前端处理。
 
-   **性质**：异步函数；导出 API；源码第 ``15``—``22`` 行。
+   **性质**：异步函数；导出 API；源码第 ``16``—``23`` 行。
 
    **参数**
 
@@ -80,17 +80,17 @@ src/runtime/backend/session 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/runtime/backend/session.js:556:609:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/session.js:635:688:FUNCTION
 
-.. rubric:: ``apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then callback @ 10``
+.. rubric:: ``apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then callback @ 11``
 
 .. code-block:: javascript
 
-   apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then callback @ 10(data)
+   apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then callback @ 11(data)
 
-处理 ``apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then callback`` 对应的事件或订阅结果。
+处理 ``apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``10``—``10`` 行；所属函数 ``ensureClientSession``。
+**性质**：同步局部函数；源码第 ``11``—``11`` 行；所属函数 ``ensureClientSession``。
 
 **参数**
 
@@ -103,17 +103,17 @@ src/runtime/backend/session 模块
 
 **主要协作调用**：``setConnectionToken``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/session.js:628:656:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/session.js:707:735:FUNCTION
 
-.. rubric:: ``apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then((data) => setConnectionToken(data.accessToken, sco… callback @ 11``
+.. rubric:: ``apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then((data) => set… callback @ 12``
 
 .. code-block:: javascript
 
-   apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then((data) => setConnectionToken(data.accessToken, sco… callback @ 11()
+   apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then((data) => set… callback @ 12()
 
-实现 ``apiClient.post('/client/session', {}, { skipAuthCheck: true }) .then((data) => setConnectionToken(data.accessToken, sco…`` 对应的前端处理。
+实现 ``apiClient.post('/client/session', {}, { skipAuthCheck: true, timeout: SESSION_REQUEST_TIMEOUT_MS }) .then((data) => set…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``11``—``11`` 行；所属函数 ``ensureClientSession``。
+**性质**：同步局部函数；源码第 ``12``—``12`` 行；所属函数 ``ensureClientSession``。
 
 **参数**
 

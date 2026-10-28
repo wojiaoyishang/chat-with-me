@@ -67,6 +67,7 @@
         "disconnect_from_server": "服务器主动断开链接",
         "disconnect": "Websocket 断开连接",
         "reconnect_tip": "目前未连接到 Websocket 将无法使用对话功能，点击右边按钮重试。",
+        "auto_reconnect_tip": "实时连接已断开，正在自动重试。网络恢复后会重新连接，你也可以立即重试。",
         "not_connected": "Websocket 没有连接"
     },
     "edit_message": "编辑消息",

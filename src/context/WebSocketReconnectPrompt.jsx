@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { LoaderCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
-export default function WebSocketReconnectPrompt({ open, onRetry }) {
+export default function WebSocketReconnectPrompt({ open, onRetry, connecting = false, automatic = true }) {
     const { t } = useTranslation();
     const [retrying, setRetrying] = useState(false);
     const retry = async () => {
-        if (retrying) return;
+        if (retrying || connecting) return;
         setRetrying(true);
         try {
             await onRetry();
@@ -26,8 +27,11 @@ export default function WebSocketReconnectPrompt({ open, onRetry }) {
             onInteractOutside={(event) => event.preventDefault()}
             onEscapeKeyDown={(event) => event.preventDefault()}>
             <DialogTitle>{t('websocket.popover_title')}</DialogTitle>
-            <DialogDescription>{t('websocket.popover_content')}</DialogDescription>
-            <Button onClick={retry} disabled={retrying}>{t(retrying ? 'websocket.connecting' : 'retry')}</Button>
+            <DialogDescription aria-live="polite">{t(automatic ? 'websocket.auto_reconnect_tip' : 'websocket.popover_content')}</DialogDescription>
+            <Button onClick={retry} disabled={retrying || connecting}>
+                {(retrying || connecting) && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
+                {t(retrying || connecting ? 'websocket.connecting' : 'retry')}
+            </Button>
         </DialogContent>
     </Dialog>;
 }

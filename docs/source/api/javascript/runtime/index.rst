@@ -66,7 +66,7 @@
    * - :doc:`src/runtime/transport/WebSocketTransport </api/javascript/runtime/transport/WebSocketTransport>`
      - 0
      - 7
-     - 5
+     - 10
      - ``src/runtime/transport/WebSocketTransport.js``
    * - :doc:`src/runtime/transport/channel </api/javascript/runtime/transport/channel>`
      - 5

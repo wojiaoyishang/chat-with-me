@@ -22,23 +22,23 @@ src/context/WebSocketReconnectPrompt 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``react-i18next``、``sonner``、``@/components/ui/dialog``、``@/components/ui/button``。
+``react``、``react-i18next``、``sonner``、``lucide-react``、``@/components/ui/dialog``、``@/components/ui/button``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:258:1579:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:303:1912:FUNCTION
 
-.. js:function:: WebSocketReconnectPrompt({ open, onRetry })
+.. js:function:: WebSocketReconnectPrompt({ open, onRetry, connecting = false, automatic = true })
 
    渲染 ``WebSocketReconnectPrompt`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``33`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``37`` 行。
 
    **参数**
 
-   ``{ open, onRetry }``
-      调用方传入的 ``open, onRetry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{ open, onRetry, connecting = false, automatic = true }``
+      调用方传入的 ``open, onRetry, connecting = false, automatic = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -57,7 +57,7 @@ src/context/WebSocketReconnectPrompt 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:436:750:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:519:847:FUNCTION
 
 .. rubric:: ``retry``
 
@@ -67,7 +67,7 @@ src/context/WebSocketReconnectPrompt 模块
 
 实现 ``retry`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``10``—``20`` 行；所属函数 ``WebSocketReconnectPrompt``。
+**性质**：异步局部函数；源码第 ``11``—``21`` 行；所属函数 ``WebSocketReconnectPrompt``。
 
 **参数**
 
@@ -79,38 +79,15 @@ src/context/WebSocketReconnectPrompt 模块
 
 **主要协作调用**：``setRetrying``、``onRetry``、``toast.error``、``t``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1039:1072:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1136:1169:FUNCTION
 
-.. rubric:: ``onOpenAutoFocus callback @ 24``
+.. rubric:: ``onOpenAutoFocus callback @ 25``
 
 .. code-block:: javascript
 
-   onOpenAutoFocus callback @ 24(event)
+   onOpenAutoFocus callback @ 25(event)
 
 处理 ``Open Auto Focus`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``24``—``24`` 行；所属函数 ``WebSocketReconnectPrompt``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.preventDefault``。
-
-.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1104:1137:FUNCTION
-
-.. rubric:: ``onCloseAutoFocus callback @ 25``
-
-.. code-block:: javascript
-
-   onCloseAutoFocus callback @ 25(event)
-
-处理 ``Close Auto Focus`` 用户交互或运行时事件。
 
 **性质**：同步局部函数；源码第 ``25``—``25`` 行；所属函数 ``WebSocketReconnectPrompt``。
 
@@ -125,15 +102,15 @@ src/context/WebSocketReconnectPrompt 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1170:1203:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1201:1234:FUNCTION
 
-.. rubric:: ``onInteractOutside callback @ 26``
+.. rubric:: ``onCloseAutoFocus callback @ 26``
 
 .. code-block:: javascript
 
-   onInteractOutside callback @ 26(event)
+   onCloseAutoFocus callback @ 26(event)
 
-处理 ``Interact Outside`` 用户交互或运行时事件。
+处理 ``Close Auto Focus`` 用户交互或运行时事件。
 
 **性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``WebSocketReconnectPrompt``。
 
@@ -148,17 +125,40 @@ src/context/WebSocketReconnectPrompt 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1234:1267:FUNCTION
+.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1267:1300:FUNCTION
 
-.. rubric:: ``onEscapeKeyDown callback @ 27``
+.. rubric:: ``onInteractOutside callback @ 27``
 
 .. code-block:: javascript
 
-   onEscapeKeyDown callback @ 27(event)
+   onInteractOutside callback @ 27(event)
+
+处理 ``Interact Outside`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``WebSocketReconnectPrompt``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/context/WebSocketReconnectPrompt.jsx:1331:1364:FUNCTION
+
+.. rubric:: ``onEscapeKeyDown callback @ 28``
+
+.. code-block:: javascript
+
+   onEscapeKeyDown callback @ 28(event)
 
 处理 ``Escape Key Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``27``—``27`` 行；所属函数 ``WebSocketReconnectPrompt``。
+**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``WebSocketReconnectPrompt``。
 
 **参数**
 
