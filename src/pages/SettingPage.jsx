@@ -447,7 +447,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested, navigat
       if (description.returnTo) {
         cache.invalidateEvents(description.invalidateOnSave);
         cache.invalidate(`page:backend:${description.returnTo.pageId}`);
-        setDetail(null);
+        setDetail(description.returnTo.endpoint ? { endpoint: description.returnTo.endpoint, params: description.returnTo.params || {}, scope: cacheScope } : null);
         setSelections((previous) => ({ ...previous, backend: description.returnTo.pageId }));
       }
       scopeRef.current
@@ -716,8 +716,13 @@ export default function SettingPage({ open, onClose, onRefreshRequested, navigat
                   <>
                     {detail && <div className="flex items-center gap-3 border-b pb-3">
                       <Button variant="ghost" size="sm" onClick={async () => {
-                        if (await guardDraft()) { setDirty(false); setDetail(null); }
-                      }}><ArrowLeft className="size-4" />返回</Button>
+                        if (await guardDraft()) {
+                          const target = currentDescription.returnTo;
+                          setDirty(false);
+                          setDetail(target?.endpoint ? { endpoint: target.endpoint, params: target.params || {}, scope: cacheScope } : null);
+                          if (target?.pageId) setSelections((previous) => ({ ...previous, backend: target.pageId }));
+                        }
+                      }}><ArrowLeft className="size-4" />{currentDescription.backLabel || '返回'}</Button>
                       <h2 className="text-base font-semibold">{currentDescription.title}</h2>
                     </div>}
                     {Object.entries(fieldErrors).map(([name, message]) => (

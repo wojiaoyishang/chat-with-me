@@ -68,6 +68,31 @@ test('a request belonging to another backend is not replayed', async () => {
     } finally { await ui.close(); }
 });
 
+test('save and back both return to the selected device instead of a global page', async () => {
+    const parentTarget = { pageId: 'workspace', endpoint: '/setting/resources/workspaces/connection', params: { connectionId: 'device-a' } };
+    const ui = await mountSettingsPage((method, endpoint, body) => {
+        if (endpoint === '/setting/resources/workspaces/editor') return { ...editor, returnTo: parentTarget };
+        if (endpoint === '/setting/resources/workspaces/connection') {
+            assert.equal(body.params.connectionId, 'device-a');
+            return { ...listing, id: 'device-a', title: '设备 A', returnTo: { pageId: 'workspace' }, options: [{ type: 'info', text: '设备 A 的工作区' }] };
+        }
+        return handler(method, endpoint, body);
+    });
+    try {
+        const navigationRequest = requestSettingsNavigation({ pageId: 'workspace', endpoint: '/setting/resources/workspaces/editor' });
+        await ui.render(React.createElement(SettingPage, { open: true, navigationRequest, onClose: () => {} }));
+        await edit(document.querySelector('[aria-label="名称"]'), '研究项目');
+        await click(button('创建并挂载'));
+        assert.match(document.body.textContent, /设备 A 的工作区/);
+        await click(button('返回'));
+        assert.match(document.body.textContent, /工作区列表/);
+        const nextRequest = requestSettingsNavigation({ pageId: 'workspace', endpoint: '/setting/resources/workspaces/editor' });
+        await ui.render(React.createElement(SettingPage, { open: true, navigationRequest: nextRequest, onClose: () => {} }));
+        await click(button('返回'));
+        assert.match(document.body.textContent, /设备 A 的工作区/);
+    } finally { await ui.close(); }
+});
+
 test('saving a detail invalidates parent collections even without a WebSocket event', async () => {
     let records = [{ id: 'old', name: '已有工作区' }], reads = 0;
     const parent = { ...listing, options: [{ type: 'resource', id: 'managed', text: '工作区', source: { endpoint: '/managed', listPath: 'items' }, titleField: 'name', events: ['resource.changed'] }] };

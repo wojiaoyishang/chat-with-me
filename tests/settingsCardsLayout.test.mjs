@@ -1,7 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mount, button, click, edit, upload, ref, resource } from './helpers/settingsRuntimeHarness.mjs';
+import { mount, button, click, edit, upload, ref, resource, subscribeSettingsNavigation } from './helpers/settingsRuntimeHarness.mjs';
 import { findSettingsField, pageValues, validateFields } from '../src/features/settings-runtime/model.js';
+
+test('declared card title actions open only the clicked resource and leave destructive actions separate', async () => {
+    const requests = [];
+    const off = subscribeSettingsNavigation((request) => requests.push(request));
+    const open = { id: 'configure', label: '配置工作区', effects: [{ type: 'open-settings', value: {
+        pageId: 'workspace', endpoint: '/setting/resources/workspaces/connection', params: { connectionId: ref('item.id') },
+    } }] };
+    const ui = await mount([{ type: 'resource', id: 'devices', text: '设备连接', titleField: 'name', source: { endpoint: '/devices' },
+        recordView: { type: 'connection-card', primaryAction: open }, actions: [open, { id: 'delete', label: '撤销设备', endpoint: '/devices/{item.id}', method: 'DELETE' }],
+    }], [{ id: 'backend', name: '后端服务器' }, { id: 'agent-a', name: '远程设备 A' }]);
+    try {
+        await click(button('远程设备 A'));
+        assert.equal(requests[0].params.connectionId, 'agent-a');
+        assert.equal(settingsUI.calls.some(([method]) => method === 'delete'), false);
+        assert.equal([...document.querySelectorAll('button')].filter((node) => node.textContent === '配置工作区').length, 2);
+        await click(button('后端服务器'));
+        assert.equal(requests[1].params.connectionId, 'backend');
+    } finally { off(); await ui.close(); }
+});
 
 test('profile and form layouts preserve root field identity, defaults and required validation', () => {
     const nickname = { type: 'text', name: 'nickname', text: '昵称', default: '', required: true };

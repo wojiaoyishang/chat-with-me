@@ -996,7 +996,7 @@
    * - :doc:`src/features/settings-runtime/SettingsCards </api/javascript/features/settings-runtime/SettingsCards>`
      - 3
      - 0
-     - 4
+     - 6
      - ``src/features/settings-runtime/SettingsCards.jsx``
    * - :doc:`src/features/settings-runtime/SettingsFormLayout </api/javascript/features/settings-runtime/SettingsFormLayout>`
      - 1
