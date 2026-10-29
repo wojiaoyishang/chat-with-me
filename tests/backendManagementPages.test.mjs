@@ -220,6 +220,80 @@ test('retrying a manual schedule trigger after a lost response reuses its reques
   assert.equal(attempts[0], attempts[1]);
 });
 
+test('empty schedule templates show a creation entry and never request an empty template ID', async (t) => {
+  const { dom, document, calls } = await page('tasks', (url) => {
+    if (url === '/api/tasks/definitions') return { definitions: [] };
+    if (url === '/api/tasks?limit=200') return { tasks: [] };
+    if (url === '/api/tasks/schedules') return { schedules: [] };
+    if (url === '/api/automations/status') return { services: [{ online: false }] };
+    if (url === '/api/tasks/schedules/editor') return { title: '新建计划任务', defaults: {
+      name: '', enabled: true, triggerType: 'daily', timezone: 'Asia/Shanghai', time: '09:00',
+      weekdays: [0, 1, 2, 3, 4], templateId: '', templateRevision: null,
+    }, templates: [], selectedTemplate: null };
+    if (url === '/api/tasks/schedules/preview') return { times: [{ at: '2026-11-01T01:00:00Z' }], timezone: 'Asia/Shanghai' };
+    throw new Error(`Unexpected request ${url}`);
+  });
+  t.after(() => dom.window.close());
+  document.getElementById('task-schedules-tab').click();
+  await waitFor(() => document.querySelector('.schedule-empty'));
+  document.getElementById('create-schedule').click();
+  await waitFor(() => document.querySelector('.schedule-editor'));
+  assert.equal(document.querySelector('[name="enabled"]').getAttribute('role'), 'switch');
+  assert.equal(document.querySelector('.schedule-enabled label').textContent, '启用计划');
+  assert.equal(document.getElementById('submit-create').disabled, true);
+  document.getElementById('schedule-tab-1').click();
+  assert.equal(document.getElementById('schedule-panel-0').hidden, true);
+  assert.equal(document.getElementById('schedule-panel-1').hidden, false);
+  assert.match(document.querySelector('.schedule-template-empty').textContent, /创建工作流模板/);
+  const load = document.querySelector('.schedule-template-version > button');
+  assert.equal(load.disabled, true);
+  assert.equal(load.parentElement.hidden, true);
+  load.click(); await settle();
+  assert.equal(calls.some((call) => /\/schedules\/templates\//.test(call.url)), false);
+});
+
+test('schedule Cron preview and version reload use the same pinned template and bounded API', async (t) => {
+  const template = { id: 'saved-flow', title: '资料整理', revision: 3, inputFields: [] };
+  let reloads = 0;
+  const { dom, document, calls } = await page('tasks', (url, options) => {
+    if (url === '/api/tasks/definitions') return { definitions: [] };
+    if (url === '/api/tasks?limit=200') return { tasks: [] };
+    if (url === '/api/tasks/schedules') return { schedules: [] };
+    if (url === '/api/automations/status') return { services: [{ online: true }] };
+    if (url === '/api/tasks/schedules/editor') return { title: '新建计划任务', defaults: {
+      name: 'Cron', enabled: true, triggerType: 'cron', timezone: 'Asia/Shanghai', expression: '0 9 * * 1-5',
+      weekdays: [0, 1, 2, 3, 4], templateId: template.id, templateRevision: 3, inputValues: {},
+    }, templates: [template], selectedTemplate: template };
+    if (url === '/api/tasks/schedules/preview') {
+      const body = JSON.parse(options.body);
+      assert.equal(body.trigger.type, 'cron');
+      assert.equal(body.trigger.timezone, 'Asia/Shanghai');
+      if (body.trigger.expression === 'bad cron') throw new Error('Cron 需要五段');
+      return { timezone: 'Asia/Shanghai', times: [{ at: '2026-11-01T01:00:00Z' }], overdue: false };
+    }
+    if (url === '/api/tasks/schedules/templates/saved-flow?revision=2') { reloads++; return { ...template, revision: 2 }; }
+    throw new Error(`Unexpected request ${url}`);
+  });
+  t.after(() => dom.window.close());
+  document.getElementById('task-schedules-tab').click();
+  await waitFor(() => document.querySelector('.schedule-empty'));
+  document.getElementById('create-schedule').click();
+  await waitFor(() => document.querySelector('.schedule-editor'));
+  await waitFor(() => document.querySelector('.schedule-time-preview').dataset.state === 'ready');
+  assert.match(document.querySelector('.schedule-time-preview').textContent, /接下来的运行时间.*Asia\/Shanghai/);
+  const expression = document.querySelector('[name="expression"]');
+  expression.value = 'bad cron'; expression.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+  await waitFor(() => document.querySelector('.schedule-time-preview').dataset.state === 'error');
+  assert.match(document.querySelector('.schedule-time-preview').textContent, /五段/);
+  document.getElementById('schedule-tab-1').click();
+  document.querySelector('[name="templateRevision"]').value = '2';
+  document.querySelector('.schedule-template-version > button').click();
+  await waitFor(() => reloads === 1 && document.querySelector('.schedule-template-state').dataset.state === 'ready');
+  assert.match(document.querySelector('.schedule-template-state').textContent, /v2/);
+  assert.equal(document.getElementById('submit-create').disabled, false);
+  assert.equal(calls.some((call) => call.url === '/api/tasks/schedules/templates/?revision='), false);
+});
+
 test("knowledge page stays usable before any graph database is configured", async (t) => {
   const { dom, document, calls } = await page(
     "knowledge",
