@@ -27,13 +27,13 @@ Apply received operations in order in a single Immer transaction.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:196:1324:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:196:1714:FUNCTION
 
 .. js:function:: applyMessageStreamOperations(messages, operations)
 
    Apply received operations in order in a single Immer transaction.
 
-   **性质**：同步函数；导出 API；源码第 ``9``—``28`` 行。
+   **性质**：同步函数；导出 API；源码第 ``9``—``33`` 行。
 
    **参数**
 
@@ -51,13 +51,13 @@ Apply received operations in order in a single Immer transaction.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:1324:2971:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:1714:3361:FUNCTION
 
 .. js:function:: createMessageStreamBatch({ getMessages, commit, delay = 32, schedule = setTimeout, cancel = clearTimeout })
 
    A short lived projection queue owned by one ChatPage subscription. It holds received operations, never a second message/run state. Non-stream events and replies flush it before reading or mutating the canonical messagesRef. A timer also works in background tabs where animation frames are suspended.
 
-   **性质**：同步函数；导出 API；源码第 ``36``—``62`` 行。
+   **性质**：同步函数；导出 API；源码第 ``41``—``67`` 行。
 
    **参数**
 
@@ -75,7 +75,7 @@ Apply received operations in order in a single Immer transaction.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:368:1320:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:368:1710:FUNCTION
 
 .. rubric:: ``produce callback @ 10``
 
@@ -85,7 +85,7 @@ Apply received operations in order in a single Immer transaction.
 
 实现 ``produce`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``10``—``27`` 行；所属函数 ``applyMessageStreamOperations``。
+**性质**：同步局部函数；源码第 ``10``—``32`` 行；所属函数 ``applyMessageStreamOperations``。
 
 **参数**
 
@@ -96,9 +96,9 @@ Apply received operations in order in a single Immer transaction.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``Object.entries``、``Object.hasOwn``、``Object.assign``。
+**主要协作调用**：``Object.entries``、``Object.hasOwn``、``Object.assign``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:1855:2171:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2245:2561:FUNCTION
 
 .. rubric:: ``flush``
 
@@ -108,7 +108,7 @@ Apply received operations in order in a single Immer transaction.
 
 实现 ``flush`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``40``—``47`` 行；所属函数 ``createMessageStreamBatch``。
+**性质**：同步局部函数；源码第 ``45``—``52`` 行；所属函数 ``createMessageStreamBatch``。
 
 **参数**
 
@@ -122,17 +122,17 @@ Apply received operations in order in a single Immer transaction.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2127:2160:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2517:2550:FUNCTION
 
-.. rubric:: ``operations.flatMap callback @ 46``
+.. rubric:: ``operations.flatMap callback @ 51``
 
 .. code-block:: javascript
 
-   operations.flatMap callback @ 46({ value })
+   operations.flatMap callback @ 51({ value })
 
 实现 ``operations.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``46``—``46`` 行；所属函数 ``flush``。
+**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``flush``。
 
 **参数**
 
@@ -145,7 +145,7 @@ Apply received operations in order in a single Immer transaction.
 
 **主要协作调用**：``Object.keys``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2200:2961:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2590:3351:FUNCTION
 
 .. rubric:: ``enqueue``
 
@@ -155,7 +155,7 @@ Apply received operations in order in a single Immer transaction.
 
 实现 ``enqueue`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``50``—``60`` 行；所属函数 ``createMessageStreamBatch``。
+**性质**：同步局部函数；源码第 ``55``—``65`` 行；所属函数 ``createMessageStreamBatch``。
 
 **参数**
 
@@ -170,17 +170,17 @@ Apply received operations in order in a single Immer transaction.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2581:2820:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2971:3210:FUNCTION
 
-.. rubric:: ``Object.values(operation.value).some callback @ 56``
+.. rubric:: ``Object.values(operation.value).some callback @ 61``
 
 .. code-block:: javascript
 
-   Object.values(operation.value).some callback @ 56(patch)
+   Object.values(operation.value).some callback @ 61(patch)
 
 作为 ``Object.values(operation.value).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``56``—``57`` 行；所属函数 ``enqueue``。
+**性质**：同步局部函数；源码第 ``61``—``62`` 行；所属函数 ``enqueue``。
 
 **参数**
 
@@ -195,17 +195,17 @@ Apply received operations in order in a single Immer transaction.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:2676:2819:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:3066:3209:FUNCTION
 
-.. rubric:: ``Object.values(patch).some callback @ 57``
+.. rubric:: ``Object.values(patch).some callback @ 62``
 
 .. code-block:: javascript
 
-   Object.values(patch).some callback @ 57(value)
+   Object.values(patch).some callback @ 62(value)
 
 作为 ``Object.values(patch).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``Object.values(operation.value).some callback @ 56``。
+**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``Object.values(operation.value).some callback @ 61``。
 
 **参数**
 

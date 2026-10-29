@@ -71,51 +71,51 @@ const continuation = (id, overrides = {}) => status(id, {
     inlineKind: 'continuation', inlineState: 'running', toolCallId: null, toolNames: [],
     label: '正在分析下一步', ...overrides,
 });
-const primaryId = (host) => host.querySelector('[data-execution-status-group] > div [data-execution-status-id]')?.dataset.executionStatusId;
+const primaryId = (host) => host.querySelector('[data-work-process]')?.dataset.processPrimary;
 
 test('streamed calls, live-only state changes and continuations stay in one stable collapsed group until prose intervenes', async (t) => {
     const ui = await setup(t);
     let source = '```text\ncopy while executing\n```' + token('first', 'executionStatus');
     let replacement = {first: status('first')};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
     const copyButton = ui.host.querySelector('.copy-button');
 
     source += token('bridge-one', 'executionStatus');
     replacement = {...replacement, 'bridge-one': continuation('bridge-one')};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelector('[data-execution-status-group]').dataset.executionStatusGroup, '1');
+    assert.equal(ui.host.querySelector('[data-work-process]').dataset.processCallCount, '1');
     assert.equal(primaryId(ui.host), 'bridge-one');
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1, 'the completed tool and current continuation share one headline');
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1, 'the completed tool and current continuation share one headline');
 
     source += token('second', 'executionStatus');
     replacement = {...replacement, second: status('second', {inlineState: 'running', label: '正在处理知识图谱', action: '正在核对第二份来源'})};
     // Even if a continuation's clear event arrives after the next tool, it must
     // not leave a spinner between two calls belonging to the same group.
     await ui.render(source, replacement);
-    const group = ui.host.querySelector('[data-execution-status-group]');
-    assert.equal(group.dataset.executionStatusGroup, '2');
+    const group = ui.host.querySelector('[data-work-process]');
+    assert.equal(group.dataset.processCallCount, '2');
     assert.equal(primaryId(ui.host), 'second');
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
     await act(async () => useExecutionStore.getState().upsertExecution({
         executionId: 'execution', conversationId: 'chat', runId: 'run', active: true, status: 'running', updatedAt: 20,
         guidancePrompts: {}, toolStatusNodes: {second: {statusId: 'second', toolCallId: 'second', state: 'completed', action: '正在核对第二份来源'}},
     }));
     assert.equal(primaryId(ui.host), 'second');
-    assert.match(group.textContent, /2 次完成/);
-    assert.equal(group.querySelector('[data-execution-action-state]').textContent, '已完成');
+    assert.match(group.textContent, /2 项操作/);
+    assert.equal(group.dataset.processState, 'running', 'completed tools do not finish the still-streaming turn');
 
     source += token('bridge-two', 'executionStatus');
     replacement = {...replacement, 'bridge-two': continuation('bridge-two', {updatedAt: 20})};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelector('[data-execution-status-group]'), group);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
     assert.equal(primaryId(ui.host), 'bridge-two');
     await act(async () => group.querySelector('button[aria-expanded]').click());
-    assert.equal(group.querySelectorAll('[data-execution-status-group-history] [data-execution-status-id]').length, 2);
+    assert.equal(group.querySelectorAll('[data-work-process-records] [data-execution-status-id]').length, 3);
     source += token('third', 'executionStatus');
     replacement = {...replacement, third: status('third', {inlineState: 'running', updatedAt: 30, action: '正在核对最后一份来源'})};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelector('[data-execution-status-group]'), group);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
     assert.equal(primaryId(ui.host), 'third');
     assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true', 'new deltas retain the user expansion choice');
     assert.equal(ui.host.querySelector('[data-execution-status-id="bridge-two"]'), null);
@@ -128,15 +128,15 @@ test('streamed calls, live-only state changes and continuations stay in one stab
     await act(async () => { copyButton.dispatchEvent(new ui.dom.window.MouseEvent('mouseup', {bubbles: true})); copyButton.click(); });
     assert.deepEqual(ui.copied, ['copy while executing']);
     assert.equal(primaryId(ui.host), 'third');
-    assert.match(group.textContent, /3 次完成/);
+    assert.match(group.textContent, /3 项操作/);
     await ui.render(source, replacement, false);
     assert.equal(primaryId(ui.host), 'third');
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
 
     source += '\n\n新的可见正文\n\n' + token('fourth', 'executionStatus');
     replacement = {...replacement, fourth: status('fourth')};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 2, 'visible prose remains a group boundary');
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2, 'visible prose remains a group boundary');
     assert.match(ui.host.textContent, /新的可见正文/);
 });
 
@@ -145,15 +145,15 @@ test('replacement-only updates regroup without a final message snapshot and neve
     const source = token('one', 'executionStatus') + token('waiting') + token('two', 'executionStatus');
     let replacement = {one: status('one'), two: status('two')};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 2, 'unknown replacement conservatively breaks the group');
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2, 'unknown replacement conservatively breaks the group');
     replacement = {...replacement, waiting: {frontend: '[markdown]\n'}};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 1);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
     replacement = {...replacement, waiting: {frontend: '[markdown]\n稍后到达的正文'}};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelectorAll('[data-execution-status-id]').length, 2);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2);
     assert.match(ui.host.textContent, /稍后到达的正文/);
-    const [first, second] = ui.host.querySelectorAll('[data-execution-status-id]');
+    const [first, second] = ui.host.querySelectorAll('[data-work-process]');
     const paragraph = [...ui.host.querySelectorAll('p')].find((node) => node.textContent === '稍后到达的正文');
     assert.ok(first.compareDocumentPosition(paragraph) & ui.dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
     assert.ok(paragraph.compareDocumentPosition(second) & ui.dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
@@ -165,11 +165,67 @@ test('cleared tool placeholders leave no spaced Markdown block and can later dis
     const replacement = {read: status('read', {toolNames: ['code_read']}),
         write: status('write', {toolNames: ['code_write']}), empty: {frontend: '[markdown]\n  \n'}};
     await ui.render(source, replacement);
-    const first = ui.host.querySelector('[data-execution-status-id="read"]');
+    const first = ui.host.querySelector('[data-work-process="read"]');
     const empty = ui.host.querySelector('[data-tts-source-id="empty"]');
     assert.ok(empty, 'the stable replacement slot remains available');
     assert.equal(empty.childElementCount, 0, 'a cleared slot must not leave a margin-bearing Markdown wrapper');
     await ui.render(source, {...replacement, empty: {frontend: '[markdown]\n实际产物说明'}});
     assert.match(ui.host.textContent, /实际产物说明/);
-    assert.equal(ui.host.querySelector('[data-execution-status-id="read"]'), first);
+    assert.equal(ui.host.querySelector('[data-work-process="read"]'), first);
+});
+
+test('mixed reasoning and different tool families share one mounted process; final snapshots preserve media and manual expansion', async (t) => {
+    const ui = await setup(t);
+    let source = '![演示](/demo.mp4){type=video}' + token('reasoning-one', 'thinking');
+    let replacement = {'reasoning-one': {frontend: '不应默认挂载的长推理', workProcess: {
+        kind: 'reasoning', conversationId: 'chat', runId: 'run', executionId: 'execution', state: 'running', startedAt: 1000,
+    }}};
+    await ui.render(source, replacement);
+    const video = ui.host.querySelector('video');
+    assert.ok(video);
+    video.currentTime = 12.5;
+    const group = ui.host.querySelector('[data-work-process]');
+    assert.ok(group);
+    assert.doesNotMatch(group.textContent, /不应默认挂载/);
+    replacement = {...replacement, 'reasoning-one': {...replacement['reasoning-one'], frontend: '不应默认挂载的长推理\n[DONE]'}};
+    source += token('shell', 'executionStatus');
+    replacement.shell = status('shell', {toolNames: ['code_shell'], inlineState: 'running', action: '正在检查环境'});
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
+    assert.match(group.textContent, /正在检查环境/);
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+    assert.ok(group.querySelector('[data-process-reasoning]'));
+    assert.doesNotMatch(group.textContent, /不应默认挂载/, 'reasoning text remains lazy inside the expanded timeline');
+    source += token('reasoning-two', 'thinking') + token('read', 'executionStatus');
+    replacement = {...replacement, shell: status('shell', {toolNames: ['code_shell'], inlineState: 'failed'}),
+        'reasoning-two': {frontend: '换一种办法\n[DONE]'}, read: status('read', {toolNames: ['code_read']})};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
+    assert.equal(group.dataset.processCallCount, '2');
+    assert.match(group.querySelector('[data-process-outcomes]').textContent, /1 项失败/);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    assert.doesNotMatch(ui.host.textContent, /Thinking Finished/);
+    await ui.render(source, structuredClone(replacement), false);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
+    assert.equal(ui.host.querySelector('video'), video);
+    assert.equal(video.currentTime, 12.5);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    await act(async () => group.querySelector('[data-process-reasoning] button').click());
+    assert.match(group.textContent, /不应默认挂载的长推理/);
+    assert.doesNotMatch(group.textContent, /\[DONE\]/);
+});
+
+test('late replacement metadata can merge traces without remounting a following video', async (t) => {
+    const ui = await setup(t);
+    const source = token('thought', 'thinking') + token('unknown') + token('tool', 'executionStatus')
+        + '\n\n![视频](/after.mp4){type=video}';
+    const replacement = {thought: {frontend: 'analysis\n[DONE]'}, tool: status('tool')};
+    await ui.render(source, replacement);
+    const video = ui.host.querySelector('video');
+    video.currentTime = 8;
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2);
+    await ui.render(source, {...replacement, unknown: {frontend: '[markdown]\n'}}, false);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
+    assert.equal(ui.host.querySelector('video'), video);
+    assert.equal(video.currentTime, 8);
 });

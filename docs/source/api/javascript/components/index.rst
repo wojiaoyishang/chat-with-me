@@ -61,7 +61,7 @@
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
      - 9
      - 0
-     - 54
+     - 55
      - ``src/components/markdown/MarkdownRenderer.jsx``
    * - :doc:`src/components/markdown/ResourceImage </api/javascript/components/markdown/ResourceImage>`
      - 1
@@ -288,6 +288,11 @@
      - 0
      - 4
      - ``src/components/markdown/remarkVideoDirective.js``
+   * - :doc:`src/components/markdown/remarkWorkProcess </api/javascript/components/markdown/remarkWorkProcess>`
+     - 1
+     - 0
+     - 4
+     - ``src/components/markdown/remarkWorkProcess.js``
    * - :doc:`src/components/markdown/replacementProjection </api/javascript/components/markdown/replacementProjection>`
      - 3
      - 0
@@ -568,6 +573,7 @@
    /api/javascript/components/markdown/remarkDirectiveToComponent
    /api/javascript/components/markdown/remarkStudyDirectives
    /api/javascript/components/markdown/remarkVideoDirective
+   /api/javascript/components/markdown/remarkWorkProcess
    /api/javascript/components/markdown/replacementProjection
    /api/javascript/components/markdown/replacementProtocol
    /api/javascript/components/modal/UniversalModalHost

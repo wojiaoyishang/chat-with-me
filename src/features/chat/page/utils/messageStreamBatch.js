@@ -19,7 +19,12 @@ export function applyMessageStreamOperations(messages, operations) {
                     message.extraInfo.replace ||= {};
                     if (event === 'message.replacement.set') Object.assign(message.extraInfo.replace, patch);
                     else for (const [id, delta] of Object.entries(patch)) {
-                        message.extraInfo.replace[id] = (message.extraInfo.replace[id] || '') + delta;
+                        const current = message.extraInfo.replace[id];
+                        if (current && typeof current === 'object') {
+                            const field = Object.hasOwn(current, 'content') ? 'content'
+                                : Object.hasOwn(current, 'frontend') ? 'frontend' : 'value';
+                            current[field] = String(current[field] || '') + delta;
+                        } else message.extraInfo.replace[id] = (current || '') + delta;
                     }
                 }
             }

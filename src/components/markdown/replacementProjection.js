@@ -25,7 +25,9 @@ export function projectReplacements(content, replacement, previous = null, maxDe
             // explicit nested Markdown references.
             const resultId = `tool-result-${id.replace(/-toolCalling$/, '')}`;
             if (Object.hasOwn(replacement, resultId)) selected[resultId] = replacement[resultId];
-            if (entry.exists) walk(entry.content, depth + 1);
+            // Reasoning is displayed as lazy plain text, never as nested control
+            // Markdown. Don't rescan its growing body on every streamed token.
+            if (entry.exists && entry.type !== 'thinking') walk(entry.content, depth + 1);
         }
     };
     walk(content, 0);
@@ -35,10 +37,16 @@ export function projectReplacements(content, replacement, previous = null, maxDe
 }
 
 /** Only facts that affect grouping invalidate the Markdown syntax pipeline. */
-export function executionGroupingKey(content, replacement) {
+export function executionGroupingKey(content, replacement, process = false) {
     return JSON.stringify(references(content).map(({ id, type }) => {
         const entry = normalizeReplacementEntry(replacement, id, type);
         const status = entry.type === 'executionStatus' ? parseExecutionStatus(entry.content) : null;
+        if (process) {
+            const meta = replacement?.[id]?.workProcess;
+            return [id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot,
+                entry.content.trim().length === 0, status?.executionId, status?.runId, status?.conversationId,
+                status?.inlineKind === 'feedback', meta?.executionId, meta?.runId, meta?.conversationId];
+        }
         return [id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot,
             entry.content.trim().length === 0, getExecutionStatusGroupKey(status),
             status?.executionId, status?.runId, status?.conversationId, status?.inlineKind];

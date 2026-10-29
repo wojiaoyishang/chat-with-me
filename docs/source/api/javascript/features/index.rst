@@ -853,6 +853,11 @@
      - 0
      - 2
      - ``src/features/execution/WidgetResponseDetails.jsx``
+   * - :doc:`src/features/execution/WorkProcessGroup </api/javascript/features/execution/WorkProcessGroup>`
+     - 0
+     - 0
+     - 19
+     - ``src/features/execution/WorkProcessGroup.jsx``
    * - :doc:`src/features/execution/executionStatusModel </api/javascript/features/execution/executionStatusModel>`
      - 9
      - 0
@@ -883,6 +888,11 @@
      - 0
      - 33
      - ``src/features/execution/useExecutionStore.js``
+   * - :doc:`src/features/execution/workProcessModel </api/javascript/features/execution/workProcessModel>`
+     - 5
+     - 0
+     - 14
+     - ``src/features/execution/workProcessModel.js``
    * - :doc:`src/features/images/ImageGallery </api/javascript/features/images/ImageGallery>`
      - 1
      - 0
@@ -1591,12 +1601,14 @@
    /api/javascript/features/execution/ExecutionWindow
    /api/javascript/features/execution/SubAgentPanel
    /api/javascript/features/execution/WidgetResponseDetails
+   /api/javascript/features/execution/WorkProcessGroup
    /api/javascript/features/execution/executionStatusModel
    /api/javascript/features/execution/guidanceEditorSubmission
    /api/javascript/features/execution/index
    /api/javascript/features/execution/useExecutionAutoFollow
    /api/javascript/features/execution/useExecutionNavigation
    /api/javascript/features/execution/useExecutionStore
+   /api/javascript/features/execution/workProcessModel
    /api/javascript/features/images/ImageGallery
    /api/javascript/features/images/ImageViewer
    /api/javascript/features/images/Lightbox

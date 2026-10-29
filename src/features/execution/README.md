@@ -8,6 +8,15 @@ The current contract uses `executionMode` snapshots, `execution_window` render s
 The UI consumes only this contract without alternate field or transport aliases. Background
 jobs and workflow tasks remain separate and retain their existing task APIs and identifiers.
 
+Conversation `WorkProcessGroup` projects adjacent reasoning and lightweight tool
+statuses into one collapsed activity trace, independent of tool family. Prose,
+media/results, interactions, context badges and different runs stay outside it.
+Every source host remains mounted as either the group anchor or an empty slot;
+stream completion must not reload videos or reset manual expansion. Reasoning text
+is lazy plain text; the Execution Window retains canonical full tool cards.
+`workProcess` is public presentation metadata only. Typed replacement deltas append
+to its text field; provider reasoning/signatures are never rebuilt from UI groups.
+
 - `ExecutionStatus` renders small inline execution timeline nodes in Assistant output.
 - `ExecutionWindow` is the internal component that renders the product **Execution Window**.
   It shows execution objective/plan and one chronological execution timeline where full

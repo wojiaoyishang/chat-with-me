@@ -89,3 +89,16 @@ test('flushing before a durable snapshot prevents replaying a prefix twice', () 
     batch.flush();
     assert.equal(messages.a.content, 'start+received');
 });
+
+test('typed reasoning metadata survives 1000 deltas and a terminal snapshot without exposing backend state', () => {
+    const f = fixture();
+    const workProcess = {kind: 'reasoning', runId: 'run-1', state: 'running', startedAt: 100};
+    f.enqueue('message.replacement.set', {a: {r: {frontend: '', workProcess}}});
+    for (let i = 0; i < 1000; i++) f.enqueue('message.replacement.delta', {a: {r: 'x'}});
+    f.batch.flush();
+    assert.equal(f.messages.a.extraInfo.replace.r.frontend.length, 1000);
+    assert.deepEqual(f.messages.a.extraInfo.replace.r.workProcess, workProcess);
+    f.enqueue('message.replacement.set', {a: {r: {frontend: 'x'.repeat(1000) + '\n[DONE]', workProcess: {...workProcess, state: 'completed', finishedAt: 200}}}});
+    assert.equal(f.messages.a.extraInfo.replace.r.workProcess.state, 'completed');
+    assert.doesNotMatch(f.messages.a.extraInfo.replace.r.frontend, /object Object/);
+});

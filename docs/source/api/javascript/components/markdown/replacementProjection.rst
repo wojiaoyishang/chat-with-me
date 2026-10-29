@@ -48,13 +48,13 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:811:2101:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:811:2292:FUNCTION
 
 .. js:function:: projectReplacements(content, replacement, previous, maxDepth)
 
    Keep only the referenced card tree; reuse a prior projection when unchanged.
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``35`` 行。
+   **性质**：同步函数；导出 API；源码第 ``13``—``37`` 行。
 
    **参数**
 
@@ -78,13 +78,13 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2101:2766:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2292:3377:FUNCTION
 
-.. js:function:: executionGroupingKey(content, replacement)
+.. js:function:: executionGroupingKey(content, replacement, process)
 
    Only facts that affect grouping invalidate the Markdown syntax pipeline.
 
-   **性质**：同步函数；导出 API；源码第 ``38``—``46`` 行。
+   **性质**：同步函数；导出 API；源码第 ``40``—``54`` 行。
 
    **参数**
 
@@ -93,6 +93,9 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    ``replacement``
       调用方传入的 ``replacement`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``process`` （默认值 ``false``）
+      调用方传入的 ``process`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -151,7 +154,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1160:1887:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1160:2078:FUNCTION
 
 .. rubric:: ``walk``
 
@@ -161,7 +164,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 实现 ``walk`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``17``—``30`` 行；所属函数 ``projectReplacements``。
+**性质**：同步局部函数；源码第 ``17``—``32`` 行；所属函数 ``projectReplacements``。
 
 **参数**
 
@@ -177,17 +180,17 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 **主要协作调用**：``references``、``seen.has``、``seen.add``、``Object.hasOwn``、``normalizeReplacementEntry``、``id.replace``、``walk``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2030:2067:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2221:2258:FUNCTION
 
-.. rubric:: ``ids.every callback @ 33``
+.. rubric:: ``ids.every callback @ 35``
 
 .. code-block:: javascript
 
-   ids.every callback @ 33(id)
+   ids.every callback @ 35(id)
 
 作为 ``ids.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``33``—``33`` 行；所属函数 ``projectReplacements``。
+**性质**：同步局部函数；源码第 ``35``—``35`` 行；所属函数 ``projectReplacements``。
 
 **参数**
 
@@ -198,17 +201,17 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2294:2761:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2502:3372:FUNCTION
 
-.. rubric:: ``references(content).map callback @ 39``
+.. rubric:: ``references(content).map callback @ 41``
 
 .. code-block:: javascript
 
-   references(content).map callback @ 39({ id, type })
+   references(content).map callback @ 41({ id, type })
 
 作为 ``references(content).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``39``—``45`` 行；所属函数 ``executionGroupingKey``。
+**性质**：同步局部函数；源码第 ``41``—``53`` 行；所属函数 ``executionGroupingKey``。
 
 **参数**
 
@@ -217,6 +220,6 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``[id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot, entry.content.trim().length === 0, getExecutionStatusGroupKey(status), status?.executionId, status?.ru…``。
+根据执行分支返回结果；代表性返回表达式为 ``[id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot, entry.content.trim().length === 0, status?.executionId, status?.runId, status?.conversationId, status?…``、``[id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot, entry.content.trim().length === 0, getExecutionStatusGroupKey(status), status?.executionId, status?.ru…``。
 
 **主要协作调用**：``normalizeReplacementEntry``、``parseExecutionStatus``、``Boolean``、``entry.content.trim``、``getExecutionStatusGroupKey``。

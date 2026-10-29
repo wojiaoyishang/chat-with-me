@@ -17,8 +17,10 @@ const mergeReplacementEntry = (snapshotEntry, liveEntry) => {
     if (!snapshotEntry || typeof snapshotEntry !== 'object') return liveEntry ?? snapshotEntry;
     if (!liveEntry || typeof liveEntry !== 'object') return snapshotEntry;
 
-    const snapshotContent = typeof snapshotEntry.content === 'string' ? snapshotEntry.content : null;
-    const liveContent = typeof liveEntry.content === 'string' ? liveEntry.content : null;
+    const field = Object.hasOwn(snapshotEntry, 'content') ? 'content'
+        : Object.hasOwn(snapshotEntry, 'frontend') ? 'frontend' : 'value';
+    const snapshotContent = typeof snapshotEntry[field] === 'string' ? snapshotEntry[field] : null;
+    const liveContent = typeof liveEntry[field] === 'string' ? liveEntry[field] : null;
     const canKeepLiveContent = (
         snapshotContent !== null
         && liveContent !== null
@@ -29,7 +31,7 @@ const mergeReplacementEntry = (snapshotEntry, liveEntry) => {
     return {
         ...liveEntry,
         ...snapshotEntry,
-        ...(canKeepLiveContent ? {content: liveContent} : {}),
+        ...(canKeepLiveContent ? {[field]: liveContent} : {}),
     };
 };
 

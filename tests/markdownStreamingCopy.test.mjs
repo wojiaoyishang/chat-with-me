@@ -15,7 +15,7 @@ const copied = [];
 Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async (text) => copied.push(text) } });
 
 const mocks = new Map([
-    ['tools.jsx', 'export const copyTextToClipboard = (text) => navigator.clipboard.writeText(text);'],
+    ['tools.jsx', 'export const copyTextToClipboard = (text) => navigator.clipboard.writeText(text); export const generateUUID = () => "fixture-event";'],
     ['react-i18next', 'export const useTranslation = () => ({ t: (key, fallback) => fallback || key });'],
     ['documentCardSpec.js', 'export const useDocumentCardSpec = () => ({ spec: null, loading: false, error: null });'],
     ['CardBlock.jsx', `import React from 'react';

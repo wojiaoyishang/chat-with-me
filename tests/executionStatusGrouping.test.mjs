@@ -451,9 +451,9 @@ test('the full Markdown renderer groups token-typed plain JSON statuses into 4 a
         await act(async () => root.render(React.createElement(Renderer, {
             contextId: 'message', conversationId: 'chat', content: source, replacement, msg: {readonly: false},
         })));
-        const groups = [...document.querySelectorAll('[data-execution-status-group]')];
-        assert.deepEqual(groups.map((node) => node.dataset.executionStatusGroup), ['4', '5']);
-        assert.equal(document.querySelectorAll('[data-execution-status-id]').length, 2);
+        const groups = [...document.querySelectorAll('[data-work-process]')];
+        assert.deepEqual(groups.map((node) => node.dataset.processCallCount), ['4', '5']);
+        assert.equal(document.querySelectorAll('[data-execution-status-id]').length, 0, 'collapsed traces do not mount detailed records');
         const separator = [...document.querySelectorAll('p')].find((node) => node.textContent === '可见正文分隔段落');
         assert.ok(separator);
         assert.ok(groups[0].compareDocumentPosition(separator) & dom.window.Node.DOCUMENT_POSITION_FOLLOWING);
@@ -462,7 +462,7 @@ test('the full Markdown renderer groups token-typed plain JSON statuses into 4 a
         const allStatuses = [...document.querySelectorAll('[data-execution-status-id]')];
         assert.equal(allStatuses.length, 9);
         assert.equal(new Set(allStatuses.map((node) => node.dataset.executionStatusId)).size, 9);
-        assert.equal(document.querySelectorAll('[data-execution-status-group-history] [data-execution-status-id]').length, 7);
+        assert.equal(document.querySelectorAll('[data-work-process-records] [data-execution-status-id]').length, 9);
         const firstHistoryCall = document.querySelector('[data-execution-status-id="execution-tool-status-call-1"] button');
         await act(async () => firstHistoryCall.click());
         assert.equal(useExecutionStore.getState().sessions.chat.navigationRequest.toolCallId, 'call-1');

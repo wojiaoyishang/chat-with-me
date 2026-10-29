@@ -7,6 +7,9 @@ import rehypeKatex from 'rehype-katex';
 
 import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
 import { remarkCollapseExecutionStatuses } from './remarkCollapseExecutionStatuses.js';
+import {remarkWorkProcess} from './remarkWorkProcess.js';
+import WorkProcessGroup from '@/features/execution/WorkProcessGroup.jsx';
+import {workProcessEntry} from '@/features/execution/workProcessModel.js';
 import remarkCwmLinks from './remarkCwmLinks.js';
 import remarkVideoDirective from './remarkVideoDirective.js';
 import remarkStudyDirectives from './remarkStudyDirectives.js';
@@ -241,6 +244,9 @@ const createElementRenderers = ({
             const finalId = String(id || node?.properties?.id || '');
             const tokenType = String(type || node?.properties?.type || '');
             const currentReplacement = getCurrentReplacement();
+            if (String(node?.properties?.processHidden) === 'true') {
+                return <div className="block w-full clear-both" data-work-process-placeholder={finalId} aria-hidden="true" />;
+            }
 
             // 情况 1：没有 id，但提供了 type
             // 允许渲染，正文为空
@@ -340,6 +346,12 @@ const createElementRenderers = ({
             }
 
             const nextVisitedIds = [...visitedIds, finalId];
+            let processEntries = [];
+            try {
+                const items = JSON.parse(String(node?.properties?.processEntries || '[]'));
+                if (Array.isArray(items)) processEntries = items.map((item) =>
+                    workProcessEntry(currentReplacement, item.id, item.type)).filter(Boolean);
+            } catch { /* An incomplete descriptor must not hide its original card. */ }
             let groupedIds = [];
             try {
                 const parsed = JSON.parse(String(node?.properties?.groupedIds || node?.properties?.['grouped-ids'] || '[]'));
@@ -379,7 +391,10 @@ const createElementRenderers = ({
                         status={normalized.contextStatus}
                         messageState={messageContextState}
                     />}
-                    {groupedEntries.length > 1 || (groupedEntries.length && continuation) ? (
+                    {processEntries.length > 0 ? (
+                        <WorkProcessGroup entries={processEntries} contextId={contextId} conversationId={conversationId}
+                            isStreaming={isStreaming} tail={String(node?.properties?.processTail) === 'true'} />
+                    ) : groupedEntries.length > 1 || (groupedEntries.length && continuation) ? (
                         <ExecutionStatusGroup entries={groupedEntries} continuation={continuation} conversationId={conversationId} />
                     ) : <CardBlock
                         id={finalId}
@@ -417,7 +432,8 @@ const MarkdownSyntax = memo(({ processedContent, replacement,
     <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath,
             ...(studyDirectivesEnabled ? [remarkDirective, [remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
-            remarkCardReplace, [remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}],
+            remarkCardReplace,
+            [renderSurface === 'conversation' ? remarkWorkProcess : remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}],
             remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
         rehypePlugins={[rehypeKatex, ...extraRehypePlugins,
             ...(editableTasks ? [[rehypeDocumentTasks, { sourceContent: taskSourceContent, normalizeLine: preprocessContent }]] : [])]}
@@ -576,7 +592,7 @@ function MarkdownRendererInner({
     const markdown = (
         <MarkdownRenderersContext.Provider value={elementRenderers}>
             <MarkdownSyntax processedContent={processedContent} replacement={replacement}
-                groupingKey={executionGroupingKey(processedContent, replacement)}
+                groupingKey={executionGroupingKey(processedContent, replacement, renderSurface === 'conversation')}
                 renderSurface={renderSurface} snapshot={snapshot} studyDirectivesEnabled={Boolean(studyDirectivesEnabled)}
                 studyIdPrefix={studyIdPrefix} cardSpec={cardSpec} extraRehypePlugins={extraRehypePlugins}
                 editableTasks={Boolean(renderSurface === 'document' && onTaskToggle)} taskSourceContent={taskSourceContent}
