@@ -9,14 +9,15 @@ The UI consumes only this contract without alternate field or transport aliases.
 jobs and workflow tasks remain separate and retain their existing task APIs and identifiers.
 
 Conversation `WorkProcessGroup` projects adjacent reasoning and lightweight tool
-statuses into one collapsed activity trace, independent of tool family. Prose,
+statuses into one activity trace, expanded by default and independent of tool family. Prose,
 media/results, interactions, context badges and different runs stay outside it.
 Missing replacement values render no visible content and, like cleared tool results,
 do not split a group during streaming. Their original slots stay available: a late
 visible result invalidates grouping topology and splits the trace in its original position.
 Every source host remains mounted as either the group anchor or an empty slot;
 stream completion must not reload videos or reset manual expansion. Reasoning text
-is lazy plain text; the Execution Window retains canonical full tool cards.
+is lazy plain text behind its own toggle; the Execution Window retains canonical full tool cards.
+Manual collapse/expansion takes precedence over later streaming updates and final snapshots.
 `workProcess` is public presentation metadata only. Typed replacement deltas append
 to its text field; provider reasoning/signatures are never rebuilt from UI groups.
 

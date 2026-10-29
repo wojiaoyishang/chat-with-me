@@ -73,18 +73,23 @@ const continuation = (id, overrides = {}) => status(id, {
 });
 const primaryId = (host) => host.querySelector('[data-work-process]')?.dataset.processPrimary;
 
-test('streamed calls, live-only state changes and continuations stay in one stable collapsed group until prose intervenes', async (t) => {
+test('streamed calls default to expanded and retain a manual collapse until prose intervenes', async (t) => {
     const ui = await setup(t);
     let source = '```text\ncopy while executing\n```' + token('first', 'executionStatus');
     let replacement = {first: status('first')};
     await ui.render(source, replacement);
     assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
+    const initialGroup = ui.host.querySelector('[data-work-process]');
+    assert.equal(initialGroup.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    await act(async () => initialGroup.querySelector('button[aria-expanded]').click());
+    assert.equal(initialGroup.querySelector('[data-work-process-records]'), null);
     const copyButton = ui.host.querySelector('.copy-button');
 
     source += token('bridge-one', 'executionStatus');
     replacement = {...replacement, 'bridge-one': continuation('bridge-one')};
     await ui.render(source, replacement);
     assert.equal(ui.host.querySelector('[data-work-process]').dataset.processCallCount, '1');
+    assert.equal(initialGroup.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false', 'stream updates respect a manual collapse');
     assert.equal(primaryId(ui.host), 'bridge-one');
     assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1, 'the completed tool and current continuation share one headline');
 
@@ -193,7 +198,7 @@ test('mixed reasoning and different tool families share one mounted process; fin
     await ui.render(source, replacement);
     assert.equal(ui.host.querySelector('[data-work-process]'), group);
     assert.match(group.textContent, /正在检查环境/);
-    await act(async () => group.querySelector('button[aria-expanded]').click());
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
     assert.ok(group.querySelector('[data-process-reasoning]'));
     assert.doesNotMatch(group.textContent, /不应默认挂载/, 'reasoning text remains lazy inside the expanded timeline');
     source += token('reasoning-two', 'thinking') + token('read', 'executionStatus');
@@ -241,7 +246,7 @@ test('real execution stream with absent backend-only results stays grouped befor
         prepare: continuation('prepare', {inlineState: 'completed'}), 'thought-two': {frontend: 'next\n[DONE]'}};
     await ui.render(source, replacement);
     const group = ui.host.querySelector('[data-work-process]');
-    await act(async () => group.querySelector('button[aria-expanded]').click());
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
     for (let index = 1; index <= 4; index++) {
         source += token(`host-${index}`) + token(`tool-result-${index}`) + token(`call-${index}`, 'executionStatus')
             + token(`bridge-${index}`, 'executionStatus') + token(`thought-${index + 2}`, 'thinking');

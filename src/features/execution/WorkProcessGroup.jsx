@@ -22,12 +22,12 @@ const ReasoningRecord = memo(({entry}) => {
 });
 ReasoningRecord.displayName = 'ReasoningRecord';
 
-/** One stable, initially collapsed host for an adjacent stretch of work. */
+/** One stable, initially expanded host for an adjacent stretch of work. */
 const WorkProcessGroup = memo(({entries, contextId = '', conversationId = '', isStreaming = false, tail = false}) => {
     const target = [...entries].reverse().find((entry) => entry.execution)?.execution;
     const live = useExecutionStore((state) => target?.executionId
         ? state.sessions[conversationId || target.conversationId]?.executions?.[target.executionId] || null : null);
-    const [expanded, setExpanded] = useExpandedState(`process:${conversationId}:${contextId}:${entries[0]?.id}`, false);
+    const [expanded, setExpanded] = useExpandedState(`process:${conversationId}:${contextId}:${entries[0]?.id}`, true);
     const model = useMemo(() => projectWorkProcess(entries, {live, isStreaming, tail}), [entries, live, isStreaming, tail]);
     useEffect(() => {
         if (!target?.executionId || !target.conversationId) return;

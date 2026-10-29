@@ -3,7 +3,7 @@ src/features/execution/WorkProcessGroup 模块
 
 .. js:module:: src/features/execution/WorkProcessGroup
 
-One stable, initially collapsed host for an adjacent stretch of work.
+One stable, initially expanded host for an adjacent stretch of work.
 
 .. note::
 
@@ -99,7 +99,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1539:5808:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1538:5806:FUNCTION
 
 .. rubric:: ``memo callback @ 26``
 
@@ -124,7 +124,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **内部回调数量**：14。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1675:1701:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1674:1700:FUNCTION
 
 .. rubric:: ``[...entries].reverse().find callback @ 27``
 
@@ -145,7 +145,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1750:1895:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1749:1894:FUNCTION
 
 .. rubric:: ``useExecutionStore callback @ 28``
 
@@ -166,7 +166,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2045:2105:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2043:2103:FUNCTION
 
 .. rubric:: ``useMemo callback @ 31``
 
@@ -188,7 +188,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **主要协作调用**：``projectWorkProcess``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2158:2472:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2156:2470:FUNCTION
 
 .. rubric:: ``useEffect callback @ 32``
 
@@ -210,7 +210,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **主要协作调用**：``useExecutionStore.getState``、``Number``、``upsertExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2528:2554:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2526:2552:FUNCTION
 
 .. rubric:: ``model.records.filter callback @ 37``
 
@@ -231,7 +231,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2560:2614:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2558:2612:FUNCTION
 
 .. rubric:: ``model.records.filter((entry) => entry.execution).map callback @ 37``
 
@@ -254,7 +254,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **主要协作调用**：``getExecutionGuidance``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2670:2703:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2668:2701:FUNCTION
 
 .. rubric:: ``guidances.flatMap callback @ 38``
 
@@ -275,7 +275,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2709:2746:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2707:2744:FUNCTION
 
 .. rubric:: ``guidances.flatMap((guidance) => guidance.activities).map callback @ 38``
 
@@ -296,7 +296,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2773:2838:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2771:2836:FUNCTION
 
 .. rubric:: ``[...new Map(guidances.flatMap((guidance) => guidance.activities).map((activity) => [activity.id, activity])).values()]… callback @ 39``
 
@@ -322,7 +322,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2879:2908:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2877:2906:FUNCTION
 
 .. rubric:: ``guidances.findLast callback @ 40``
 
@@ -343,7 +343,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3148:3319:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3146:3317:FUNCTION
 
 .. rubric:: ``navigate``
 
@@ -365,7 +365,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3652:3710:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3650:3708:FUNCTION
 
 .. rubric:: ``onClick callback @ 48``
 
@@ -389,7 +389,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3670:3687:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3668:3685:FUNCTION
 
 .. rubric:: ``setExpanded callback @ 48``
 
@@ -410,7 +410,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5157:5382:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5155:5380:FUNCTION
 
 .. rubric:: ``model.records.map callback @ 64``
 
@@ -431,7 +431,7 @@ One stable, initially collapsed host for an adjacent stretch of work.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5425:5537:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5423:5535:FUNCTION
 
 .. rubric:: ``activities.map callback @ 68``
 
