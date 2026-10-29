@@ -15,6 +15,7 @@ import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from './CompactedContextIndicator.jsx';
 import WidgetResponseMessage from './WidgetResponseMessage.jsx';
 import { normalizeAttachmentList } from '@/features/chat/attachmentVision.js';
+import { isMessageExecutionActive, useExecutionStore } from '../../../../execution/useExecutionStore.js';
 
 const MID_COLLAPSED_CONTENT_MAX_HEIGHT = 360;
 const MID_OVERFLOW_TOLERANCE = 18;
@@ -38,7 +39,11 @@ const MessageItem = memo(
     }) => {
         const isRight = msg.position === 'right';
         const isMid = msg.position === 'mid';
-        const readonly = msg.readonly;
+        const executionActive = useExecutionStore((state) => isMessageExecutionActive(state, conversationId, msgId));
+        // A resumed execution reuses this message. Its persisted readonly=false
+        // snapshot can arrive before the Worker checkpoints again; execution
+        // ownership must keep its actions locked throughout that interval.
+        const readonly = Boolean(msg.readonly || executionActive);
         const rootRef = useRef(null);
         const markdownRef = useRef(null);
         const midBodyRef = useRef(null);

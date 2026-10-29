@@ -108,6 +108,13 @@ Stop reflects the server-authoritative `cancelling` state. The Worker publishes 
 Execution can be continued through `execution.resume`, which creates a new actual Run from
 the same checkpoint rather than resurrecting a dead Worker.
 
+The original assistant message is readonly while its authoritative execution is active,
+including recovery, model pause and cancellation unwind. Message actions subscribe to the
+conversation/message ownership as a boolean, so stale `readonly=false` history cannot expose
+editing, deletion, regeneration or branch controls. Closing the Execution Window does not
+release ownership. A terminal execution releases only this overlay; explicit message readonly
+and other permissions still apply. Neither content nor media is replaced to update the controls.
+
 ## Guidance feedback
 
 Guidance activities use `source=user_guidance` and a separate visual marker in execution logs.

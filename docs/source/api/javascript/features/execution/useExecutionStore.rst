@@ -3,7 +3,7 @@ src/features/execution/useExecutionStore 模块
 
 .. js:module:: src/features/execution/useExecutionStore
 
-该模块实现 CWM 前端中的组件、Hook、状态或辅助逻辑。
+Active execution ownership overrides a stale persisted message editability flag.
 
 .. note::
 
@@ -15,9 +15,9 @@ src/features/execution/useExecutionStore 模块
 
 * **源码文件**：``src/features/execution/useExecutionStore.js``
 * **模块标识**：``src/features/execution/useExecutionStore``
-* **顶层函数/组件/Hook**：16
+* **顶层函数/组件/Hook**：17
 * **类**：0
-* **局部函数与匿名回调**：33
+* **局部函数与匿名回调**：34
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -46,13 +46,40 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:119:283:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:227:701:FUNCTION
+
+.. js:function:: isMessageExecutionActive(state, conversationIdValue, messageIdValue)
+
+   判断与 ``Message Execution Active`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``6``—``13`` 行。
+
+   **参数**
+
+   ``state``
+      调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``conversationIdValue``
+      调用方传入的 ``conversationIdValue`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``messageIdValue``
+      调用方传入的 ``messageIdValue`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``false``、``Object.values(executions).some((execution) => execution.active === true && normalizeId(execution.messageId || execution.assistantMessageId) === messageId)``。
+
+   **主要协作调用**：``normalizeId``、``Object.values(executions).some``、``Object.values``。
+
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:726:890:FUNCTION
 
 .. js:function:: emptySession()
 
    实现 ``emptySession`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``5``—``12`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``15``—``22`` 行。
 
    **参数**
 
@@ -62,13 +89,13 @@ src/features/execution/useExecutionStore 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:309:803:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:916:1410:FUNCTION
 
 .. js:function:: mergeActivity(activities, incoming)
 
    合并与 ``Activity`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``14``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``24``—``33`` 行。
 
    **参数**
 
@@ -86,13 +113,13 @@ src/features/execution/useExecutionStore 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:850:1232:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1457:1839:FUNCTION
 
 .. js:function:: shouldIgnoreExecutionUpdate(previous, incoming)
 
    实现 ``shouldIgnoreExecutionUpdate`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``25``—``30`` 行。
+   **性质**：同步函数；导出 API；源码第 ``35``—``40`` 行。
 
    **参数**
 
@@ -108,13 +135,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``Number``、``terminal.includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1259:1583:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1866:2190:FUNCTION
 
 .. js:function:: mergeExecution(previous, incoming)
 
    合并与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``32``—``39`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``42``—``49`` 行。
 
    **参数**
 
@@ -130,13 +157,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``shouldIgnoreExecutionUpdate``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1614:2664:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2221:3271:FUNCTION
 
 .. js:function:: normalizeExecution(incoming)
 
    规范化与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``41``—``59`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``51``—``69`` 行。
 
    **参数**
 
@@ -149,13 +176,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``normalizeId``、``Array.isArray``、``Object.prototype.hasOwnProperty.call``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2697:3702:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3304:4309:FUNCTION
 
 .. js:function:: sessionWithExecution(session, incoming)
 
    实现 ``sessionWithExecution`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``61``—``76`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``71``—``86`` 行。
 
    **参数**
 
@@ -173,13 +200,13 @@ src/features/execution/useExecutionStore 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14527:14598:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15134:15205:FUNCTION
 
 .. js:function:: upsertExecution(execution)
 
    实现 ``upsertExecution`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``293``—``293`` 行。
+   **性质**：同步函数；导出 API；源码第 ``303``—``303`` 行。
 
    **参数**
 
@@ -192,13 +219,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().upsertExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14629:14714:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15236:15321:FUNCTION
 
 .. js:function:: openExecution(execution, target)
 
    打开与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``294``—``294`` 行。
+   **性质**：同步函数；导出 API；源码第 ``304``—``304`` 行。
 
    **参数**
 
@@ -214,13 +241,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().openExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14757:14866:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15364:15473:FUNCTION
 
 .. js:function:: consumeExecutionNavigation(conversationId, requestId)
 
    实现 ``consumeExecutionNavigation`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``295``—``296`` 行。
+   **性质**：同步函数；导出 API；源码第 ``305``—``306`` 行。
 
    **参数**
 
@@ -236,13 +263,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().consumeNavigation``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14900:15005:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15507:15612:FUNCTION
 
 .. js:function:: openExecutionById(conversationId, executionId)
 
    打开与 ``Execution By Id`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``297``—``298`` 行。
+   **性质**：同步函数；导出 API；源码第 ``307``—``308`` 行。
 
    **参数**
 
@@ -258,13 +285,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().openById``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15046:15141:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15653:15748:FUNCTION
 
 .. js:function:: upsertExecutionActivity(execution, activity)
 
    实现 ``upsertExecutionActivity`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``299``—``300`` 行。
+   **性质**：同步函数；导出 API；源码第 ``309``—``310`` 行。
 
    **参数**
 
@@ -280,13 +307,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().upsertActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15181:15329:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15788:15936:FUNCTION
 
 .. js:function:: patchExecutionActivity(conversationId, executionId, activityId, patch)
 
    实现 ``patchExecutionActivity`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``301``—``302`` 行。
+   **性质**：同步函数；导出 API；源码第 ``311``—``312`` 行。
 
    **参数**
 
@@ -308,13 +335,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().patchActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15361:15432:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15968:16039:FUNCTION
 
 .. js:function:: closeExecution(conversationId)
 
    关闭与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``303``—``303`` 行。
+   **性质**：同步函数；导出 API；源码第 ``313``—``313`` 行。
 
    **参数**
 
@@ -327,13 +354,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().close``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15476:15564:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16083:16171:FUNCTION
 
 .. js:function:: clearExecutionConversation(conversationId)
 
    清空与 ``Execution Conversation`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``304``—``305`` 行。
+   **性质**：同步函数；导出 API；源码第 ``314``—``315`` 行。
 
    **参数**
 
@@ -346,13 +373,13 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().clearConversation``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15600:15690:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16207:16297:FUNCTION
 
 .. js:function:: openGuidanceEditor(execution, target)
 
    打开与 ``Guidance Editor`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``306``—``306`` 行。
+   **性质**：同步函数；导出 API；源码第 ``316``—``316`` 行。
 
    **参数**
 
@@ -373,17 +400,40 @@ src/features/execution/useExecutionStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:574:620:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:565:696:FUNCTION
 
-.. rubric:: ``source.findIndex callback @ 18``
+.. rubric:: ``Object.values(executions).some callback @ 11``
 
 .. code-block:: javascript
 
-   source.findIndex callback @ 18(item)
+   Object.values(executions).some callback @ 11(execution)
+
+作为 ``Object.values(executions).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``11``—``12`` 行；所属函数 ``isMessageExecutionActive``。
+
+**参数**
+
+``execution``
+   调用方传入的 ``execution`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``normalizeId``。
+
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1181:1227:FUNCTION
+
+.. rubric:: ``source.findIndex callback @ 28``
+
+.. code-block:: javascript
+
+   source.findIndex callback @ 28(item)
 
 实现 ``source.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``mergeActivity``。
+**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``mergeActivity``。
 
 **参数**
 
@@ -396,17 +446,17 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3160:3200:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3767:3807:FUNCTION
 
-.. rubric:: ``execution.pendingGuidance?.find callback @ 67``
+.. rubric:: ``execution.pendingGuidance?.find callback @ 77``
 
 .. code-block:: javascript
 
-   execution.pendingGuidance?.find callback @ 67(item)
+   execution.pendingGuidance?.find callback @ 77(item)
 
 作为 ``execution.pendingGuidance?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``sessionWithExecution``。
+**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``sessionWithExecution``。
 
 **参数**
 
@@ -417,17 +467,17 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3245:3377:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3852:3984:FUNCTION
 
-.. rubric:: ``execution.activities?.find callback @ 68``
+.. rubric:: ``execution.activities?.find callback @ 78``
 
 .. code-block:: javascript
 
-   execution.activities?.find callback @ 68(activity)
+   execution.activities?.find callback @ 78(activity)
 
 作为 ``execution.activities?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``68``—``69`` 行；所属函数 ``sessionWithExecution``。
+**性质**：同步局部函数；源码第 ``78``—``79`` 行；所属函数 ``sessionWithExecution``。
 
 **参数**
 
@@ -438,17 +488,17 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3747:14491:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4354:15098:FUNCTION
 
-.. rubric:: ``create callback @ 78``
+.. rubric:: ``create callback @ 88``
 
 .. code-block:: javascript
 
-   create callback @ 78(set)
+   create callback @ 88(set)
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``78``—``291`` 行。
+**性质**：同步局部函数；源码第 ``88``—``301`` 行。
 
 **参数**
 
@@ -465,7 +515,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：13。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3801:4403:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4408:5010:FUNCTION
 
 .. rubric:: ``upsertExecution``
 
@@ -475,7 +525,7 @@ src/features/execution/useExecutionStore 模块
 
 实现 ``upsertExecution`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``81``—``95`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``91``—``105`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -494,17 +544,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3829:4402:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4436:5009:FUNCTION
 
-.. rubric:: ``set callback @ 82``
+.. rubric:: ``set callback @ 92``
 
 .. code-block:: javascript
 
-   set callback @ 82(state)
+   set callback @ 92(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``82``—``95`` 行；所属函数 ``upsertExecution``。
+**性质**：同步局部函数；源码第 ``92``—``105`` 行；所属函数 ``upsertExecution``。
 
 **参数**
 
@@ -517,7 +567,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeExecution``、``emptySession``、``sessionWithExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4426:5354:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5033:5961:FUNCTION
 
 .. rubric:: ``openExecution``
 
@@ -527,7 +577,7 @@ src/features/execution/useExecutionStore 模块
 
 打开与 ``Execution`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``97``—``115`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``107``—``125`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -549,17 +599,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4468:5353:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5075:5960:FUNCTION
 
-.. rubric:: ``set callback @ 98``
+.. rubric:: ``set callback @ 108``
 
 .. code-block:: javascript
 
-   set callback @ 98(state)
+   set callback @ 108(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``98``—``115`` 行；所属函数 ``openExecution``。
+**性质**：同步局部函数；源码第 ``108``—``125`` 行；所属函数 ``openExecution``。
 
 **参数**
 
@@ -572,7 +622,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeExecution``、``emptySession``、``sessionWithExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5372:6124:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5979:6731:FUNCTION
 
 .. rubric:: ``openById``
 
@@ -582,7 +632,7 @@ src/features/execution/useExecutionStore 模块
 
 打开与 ``By Id`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``117``—``134`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``127``—``144`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -604,17 +654,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5429:6123:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6036:6730:FUNCTION
 
-.. rubric:: ``set callback @ 118``
+.. rubric:: ``set callback @ 128``
 
 .. code-block:: javascript
 
-   set callback @ 118(state)
+   set callback @ 128(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``118``—``134`` 行；所属函数 ``openById``。
+**性质**：同步局部函数；源码第 ``128``—``144`` 行；所属函数 ``openById``。
 
 **参数**
 
@@ -627,7 +677,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6151:6550:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6758:7157:FUNCTION
 
 .. rubric:: ``consumeNavigation``
 
@@ -637,7 +687,7 @@ src/features/execution/useExecutionStore 模块
 
 实现 ``consumeNavigation`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``136``—``142`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``146``—``152`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -659,17 +709,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6200:6549:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6807:7156:FUNCTION
 
-.. rubric:: ``set callback @ 137``
+.. rubric:: ``set callback @ 147``
 
 .. code-block:: javascript
 
-   set callback @ 137(state)
+   set callback @ 147(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``137``—``142`` 行；所属函数 ``consumeNavigation``。
+**性质**：同步局部函数；源码第 ``147``—``152`` 行；所属函数 ``consumeNavigation``。
 
 **参数**
 
@@ -682,7 +732,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6572:7632:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7179:8239:FUNCTION
 
 .. rubric:: ``upsertActivity``
 
@@ -692,7 +742,7 @@ src/features/execution/useExecutionStore 模块
 
 实现 ``upsertActivity`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``144``—``165`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``154``—``175`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -714,17 +764,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6623:7631:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7230:8238:FUNCTION
 
-.. rubric:: ``set callback @ 145``
+.. rubric:: ``set callback @ 155``
 
 .. code-block:: javascript
 
-   set callback @ 145(state)
+   set callback @ 155(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``145``—``165`` 行；所属函数 ``upsertActivity``。
+**性质**：同步局部函数；源码第 ``155``—``175`` 行；所属函数 ``upsertActivity``。
 
 **参数**
 
@@ -737,7 +787,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``、``emptySession``、``normalizeExecution``、``mergeExecution``、``mergeActivity``、``sessionWithExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7655:9150:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8262:9757:FUNCTION
 
 .. rubric:: ``patchActivity``
 
@@ -747,7 +797,7 @@ src/features/execution/useExecutionStore 模块
 
 实现 ``patchActivity`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``167``—``195`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``177``—``205`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -775,17 +825,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7741:9149:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8348:9756:FUNCTION
 
-.. rubric:: ``set callback @ 168``
+.. rubric:: ``set callback @ 178``
 
 .. code-block:: javascript
 
-   set callback @ 168(state)
+   set callback @ 178(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``168``—``195`` 行；所属函数 ``patchActivity``。
+**性质**：同步局部函数；源码第 ``178``—``205`` 行；所属函数 ``patchActivity``。
 
 **参数**
 
@@ -800,17 +850,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8236:8714:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8843:9321:FUNCTION
 
-.. rubric:: ``(execution.activities || []).map callback @ 175``
+.. rubric:: ``(execution.activities || []).map callback @ 185``
 
 .. code-block:: javascript
 
-   (execution.activities || []).map callback @ 175(item)
+   (execution.activities || []).map callback @ 185(item)
 
 作为 ``(execution.activities || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``175``—``182`` 行；所属函数 ``set callback @ 168``。
+**性质**：同步局部函数；源码第 ``185``—``192`` 行；所属函数 ``set callback @ 178``。
 
 **参数**
 
@@ -823,7 +873,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``、``['pending', 'failed'].includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9165:9629:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9772:10236:FUNCTION
 
 .. rubric:: ``close``
 
@@ -833,7 +883,7 @@ src/features/execution/useExecutionStore 模块
 
 关闭与 ``close`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``197``—``208`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``207``—``218`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -852,17 +902,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9204:9628:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9811:10235:FUNCTION
 
-.. rubric:: ``set callback @ 198``
+.. rubric:: ``set callback @ 208``
 
 .. code-block:: javascript
 
-   set callback @ 198(state)
+   set callback @ 208(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``198``—``208`` 行；所属函数 ``close``。
+**性质**：同步局部函数；源码第 ``208``—``218`` 行；所属函数 ``close``。
 
 **参数**
 
@@ -875,7 +925,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9656:10005:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10263:10612:FUNCTION
 
 .. rubric:: ``clearConversation``
 
@@ -885,7 +935,7 @@ src/features/execution/useExecutionStore 模块
 
 清空与 ``Conversation`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``210``—``217`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``220``—``227`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -904,17 +954,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9695:10004:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10302:10611:FUNCTION
 
-.. rubric:: ``set callback @ 211``
+.. rubric:: ``set callback @ 221``
 
 .. code-block:: javascript
 
-   set callback @ 211(state)
+   set callback @ 221(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``211``—``217`` 行；所属函数 ``clearConversation``。
+**性质**：同步局部函数；源码第 ``221``—``227`` 行；所属函数 ``clearConversation``。
 
 **参数**
 
@@ -927,7 +977,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10033:12300:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10640:12907:FUNCTION
 
 .. rubric:: ``openGuidanceEditor``
 
@@ -937,7 +987,7 @@ src/features/execution/useExecutionStore 模块
 
 打开与 ``Guidance Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``219``—``252`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``229``—``262`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -959,17 +1009,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10129:12267:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10736:12874:FUNCTION
 
-.. rubric:: ``set callback @ 221``
+.. rubric:: ``set callback @ 231``
 
 .. code-block:: javascript
 
-   set callback @ 221(state)
+   set callback @ 231(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``221``—``250`` 行；所属函数 ``openGuidanceEditor``。
+**性质**：同步局部函数；源码第 ``231``—``260`` 行；所属函数 ``openGuidanceEditor``。
 
 **参数**
 
@@ -984,17 +1034,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10551:10591:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11158:11198:FUNCTION
 
-.. rubric:: ``current.activities?.find callback @ 228``
+.. rubric:: ``current.activities?.find callback @ 238``
 
 .. code-block:: javascript
 
-   current.activities?.find callback @ 228(activity)
+   current.activities?.find callback @ 238(activity)
 
 作为 ``current.activities?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``228``—``228`` 行；所属函数 ``set callback @ 221``。
+**性质**：同步局部函数；源码第 ``238``—``238`` 行；所属函数 ``set callback @ 231``。
 
 **参数**
 
@@ -1005,17 +1055,17 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11486:11507:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12093:12114:FUNCTION
 
-.. rubric:: ``source.attachments.map callback @ 238``
+.. rubric:: ``source.attachments.map callback @ 248``
 
 .. code-block:: javascript
 
-   source.attachments.map callback @ 238(item)
+   source.attachments.map callback @ 248(item)
 
 作为 ``source.attachments.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``238``—``238`` 行；所属函数 ``set callback @ 221``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``set callback @ 231``。
 
 **参数**
 
@@ -1026,7 +1076,7 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12329:12847:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12936:13454:FUNCTION
 
 .. rubric:: ``updateGuidanceDraft``
 
@@ -1036,7 +1086,7 @@ src/features/execution/useExecutionStore 模块
 
 更新与 ``Guidance Draft`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``254``—``262`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``264``—``272`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -1061,17 +1111,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12362:12846:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12969:13453:FUNCTION
 
-.. rubric:: ``set callback @ 254``
+.. rubric:: ``set callback @ 264``
 
 .. code-block:: javascript
 
-   set callback @ 254(state)
+   set callback @ 264(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``254``—``262`` 行；所属函数 ``updateGuidanceDraft``。
+**性质**：同步局部函数；源码第 ``264``—``272`` 行；所属函数 ``updateGuidanceDraft``。
 
 **参数**
 
@@ -1084,7 +1134,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``['submitting', 'uncertain', 'sent'].includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12875:13544:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13482:14151:FUNCTION
 
 .. rubric:: ``patchGuidanceDraft``
 
@@ -1094,7 +1144,7 @@ src/features/execution/useExecutionStore 模块
 
 实现 ``patchGuidanceDraft`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``264``—``273`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``274``—``283`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -1122,17 +1172,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12935:13543:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13542:14150:FUNCTION
 
-.. rubric:: ``set callback @ 264``
+.. rubric:: ``set callback @ 274``
 
 .. code-block:: javascript
 
-   set callback @ 264(state)
+   set callback @ 274(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``264``—``273`` 行；所属函数 ``patchGuidanceDraft``。
+**性质**：同步局部函数；源码第 ``274``—``283`` 行；所属函数 ``patchGuidanceDraft``。
 
 **参数**
 
@@ -1143,7 +1193,7 @@ src/features/execution/useExecutionStore 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, guidanceDrafts: { ...session.guidanceDrafts, [draftKey]: {...draft, ...patch}, }, guidanceEditor: patch.state === 'sent' && sess…``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13573:13839:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14180:14446:FUNCTION
 
 .. rubric:: ``closeGuidanceEditor``
 
@@ -1153,7 +1203,7 @@ src/features/execution/useExecutionStore 模块
 
 关闭与 ``Guidance Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``275``—``279`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``285``—``289`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -1175,17 +1225,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13600:13838:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14207:14445:FUNCTION
 
-.. rubric:: ``set callback @ 275``
+.. rubric:: ``set callback @ 285``
 
 .. code-block:: javascript
 
-   set callback @ 275(state)
+   set callback @ 285(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``275``—``279`` 行；所属函数 ``closeGuidanceEditor``。
+**性质**：同步局部函数；源码第 ``285``—``289`` 行；所属函数 ``closeGuidanceEditor``。
 
 **参数**
 
@@ -1196,7 +1246,7 @@ src/features/execution/useExecutionStore 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, guidanceEditor: null}}}``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13868:14486:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14475:15093:FUNCTION
 
 .. rubric:: ``reopenGuidanceDraft``
 
@@ -1206,7 +1256,7 @@ src/features/execution/useExecutionStore 模块
 
 实现 ``reopenGuidanceDraft`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``281``—``290`` 行；所属函数 ``create callback @ 78``。
+**性质**：同步局部函数；源码第 ``291``—``300`` 行；所属函数 ``create callback @ 88``。
 
 **参数**
 
@@ -1231,17 +1281,17 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13905:14485:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14512:15092:FUNCTION
 
-.. rubric:: ``set callback @ 281``
+.. rubric:: ``set callback @ 291``
 
 .. code-block:: javascript
 
-   set callback @ 281(state)
+   set callback @ 291(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``281``—``290`` 行；所属函数 ``reopenGuidanceDraft``。
+**性质**：同步局部函数；源码第 ``291``—``300`` 行；所属函数 ``reopenGuidanceDraft``。
 
 **参数**
 

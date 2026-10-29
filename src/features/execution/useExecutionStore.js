@@ -2,6 +2,16 @@ import { create } from 'zustand';
 
 const normalizeId = (value) => String(value || '').trim();
 
+/** Active execution ownership overrides a stale persisted message editability flag. */
+export const isMessageExecutionActive = (state, conversationIdValue, messageIdValue) => {
+    const conversationId = normalizeId(conversationIdValue);
+    const messageId = normalizeId(messageIdValue);
+    if (!conversationId || !messageId) return false;
+    const executions = state.sessions?.[conversationId]?.executions || {};
+    return Object.values(executions).some((execution) => execution.active === true
+        && normalizeId(execution.messageId || execution.assistantMessageId) === messageId);
+};
+
 const emptySession = () => ({
     isOpen: false,
     activeExecutionId: null,

@@ -7,9 +7,10 @@ import React, {act, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 const translations = JSON.parse(fs.readFileSync('src/assets/locales/zh.json', 'utf8'));
-const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ConversationFreezeContext.jsx']);
+const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ConversationFreezeContext.jsx']);
 await build({
-    entryPoints: ['src/features/chat/ui/message/components/MessageItem.jsx'],
+    stdin: {contents: `export {default} from './src/features/chat/ui/message/components/MessageItem.jsx';
+        export {useExecutionStore} from './src/features/execution/useExecutionStore.js';`, resolveDir: process.cwd()},
     outfile: 'temp/message-settings-react-test.mjs',
     bundle: true, packages: 'external', platform: 'node', format: 'esm', jsx: 'automatic',
     plugins: [{name: 'message-settings-fixtures', setup(builder) {
@@ -37,6 +38,7 @@ await build({
             else if (path.endsWith('/tooltip')) contents = 'import{createContext,useContext,useState,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const Tooltip=({children,open,onOpenChange})=>{const[state,setState]=useState(false);return <C.Provider value={{open:open??state,setOpen:onOpenChange||setState}}>{children}</C.Provider>};export const TooltipTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onMouseEnter:event=>{children.props.onMouseEnter?.(event);c.setOpen(true)},onMouseLeave:event=>{children.props.onMouseLeave?.(event);c.setOpen(false)},onFocus:event=>{children.props.onFocus?.(event);c.setOpen(true)},onBlur:event=>{children.props.onBlur?.(event);c.setOpen(false)}})};export const TooltipContent=({children})=>useContext(C).open?createPortal(<div role="tooltip">{children}</div>,document.body):null';
             else if (path.endsWith('/popover')) contents = 'import{createContext,useContext,useState,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const Popover=({children,open,onOpenChange})=>{const[state,setState]=useState(false);return <C.Provider value={{open:open??state,setOpen:onOpenChange||setState}}>{children}</C.Provider>};export const PopoverTrigger=({children,asChild,...props})=>{const c=useContext(C);return cloneElement(children,{...props,onClick:event=>{children.props.onClick?.(event);props.onClick?.(event);if(!event.defaultPrevented)c.setOpen(!c.open)}})};export const PopoverContent=({children})=>useContext(C).open?createPortal(<section role="dialog" data-test-popover="true">{children}</section>,document.body):null';
             else if (path.endsWith('/avatar')) contents = 'export const Avatar=({children})=><span>{children}</span>;export const AvatarFallback=Avatar;export const AvatarImage=()=>null';
+            else if (path.endsWith('/button')) contents = 'export const Button=({children,variant,size,...props})=><button {...props}>{children}</button>';
             else if (path.endsWith('/badge')) contents = 'import{cloneElement}from"react";export const Badge=({children,asChild,variant,className,...props})=>{if(!asChild)return <span data-slot="badge" className={className} {...props}>{children}</span>;const merged={...props,"data-slot":"badge",className:[className,children.props.className].filter(Boolean).join(" ")};for(const key of Object.keys(props)){if(/^on[A-Z]/.test(key)&&typeof props[key]==="function"&&typeof children.props[key]==="function")merged[key]=event=>{children.props[key](event);props[key](event)}}return cloneElement(children,merged)}';
             else if (path.endsWith('/dropdown-menu')) contents = 'import{createContext,useContext,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const DropdownMenu=({children,...props})=><C.Provider value={props}>{children}</C.Provider>;export const DropdownMenuTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onClick:event=>{children.props.onClick?.(event);if(!children.props.disabled)c.onOpenChange(!c.open)}})};export const DropdownMenuContent=({children,side,align,sideOffset,collisionPadding,...props})=>useContext(C).open?createPortal(<section role="menu" {...props}>{children}</section>,document.body):null;export const DropdownMenuItem=({children,onSelect,...props})=><button role="menuitem" {...props} onClick={event=>onSelect?.(event)}>{children}</button>;export const DropdownMenuLabel=({children})=><header>{children}</header>;export const DropdownMenuSeparator=()=>null';
             else if (path.endsWith('TextOnlyMessageContent.jsx')) contents = 'export default ({msg})=><p>{msg.content}</p>';
@@ -72,9 +74,9 @@ async function setup(t, api = {}, initial = {}) {
         },
     };
     globalThis.__messageSettings = fixture;
-    const {default: MessageItem} = await import(`../temp/message-settings-react-test.mjs?test=${++moduleId}`);
+    const {default: MessageItem, useExecutionStore} = await import(`../temp/message-settings-react-test.mjs?test=${++moduleId}`);
     const container = document.getElementById('root'), root = createRoot(container);
-    function Harness({msgId = 'message-one', conversationId = 'chat-one', message = baseMessage(), additional = []}) {
+    function Harness({msgId = 'message-one', conversationId = 'chat-one', message = baseMessage(), additional = [], relatedMessages = {}}) {
         const [patches, setPatches] = useState({});
         fixture.apply = envelope => {
             if (envelope.conversationId !== conversationId) return;
@@ -86,7 +88,7 @@ async function setup(t, api = {}, initial = {}) {
         ].map(item => React.createElement(MessageItem, {
             key: item.msgId, msgId: item.msgId, conversationId,
             msg: patches[item.msgId] ? {...item.message, messageConfig: patches[item.msgId]} : item.message,
-            messages: {[item.msgId]: item.message}, leavingMessages: new Set(), t: fixture.t,
+            messages: {...relatedMessages, [item.msgId]: item.message}, leavingMessages: new Set(), t: fixture.t,
         }));
     }
     let props = {message: baseMessage(initial)};
@@ -105,8 +107,36 @@ async function setup(t, api = {}, initial = {}) {
         delete globalThis.__messageSettings;
         delete globalThis.IS_REACT_ACT_ENVIRONMENT;
     });
-    return {container, dom, fixture, render, button, click, open};
+    return {container, dom, fixture, render, button, click, open, useExecutionStore};
 }
+
+test('resumed execution makes its original message readonly until the authoritative execution ends', async t => {
+    const ui = await setup(t, {}, {position: 'left', readonly: false, allowRegenerate: true, allowFork: true, allowProgenerate: true});
+    await ui.render({additional: [{msgId: 'other-message', message: baseMessage({prevMessage: null})}],
+        relatedMessages: {previous: {messages: ['message-one', 'branch-two'], nextMessage: 'message-one'}}});
+    const owner = () => ui.container.querySelector('[data-message-id="message-one"]');
+    const actions = () => owner().querySelectorAll('[data-message-action-area] button');
+    assert.ok(actions().length > 0);
+    const branchLabel = ui.fixture.t('open_message_branch_selector');
+    assert.ok(owner().querySelector(`[aria-label="${branchLabel}"]`));
+    const paused = {conversationId: 'chat-one', executionId: 'execution', messageId: 'message-one',
+        runId: 'old-run', active: false, status: 'cancelled', updatedAt: 10};
+    await act(async () => ui.useExecutionStore.getState().upsertExecution(paused));
+    await act(async () => ui.useExecutionStore.getState().upsertExecution({
+        ...paused, runId: 'new-run', active: true, status: 'recovering', updatedAt: 20}));
+    assert.equal(actions().length, 0, 'recovery locks actions before a new message snapshot arrives');
+    assert.equal(owner().querySelector(`[aria-label="${branchLabel}"]`), null, 'branch switching is readonly too');
+    assert.ok(ui.container.querySelector('[data-message-id="other-message"] [aria-label="消息配置"]'),
+        'another message remains governed by its own permissions');
+    await ui.render({message: baseMessage({position: 'left', readonly: false})});
+    assert.equal(actions().length, 0, 'late readonly=false history cannot unlock a running message');
+    await act(async () => ui.useExecutionStore.getState().upsertExecution(paused));
+    assert.equal(actions().length, 0, 'an older execution snapshot cannot undo the resumed run');
+    await act(async () => ui.useExecutionStore.getState().upsertExecution({
+        ...paused, runId: 'new-run', active: false, status: 'completed', updatedAt: 30}));
+    assert.ok(actions().length > 0, 'terminal execution restores the message capabilities');
+    assert.ok(owner().querySelector(`[aria-label="${branchLabel}"]`));
+});
 
 test('server catalog controls message menu and protecting a message immediately patches it locally', async t => {
     const ui = await setup(t);
