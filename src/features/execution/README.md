@@ -11,6 +11,9 @@ jobs and workflow tasks remain separate and retain their existing task APIs and 
 Conversation `WorkProcessGroup` projects adjacent reasoning and lightweight tool
 statuses into one collapsed activity trace, independent of tool family. Prose,
 media/results, interactions, context badges and different runs stay outside it.
+Missing replacement values render no visible content and, like cleared tool results,
+do not split a group during streaming. Their original slots stay available: a late
+visible result invalidates grouping topology and splits the trace in its original position.
 Every source host remains mounted as either the group anchor or an empty slot;
 stream completion must not reload videos or reset manual expansion. Reasoning text
 is lazy plain text; the Execution Window retains canonical full tool cards.
@@ -237,10 +240,11 @@ stage without creating a background job or changing execution lifecycle. Each co
 its own `action`; the Execution Window shows that explanation alongside the corresponding call.
 Inline hints display the action together with Runtime-owned completion/failure state.
 
-Visually consecutive calls to the same tool in one execution/run share the first stable
-transcript host, even when their states or action text differ. Cleared continuation hosts,
-empty hidden-control Markdown and conversation-hidden `executionWindowTool` hosts do not interrupt
-the group. Visible prose, other tool families, unknown/unloaded hosts and different runs do.
+Visually consecutive reasoning and tool statuses in one execution/run share the first stable
+transcript host, even when their tool family, state or action differs. Cleared continuation hosts,
+unresolved result slots, empty hidden-control Markdown and conversation-hidden `executionWindowTool`
+hosts do not interrupt the group. Visible prose, results, interactions and different runs do.
+The execution-only renderer retains its narrower grouping by tool family.
 Saved knowledge-network batches with missing toolset metadata use a conservative legacy
 read/write classification, so different read methods sharing one execution label can group
 without mixing them with graph mutations. Status type carried only by the Markdown token

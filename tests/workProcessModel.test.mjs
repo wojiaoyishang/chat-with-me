@@ -31,9 +31,9 @@ test('different tool families interleaved with reasoning share a stable anchor w
     assert.match(source, /id=c/);
 });
 
-test('prose, media, approval, context badges and unknown replacements remain visible boundaries', () => {
+test('prose, media, approval, context badges and unsupported widgets remain visible boundaries', () => {
     for (const middle of ['**注意，必须确认。**', '![图](/image.png)', '```js\nexample()\n```', token('middle')]) {
-        for (const value of [undefined, {type: 'toolApproval', content: 'approve'}, {type: 'markdown', content: '正文'},
+        for (const value of [{type: 'customWidget', content: 'unknown widget'}, {type: 'toolApproval', content: 'approve'}, {type: 'markdown', content: '正文'},
             {...status('middle'), contextStatus: {status: 'ignored'}}]) {
             const r = {a: status('a'), b: status('b'), middle: value};
             const tree = parse([token('a'), middle, token('b')].join('\n\n'), r);
@@ -41,6 +41,21 @@ test('prose, media, approval, context badges and unknown replacements remain vis
             assert.equal(tree.children[0].data.hProperties.processTail, 'false');
         }
     }
+});
+
+test('unresolved tool-result slots are transparent until visible content arrives, keeping every original host', () => {
+    const source = [token('thought', 'thinking'), token('tool-result-call'), token('call')].join('\n\n');
+    const r = {thought: {frontend: 'analysis\n[DONE]'}, call: status('call')};
+    for (const value of [undefined, '', {frontend: '[markdown]\n'}]) {
+        const replacement = value === undefined ? r : {...r, 'tool-result-call': value};
+        const tree = parse(source, replacement);
+        assert.deepEqual(JSON.parse(tree.children[0].data.hProperties.processEntries).map((x) => x.id), ['thought', 'call']);
+        assert.equal(tree.children.length, 3, 'grouping retains the missing result host and following host positions');
+        assert.equal(tree.children[1].data.hProperties.processHidden, undefined, 'the result may become visible later');
+    }
+    const tree = parse(source, {...r, 'tool-result-call': {type: 'markdown', content: '下载产物'}});
+    assert.deepEqual(JSON.parse(tree.children[0].data.hProperties.processEntries).map((x) => x.id), ['thought']);
+    assert.equal(tree.children[2].data.hProperties.processHidden, undefined);
 });
 
 test('different runs and frozen snapshots never join a live work process', () => {

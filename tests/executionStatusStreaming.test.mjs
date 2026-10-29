@@ -145,7 +145,7 @@ test('replacement-only updates regroup without a final message snapshot and neve
     const source = token('one', 'executionStatus') + token('waiting') + token('two', 'executionStatus');
     let replacement = {one: status('one'), two: status('two')};
     await ui.render(source, replacement);
-    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2, 'unknown replacement conservatively breaks the group');
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1, 'an unresolved slot renders nothing and must not split the visible process');
     replacement = {...replacement, waiting: {frontend: '[markdown]\n'}};
     await ui.render(source, replacement);
     assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
@@ -215,7 +215,7 @@ test('mixed reasoning and different tool families share one mounted process; fin
     assert.doesNotMatch(group.textContent, /\[DONE\]/);
 });
 
-test('late replacement metadata can merge traces without remounting a following video', async (t) => {
+test('a late visible result splits traces without remounting a following video', async (t) => {
     const ui = await setup(t);
     const source = token('thought', 'thinking') + token('unknown') + token('tool', 'executionStatus')
         + '\n\n![视频](/after.mp4){type=video}';
@@ -223,9 +223,48 @@ test('late replacement metadata can merge traces without remounting a following 
     await ui.render(source, replacement);
     const video = ui.host.querySelector('video');
     video.currentTime = 8;
-    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
     await ui.render(source, {...replacement, unknown: {frontend: '[markdown]\n'}}, false);
     assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
+    await ui.render(source, {...replacement, unknown: {frontend: '[markdown]\n独立的结果说明'}}, false);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2);
+    assert.match(ui.host.textContent, /独立的结果说明/);
     assert.equal(ui.host.querySelector('video'), video);
     assert.equal(video.currentTime, 8);
+});
+
+test('real execution stream with absent backend-only results stays grouped before and after history hydration', async (t) => {
+    const ui = await setup(t);
+    let source = token('thought-one', 'thinking') + token('enter') + token('tool-result-enter')
+        + token('prepare', 'executionStatus') + token('thought-two', 'thinking');
+    let replacement = {'thought-one': {frontend: 'first\n[DONE]'}, enter: '[markdown]\n',
+        prepare: continuation('prepare', {inlineState: 'completed'}), 'thought-two': {frontend: 'next\n[DONE]'}};
+    await ui.render(source, replacement);
+    const group = ui.host.querySelector('[data-work-process]');
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+    for (let index = 1; index <= 4; index++) {
+        source += token(`host-${index}`) + token(`tool-result-${index}`) + token(`call-${index}`, 'executionStatus')
+            + token(`bridge-${index}`, 'executionStatus') + token(`thought-${index + 2}`, 'thinking');
+        replacement = {...replacement, [`host-${index}`]: '[executionWindowTool]\nprivate command details',
+            [`call-${index}`]: status(`call-${index}`, {toolNames: [index % 2 ? 'code_shell' : 'code_read_many']}),
+            [`thought-${index + 2}`]: {frontend: 'continuing\n[DONE]'}};
+        await ui.render(source, replacement);
+        assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1, 'no final message snapshot is needed to collapse');
+        assert.equal(ui.host.querySelector('[data-work-process]'), group);
+        assert.equal(group.dataset.processCallCount, String(index));
+    }
+    source += '\n\n继续检查环境。' + token('final', 'executionStatus');
+    replacement = {...replacement, final: status('final')};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2, 'only visible prose separates work');
+    const hydrated = {...replacement, 'tool-result-enter': ''};
+    for (let index = 1; index <= 4; index++) {
+        hydrated[`tool-result-${index}`] = '';
+        hydrated[`bridge-${index}`] = '';
+    }
+    await ui.render(source, hydrated, false);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    assert.equal(group.querySelectorAll('[data-work-process-records] [data-execution-status-id]').length, 4);
 });

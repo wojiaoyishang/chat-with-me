@@ -27,13 +27,13 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:216:2905:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:216:3317:FUNCTION
 
 .. js:function:: remarkWorkProcess({replacement = {}, renderSurface = 'conversation', snapshot = false})
 
    Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs in place.
 
-   **性质**：同步函数；导出 API；源码第 ``6``—``54`` 行。
+   **性质**：同步函数；导出 API；源码第 ``6``—``59`` 行。
 
    **参数**
 
@@ -51,7 +51,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:437:2902:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:437:3314:FUNCTION
 
 .. rubric:: ``returned callback @ 7``
 
@@ -61,7 +61,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``7``—``53`` 行；所属函数 ``remarkWorkProcess``。
+**性质**：同步局部函数；源码第 ``7``—``58`` 行；所属函数 ``remarkWorkProcess``。
 
 **参数**
 
@@ -99,7 +99,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:575:2894:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:575:3306:FUNCTION
 
 .. rubric:: ``visit callback @ 9``
 
@@ -109,7 +109,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``9``—``52`` 行；所属函数 ``returned callback @ 7``。
+**性质**：同步局部函数；源码第 ``9``—``57`` 行；所属函数 ``returned callback @ 7``。
 
 **参数**
 

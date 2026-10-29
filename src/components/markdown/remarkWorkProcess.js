@@ -38,9 +38,14 @@ export function remarkWorkProcess({replacement = {}, renderSurface = 'conversati
                     continue;
                 }
                 const other = id && normalizeReplacementEntry(replacement, id, type);
-                const invisible = other?.exists && !other.snapshot && !other.contextStatus && (
+                // The stream emits a tool-result reference before (and sometimes
+                // without) its frontend value. The renderer shows no content for
+                // that slot, so it cannot split a visually continuous process.
+                // Keep the host untouched: when real content arrives, the
+                // grouping topology invalidates and restores its own boundary.
+                const invisible = other && (!other.exists || (!other.snapshot && !other.contextStatus && (
                     other.type === 'executionWindowTool'
-                    || (['markdown', 'executionStatus'].includes(other.type) && !other.content.trim()));
+                    || (['markdown', 'executionStatus'].includes(other.type) && !other.content.trim()))));
                 if (group && invisible) group.allNodes.push(node);
                 else {
                     flush();

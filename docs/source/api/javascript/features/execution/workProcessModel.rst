@@ -112,7 +112,7 @@ A display projection only. Never use this group to rebuild provider history.
 
    **主要协作调用**：``entry.content.matchAll``、``matches.at(-1)?.[1]?.toUpperCase``、``matches.at``、``entry.content.replace(marker, '').trim``、``entry.content.replace``。
 
-.. CWM-AST-FUNCTION src/features/execution/workProcessModel.js:1886:5868:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/workProcessModel.js:1886:5883:FUNCTION
 
 .. js:function:: projectWorkProcess(entries, {live = null, isStreaming = false, tail = false})
 
@@ -130,7 +130,7 @@ A display projection only. Never use this group to rebuild provider history.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{records, calls, failures, stopped, state, label, duration, target: current?.execution || latestExecution, // Completed reasoning spans aren't counted as completed user operations…``。
+   根据执行分支返回结果；代表性返回表达式为 ``{records, calls, failures, stopped, state, label: String(label), duration, target: current?.execution || latestExecution, // Completed reasoning spans aren't counted as completed…``。
 
    **主要协作调用**：``entries.map((entry) => { if (entry.type === 'thinking') return reasoningRecord(entry); const execution = projectExecuti…``、``entries.map``、``records.filter``、``calls.filter``、``records.at``、``[...records].reverse().find``、``[...records].reverse``、``sameProcess``、``processIdentity``、``active.at``、``['failed', 'blocked', 'recoverable_failed'].includes``、``['running', 'paused'].includes``。
 
@@ -432,7 +432,7 @@ A display projection only. Never use this group to rebuild provider history.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/workProcessModel.js:5812:5848:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/workProcessModel.js:5827:5863:FUNCTION
 
 .. rubric:: ``calls.filter callback @ 89``
 
