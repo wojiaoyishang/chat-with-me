@@ -17,7 +17,7 @@ src/features/tasks/TaskCenter 模块
 * **模块标识**：``src/features/tasks/TaskCenter``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：39
+* **局部函数与匿名回调**：40
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ src/features/tasks/TaskCenter 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1077:2173:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1092:2188:FUNCTION
 
 .. js:function:: TaskCenterTrigger({ listItem = false })
 
@@ -48,13 +48,13 @@ src/features/tasks/TaskCenter 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2173:14465:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2188:14715:FUNCTION
 
 .. js:function:: TaskCenter()
 
    渲染 ``TaskCenter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``47``—``251`` 行。
+   **性质**：同步函数；导出 API；源码第 ``47``—``254`` 行。
 
    **参数**
 
@@ -72,14 +72,14 @@ src/features/tasks/TaskCenter 模块
 
    **主要协作调用**：``useTranslation``、``useNavigate``、``useTaskStore``、``useState``、``useRef``、``useEffect``、``Object.values(tasks).sort``、``Object.values``、``t``、``list.map``。
 
-   **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：11。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1212:1225:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1227:1240:FUNCTION
 
 .. rubric:: ``useTaskStore callback @ 21``
 
@@ -100,7 +100,7 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1260:1274:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1275:1289:FUNCTION
 
 .. rubric:: ``useTaskStore callback @ 22``
 
@@ -121,7 +121,7 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1324:1436:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1339:1451:FUNCTION
 
 .. rubric:: ``Object.values(tasks).filter callback @ 23``
 
@@ -144,7 +144,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``['queued', 'pending', 'running', 'cancel_requested', 'pause_requested'].includes``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1771:1783:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:1786:1798:FUNCTION
 
 .. rubric:: ``onClick callback @ 34``
 
@@ -166,7 +166,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``show``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2639:2827:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2654:2842:FUNCTION
 
 .. rubric:: ``stageName``
 
@@ -194,7 +194,7 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2694:2722:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2709:2737:FUNCTION
 
 .. rubric:: ``definitions[task.kind]?.stages?.find callback @ 56``
 
@@ -215,7 +215,7 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2856:2987:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:2871:3002:FUNCTION
 
 .. rubric:: ``openManagement``
 
@@ -242,7 +242,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``setOpen``、``navigate``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3004:4198:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3019:4213:FUNCTION
 
 .. rubric:: ``useEffect callback @ 62``
 
@@ -271,7 +271,7 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：7。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3064:3476:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3079:3491:FUNCTION
 
 .. rubric:: ``load``
 
@@ -299,7 +299,7 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3167:3353:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3182:3368:FUNCTION
 
 .. rubric:: ``apiClient .get(apiEndpoint.TASKS_ENDPOINT) .then callback @ 67``
 
@@ -322,7 +322,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``merge``、``setLoadError``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3379:3475:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3394:3490:FUNCTION
 
 .. rubric:: ``apiClient .get(apiEndpoint.TASKS_ENDPOINT) .then((data) => { if (!disposed) { merge(data.tasks || []); setLoadError(nul… callback @ 73``
 
@@ -345,7 +345,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``setLoadError``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3573:3718:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3588:3733:FUNCTION
 
 .. rubric:: ``apiClient.get(\x60${apiEndpoint.TASKS_ENDPOINT}/definitions\x60).then callback @ 77``
 
@@ -370,7 +370,7 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3676:3703:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3691:3718:FUNCTION
 
 .. rubric:: ``(data.definitions || []).map callback @ 78``
 
@@ -391,7 +391,7 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3726:3741:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3741:3756:FUNCTION
 
 .. rubric:: ``apiClient.get(\x60${apiEndpoint.TASKS_ENDPOINT}/definitions\x60).then((data) => { if (!disposed) setDefinitions(Object.fromEn… callback @ 79``
 
@@ -411,7 +411,7 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3809:3842:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3824:3857:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'task.changed' }).then callback @ 80``
 
@@ -434,7 +434,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``merge``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3919:3936:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:3934:3951:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'transport.connected' }).then callback @ 81``
 
@@ -456,7 +456,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4010:4047:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4025:4062:FUNCTION
 
 .. rubric:: ``onEvent({ event: 'task.center.open' }).then callback @ 82``
 
@@ -479,7 +479,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``show``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4065:4190:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4080:4205:FUNCTION
 
 .. rubric:: ``returned callback @ 83``
 
@@ -501,7 +501,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``changed``、``reconnect``、``openTasks``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4231:4515:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4246:4530:FUNCTION
 
 .. rubric:: ``useEffect callback @ 90``
 
@@ -529,7 +529,7 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4409:4432:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4424:4447:FUNCTION
 
 .. rubric:: ``apiClient .get(\x60${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(selectedId)}\x60) .then callback @ 94``
 
@@ -552,7 +552,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``merge``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4458:4495:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4473:4510:FUNCTION
 
 .. rubric:: ``apiClient .get(\x60${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(selectedId)}\x60) .then((task) => merge([task])) .catch callback @ 95``
 
@@ -575,7 +575,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4560:4649:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4575:4664:FUNCTION
 
 .. rubric:: ``useEffect callback @ 98``
 
@@ -597,7 +597,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``selected.current?.scrollIntoView``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4707:5022:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:4722:5037:FUNCTION
 
 .. rubric:: ``action``
 
@@ -627,7 +627,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``setBusy``、``merge``、``apiClient.post``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:5068:5127:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:5083:5142:FUNCTION
 
 .. rubric:: ``Object.values(tasks).sort callback @ 111``
 
@@ -653,7 +653,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``Date.parse``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:5339:5643:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:5354:5658:FUNCTION
 
 .. rubric:: ``onInteractOutside callback @ 116``
 
@@ -676,7 +676,7 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``event.target.closest``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6041:6073:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6062:6122:FUNCTION
 
 .. rubric:: ``onClick callback @ 128``
 
@@ -696,19 +696,45 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``openManagement``。
+**副作用**
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6582:14381:FUNCTION
+* 改变前端路由或浏览器历史。
 
-.. rubric:: ``list.map callback @ 137``
+**主要协作调用**：``setOpen``、``navigate``。
+
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6291:6323:FUNCTION
+
+.. rubric:: ``onClick callback @ 131``
 
 .. code-block:: javascript
 
-   list.map callback @ 137(task)
+   onClick callback @ 131()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``131``—``131`` 行；所属函数 ``TaskCenter``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``openManagement``。
+
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:6832:14631:FUNCTION
+
+.. rubric:: ``list.map callback @ 140``
+
+.. code-block:: javascript
+
+   list.map callback @ 140(task)
 
 作为 ``list.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``137``—``246`` 行；所属函数 ``TaskCenter``。
+**性质**：同步局部函数；源码第 ``140``—``249`` 行；所属函数 ``TaskCenter``。
 
 **参数**
 
@@ -727,17 +753,17 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：10。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:8342:8370:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:8592:8620:FUNCTION
 
-.. rubric:: ``Object.entries(task.submission) .filter callback @ 159``
+.. rubric:: ``Object.entries(task.submission) .filter callback @ 162``
 
 .. code-block:: javascript
 
-   Object.entries(task.submission) .filter callback @ 159([, value])
+   Object.entries(task.submission) .filter callback @ 162([, value])
 
 作为 ``Object.entries(task.submission) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``159``—``159`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``162``—``162`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -748,17 +774,17 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:8422:8807:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:8672:9057:FUNCTION
 
-.. rubric:: ``Object.entries(task.submission) .filter(([, value]) => value != null) .map callback @ 160``
+.. rubric:: ``Object.entries(task.submission) .filter(([, value]) => value != null) .map callback @ 163``
 
 .. code-block:: javascript
 
-   Object.entries(task.submission) .filter(([, value]) => value != null) .map callback @ 160([key, value])
+   Object.entries(task.submission) .filter(([, value]) => value != null) .map callback @ 163([key, value])
 
 作为 ``Object.entries(task.submission) .filter(([, value]) => value != null) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``160``—``165`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``163``—``168`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -771,17 +797,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:9243:9519:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:9493:9769:FUNCTION
 
-.. rubric:: ``(task.history || []).map callback @ 172``
+.. rubric:: ``(task.history || []).map callback @ 175``
 
 .. code-block:: javascript
 
-   (task.history || []).map callback @ 172(entry, index)
+   (task.history || []).map callback @ 175(entry, index)
 
 作为 ``(task.history || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``172``—``176`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``175``—``179`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -797,17 +823,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``formatLocalTimestamp``、``stageName``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:9937:10069:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:10187:10319:FUNCTION
 
-.. rubric:: ``task.result.warnings.map callback @ 182``
+.. rubric:: ``task.result.warnings.map callback @ 185``
 
 .. code-block:: javascript
 
-   task.result.warnings.map callback @ 182(warning, index)
+   task.result.warnings.map callback @ 185(warning, index)
 
 作为 ``task.result.warnings.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``182``—``184`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``185``—``187`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -821,17 +847,17 @@ src/features/tasks/TaskCenter 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:10289:10322:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:10539:10572:FUNCTION
 
-.. rubric:: ``onClick callback @ 188``
+.. rubric:: ``onClick callback @ 191``
 
 .. code-block:: javascript
 
-   onClick callback @ 188()
+   onClick callback @ 191()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``188``—``188`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -843,17 +869,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``openManagement``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:10651:10864:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:10901:11114:FUNCTION
 
-.. rubric:: ``onClick callback @ 192``
+.. rubric:: ``onClick callback @ 195``
 
 .. code-block:: javascript
 
-   onClick callback @ 192()
+   onClick callback @ 195()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``192``—``195`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``195``—``198`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -869,17 +895,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``setOpen``、``navigate``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:11262:11295:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:11512:11545:FUNCTION
 
-.. rubric:: ``onClick callback @ 200``
+.. rubric:: ``onClick callback @ 203``
 
 .. code-block:: javascript
 
-   onClick callback @ 200()
+   onClick callback @ 203()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``203``—``203`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -891,17 +917,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:11645:12683:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:11895:12933:FUNCTION
 
-.. rubric:: ``workflowArtifacts(task.result).map callback @ 205``
+.. rubric:: ``workflowArtifacts(task.result).map callback @ 208``
 
 .. code-block:: javascript
 
-   workflowArtifacts(task.result).map callback @ 205(file)
+   workflowArtifacts(task.result).map callback @ 208(file)
 
 作为 ``workflowArtifacts(task.result).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``205``—``220`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``208``—``223`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -916,17 +942,17 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:11984:12298:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:12234:12548:FUNCTION
 
-.. rubric:: ``onClick callback @ 210``
+.. rubric:: ``onClick callback @ 213``
 
 .. code-block:: javascript
 
-   onClick callback @ 210()
+   onClick callback @ 213()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``210``—``214`` 行；所属函数 ``workflowArtifacts(task.result).map callback @ 205``。
+**性质**：同步局部函数；源码第 ``213``—``217`` 行；所属函数 ``workflowArtifacts(task.result).map callback @ 208``。
 
 **参数**
 
@@ -940,17 +966,17 @@ src/features/tasks/TaskCenter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:12260:12297:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:12510:12547:FUNCTION
 
-.. rubric:: ``downloadAttachmentResource( file.url, file.filename, ).catch callback @ 214``
+.. rubric:: ``downloadAttachmentResource( file.url, file.filename, ).catch callback @ 217``
 
 .. code-block:: javascript
 
-   downloadAttachmentResource( file.url, file.filename, ).catch callback @ 214(error)
+   downloadAttachmentResource( file.url, file.filename, ).catch callback @ 217(error)
 
 处理 ``downloadAttachmentResource( file.url, file.filename, ).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``214``—``214`` 行；所属函数 ``onClick callback @ 210``。
+**性质**：同步局部函数；源码第 ``217``—``217`` 行；所属函数 ``onClick callback @ 213``。
 
 **参数**
 
@@ -963,17 +989,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13217:13250:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13467:13500:FUNCTION
 
-.. rubric:: ``onClick callback @ 227``
+.. rubric:: ``onClick callback @ 230``
 
 .. code-block:: javascript
 
-   onClick callback @ 227()
+   onClick callback @ 230()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``227``—``227`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 
@@ -985,17 +1011,17 @@ src/features/tasks/TaskCenter 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:13987:14019:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/TaskCenter.jsx:14237:14269:FUNCTION
 
-.. rubric:: ``onClick callback @ 238``
+.. rubric:: ``onClick callback @ 241``
 
 .. code-block:: javascript
 
-   onClick callback @ 238()
+   onClick callback @ 241()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``238``—``238`` 行；所属函数 ``list.map callback @ 137``。
+**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``list.map callback @ 140``。
 
 **参数**
 

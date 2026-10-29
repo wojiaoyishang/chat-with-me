@@ -27,13 +27,13 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:1080:15424:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:1080:15577:FUNCTION
 
 .. js:function:: BackendManagementPage({ kind, onReturn, returnLabel = "返回对话", sidebarMode = false, })
 
    The backend owns the task definitions, forms, dashboard, and knowledge interface.
 
-   **性质**：同步函数；导出 API；源码第 ``37``—``369`` 行。
+   **性质**：同步函数；导出 API；源码第 ``37``—``371`` 行。
 
    **参数**
 
@@ -125,17 +125,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:3583:4035:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:3736:4188:FUNCTION
 
-.. rubric:: ``useCallback callback @ 88``
+.. rubric:: ``useCallback callback @ 90``
 
 .. code-block:: javascript
 
-   useCallback callback @ 88()
+   useCallback callback @ 90()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``88``—``103`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``90``—``105`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -147,17 +147,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``frame.current?.contentWindow?.postMessage``、``backendOrigin``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4207:4465:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4360:4618:FUNCTION
 
-.. rubric:: ``useCallback callback @ 106``
+.. rubric:: ``useCallback callback @ 108``
 
 .. code-block:: javascript
 
-   useCallback callback @ 106()
+   useCallback callback @ 108()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``106``—``112`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``108``—``114`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -169,17 +169,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``frame.current?.contentWindow?.postMessage``、``backendOrigin``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4524:4576:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4677:4729:FUNCTION
 
-.. rubric:: ``useEffect callback @ 114``
+.. rubric:: ``useEffect callback @ 116``
 
 .. code-block:: javascript
 
-   useEffect callback @ 114()
+   useEffect callback @ 116()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``114``—``116`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``116``—``118`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -191,17 +191,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``sendGraphPreferences``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4625:4668:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4778:4821:FUNCTION
 
-.. rubric:: ``useEffect callback @ 118``
+.. rubric:: ``useEffect callback @ 120``
 
 .. code-block:: javascript
 
-   useEffect callback @ 118()
+   useEffect callback @ 120()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``118``—``120`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``120``—``122`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -213,17 +213,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``deliverKnowledgeImport``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4712:5419:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4865:5572:FUNCTION
 
-.. rubric:: ``useEffect callback @ 122``
+.. rubric:: ``useEffect callback @ 124``
 
 .. code-block:: javascript
 
-   useEffect callback @ 122()
+   useEffect callback @ 124()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``122``—``135`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``124``—``137`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -242,17 +242,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:4893:5034:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5046:5187:FUNCTION
 
-.. rubric:: ``apiClient .get("/user/info", { signal: controller.signal }) .then callback @ 128``
+.. rubric:: ``apiClient .get("/user/info", { signal: controller.signal }) .then callback @ 130``
 
 .. code-block:: javascript
 
-   apiClient .get("/user/info", { signal: controller.signal }) .then callback @ 128()
+   apiClient .get("/user/info", { signal: controller.signal }) .then callback @ 130()
 
 处理 ``apiClient .get("/user/info", { signal: controller.signal }) .then callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``useEffect callback @ 122``。
+**性质**：同步局部函数；源码第 ``130``—``130`` 行；所属函数 ``useEffect callback @ 124``。
 
 **参数**
 
@@ -269,17 +269,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``apiClient.post``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5049:5229:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5202:5382:FUNCTION
 
-.. rubric:: ``apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 129``
+.. rubric:: ``apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 131``
 
 .. code-block:: javascript
 
-   apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 129(session)
+   apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 131(session)
 
 实现 ``apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``useEffect callback @ 122``。
+**性质**：同步局部函数；源码第 ``131``—``131`` 行；所属函数 ``useEffect callback @ 124``。
 
 **参数**
 
@@ -292,17 +292,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``setFrameSession``、``setReady``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5245:5374:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5398:5527:FUNCTION
 
-.. rubric:: ``apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 130``
+.. rubric:: ``apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 132``
 
 .. code-block:: javascript
 
-   apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 130(cause)
+   apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:… callback @ 132(cause)
 
 实现 ``apiClient .get("/user/info", { signal: controller.signal }) .then(() => apiClient.post('/client/frame-session', { path:…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``130``—``133`` 行；所属函数 ``useEffect callback @ 122``。
+**性质**：同步局部函数；源码第 ``132``—``135`` 行；所属函数 ``useEffect callback @ 124``。
 
 **参数**
 
@@ -315,17 +315,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``isAuthRedirectError``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5388:5413:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5541:5566:FUNCTION
 
-.. rubric:: ``returned callback @ 134``
+.. rubric:: ``returned callback @ 136``
 
 .. code-block:: javascript
 
-   returned callback @ 134()
+   returned callback @ 136()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``134``—``134`` 行；所属函数 ``useEffect callback @ 122``。
+**性质**：同步局部函数；源码第 ``136``—``136`` 行；所属函数 ``useEffect callback @ 124``。
 
 **参数**
 
@@ -337,17 +337,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5457:12287:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5610:12440:FUNCTION
 
-.. rubric:: ``useEffect callback @ 137``
+.. rubric:: ``useEffect callback @ 139``
 
 .. code-block:: javascript
 
-   useEffect callback @ 137()
+   useEffect callback @ 139()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``137``—``273`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``139``—``275`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -368,7 +368,7 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5485:12165:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:5638:12318:FUNCTION
 
 .. rubric:: ``receive``
 
@@ -378,7 +378,7 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 实现 ``receive`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``138``—``270`` 行；所属函数 ``useEffect callback @ 137``。
+**性质**：同步局部函数；源码第 ``140``—``272`` 行；所属函数 ``useEffect callback @ 139``。
 
 **参数**
 
@@ -399,7 +399,7 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:6649:6910:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:6802:7063:FUNCTION
 
 .. rubric:: ``respond``
 
@@ -409,7 +409,7 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 实现 ``respond`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``161``—``164`` 行；所属函数 ``receive``。
+**性质**：同步局部函数；源码第 ``163``—``166`` 行；所属函数 ``receive``。
 
 **参数**
 
@@ -422,17 +422,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``isCurrentConnection``、``target?.postMessage``、``backendOrigin``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:7030:9216:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:7183:9369:FUNCTION
 
-.. rubric:: ``anonymous callback @ 167``
+.. rubric:: ``anonymous callback @ 169``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 167()
+   async anonymous callback @ 169()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``167``—``192`` 行；所属函数 ``receive``。
+**性质**：异步局部函数；源码第 ``169``—``194`` 行；所属函数 ``receive``。
 
 **参数**
 
@@ -452,7 +452,7 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:8666:8677:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:8819:8830:FUNCTION
 
 .. rubric:: ``validateStatus``
 
@@ -462,7 +462,7 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 校验与 ``Status`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``anonymous callback @ 167``。
+**性质**：同步局部函数；源码第 ``188``—``188`` 行；所属函数 ``anonymous callback @ 169``。
 
 **参数**
 
@@ -472,17 +472,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:9569:10194:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:9722:10347:FUNCTION
 
-.. rubric:: ``setWorkflowRequest callback @ 200``
+.. rubric:: ``setWorkflowRequest callback @ 202``
 
 .. code-block:: javascript
 
-   setWorkflowRequest callback @ 200(current)
+   setWorkflowRequest callback @ 202(current)
 
 设置与 ``Workflow Request`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``200``—``215`` 行；所属函数 ``receive``。
+**性质**：同步局部函数；源码第 ``202``—``217`` 行；所属函数 ``receive``。
 
 **参数**
 
@@ -495,17 +495,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``["template-editor", "quick-run", "monitor"].includes``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12228:12281:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12381:12434:FUNCTION
 
-.. rubric:: ``returned callback @ 272``
+.. rubric:: ``returned callback @ 274``
 
 .. code-block:: javascript
 
-   returned callback @ 272()
+   returned callback @ 274()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``272``—``272`` 行；所属函数 ``useEffect callback @ 137``。
+**性质**：同步局部函数；源码第 ``274``—``274`` 行；所属函数 ``useEffect callback @ 139``。
 
 **参数**
 
@@ -521,17 +521,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12485:12608:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12638:12761:FUNCTION
 
-.. rubric:: ``useEffect callback @ 285``
+.. rubric:: ``useEffect callback @ 287``
 
 .. code-block:: javascript
 
-   useEffect callback @ 285()
+   useEffect callback @ 287()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``287``—``287`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -543,17 +543,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12490:12608:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12643:12761:FUNCTION
 
-.. rubric:: ``anonymous callback @ 285``
+.. rubric:: ``anonymous callback @ 287``
 
 .. code-block:: javascript
 
-   anonymous callback @ 285()
+   anonymous callback @ 287()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``useEffect callback @ 285``。
+**性质**：同步局部函数；源码第 ``287``—``287`` 行；所属函数 ``useEffect callback @ 287``。
 
 **参数**
 
@@ -565,17 +565,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``frameRequests.current.values``、``controller.abort``、``frameRequests.current.clear``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12656:12962:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:12809:13115:FUNCTION
 
-.. rubric:: ``useCallback callback @ 287``
+.. rubric:: ``useCallback callback @ 289``
 
 .. code-block:: javascript
 
-   useCallback callback @ 287(message)
+   useCallback callback @ 289(message)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``287``—``294`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``289``—``296`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -588,17 +588,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``frame.current?.contentWindow?.postMessage``、``backendOrigin``、``setWorkflowRequest``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:13271:13294:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:13424:13447:FUNCTION
 
-.. rubric:: ``anonymous callback @ 303``
+.. rubric:: ``anonymous callback @ 305``
 
 .. code-block:: javascript
 
-   anonymous callback @ 303()
+   anonymous callback @ 305()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``303``—``303`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``305``—``305`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -614,17 +614,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:15066:15096:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:15219:15249:FUNCTION
 
-.. rubric:: ``onClose callback @ 355``
+.. rubric:: ``onClose callback @ 357``
 
 .. code-block:: javascript
 
-   onClose callback @ 355()
+   onClose callback @ 357()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``355``—``355`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``357``—``357`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 
@@ -636,17 +636,17 @@ The backend owns the task definitions, forms, dashboard, and knowledge interface
 
 **主要协作调用**：``setWorkflowRequest``。
 
-.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:15268:15298:FUNCTION
+.. CWM-AST-FUNCTION src/features/tasks/BackendManagementPage.jsx:15421:15451:FUNCTION
 
-.. rubric:: ``onClose callback @ 361``
+.. rubric:: ``onClose callback @ 363``
 
 .. code-block:: javascript
 
-   onClose callback @ 361()
+   onClose callback @ 363()
 
 处理 ``Close`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``361``—``361`` 行；所属函数 ``BackendManagementPage``。
+**性质**：同步局部函数；源码第 ``363``—``363`` 行；所属函数 ``BackendManagementPage``。
 
 **参数**
 

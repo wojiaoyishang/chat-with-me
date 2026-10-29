@@ -1156,7 +1156,7 @@
    * - :doc:`src/features/tasks/TaskCenter </api/javascript/features/tasks/TaskCenter>`
      - 2
      - 0
-     - 39
+     - 40
      - ``src/features/tasks/TaskCenter.jsx``
    * - :doc:`src/features/tasks/observation-components </api/javascript/features/tasks/observation-components>`
      - 0

@@ -75,6 +75,8 @@ export default function BackendManagementPage({
   const scopeDatabase = incoming?.databaseId || query.get("databaseId");
   const sourceQuery = new URLSearchParams();
   if (taskId) sourceQuery.set("taskId", taskId);
+  // Backend-owned management views can be linked directly without a client page.
+  if (query.get("view")) sourceQuery.set("view", query.get("view"));
   if (kind === "knowledge" && scopeConversation)
     sourceQuery.set("conversationId", scopeConversation);
   if (kind === "knowledge" && scopeDatabase)

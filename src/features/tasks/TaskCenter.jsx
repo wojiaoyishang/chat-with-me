@@ -2,7 +2,7 @@ import { workflowArtifacts } from "../workflows/workflowProducts.js";
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ClipboardList, Download, RefreshCw, X, ArrowUpRight, Play } from 'lucide-react';
+import { ClipboardList, Download, RefreshCw, X, ArrowUpRight, Play, CalendarClock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -124,7 +124,10 @@ export default function TaskCenter() {
                     <SheetTitle>{t('taskCenter.title')}</SheetTitle>
                     <SheetDescription>{t('taskCenter.description')}</SheetDescription>
                 </SheetHeader>
-                <div className="flex justify-end border-b px-4 pb-3">
+                <div className="flex justify-end gap-2 border-b px-4 pb-3">
+                    <Button size="sm" variant="ghost" onClick={() => { setOpen(false); navigate('/tasks?view=schedules'); }}>
+                        <CalendarClock className="mr-1 size-4" />计划任务
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => openManagement(selectedId)}>
                         <ArrowUpRight className="mr-1 size-4" />任务管理
                     </Button>

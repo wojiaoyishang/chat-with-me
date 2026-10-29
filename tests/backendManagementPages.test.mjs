@@ -23,6 +23,11 @@ async function waitFor(predicate) {
   assert.ok(predicate(), "Expected the asynchronous page update to finish");
 }
 const observation = (components) => ({ version: 1, revision: 1, scopes: { task: { kind: "task", title: "任务", components } } });
+const scheduleFixture = {
+  id: 'daily-plan', name: '每日汇总', enabled: true, revision: 2,
+  triggerLabel: '每天 09:00 · Asia/Shanghai', nextFireAt: '2026-11-01T01:00:00Z', lastFireAt: null,
+  action: { type: 'workflow', templateId: 'saved-flow', templateRevision: 3 }, latest: null,
+};
 async function page(
   kind,
   responder,
@@ -102,6 +107,118 @@ async function openNodeAction(dom, document, id, actionName) {
   assert.ok(action && !action.hidden && !action.disabled, `${actionName} must be available`);
   action.click(); await settle();
 }
+
+test('task schedules have a separate management view with health, pause and task-history navigation', async (t) => {
+  let row = structuredClone(scheduleFixture);
+  const { dom, document, calls } = await page('tasks', (url, options) => {
+    if (url === '/api/tasks/definitions') return { definitions: [] };
+    if (url === '/api/tasks?limit=200') return { tasks: [] };
+    if (url === '/api/automations/status') return { services: [{ online: true }] };
+    if (url === '/api/tasks/schedules') return { schedules: [row] };
+    if (url === '/api/tasks/schedules/daily-plan/enabled') {
+      const body = JSON.parse(options.body);
+      assert.deepEqual(body, { revision: 2, enabled: false });
+      row = { ...row, enabled: false, revision: 3 }; return row;
+    }
+    if (url === '/api/tasks/schedules/daily-plan/history?offset=0') return {
+      records: [{ createdAt: '2026-10-29T01:00:00Z', status: 'delivered', result: { taskId: 'scheduled-run' },
+        task: { taskId: 'scheduled-run', title: '定时工作流', status: 'completed' } }], nextOffset: null,
+    };
+    if (url === '/api/tasks/scheduled-run/details') return { task: { taskId: 'scheduled-run', title: '定时工作流',
+      kind: 'workflow.run', status: 'completed', result: {} }, stages: [] };
+    throw new Error(`Unexpected schedule request ${url}`);
+  });
+  t.after(() => dom.window.close());
+  assert.equal(calls.some((call) => call.url === '/api/tasks/schedules'), false);
+  document.getElementById('task-schedules-tab').click();
+  await waitFor(() => document.querySelector('[data-schedule-id="daily-plan"]'));
+  assert.equal(document.querySelector('.content-grid').hidden, true);
+  assert.match(document.getElementById('scheduler-state').textContent, /在线/);
+  assert.match(document.getElementById('schedule-view').textContent, /v3/);
+  const action = (label) => [...document.querySelectorAll('.schedule-row-actions button')].find((button) => button.textContent === label);
+  action('暂停计划').click();
+  await waitFor(() => action('启用计划'));
+  assert.equal(action('立即运行').disabled, true);
+  action('触发记录').click();
+  await waitFor(() => document.querySelector('.schedule-history-table'));
+  assert.match(document.querySelector('.schedule-history-table').textContent, /已投递 Worker.*已完成/);
+  document.querySelector('.schedule-history-table button').click();
+  await waitFor(() => document.getElementById('task-runs-tab').getAttribute('aria-pressed') === 'true');
+  assert.equal(new URL(dom.window.location.href).searchParams.get('taskId'), 'scheduled-run');
+  assert.equal(document.getElementById('schedule-view').hidden, true);
+  await waitFor(() => document.getElementById('detail').textContent.includes('定时工作流'));
+  await settle();
+});
+
+test('schedule editor submits pinned, typed template input and a deliberate empty-text override', async (t) => {
+  let submitted;
+  const template = { id: 'saved-flow', title: '已保存工作流', revision: 3, inputFields: [
+    { key: 'message', title: '投递正文', type: 'string', schema: { type: 'string' }, default: '旧正文' },
+  ] };
+  const defaults = { name: '', enabled: true, revision: null, triggerType: 'daily', timezone: 'Asia/Shanghai',
+    time: '09:00', at: '', seconds: 3600, weekdays: [0, 1, 2, 3, 4], actionType: 'workflow',
+    templateId: 'saved-flow', templateRevision: 3, inputValues: {}, cooldownSeconds: 0, maxPending: 100, maxAttempts: 3 };
+  const { dom, document, calls } = await page('tasks', (url, options) => {
+    if (url === '/api/tasks/definitions') return { definitions: [] };
+    if (url === '/api/tasks?limit=200') return { tasks: [] };
+    if (url === '/api/tasks/schedules') {
+      if (options.method === 'POST') { submitted = JSON.parse(options.body); return { id: 'created-plan' }; }
+      return { schedules: [] };
+    }
+    if (url === '/api/automations/status') return { services: [{ online: false }] };
+    if (url === '/api/tasks/schedules/editor') return { title: '新建计划任务', defaults,
+      templates: [{ id: template.id, title: template.title, revision: 3 }], selectedTemplate: template };
+    if (url === '/api/tasks/schedules/created-plan/history?offset=0') return { records: [], nextOffset: null };
+    throw new Error(`Unexpected request ${url}`);
+  });
+  t.after(() => dom.window.close());
+  document.getElementById('task-schedules-tab').click();
+  await waitFor(() => document.querySelector('.schedule-empty'));
+  assert.match(document.getElementById('scheduler-state').textContent, /离线/);
+  document.getElementById('create-schedule').click();
+  await waitFor(() => document.querySelector('.schedule-editor'));
+  document.querySelector('[name="name"]').value = '测试计划';
+  document.querySelector('[name="input:message"]').value = '';
+  document.getElementById('create-form').dispatchEvent(new dom.window.Event('submit', { bubbles: true, cancelable: true }));
+  await waitFor(() => submitted);
+  assert.equal(submitted.templateRevision, 3);
+  assert.equal(submitted.actionType, 'workflow');
+  assert.deepEqual(submitted.inputValues, { message: '' });
+  assert.equal(Object.keys(submitted).some((key) => key.startsWith('input:')), false);
+  assert.equal(calls.some((call) => call.url.includes('/tasks/workflows/run')), false);
+  await waitFor(() => !document.getElementById('create-dialog').open);
+});
+
+test('retrying a manual schedule trigger after a lost response reuses its request ID', async (t) => {
+  const attempts = [];
+  const { dom, document } = await page('tasks', (url, options) => {
+    if (url === '/api/tasks/definitions') return { definitions: [] };
+    if (url === '/api/tasks?limit=200') return { tasks: [] };
+    if (url === '/api/automations/status') return { services: [{ online: true }] };
+    if (url === '/api/tasks/schedules') return { schedules: [scheduleFixture] };
+    if (url === '/api/tasks/schedules/daily-plan/run') {
+      attempts.push(JSON.parse(options.body).requestId);
+      if (attempts.length === 1) throw new Error('response lost');
+      return { id: 'same-dispatch', status: 'pending' };
+    }
+    if (url === '/api/tasks/schedules/daily-plan/history?offset=0') return { records: [], nextOffset: null };
+    throw new Error(`Unexpected request ${url}`);
+  });
+  t.after(() => dom.window.close());
+  document.getElementById('task-schedules-tab').click();
+  await waitFor(() => document.querySelector('.schedule-row-actions'));
+  const run = () => [...document.querySelectorAll('.schedule-row-actions button')].find((node) => node.textContent === '立即运行').click();
+  run();
+  await waitFor(() => document.querySelector('.page-confirm-dialog'));
+  document.querySelector('.page-confirm-dialog .primary').click();
+  await waitFor(() => document.getElementById('notice').textContent === 'response lost');
+  run();
+  await waitFor(() => document.querySelector('.page-confirm-dialog'));
+  document.querySelector('.page-confirm-dialog .primary').click();
+  await waitFor(() => document.getElementById('schedule-history')?.textContent.includes('暂无触发记录'));
+  assert.equal(attempts.length, 2);
+  assert.equal(attempts[0], attempts[1]);
+});
 
 test("knowledge page stays usable before any graph database is configured", async (t) => {
   const { dom, document, calls } = await page(
