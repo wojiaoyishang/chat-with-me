@@ -173,7 +173,7 @@ src/features/execution/useExecutionStore 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14502:14573:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14527:14598:FUNCTION
 
 .. js:function:: upsertExecution(execution)
 
@@ -192,7 +192,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().upsertExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14604:14689:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14629:14714:FUNCTION
 
 .. js:function:: openExecution(execution, target)
 
@@ -214,7 +214,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().openExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14732:14841:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14757:14866:FUNCTION
 
 .. js:function:: consumeExecutionNavigation(conversationId, requestId)
 
@@ -236,7 +236,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().consumeNavigation``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14875:14980:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14900:15005:FUNCTION
 
 .. js:function:: openExecutionById(conversationId, executionId)
 
@@ -258,7 +258,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().openById``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15021:15116:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15046:15141:FUNCTION
 
 .. js:function:: upsertExecutionActivity(execution, activity)
 
@@ -280,7 +280,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().upsertActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15156:15304:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15181:15329:FUNCTION
 
 .. js:function:: patchExecutionActivity(conversationId, executionId, activityId, patch)
 
@@ -308,7 +308,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().patchActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15336:15407:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15361:15432:FUNCTION
 
 .. js:function:: closeExecution(conversationId)
 
@@ -327,7 +327,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().close``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15451:15539:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15476:15564:FUNCTION
 
 .. js:function:: clearExecutionConversation(conversationId)
 
@@ -346,7 +346,7 @@ src/features/execution/useExecutionStore 模块
 
    **主要协作调用**：``useExecutionStore.getState().clearConversation``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15575:15665:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15600:15690:FUNCTION
 
 .. js:function:: openGuidanceEditor(execution, target)
 
@@ -438,7 +438,7 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3747:14466:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3747:14491:FUNCTION
 
 .. rubric:: ``create callback @ 78``
 
@@ -927,7 +927,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10033:12275:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10033:12300:FUNCTION
 
 .. rubric:: ``openGuidanceEditor``
 
@@ -959,7 +959,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10129:12242:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10129:12267:FUNCTION
 
 .. rubric:: ``set callback @ 221``
 
@@ -980,7 +980,7 @@ src/features/execution/useExecutionStore 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, isOpen: true, activeExecutionId: execution.executionId, guidanceDrafts: {...session.guidanceDrafts, [draftKey]: draft}, guidance…``。
 
-**主要协作调用**：``normalizeExecution``、``emptySession``、``sessionWithExecution``、``current.activities?.find``、``['rewrite', 'correction'].includes``、``Array.isArray``、``source.attachments.map``。
+**主要协作调用**：``normalizeExecution``、``emptySession``、``sessionWithExecution``、``current.activities?.find``、``['widget_response', 'agent_message'].includes``、``['rewrite', 'correction'].includes``、``Array.isArray``、``source.attachments.map``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
@@ -1005,7 +1005,7 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11461:11482:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11486:11507:FUNCTION
 
 .. rubric:: ``source.attachments.map callback @ 238``
 
@@ -1026,7 +1026,7 @@ src/features/execution/useExecutionStore 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12304:12822:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12329:12847:FUNCTION
 
 .. rubric:: ``updateGuidanceDraft``
 
@@ -1061,7 +1061,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12337:12821:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12362:12846:FUNCTION
 
 .. rubric:: ``set callback @ 254``
 
@@ -1084,7 +1084,7 @@ src/features/execution/useExecutionStore 模块
 
 **主要协作调用**：``['submitting', 'uncertain', 'sent'].includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12850:13519:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12875:13544:FUNCTION
 
 .. rubric:: ``patchGuidanceDraft``
 
@@ -1122,7 +1122,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12910:13518:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12935:13543:FUNCTION
 
 .. rubric:: ``set callback @ 264``
 
@@ -1143,7 +1143,7 @@ src/features/execution/useExecutionStore 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, guidanceDrafts: { ...session.guidanceDrafts, [draftKey]: {...draft, ...patch}, }, guidanceEditor: patch.state === 'sent' && sess…``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13548:13814:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13573:13839:FUNCTION
 
 .. rubric:: ``closeGuidanceEditor``
 
@@ -1175,7 +1175,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13575:13813:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13600:13838:FUNCTION
 
 .. rubric:: ``set callback @ 275``
 
@@ -1196,7 +1196,7 @@ src/features/execution/useExecutionStore 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, guidanceEditor: null}}}``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13843:14461:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13868:14486:FUNCTION
 
 .. rubric:: ``reopenGuidanceDraft``
 
@@ -1231,7 +1231,7 @@ src/features/execution/useExecutionStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13880:14460:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13905:14485:FUNCTION
 
 .. rubric:: ``set callback @ 281``
 

@@ -68,7 +68,7 @@ export const isQueuedExecutionGuidance = (activity) => !isWidgetExecutionGuidanc
     && ['pending', 'submitting', 'removed'].includes(String(activity?.state || '').toLowerCase());
 
 export const isVisibleExecutionGuidance = (activity) => isWidgetExecutionGuidance(activity)
-    || (!isQueuedExecutionGuidance(activity)
+    || (activity?.source !== 'agent_message' && !isQueuedExecutionGuidance(activity)
         && !['withdrawn', 'replaced'].includes(String(activity?.state || '').toLowerCase()) && !activity?.replacedByGuidanceId);
 
 export const getExecutionGuidance = (execution, live = null) => {

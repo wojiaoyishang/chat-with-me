@@ -3,7 +3,7 @@ src/components/markdown/remarkVideoDirective 模块
 
 .. js:module:: src/components/markdown/remarkVideoDirective
 
-Render \x60![description](url){type=video}\x60 as a block video player. Only the exact suffix is special; ordinary images, code, and :::card blocks remain under the existing Markdown parser's control.
+Render \`![description](url){type=video}\` as a block video player. Only the exact suffix is special; ordinary images, code, and :::card blocks remain under the existing Markdown parser's control.
 
 .. note::
 
@@ -92,7 +92,7 @@ Render \x60![description](url){type=video}\x60 as a block video player. Only the
 
 .. js:function:: remarkVideoDirective()
 
-   Render \x60![description](url){type=video}\x60 as a block video player. Only the exact suffix is special; ordinary images, code, and :::card blocks remain under the existing Markdown parser's control.
+   Render \`![description](url){type=video}\` as a block video player. Only the exact suffix is special; ordinary images, code, and :::card blocks remain under the existing Markdown parser's control.
 
    **性质**：同步函数；导出 API；源码第 ``80``—``101`` 行。
 

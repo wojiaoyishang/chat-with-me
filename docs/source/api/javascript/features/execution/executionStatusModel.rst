@@ -125,7 +125,7 @@ src/features/execution/executionStatusModel 模块
 
    **主要协作调用**：``isWidgetExecutionGuidance``、``['pending', 'submitting', 'removed'].includes``、``String(activity?.state || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:3855:4078:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:3855:4118:FUNCTION
 
 .. js:function:: isVisibleExecutionGuidance(activity)
 
@@ -144,7 +144,7 @@ src/features/execution/executionStatusModel 模块
 
    **主要协作调用**：``isWidgetExecutionGuidance``、``isQueuedExecutionGuidance``、``['withdrawn', 'replaced'].includes``、``String(activity?.state || '').toLowerCase``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:4116:4749:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:4156:4789:FUNCTION
 
 .. js:function:: getExecutionGuidance(execution, live)
 
@@ -168,7 +168,7 @@ src/features/execution/executionStatusModel 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5275:5666:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5315:5706:FUNCTION
 
 .. js:function:: getLegacyKnowledgeOperation(names)
 
@@ -189,7 +189,7 @@ src/features/execution/executionStatusModel 模块
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5710:8041:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5750:8081:FUNCTION
 
 .. js:function:: getExecutionStatusGroupKey(execution)
 
@@ -236,7 +236,7 @@ src/features/execution/executionStatusModel 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:4523:4712:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:4563:4752:FUNCTION
 
 .. rubric:: ``(live?.activities || execution?.activities || []).filter callback @ 79``
 
@@ -259,7 +259,7 @@ src/features/execution/executionStatusModel 模块
 
 **主要协作调用**：``String(activity?.kind || '').toLowerCase``、``String``、``String(activity?.anchorStatusId || '').trim``、``isVisibleExecutionGuidance``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5327:5373:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5367:5413:FUNCTION
 
 .. rubric:: ``names.every callback @ 94``
 
@@ -282,7 +282,7 @@ src/features/execution/executionStatusModel 模块
 
 **主要协作调用**：``name.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5422:5470:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5462:5510:FUNCTION
 
 .. rubric:: ``names.map callback @ 95``
 
@@ -305,7 +305,7 @@ src/features/execution/executionStatusModel 模块
 
 **主要协作调用**：``name.slice``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5498:5540:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5538:5580:FUNCTION
 
 .. rubric:: ``operations.every callback @ 96``
 
@@ -328,7 +328,7 @@ src/features/execution/executionStatusModel 模块
 
 **主要协作调用**：``LEGACY_KNOWLEDGE_READS.has``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5583:5626:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5623:5666:FUNCTION
 
 .. rubric:: ``operations.every callback @ 97``
 
@@ -351,7 +351,7 @@ src/features/execution/executionStatusModel 模块
 
 **主要协作调用**：``LEGACY_KNOWLEDGE_WRITES.has``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6003:6040:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6043:6080:FUNCTION
 
 .. rubric:: ``(Array.isArray(execution.toolNames) ? execution.toolNames : []) .map callback @ 106``
 
@@ -374,7 +374,7 @@ src/features/execution/executionStatusModel 模块
 
 **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6198:6245:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6238:6285:FUNCTION
 
 .. rubric:: ``Object.values(execution.toolStatusNodes || {}).find callback @ 108``
 
@@ -395,7 +395,7 @@ src/features/execution/executionStatusModel 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6298:6424:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6338:6464:FUNCTION
 
 .. rubric:: ``execution.activities?.find callback @ 109``
 
@@ -416,7 +416,7 @@ src/features/execution/executionStatusModel 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:7179:7232:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:7219:7272:FUNCTION
 
 .. rubric:: ``(Array.isArray(meta.evidence) ? meta.evidence : []) .filter callback @ 120``
 

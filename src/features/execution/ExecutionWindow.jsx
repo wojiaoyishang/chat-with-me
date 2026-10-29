@@ -27,6 +27,7 @@ import useExecutionNavigation from './useExecutionNavigation.js';
 import useExecutionAutoFollow from './useExecutionAutoFollow.js';
 import ExecutionGuidanceEditor from './ExecutionGuidanceEditor.jsx';
 import ExecutionGuidanceRecord from './ExecutionGuidanceRecord.jsx';
+import AgentMessageRecord from './AgentMessageRecord.jsx';
 import {isQueuedExecutionGuidance, isWidgetExecutionGuidance} from './executionStatusModel.js';
 
 const realtimeActionErrorMessage = (response, fallback = '操作失败') =>
@@ -131,7 +132,7 @@ const ExecutionWindow = memo(
             });
             activities.forEach((activity, index) => {
                 const kind = String(activity?.kind || '').toLowerCase();
-                if (kind === 'guidance' && isQueuedExecutionGuidance(activity)) return;
+                if (kind === 'guidance' && activity.source !== 'agent_message' && isQueuedExecutionGuidance(activity)) return;
                 const toolCallId = String(activity?.toolCallId || '').trim();
                 // A full Execution Window Tool Calling Card is already the canonical visual
                 // representation for that concrete tool call. Keep the rest of the
@@ -423,6 +424,13 @@ const ExecutionWindow = memo(
                                         }
 
                                         const activity = item.activity || {};
+                                        if (activity.source === 'agent_message') return (
+                                            <div key={item.key} data-execution-timeline-kind="activity" data-execution-activity-source="agent_message"
+                                                data-execution-activity-id={activity.id} className="flex gap-3 rounded-lg border border-slate-200/60 bg-slate-50/40 px-3 py-2.5">
+                                                <span className="w-[62px] shrink-0 pt-0.5 text-xs tabular-nums text-muted-foreground">{fmtTime(activity.time)}</span>
+                                                <AgentMessageRecord activity={activity} />
+                                            </div>
+                                        );
                                         const userGuidance =
                                             String(activity?.kind || '').toLowerCase() === 'guidance' ||
                                             String(activity?.source || '').toLowerCase() === 'user_guidance';

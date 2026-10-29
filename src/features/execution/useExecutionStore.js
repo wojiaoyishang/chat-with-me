@@ -226,7 +226,7 @@ export const useExecutionStore = create((set) => ({
         const session = sessionWithExecution(existing, execution);
         const current = session.executions[execution.executionId];
         const source = current.activities?.find((activity) => activity.id === guidanceId);
-        if (!current.active || current.status === 'cancelling' || !source || source.source === 'widget_response'
+        if (!current.active || current.status === 'cancelling' || !source || ['widget_response', 'agent_message'].includes(source.source)
             || source.replacedByGuidanceId || source.state === 'replaced') return state;
         if (mode === 'rewrite' && (source.state !== 'withdrawn' || source.canRewrite !== true)) return state;
         if (!['rewrite', 'correction'].includes(mode)) return state;

@@ -101,7 +101,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
    **主要协作调用**：``centerSelectedNode``、``node.getBoundingClientRect``、``pane.getBoundingClientRect``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2267:23136:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2267:23259:FUNCTION
 
 .. js:function:: InspectorEventTimeline({ section, renderCall, renderReplacements, onJump })
 
@@ -1627,7 +1627,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``text``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22869:23053:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22950:23176:FUNCTION
 
 .. rubric:: ``[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 226``
 
@@ -1652,7 +1652,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22953:23021:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:23076:23144:FUNCTION
 
 .. rubric:: ``onClick callback @ 226``
 

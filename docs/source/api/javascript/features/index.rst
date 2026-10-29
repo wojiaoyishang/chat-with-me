@@ -783,6 +783,11 @@
      - 0
      - 29
      - ``src/features/documents/useCollaborativeDocument.js``
+   * - :doc:`src/features/execution/AgentMessageRecord </api/javascript/features/execution/AgentMessageRecord>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/execution/AgentMessageRecord.jsx``
    * - :doc:`src/features/execution/ExecutionGuidanceAction </api/javascript/features/execution/ExecutionGuidanceAction>`
      - 1
      - 0
@@ -1572,6 +1577,7 @@
    /api/javascript/features/documents/presence
    /api/javascript/features/documents/sync
    /api/javascript/features/documents/useCollaborativeDocument
+   /api/javascript/features/execution/AgentMessageRecord
    /api/javascript/features/execution/ExecutionGuidanceAction
    /api/javascript/features/execution/ExecutionGuidanceAttachments
    /api/javascript/features/execution/ExecutionGuidanceBubble
