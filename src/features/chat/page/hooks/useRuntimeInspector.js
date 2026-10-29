@@ -108,7 +108,11 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
                     },
                 });
                 if (requestVersion !== requestVersionRef.current || controller.signal.aborted) return null;
-                return data || null;
+                if (!data) return null;
+                // Axios metadata retains both raw responseText and parsed data.
+                // Diagnostic view caches only need the domain response.
+                const { _response, ...value } = data;
+                return value;
             } catch (requestError) {
                 if (
                     requestVersion !== requestVersionRef.current ||
@@ -149,6 +153,12 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
     const loadTab = useCallback(
         async (tabId, { focusMessageId = null, force = false, silent = false } = {}) => {
             const normalizedTabId = String(tabId || 'brief');
+            if (normalizedTabId === 'backend-messages' && Number(documentRef.current?.version || 0) < 5) {
+                // An older API returns gigabytes before the new renderer can reject
+                // its shape. Reject the incompatible read before sending it.
+                setError('后端检查器协议尚未更新，请重启后端 API，再刷新检查器。');
+                return null;
+            }
             activeTabRef.current = normalizedTabId;
             setActiveTab(normalizedTabId);
             if (normalizedTabId === 'brief') return null;

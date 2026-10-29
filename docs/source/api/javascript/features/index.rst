@@ -119,14 +119,14 @@
      - 1
      - ``src/features/chat/page/components/InspectorAttachments.jsx``
    * - :doc:`src/features/chat/page/components/InspectorBackendMessages </api/javascript/features/chat/page/components/InspectorBackendMessages>`
-     - 1
+     - 5
      - 0
-     - 8
+     - 34
      - ``src/features/chat/page/components/InspectorBackendMessages.jsx``
    * - :doc:`src/features/chat/page/components/InspectorEventTimeline </api/javascript/features/chat/page/components/InspectorEventTimeline>`
      - 4
      - 0
-     - 66
+     - 67
      - ``src/features/chat/page/components/InspectorEventTimeline.jsx``
    * - :doc:`src/features/chat/page/components/InspectorHighlight </api/javascript/features/chat/page/components/InspectorHighlight>`
      - 1
@@ -176,7 +176,7 @@
    * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
      - 13
      - 0
-     - 64
+     - 63
      - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
@@ -193,6 +193,11 @@
      - 0
      - 27
      - ``src/features/chat/page/components/SpeechSubtitleOverlay.jsx``
+   * - :doc:`src/features/chat/page/components/inspectorReadCache </api/javascript/features/chat/page/components/inspectorReadCache>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/chat/page/components/inspectorReadCache.js``
    * - :doc:`src/features/chat/page/components/inspectorTimelineLayout </api/javascript/features/chat/page/components/inspectorTimelineLayout>`
      - 4
      - 0
@@ -1449,6 +1454,7 @@
    /api/javascript/features/chat/page/components/ScrollToBottomButton
    /api/javascript/features/chat/page/components/SpeechPlayer
    /api/javascript/features/chat/page/components/SpeechSubtitleOverlay
+   /api/javascript/features/chat/page/components/inspectorReadCache
    /api/javascript/features/chat/page/components/inspectorTimelineLayout
    /api/javascript/features/chat/page/hooks/useChatScroll
    /api/javascript/features/chat/page/hooks/useChatSpeech

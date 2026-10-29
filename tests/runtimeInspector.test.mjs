@@ -111,6 +111,26 @@ test('switching branches discards inspector caches and loads the new branch', as
     hook = render('u|b');
     assert.equal(hook.document.tabs[0].section.modelCalls[0].modelCallId, 'call-b');
     hook.closeInspector();
+
+    let protocol = 4;
+    let backendReads = 0;
+    sandbox.apiClient.get = async (_, { params }) => {
+        if (params.action === 'overview') return { version: protocol, defaultTab: 'timeline', tabs: [
+            { id: 'timeline', section: { loaded: false } }, { id: 'backend-messages', section: { loaded: false } },
+        ] };
+        if (params.action === 'backend-messages') backendReads++;
+        return { tabId: params.action, section: { loaded: true, items: [] } };
+    };
+    await hook.openInspector();
+    await hook.selectTab('backend-messages');
+    hook = render('u|b');
+    assert.equal(backendReads, 0, 'reject the old huge response before issuing its request');
+    assert.match(hook.error, /重启后端 API/);
+    protocol = 5;
+    await hook.refresh();
+    await hook.selectTab('backend-messages');
+    assert.equal(backendReads, 1);
+    hook.closeInspector();
 });
 
 test('search expands matching replacement and its ancestors, leaving other nodes collapsed', () => {

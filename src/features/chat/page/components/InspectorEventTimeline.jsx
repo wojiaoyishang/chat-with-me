@@ -8,6 +8,7 @@ import InspectorHighlight from './InspectorHighlight.jsx';
 import InspectorMediaBadges from './InspectorMediaBadges.jsx';
 import InspectorAttachments from './InspectorAttachments.jsx';
 import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage } from './inspectorTimelineLayout.js';
+import { createInspectorReadCache } from './inspectorReadCache.js';
 
 const labels = { system: '系统', user: '用户', assistant: '助手', model_call: '模型请求', tool_call: '工具调用', tool_result: '工具结果' };
 const colors = { system: 'bg-slate-400', user: 'bg-blue-500', assistant: 'bg-violet-500', model_call: 'bg-purple-500', tool_call: 'bg-amber-500', tool_result: 'bg-emerald-500' };
@@ -31,6 +32,9 @@ const alignExpandedCard = (viewport, pane, eventId = '', behavior = 'smooth') =>
 
 export default function InspectorEventTimeline({ section, renderCall, renderReplacements, onJump }) {
     const events = useMemo(() => section.events || [], [section.events]);
+    // Discard details on refresh/branch changes, retain them while navigating this index.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const detailCache = useMemo(() => createInspectorReadCache(), [events]);
     const [selectedId, setSelectedId] = useState(section.selectedEventId || events.at(-1)?.eventId || '');
     const [query, setQuery] = useState('');
     const [kind, setKind] = useState('all');
@@ -90,12 +94,12 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         const controller = new AbortController();
         setDetail(null);
         setError('');
-        if (selectedId) apiClient.get(apiEndpoint.CHAT_RUNTIME_TIMELINE_ENDPOINT, {
-            signal: controller.signal, params: { conversationId: section.conversationId, action: 'event', eventId: selectedId },
+        if (selectedId) detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, {
+            signal: controller.signal,
         }).then((data) => { if (!controller.signal.aborted) setDetail(data); })
             .catch((err) => { if (!controller.signal.aborted) setError(err.message || '加载事件失败'); });
         return () => controller.abort();
-    }, [selectedId, section.conversationId]);
+    }, [selectedId, section.conversationId, detailCache]);
     useEffect(() => {
         alignExpandedCard(track.current, popupScroll.current);
         centerSelectedNode(compactTrack.current);
