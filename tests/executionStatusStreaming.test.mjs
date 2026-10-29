@@ -72,6 +72,11 @@ const continuation = (id, overrides = {}) => status(id, {
     label: '正在分析下一步', ...overrides,
 });
 const primaryId = (host) => host.querySelector('[data-work-process]')?.dataset.processPrimary;
+const finishCollapse = async (ui, group) => act(async () => {
+    const event = new ui.dom.window.Event('transitionend', {bubbles: true});
+    Object.defineProperty(event, 'propertyName', {value: 'grid-template-rows'});
+    group.querySelector('[data-work-process-panel]').dispatchEvent(event);
+});
 
 test('streamed calls default to expanded and retain a manual collapse until prose intervenes', async (t) => {
     const ui = await setup(t);
@@ -82,6 +87,9 @@ test('streamed calls default to expanded and retain a manual collapse until pros
     const initialGroup = ui.host.querySelector('[data-work-process]');
     assert.equal(initialGroup.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
     await act(async () => initialGroup.querySelector('button[aria-expanded]').click());
+    assert.ok(initialGroup.querySelector('[data-work-process-records]'), 'records remain mounted until the exit finishes');
+    assert.equal(initialGroup.querySelector('[data-work-process-panel]').getAttribute('aria-hidden'), 'true');
+    await finishCollapse(ui, initialGroup);
     assert.equal(initialGroup.querySelector('[data-work-process-records]'), null);
     const copyButton = ui.host.querySelector('.copy-button');
 
@@ -179,7 +187,7 @@ test('cleared tool placeholders leave no spaced Markdown block and can later dis
     assert.equal(ui.host.querySelector('[data-work-process="read"]'), first);
 });
 
-test('mixed reasoning and different tool families share one mounted process; final snapshots preserve media and manual expansion', async (t) => {
+test('mixed reasoning and tools collapse after completion without reloading media, and can be reopened manually', async (t) => {
     const ui = await setup(t);
     let source = '![演示](/demo.mp4){type=video}' + token('reasoning-one', 'thinking');
     let replacement = {'reasoning-one': {frontend: '不应默认挂载的长推理', workProcess: {
@@ -214,7 +222,13 @@ test('mixed reasoning and different tool families share one mounted process; fin
     assert.equal(ui.host.querySelector('[data-work-process]'), group);
     assert.equal(ui.host.querySelector('video'), video);
     assert.equal(video.currentTime, 12.5);
-    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false', 'completion starts the automatic exit');
+    assert.ok(group.querySelector('[data-work-process-records]'), 'records survive the closing animation');
+    await finishCollapse(ui, group);
+    assert.equal(group.querySelector('[data-work-process-records]'), null);
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+    await ui.render(source, structuredClone(replacement), false);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true', 'an explicit reopen survives later completed snapshots');
     await act(async () => group.querySelector('[data-process-reasoning] button').click());
     assert.match(group.textContent, /不应默认挂载的长推理/);
     assert.doesNotMatch(group.textContent, /\[DONE\]/);
@@ -270,6 +284,37 @@ test('real execution stream with absent backend-only results stays grouped befor
     await ui.render(source, hydrated, false);
     assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 2);
     assert.equal(ui.host.querySelector('[data-work-process]'), group);
-    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false');
+    await finishCollapse(ui, group);
+    await act(async () => group.querySelector('button[aria-expanded]').click());
     assert.equal(group.querySelectorAll('[data-work-process-records] [data-execution-status-id]').length, 4);
+});
+
+test('live completion animates once, a rapid manual reopen cancels exit, and failures remain expanded', async (t) => {
+    const ui = await setup(t);
+    const source = token('completion', 'executionStatus');
+    await ui.render(source, {completion: status('completion', {inlineState: 'running'})});
+    const group = ui.host.querySelector('[data-work-process]');
+    const records = group.querySelector('[data-work-process-records]');
+    await ui.render(source, {completion: status('completion')});
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true', 'one finished call does not close a still-streaming turn');
+    await act(async () => useExecutionStore.getState().upsertExecution({
+        conversationId: 'chat', runId: 'run', executionId: 'execution', active: false, status: 'completed', updatedAt: 100,
+    }));
+    assert.equal(group.dataset.processState, 'completed');
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false');
+    assert.equal(group.querySelector('[data-work-process-records]'), records, 'exit keeps the mounted records until it ends');
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+    await finishCollapse(ui, group);
+    assert.equal(group.querySelector('[data-work-process-records]'), records, 'a late exit event cannot unmount an already reopened panel');
+    await ui.render(source, {completion: status('completion', {updatedAt: 110})}, false);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    for (const state of ['failed', 'cancelled']) {
+        await ui.render(token(`attention-${state}`, 'executionStatus'), {
+            [`attention-${state}`]: status(`attention-${state}`, {inlineState: state, executionId: `attention-${state}`, runId: `attention-${state}`}),
+        }, false);
+        const attention = ui.host.querySelector('[data-work-process]');
+        assert.equal(attention.dataset.processState, state);
+        assert.equal(attention.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true', 'unsuccessful work remains inspectable');
+    }
 });

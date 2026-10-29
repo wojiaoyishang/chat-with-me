@@ -2,6 +2,7 @@ import {memo, useEffect, useMemo, useState} from 'react';
 import {Check, ChevronDown, CircleAlert, CircleX, Lightbulb, Pause} from 'lucide-react';
 import {Spinner} from '@/components/ui/spinner';
 import useExpandedState from '@/components/markdown/card-block/useExpandedState.js';
+import {hasExpandedUserOverride} from '@/components/markdown/card-block/expandedStore.js';
 import ExecutionStatus from './ExecutionStatus.jsx';
 import ExecutionGuidanceBubble from './ExecutionGuidanceBubble.jsx';
 import {getExecutionGuidance} from './executionStatusModel.js';
@@ -22,13 +23,41 @@ const ReasoningRecord = memo(({entry}) => {
 });
 ReasoningRecord.displayName = 'ReasoningRecord';
 
-/** One stable, initially expanded host for an adjacent stretch of work. */
+/** Retain records during the CSS exit, then release their live subscriptions. */
+const ProcessRecords = ({expanded, children}) => {
+    const [retained, setRetained] = useState(expanded);
+    useEffect(() => {
+        if (expanded) {
+            setRetained(true);
+            return;
+        }
+        if (!retained) return;
+        // transitionend may not fire in a background tab or with reduced motion.
+        const timer = setTimeout(() => setRetained(false), 240);
+        return () => clearTimeout(timer);
+    }, [expanded, retained]);
+    return <div data-work-process-panel data-state={expanded ? 'open' : 'closed'} aria-hidden={!expanded}
+        inert={!expanded || undefined}
+        className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+        onTransitionEnd={(event) => {
+            if (!expanded && event.target === event.currentTarget && event.propertyName === 'grid-template-rows') setRetained(false);
+        }}>
+        <div className="min-h-0 overflow-hidden">{(expanded || retained) && children}</div>
+    </div>;
+};
+
+/** Expand active work; gently collapse successful work unless the user chose otherwise. */
 const WorkProcessGroup = memo(({entries, contextId = '', conversationId = '', isStreaming = false, tail = false}) => {
     const target = [...entries].reverse().find((entry) => entry.execution)?.execution;
     const live = useExecutionStore((state) => target?.executionId
         ? state.sessions[conversationId || target.conversationId]?.executions?.[target.executionId] || null : null);
-    const [expanded, setExpanded] = useExpandedState(`process:${conversationId}:${contextId}:${entries[0]?.id}`, true);
     const model = useMemo(() => projectWorkProcess(entries, {live, isStreaming, tail}), [entries, live, isStreaming, tail]);
+    const expandedKey = `process:${conversationId}:${contextId}:${entries[0]?.id}`;
+    const completed = model.state === 'completed';
+    const [expanded, setExpanded] = useExpandedState(expandedKey, !completed);
+    useEffect(() => {
+        if (!hasExpandedUserOverride(expandedKey)) setExpanded(!completed);
+    }, [completed, expandedKey, setExpanded]);
     useEffect(() => {
         if (!target?.executionId || !target.conversationId) return;
         const current = useExecutionStore.getState().sessions[target.conversationId]?.executions?.[target.executionId];
@@ -60,11 +89,11 @@ const WorkProcessGroup = memo(({entries, contextId = '', conversationId = '', is
         {(model.failures > 0 || model.stopped > 0) && <div className="pl-7 text-xs text-amber-600" data-process-outcomes>
             {[model.failures && `${model.failures} 项失败`, model.stopped && `${model.stopped} 项停止`].filter(Boolean).join(' · ')}{model.state === 'completed' ? ' · 查看记录' : ''}
         </div>}
-        {expanded && <div className="ml-3 mt-1 border-l border-border/70 pl-3" data-work-process-records>
+        <ProcessRecords expanded={expanded}><div className="ml-3 mt-1 border-l border-border/70 pl-3" data-work-process-records>
             {model.records.map((entry) => entry.type === 'thinking'
                 ? <ReasoningRecord key={entry.id} entry={entry} />
                 : <ExecutionStatus key={entry.id} content={entry.content} conversationId={conversationId} hideGuidance />)}
-        </div>}
+        </div></ProcessRecords>
         {activities.map((activity) => <ExecutionGuidanceBubble key={activity.id} activity={activity} execution={live || model.target} />)}
         {prompt?.label && <button type="button" onClick={navigate} className="flex items-center gap-2 px-1.5 py-1 text-xs text-muted-foreground" data-execution-guidance-prompt>
             <Spinner className="size-3.5" />{prompt.label}

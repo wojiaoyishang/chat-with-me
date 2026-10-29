@@ -854,9 +854,9 @@
      - 2
      - ``src/features/execution/WidgetResponseDetails.jsx``
    * - :doc:`src/features/execution/WorkProcessGroup </api/javascript/features/execution/WorkProcessGroup>`
+     - 1
      - 0
-     - 0
-     - 19
+     - 24
      - ``src/features/execution/WorkProcessGroup.jsx``
    * - :doc:`src/features/execution/executionStatusModel </api/javascript/features/execution/executionStatusModel>`
      - 9
