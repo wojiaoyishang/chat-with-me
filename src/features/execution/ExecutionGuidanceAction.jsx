@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { emitEvent } from '@/context/useEventStore.jsx';
 import { openGuidanceEditor, upsertExecution } from './useExecutionStore.js';
-import { isQueuedExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
+import { isQueuedExecutionGuidance, isUserExecutionGuidance } from './executionStatusModel.js';
 
 export default function ExecutionGuidanceAction({ activity, execution, surface = 'conversation' }) {
     const freeze = useConversationMutationGuard(execution?.conversationId);
@@ -25,7 +25,7 @@ export default function ExecutionGuidanceAction({ activity, execution, surface =
     const replaced = state === 'replaced' || Boolean(activity?.replacedByGuidanceId);
     const pending = pendingOperation?.identity === identity;
     const editable = activity?.canRewrite === true;
-    if (isWidgetExecutionGuidance(activity) || isQueuedExecutionGuidance(activity) || replaced || !execution?.active || execution.status === 'cancelling') return null;
+    if (!isUserExecutionGuidance(activity) || isQueuedExecutionGuidance(activity) || replaced || !execution?.active || execution.status === 'cancelling') return null;
     if (!execution?.conversationId || !execution?.executionId || !activity?.id) return null;
     if (withdrawn && surface !== 'execution_window') return null;
 

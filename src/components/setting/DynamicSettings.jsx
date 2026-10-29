@@ -2322,6 +2322,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         openSettings: requestSettingsNavigation,
         scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {} }),
         openDialog: (value) => setDescriptorDialog((current) => ({ open: true, value, serial: current.serial + 1 })),
+        closeDialog: runtimeContext.closeDialog,
         notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
         updateUser: (user) => runtimeRef.current.updateUser?.(user),
     });

@@ -548,8 +548,10 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
         return registerDraftGuard(`descriptor-dialog:${guardId}`, () => false);
     }, [open, locked, guardId, registerDraftGuard]);
     const form = useMemo(() => descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>
-        {renderFields(descriptor.options || [], values, setValues, { runtimeContext: context.runtimeContext })}
-    </SettingsFormLayout>, [descriptor, values, renderFields, context.runtimeContext]);
+        {renderFields(descriptor.options || [], values, setValues, { runtimeContext: {
+            ...context.runtimeContext, refresh: context.refresh, closeDialog: onClose,
+        } })}
+    </SettingsFormLayout>, [descriptor, values, renderFields, context.runtimeContext, context.refresh, onClose]);
     return <Dialog open={open} closeOnBack={!locked} lockInteraction={locked} onOpenChange={(next) => { if (!next) onClose(); }}>
         <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited} aria-modal={locked || undefined}
             overlayStyle={locked ? { pointerEvents: 'auto' } : undefined}

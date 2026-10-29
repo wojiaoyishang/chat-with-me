@@ -19,7 +19,7 @@ export default function ExecutionGuidanceRecord({activity, execution, highlighte
                 <button type="button" className="flex min-w-0 items-center gap-1.5 py-1 text-left" aria-expanded={expanded}
                     onClick={() => setExpanded((value) => !value)}>
                     <MessageSquarePlus className="h-3.5 w-3.5 shrink-0" />
-                    <span>执行补充 · {label}</span>
+                    <span>{activity.widgetTitle || '执行补充'} · {label}</span>
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
                 </button>
                 <ExecutionGuidanceAction activity={activity} execution={execution} surface="execution_window" />

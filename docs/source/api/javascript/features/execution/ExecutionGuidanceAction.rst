@@ -27,7 +27,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:557:6210:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:555:6207:FUNCTION
 
 .. js:function:: ExecutionGuidanceAction({ activity, execution, surface = 'conversation' })
 
@@ -48,7 +48,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``useConversationMutationGuard``、``useState``、``useRef``、``JSON.stringify``、``useEffect``、``String(activity?.state || '').toLowerCase``、``String``、``Boolean``、``isWidgetExecutionGuidance``、``isQueuedExecutionGuidance``、``['failed', 'submitting'].includes``、``actions.map``。
+   **主要协作调用**：``useConversationMutationGuard``、``useState``、``useRef``、``JSON.stringify``、``useEffect``、``String(activity?.state || '').toLowerCase``、``String``、``Boolean``、``isUserExecutionGuidance``、``isQueuedExecutionGuidance``、``['failed', 'submitting'].includes``、``actions.map``。
 
    **内部回调数量**：9。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -57,7 +57,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:1087:1192:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:1085:1190:FUNCTION
 
 .. rubric:: ``useEffect callback @ 18``
 
@@ -79,7 +79,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:1146:1184:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:1144:1182:FUNCTION
 
 .. rubric:: ``returned callback @ 20``
 
@@ -99,7 +99,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:1868:2205:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:1865:2202:FUNCTION
 
 .. rubric:: ``openEditor``
 
@@ -127,7 +127,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **主要协作调用**：``freeze.canMutate``、``openGuidanceEditor``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:2226:4519:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:2223:4516:FUNCTION
 
 .. rubric:: ``change``
 
@@ -158,7 +158,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:3932:3965:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:3929:3962:FUNCTION
 
 .. rubric:: ``snapshot.activities?.find callback @ 67``
 
@@ -179,7 +179,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:4635:4674:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:4632:4671:FUNCTION
 
 .. rubric:: ``onClick``
 
@@ -201,7 +201,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:4785:4809:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:4782:4806:FUNCTION
 
 .. rubric:: ``onClick``
 
@@ -223,7 +223,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:4921:4946:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:4918:4943:FUNCTION
 
 .. rubric:: ``onClick``
 
@@ -245,7 +245,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:5013:5037:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:5010:5034:FUNCTION
 
 .. rubric:: ``onClick``
 
@@ -267,7 +267,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **主要协作调用**：``change``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:5204:5246:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:5201:5243:FUNCTION
 
 .. rubric:: ``onClick``
 
@@ -289,7 +289,7 @@ src/features/execution/ExecutionGuidanceAction 模块
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:5449:6180:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceAction.jsx:5446:6177:FUNCTION
 
 .. rubric:: ``actions.map callback @ 93``
 

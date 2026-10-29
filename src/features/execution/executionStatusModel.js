@@ -64,11 +64,14 @@ export const projectExecutionStatus = (execution, live = null) => {
 export const isWidgetExecutionGuidance = (activity) => activity?.source === 'widget_response'
     || String(activity?.id || '').startsWith('widget-');
 
-export const isQueuedExecutionGuidance = (activity) => !isWidgetExecutionGuidance(activity)
+export const isUserExecutionGuidance = (activity) => !isWidgetExecutionGuidance(activity)
+    && (!activity?.source || activity.source === 'user_guidance');
+
+export const isQueuedExecutionGuidance = (activity) => isUserExecutionGuidance(activity)
     && ['pending', 'submitting', 'removed'].includes(String(activity?.state || '').toLowerCase());
 
 export const isVisibleExecutionGuidance = (activity) => isWidgetExecutionGuidance(activity)
-    || (activity?.source !== 'agent_message' && !isQueuedExecutionGuidance(activity)
+    || (isUserExecutionGuidance(activity) && !isQueuedExecutionGuidance(activity)
         && !['withdrawn', 'replaced'].includes(String(activity?.state || '').toLowerCase()) && !activity?.replacedByGuidanceId);
 
 export const getExecutionGuidance = (execution, live = null) => {

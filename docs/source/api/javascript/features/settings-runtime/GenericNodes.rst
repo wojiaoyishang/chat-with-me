@@ -338,13 +338,13 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
    **内部回调数量**：24。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49082:51387:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49082:51491:FUNCTION
 
 .. js:function:: DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited })
 
    渲染 ``DescriptorDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``540``—``566`` 行。
+   **性质**：同步函数；导出 API；源码第 ``540``—``568`` 行。
 
    **参数**
 
@@ -3588,7 +3588,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49856:50105:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49856:50183:FUNCTION
 
 .. rubric:: ``useMemo callback @ 550``
 
@@ -3598,7 +3598,7 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``550``—``552`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``550``—``554`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3610,17 +3610,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``renderFields``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50261:50296:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50365:50400:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 553``
+.. rubric:: ``onOpenChange callback @ 555``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 553(next)
+   onOpenChange callback @ 555(next)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``553``—``553`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``555``—``555`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3633,17 +3633,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``onClose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50641:50675:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50745:50779:FUNCTION
 
-.. rubric:: ``anonymous callback @ 556``
+.. rubric:: ``anonymous callback @ 558``
 
 .. code-block:: javascript
 
-   anonymous callback @ 556(event)
+   anonymous callback @ 558(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``556``—``556`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``558``—``558`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3656,17 +3656,17 @@ Read-only content stays selectable; clipboard access occurs only on a user click
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50727:50761:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50831:50865:FUNCTION
 
-.. rubric:: ``anonymous callback @ 557``
+.. rubric:: ``anonymous callback @ 559``
 
 .. code-block:: javascript
 
-   anonymous callback @ 557(event)
+   anonymous callback @ 559(event)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``557``—``557`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``559``—``559`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 

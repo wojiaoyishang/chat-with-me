@@ -27,7 +27,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:305:2883:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:305:2911:FUNCTION
 
 .. js:function:: ExecutionGuidanceRecord({activity, execution, highlighted = false})
 
@@ -188,7 +188,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2019:2092:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2047:2120:FUNCTION
 
 .. rubric:: ``onClick callback @ 29``
 
@@ -210,7 +210,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2410:2485:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2438:2513:FUNCTION
 
 .. rubric:: ``onClick callback @ 33``
 

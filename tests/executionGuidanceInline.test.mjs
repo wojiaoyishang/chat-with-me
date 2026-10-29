@@ -35,6 +35,13 @@ const {Bubble, Action} = await import('../temp/execution-guidance-inline-test.mj
 const activity = {id: 'guidance-1', kind: 'guidance', source: 'user_guidance', state: 'consumed', content: '请着重比较模型的泛化能力。', canToggle: true, canRewrite: true};
 const execution = {executionId: 'execution-1', conversationId: 'conversation-1', runId: 'run-1', turnId: 'turn-1', active: true, status: 'running'};
 const snapshot = (overrides = {}) => ({...execution, activities: [{...activity, state: 'withdrawn', ...overrides}]});
+
+test('automatic input is not exposed as an editable user supplement', async (t) => {
+    const ui = await mount(t, Action, {activity: {...activity, source: 'automation', widgetTitle: '自动化补充 · 学习复盘'}, execution});
+    assert.equal(ui.button('撤回并编辑'), undefined);
+    assert.equal(ui.button('补充更正'), undefined);
+    assert.equal(document.querySelector('button'), null);
+});
 const deferred = () => { let resolve; const promise = new Promise((done) => {resolve = done;}); return {promise, resolve}; };
 
 test('queued supplements have no inline bubble or withdrawal controls', async (t) => {
