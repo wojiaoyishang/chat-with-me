@@ -16,6 +16,8 @@ import CompactedContextIndicator from './CompactedContextIndicator.jsx';
 import WidgetResponseMessage from './WidgetResponseMessage.jsx';
 import { normalizeAttachmentList } from '@/features/chat/attachmentVision.js';
 import { isMessageExecutionActive, useExecutionStore } from '../../../../execution/useExecutionStore.js';
+import MessageOrigin from '@/components/message/MessageOrigin.jsx';
+import { messageAutomationOrigin } from '@/components/message/messageOriginModel.js';
 
 const MID_COLLAPSED_CONTENT_MAX_HEIGHT = 360;
 const MID_OVERFLOW_TOLERANCE = 18;
@@ -60,6 +62,7 @@ const MessageItem = memo(
         const messageCompactions = Array.isArray(msg?.contextState?.compactions) ? msg.contextState.compactions : [];
         const isMessageCompacted = messageCompactions.length > 0;
         const messageExtraInfo = msg?.extraInfo || msg?.extra_info || {};
+        const automaticOrigin = messageAutomationOrigin(msg);
         const widgetResponsePayload = messageExtraInfo?.widget_response;
         const isWidgetResponseMessage = Boolean(
             isRight &&
@@ -407,6 +410,7 @@ const MessageItem = memo(
                 ref={rootRef}
                 data-message-id={msgId}
                 data-message-role={msg?.role || (isMid ? 'system' : isRight ? 'user' : 'assistant')}
+                data-automatic-input={automaticOrigin ? 'true' : undefined}
                 className={`group/message relative flex flex-col w-full rounded-2xl transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass} ${highlighted ? 'ring-2 ring-blue-400/80 ring-offset-4 ring-offset-white' : ''}`}
                 style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 260px' }}
                 tabIndex={isMobile ? 0 : undefined}
@@ -419,6 +423,8 @@ const MessageItem = memo(
                 onClick={handleRootClick}
                 {...hoverHandlers}
             >
+                {automaticOrigin && <MessageOrigin origin={automaticOrigin}
+                    className={`mb-1 ${isRight ? 'mr-12 max-w-[calc(100%-3rem)]' : isMid ? 'mx-5' : 'ml-2 lg:ml-10'}`}/>}
                 {renderMessageContent()}
 
                 <MessageContextBadges

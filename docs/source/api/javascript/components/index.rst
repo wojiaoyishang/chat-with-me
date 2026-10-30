@@ -318,6 +318,16 @@
      - 0
      - 3
      - ``src/components/markdown/replacementProtocol.js``
+   * - :doc:`src/components/message/MessageOrigin </api/javascript/components/message/MessageOrigin>`
+     - 0
+     - 0
+     - 4
+     - ``src/components/message/MessageOrigin.jsx``
+   * - :doc:`src/components/message/messageOriginModel </api/javascript/components/message/messageOriginModel>`
+     - 5
+     - 0
+     - 0
+     - ``src/components/message/messageOriginModel.js``
    * - :doc:`src/components/modal/UniversalModalHost </api/javascript/components/modal/UniversalModalHost>`
      - 7
      - 0
@@ -594,6 +604,8 @@
    /api/javascript/components/markdown/remarkWorkProcess
    /api/javascript/components/markdown/replacementProjection
    /api/javascript/components/markdown/replacementProtocol
+   /api/javascript/components/message/MessageOrigin
+   /api/javascript/components/message/messageOriginModel
    /api/javascript/components/modal/UniversalModalHost
    /api/javascript/components/modal/universalModal
    /api/javascript/components/setting/DynamicSettings

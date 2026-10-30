@@ -22,18 +22,18 @@ src/features/execution/ExecutionGuidanceBubble 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``./WidgetResponseDetails.jsx``、``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./executionStatusModel.js``、``./ExecutionGuidanceAttachments.jsx``。
+``./WidgetResponseDetails.jsx``、``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./executionStatusModel.js``、``./ExecutionGuidanceAttachments.jsx``、``../../components/message/MessageOrigin.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:528:1267:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:570:1309:FUNCTION
 
 .. js:function:: stateMeta(state)
 
    实现 ``stateMeta`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``9``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``10``—``24`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1307:5176:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:1349:5189:FUNCTION
 
-.. rubric:: ``memo callback @ 25``
+.. rubric:: ``memo callback @ 26``
 
 .. code-block:: javascript
 
-   memo callback @ 25({ activity, execution })
+   memo callback @ 26({ activity, execution })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``25``—``102`` 行。
+**性质**：同步局部函数；源码第 ``26``—``102`` 行。
 
 **参数**
 
@@ -72,11 +72,11 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="my-3 flex gap-3 rounded-xl border border-gray-200 bg-gray-50/70 px-4 py-3" data-widget-response="true" > <ListChecks className="mt-0.5 h-5 w-5 shrink-0 text-gray…``、``( <div className="my-3 w-full" data-execution-guidance-bubble="true" data-guidance-id={activity?.id || undefined} > <div className={\x60rounded-r-lg border-l-2 px-3 py-2.5 transition…``。
 
-**主要协作调用**：``useState``、``String(activity?.content || activity?.label || '').trim``、``String``、``isVisibleExecutionGuidance``、``String(activity?.state || 'pending').toLowerCase``、``stateMeta``、``isAutomationExecutionGuidance``、``executionGuidanceOriginLabel``、``isWidgetExecutionGuidance``、``content.split``、``meta.label.replace``。
+**主要协作调用**：``useState``、``String(activity?.content || activity?.label || '').trim``、``String``、``isVisibleExecutionGuidance``、``String(activity?.state || 'pending').toLowerCase``、``stateMeta``、``isAutomationExecutionGuidance``、``isWidgetExecutionGuidance``、``content.split``、``meta.label.replace``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:4954:5010:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceBubble.jsx:4967:5023:FUNCTION
 
 .. rubric:: ``onClick callback @ 94``
 
@@ -86,7 +86,7 @@ src/features/execution/ExecutionGuidanceBubble 模块
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``memo callback @ 25``。
+**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``memo callback @ 26``。
 
 **参数**
 

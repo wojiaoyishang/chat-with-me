@@ -3,12 +3,12 @@ import {ChevronDown, MessageSquarePlus} from 'lucide-react';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
 import {openExecution} from './useExecutionStore.js';
 import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
-import {executionGuidanceOriginLabel, isAutomationExecutionGuidance} from './executionStatusModel.js';
+import {isAutomationExecutionGuidance} from './executionStatusModel.js';
+import MessageOrigin from '../../components/message/MessageOrigin.jsx';
 
 export default function ExecutionGuidanceRecord({activity, execution, highlighted = false}) {
     const replaced = activity.state === 'replaced' || Boolean(activity.replacedByGuidanceId);
     const automated = isAutomationExecutionGuidance(activity);
-    const origin = executionGuidanceOriginLabel(activity);
     const archived = replaced || activity.state === 'withdrawn';
     const hasRecord = (id) => execution.activities?.some((entry) => entry.id === id);
     const [expanded, setExpanded] = useState(!archived);
@@ -28,7 +28,7 @@ export default function ExecutionGuidanceRecord({activity, execution, highlighte
                 <ExecutionGuidanceAction activity={activity} execution={execution} surface="execution_window" />
                 {automated && <span>外部资料</span>}
             </div>
-            {origin && <div className="mb-1 break-words text-xs text-gray-500" data-guidance-origin>{origin}</div>}
+            {automated && activity.displayOrigin && <MessageOrigin origin={activity.displayOrigin} showLabel={false} guidance className="mb-1"/>}
             {activity.replacesGuidanceId && (hasRecord(activity.replacesGuidanceId)
                 ? <button type="button" className="mb-1 text-xs text-blue-600 hover:underline"
                     onClick={() => openExecution(execution, {activityId: activity.replacesGuidanceId})}>此版本替代了已撤回的补充 · 查看原文</button>

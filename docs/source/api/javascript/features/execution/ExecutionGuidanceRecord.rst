@@ -22,18 +22,18 @@ src/features/execution/ExecutionGuidanceRecord 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./useExecutionStore.js``、``./ExecutionGuidanceAttachments.jsx``、``./executionStatusModel.js``。
+``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./useExecutionStore.js``、``./ExecutionGuidanceAttachments.jsx``、``./executionStatusModel.js``、``../../components/message/MessageOrigin.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:408:3325:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:450:3338:FUNCTION
 
 .. js:function:: ExecutionGuidanceRecord({activity, execution, highlighted = false})
 
    渲染 ``ExecutionGuidanceRecord`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``8``—``44`` 行。
+   **性质**：同步函数；导出 API；源码第 ``9``—``44`` 行。
 
    **参数**
 
@@ -44,7 +44,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-w-0 flex-1" data-execution-guidance-record={activity.id}> <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500"> <button type="button" cla…``。
 
-   **主要协作调用**：``Boolean``、``isAutomationExecutionGuidance``、``executionGuidanceOriginLabel``、``useState``、``useEffect``、``['consumed', 'responded'].includes``、``hasRecord``。
+   **主要协作调用**：``Boolean``、``isAutomationExecutionGuidance``、``useState``、``useEffect``、``['consumed', 'responded'].includes``、``hasRecord``。
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -53,7 +53,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:806:869:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:789:852:FUNCTION
 
 .. rubric:: ``hasRecord``
 
@@ -78,7 +78,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:842:868:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:825:851:FUNCTION
 
 .. rubric:: ``execution.activities?.some callback @ 13``
 
@@ -99,7 +99,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:942:975:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:925:958:FUNCTION
 
 .. rubric:: ``useEffect callback @ 15``
 
@@ -121,7 +121,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1004:1049:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:987:1032:FUNCTION
 
 .. rubric:: ``useEffect callback @ 16``
 
@@ -143,7 +143,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1601:1637:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1584:1620:FUNCTION
 
 .. rubric:: ``onClick callback @ 23``
 
@@ -167,7 +167,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1619:1636:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1602:1619:FUNCTION
 
 .. rubric:: ``setExpanded callback @ 23``
 
@@ -188,7 +188,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2461:2534:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2474:2547:FUNCTION
 
 .. rubric:: ``onClick callback @ 34``
 
@@ -210,7 +210,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2852:2927:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2865:2940:FUNCTION
 
 .. rubric:: ``onClick callback @ 38``
 

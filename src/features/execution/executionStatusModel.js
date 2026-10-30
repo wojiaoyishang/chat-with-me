@@ -1,3 +1,5 @@
+import {messageOriginSummary} from '../../components/message/messageOriginModel.js';
+
 export const parseExecutionStatus = (content, conversationId = null) => {
     const raw = String(content ?? '').trim();
     if (!raw) return null;
@@ -75,17 +77,7 @@ export const isAutomationExecutionGuidance = (activity) => activity?.source === 
 /** Public source labels never select a reply target or confer user/system authority. */
 export const executionGuidanceOriginLabel = (activity) => {
     if (!isAutomationExecutionGuidance(activity)) return '';
-    const origin = activity?.displayOrigin;
-    if (!origin || typeof origin !== 'object') return '';
-    const platform = (typeof origin.platformLabel === 'string' && origin.platformLabel.trim())
-        || (typeof origin.platform === 'string' && origin.platform.trim()) || '';
-    if (!platform) return '';
-    const group = origin.conversationType === 'group';
-    const contact = String(group ? origin.groupName || origin.contactName || origin.groupId || origin.contactId || ''
-        : origin.contactName || origin.contactId || '').trim();
-    const sender = group && String(origin.senderName || origin.senderId || '').trim();
-    return [platform, contact && `${group ? '群组' : '联系人'}：${contact}`, sender && `发送者：${sender}`]
-        .filter(Boolean).join(' · ');
+    return messageOriginSummary(activity?.displayOrigin);
 };
 
 export const isVisibleExecutionGuidance = (activity) => isWidgetExecutionGuidance(activity)

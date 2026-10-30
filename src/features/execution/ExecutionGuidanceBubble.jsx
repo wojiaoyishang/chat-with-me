@@ -3,8 +3,9 @@ import { memo, useState } from 'react';
 import { Check, CircleAlert, LoaderCircle, MessageSquarePlus, ListChecks } from 'lucide-react';
 
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
-import { executionGuidanceOriginLabel, isAutomationExecutionGuidance, isVisibleExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
+import { isAutomationExecutionGuidance, isVisibleExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
 import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
+import MessageOrigin from '../../components/message/MessageOrigin.jsx';
 
 const stateMeta = (state) => {
     const normalized = String(state || 'pending').toLowerCase();
@@ -30,7 +31,6 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
     const state = String(activity?.state || 'pending').toLowerCase();
     const meta = stateMeta(state);
     const automated = isAutomationExecutionGuidance(activity);
-    const origin = executionGuidanceOriginLabel(activity);
     const failed = state === 'failed';
     const Icon = meta.Icon;
 
@@ -78,7 +78,7 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
                     {automated && <span className="ml-1 text-gray-500">外部资料</span>}
                     <ExecutionGuidanceAction activity={activity} execution={execution} surface="conversation" />
                 </div>
-                {origin && <div className="mb-1 break-words text-xs text-gray-500" data-guidance-origin>{origin}</div>}
+                {automated && activity.displayOrigin && <MessageOrigin origin={activity.displayOrigin} showLabel={false} guidance className="mb-1"/>}
                 <div
                     className={`whitespace-pre-wrap break-words text-left text-sm leading-6 text-gray-700 ${collapsible && !expanded ? 'line-clamp-3' : ''}`}
                     data-guidance-content="true"

@@ -26,7 +26,7 @@ test('bot supplements preserve their anchor and source labels from persisted sna
     const snapshot = JSON.parse(JSON.stringify({executionId: 'run', statusId: 'anchor', activities: [activity]}));
     assert.deepEqual(getExecutionGuidance(snapshot).activities, [activity]);
     assert.equal(executionGuidanceOriginLabel(activity), 'QQ · 群组：学习组 · 发送者：小明');
-    assert.equal(executionGuidanceOriginLabel({...activity, displayOrigin: {platform: 'wechat', platformLabel: '微信', contactId: 'peer'}}), '微信 · 联系人：peer');
+    assert.equal(executionGuidanceOriginLabel({...activity, displayOrigin: {platform: 'wechat', platformLabel: '微信', contactId: 'peer'}}), '微信');
     assert.equal(executionGuidanceOriginLabel({...activity, displayOrigin: {platform: 'dingtalk', platformLabel: '钉钉', contactName: '同事'}}), '钉钉 · 联系人：同事');
     assert.equal(executionGuidanceOriginLabel({...activity, displayOrigin: {platform: 'enterprise_chat', platformLabel: '企业通讯', contactName: '同事'}}), '企业通讯 · 联系人：同事');
     assert.equal(executionGuidanceOriginLabel({...activity, displayOrigin: {platform: 'enterprise_chat', contactName: '同事'}}), 'enterprise_chat · 联系人：同事');
