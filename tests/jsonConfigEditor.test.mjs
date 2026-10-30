@@ -48,6 +48,22 @@ test('JSON-string storage preserves bool/string/null protocol without emitting b
   assert.equal(ref.current.getState().valid, false);
 });
 
+test('object request fields preserve nested JSON types and reject a non-object root', async (t) => {
+  const { container, ref, changes } = await setup(t, { value: {}, schema: { type: 'object' }, label: '自定义请求 JSON' });
+  const value = { extra_body: { enabled: true, top_k: 12, nested: { amount: 0.25, disabled: false } } };
+  await act(async () => ref.current.setDraft(JSON.stringify(value)));
+  assert.deepEqual(changes.at(-1), value);
+  assert.equal(typeof changes.at(-1).extra_body.top_k, 'number');
+  assert.doesNotThrow(() => validateJsonEditors(container));
+  const count = changes.length;
+  await act(async () => ref.current.setDraft('[]'));
+  assert.equal(changes.length, count);
+  assert.throws(() => validateJsonEditors(container));
+  await act(async () => ref.current.setDraft('{}'));
+  assert.deepEqual(changes.at(-1), {});
+  assert.doesNotThrow(() => validateJsonEditors(container));
+});
+
 await build({ entryPoints: ['src/features/workspace/components/commandProfile.js'], outfile: 'temp/json-command-editor-test.mjs', bundle: true, platform: 'node', format: 'esm', jsx: 'automatic', packages: 'external', plugins: [{ name: 'ui', setup(builder) {
   builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
   builder.onResolve({ filter: /^@\// }, ({ path: name }) => name === '@/components/setting/JsonConfigEditor.jsx' ? { path: path.resolve('src/components/setting/JsonConfigEditor.jsx') } : { path: name, namespace: 'mock' });

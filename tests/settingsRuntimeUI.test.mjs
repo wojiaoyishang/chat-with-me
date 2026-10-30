@@ -53,6 +53,26 @@ test('unknown business component names fail visibly instead of opening a dedicat
     try { assert.match(document.body.textContent, /客户端暂不支持组件/); } finally { await ui.close(); }
 });
 
+test('conversation request JSON uses the shared field and preserves nested typed values', async () => {
+    const field = { type: 'json', name: 'customRequestJson', text: '自定义请求 JSON', schema: { type: 'object' }, default: {} };
+    const ui = await mount([field], {}, null, { surface: 'conversation', conversationId: 'chat-with-json' });
+    try {
+        const editor = document.querySelector('[aria-label="自定义请求 JSON"]');
+        assert.ok(editor);
+        assert.equal(editor.value, '{}');
+        assert.doesNotMatch(document.body.textContent, /客户端暂不支持组件/);
+        const value = { extra_body: { enabled: true, top_k: 12, nested: { amount: 0.25, disabled: false } } };
+        await edit(editor, JSON.stringify(value));
+        assert.deepEqual(settingsUI.changed.at(-1).customRequestJson, value);
+        assert.equal(typeof settingsUI.changed.at(-1).customRequestJson, 'object');
+        assert.equal(typeof settingsUI.changed.at(-1).customRequestJson.extra_body.top_k, 'number');
+        assert.equal(settingsUI.changed.at(-1).customRequestJson.extra_body.nested.disabled, false);
+        await edit(editor, '{}');
+        assert.deepEqual(settingsUI.changed.at(-1).customRequestJson, {});
+        assert.doesNotMatch(document.body.textContent, /客户端暂不支持组件/);
+    } finally { await ui.close(); }
+});
+
 test('removing a secret row explicitly removes its key from the saved map', async () => {
     const ui = await mount([resource()], { items: [{ id: 's3', title: '删除凭据', revision: 2, connection: { headers: { Authorization: '' } } }] });
     try {
