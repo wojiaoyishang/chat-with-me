@@ -12,6 +12,7 @@ import WorkProcessGroup from '@/features/execution/WorkProcessGroup.jsx';
 import {workProcessEntry} from '@/features/execution/workProcessModel.js';
 import remarkCwmLinks from './remarkCwmLinks.js';
 import remarkVideoDirective from './remarkVideoDirective.js';
+import remarkAudioDirective from './remarkAudioDirective.js';
 import remarkStudyDirectives from './remarkStudyDirectives.js';
 import rehypeDocumentTasks from './rehypeDocumentTasks.js';
 import { DocumentTaskInput, DocumentTaskListItem } from './DocumentTaskControls.jsx';
@@ -35,6 +36,7 @@ import { authorizedResourceUrl } from '../../runtime/backend/connection.js';
 import { downloadDocumentResource, isDocumentDownloadUrl } from '@/lib/resourceDownload.js';
 import ResourceImage from './ResourceImage.jsx';
 import ResourceVideo from './ResourceVideo.jsx';
+import ResourceAudio from './ResourceAudio.jsx';
 import { createMarkdownCopyContentComponent, resolveMarkdownCopyContent } from './markdownCopy.js';
 import { executionGroupingKey, projectReplacements } from './replacementProjection.js';
 import { toast } from 'sonner';
@@ -239,6 +241,7 @@ const createElementRenderers = ({
         },
 
         video: ({ src, title, poster }) => <ResourceVideo src={src} title={title} poster={poster} />,
+        audio: ({ src, title }) => <ResourceAudio src={src} title={title} />,
 
         'card-replace': ({ id, type, node }) => {
             const finalId = String(id || node?.properties?.id || '');
@@ -434,7 +437,7 @@ const MarkdownSyntax = memo(({ processedContent, replacement,
             ...(studyDirectivesEnabled ? [remarkDirective, [remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
             remarkCardReplace,
             [renderSurface === 'conversation' ? remarkWorkProcess : remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}],
-            remarkVideoDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
+            remarkVideoDirective, remarkAudioDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
         rehypePlugins={[rehypeKatex, ...extraRehypePlugins,
             ...(editableTasks ? [[rehypeDocumentTasks, { sourceContent: taskSourceContent, normalizeLine: preprocessContent }]] : [])]}
         components={components}

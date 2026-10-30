@@ -128,6 +128,26 @@ test('an unfinished block copies its currently rendered snapshot without disabli
     });
 });
 
+test('stream deltas and completion preserve the audio player and its playback position', async () => {
+    await withRenderer(async (host, render) => {
+        const source = '![生成语音](cwm://artifact/audio-stable){type=audio}\n\n';
+        await render(`${source}Tail 1`, { isStreaming: true });
+        const audio = host.querySelector('audio');
+        assert.ok(audio);
+        assert.equal(audio.getAttribute('src'), '/api/upload/audio-stable');
+        assert.equal(audio.autoplay, false);
+        audio.currentTime = 4.5;
+        audio.volume = 0.3;
+        await render(`${source}Tail 2`, { isStreaming: true });
+        await render(`${source}Tail 2`, { isStreaming: false, msg: { readonly: false } });
+        assert.equal(host.querySelector('audio'), audio);
+        assert.equal(audio.currentTime, 4.5);
+        assert.equal(audio.volume, 0.3);
+        await render(source.replace('audio-stable', 'audio-new'), { isStreaming: false, msg: { readonly: false } });
+        assert.notEqual(host.querySelector('audio'), audio);
+    });
+});
+
 test('editable document checkboxes still receive the latest source content', async () => {
     await withRenderer(async (host, render) => {
         const toggles = [];

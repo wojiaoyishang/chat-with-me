@@ -61,8 +61,13 @@
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
      - 9
      - 0
-     - 55
+     - 56
      - ``src/components/markdown/MarkdownRenderer.jsx``
+   * - :doc:`src/components/markdown/ResourceAudio </api/javascript/components/markdown/ResourceAudio>`
+     - 2
+     - 0
+     - 2
+     - ``src/components/markdown/ResourceAudio.jsx``
    * - :doc:`src/components/markdown/ResourceImage </api/javascript/components/markdown/ResourceImage>`
      - 1
      - 0
@@ -263,6 +268,11 @@
      - 0
      - 7
      - ``src/components/markdown/rehypeDocumentTasks.js``
+   * - :doc:`src/components/markdown/remarkAudioDirective </api/javascript/components/markdown/remarkAudioDirective>`
+     - 0
+     - 0
+     - 0
+     - ``src/components/markdown/remarkAudioDirective.js``
    * - :doc:`src/components/markdown/remarkCollapseExecutionStatuses </api/javascript/components/markdown/remarkCollapseExecutionStatuses>`
      - 4
      - 0
@@ -278,15 +288,20 @@
      - 0
      - 8
      - ``src/components/markdown/remarkDirectiveToComponent.js``
+   * - :doc:`src/components/markdown/remarkMediaDirective </api/javascript/components/markdown/remarkMediaDirective>`
+     - 1
+     - 0
+     - 7
+     - ``src/components/markdown/remarkMediaDirective.js``
    * - :doc:`src/components/markdown/remarkStudyDirectives </api/javascript/components/markdown/remarkStudyDirectives>`
      - 3
      - 0
      - 9
      - ``src/components/markdown/remarkStudyDirectives.js``
    * - :doc:`src/components/markdown/remarkVideoDirective </api/javascript/components/markdown/remarkVideoDirective>`
-     - 4
      - 0
-     - 4
+     - 0
+     - 0
      - ``src/components/markdown/remarkVideoDirective.js``
    * - :doc:`src/components/markdown/remarkWorkProcess </api/javascript/components/markdown/remarkWorkProcess>`
      - 1
@@ -528,6 +543,7 @@
    /api/javascript/components/markdown/CodeBlock
    /api/javascript/components/markdown/DocumentTaskControls
    /api/javascript/components/markdown/MarkdownRenderer
+   /api/javascript/components/markdown/ResourceAudio
    /api/javascript/components/markdown/ResourceImage
    /api/javascript/components/markdown/ResourceVideo
    /api/javascript/components/markdown/StudyVisuals
@@ -568,9 +584,11 @@
    /api/javascript/components/markdown/markdownCopy
    /api/javascript/components/markdown/markdownMediaUrl
    /api/javascript/components/markdown/rehypeDocumentTasks
+   /api/javascript/components/markdown/remarkAudioDirective
    /api/javascript/components/markdown/remarkCollapseExecutionStatuses
    /api/javascript/components/markdown/remarkCwmLinks
    /api/javascript/components/markdown/remarkDirectiveToComponent
+   /api/javascript/components/markdown/remarkMediaDirective
    /api/javascript/components/markdown/remarkStudyDirectives
    /api/javascript/components/markdown/remarkVideoDirective
    /api/javascript/components/markdown/remarkWorkProcess

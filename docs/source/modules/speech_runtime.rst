@@ -27,3 +27,11 @@ Speech Runtime 模块
 * 快速 Stop/Play 不复用旧 Run/Stream。
 
 完整函数见 :doc:`../api/javascript/features/chat/page/hooks/useChatSpeech` 和相关模块页。
+
+独立音频附件
+--------------------------------------------------------------------------------
+
+AI 合成的语音附件使用 ``ResourceAudio`` 展示，不进入逐句朗读的 ``useChatSpeech``
+状态机。``{type=audio}`` 由受控 Markdown 指令解析，不启用任意 HTML；源地址与下载均
+复用当前后端的授权资源凭据。对话更新不得卸载正在播放的原生 audio，相关协议见
+:doc:`../architecture/rendering_widgets`。
