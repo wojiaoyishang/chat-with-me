@@ -78,7 +78,7 @@ const finishCollapse = async (ui, group) => act(async () => {
     group.querySelector('[data-work-process-panel]').dispatchEvent(event);
 });
 
-test('first analysis is visible before prose or tools and opens live public text with one click', async (t) => {
+test('first analysis defaults open before prose or tools and displays live public text', async (t) => {
     const ui = await setup(t);
     const source = token('initial', 'thinking');
     let replacement = {initial: {frontend: '', backend: 'private backend', reasoning: 'private replay', workProcess: {
@@ -90,11 +90,10 @@ test('first analysis is visible before prose or tools and opens live public text
     assert.equal(group.dataset.processState, 'running');
     const button = group.querySelector('button[aria-expanded]');
     assert.match(button.textContent, /分析中/);
-    assert.equal(button.getAttribute('aria-expanded'), 'false');
-    await act(async () => button.click());
+    assert.equal(button.getAttribute('aria-expanded'), 'true');
     assert.match(group.textContent, /正在等待模型返回可展示的分析内容/);
     assert.doesNotMatch(group.textContent, /private backend|private replay/);
-    assert.equal(group.querySelectorAll('button[aria-expanded]').length, 1, 'one click reaches analysis without a second nested disclosure');
+    assert.equal(group.querySelectorAll('button[aria-expanded]').length, 1, 'analysis has no second nested disclosure');
     replacement = {...replacement, initial: {...replacement.initial, frontend: '模型返回的公开分析'}};
     await ui.render(source, replacement);
     assert.equal(ui.host.querySelector('[data-work-process]'), group);
@@ -109,11 +108,19 @@ test('analysis-only completion folds naturally and a hidden-reasoning provider d
         state: 'running', label: '分析中', startedAt: 1000}};
     await ui.render(source, {hidden: running});
     const group = ui.host.querySelector('[data-work-process]');
-    await ui.render(source + '\n\n最终回答。', {hidden: {...running, frontend: '\n[DONE]',
-        workProcess: {...running.workProcess, state: 'completed', finishedAt: 2000}}}, false);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    const done = {...running, frontend: '\n[DONE]',
+        workProcess: {...running.workProcess, state: 'completed', finishedAt: 2000}};
+    await ui.render(source, {hidden: done});
+    assert.equal(group.dataset.processState, 'running', 'completed reasoning does not finish the user turn');
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false', 'analysis folds before later prose arrives');
+    await ui.render(source + '\n\n最终回答。', {hidden: done}, false);
     assert.equal(ui.host.querySelector('[data-work-process]'), group);
     assert.match(group.textContent, /分析完成/);
     assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false');
+    assert.equal(group.querySelector('[data-work-process-panel]').dataset.state, 'closed');
+    await finishCollapse(ui, group);
+    assert.equal(group.querySelector('[data-work-process-records]'), null);
     await act(async () => group.querySelector('button[aria-expanded]').click());
     assert.match(group.textContent, /模型未提供可展示的分析内容/);
     assert.match(ui.host.textContent, /最终回答/);
@@ -131,6 +138,59 @@ test('a failed or cancelled first analysis stops spinning and leaves its public 
         assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
         assert.match(group.textContent, /公开的部分内容/);
         assert.equal(group.querySelector('.animate-spin'), null);
+    }
+});
+
+test('analysis inside a tool group opens while running and folds after completion without manual input', async (t) => {
+    const ui = await setup(t);
+    const source = token('grouped-tool', 'executionStatus') + token('grouped-analysis', 'thinking');
+    const thinking = {frontend: '实时分析内容', workProcess: {kind: 'reasoning', runId: 'run',
+        conversationId: 'chat', state: 'running'}};
+    const replacement = {'grouped-tool': status('grouped-tool'), 'grouped-analysis': thinking};
+    await ui.render(source, replacement);
+    const group = ui.host.querySelector('[data-work-process]');
+    const analysis = group.querySelector('[data-process-reasoning="grouped-analysis"]');
+    assert.equal(analysis.querySelector('button').getAttribute('aria-expanded'), 'true');
+    assert.match(analysis.textContent, /实时分析内容/);
+    await ui.render(source + token('next-tool', 'executionStatus'), {...replacement,
+        'grouped-analysis': {...thinking, frontend: '实时分析内容\n[DONE]',
+            workProcess: {...thinking.workProcess, state: 'completed'}},
+        'next-tool': status('next-tool', {inlineState: 'running'})});
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+    assert.equal(analysis.querySelector('button').getAttribute('aria-expanded'), 'false');
+    assert.equal(analysis.querySelector('[data-work-process-panel]').dataset.state, 'closed');
+    await finishCollapse(ui, analysis);
+    assert.doesNotMatch(analysis.textContent, /实时分析内容/);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
+});
+
+test('manual analysis choices survive completion and joining a tool group', async (t) => {
+    const ui = await setup(t);
+    for (const keepOpen of [false, true]) {
+        const id = `chosen-analysis-${keepOpen}`;
+        const source = token(id, 'thinking');
+        const thought = {frontend: '用户正在阅读的内容', workProcess: {kind: 'reasoning', state: 'running',
+            conversationId: 'chat', runId: 'run'}};
+        await ui.render(source, {[id]: thought});
+        const group = ui.host.querySelector('[data-work-process]');
+        await act(async () => group.querySelector('button[aria-expanded]').click());
+        if (keepOpen) await act(async () => group.querySelector('button[aria-expanded]').click());
+        const done = {...thought, frontend: thought.frontend + '\n[DONE]',
+            workProcess: {...thought.workProcess, state: 'completed'}};
+        await ui.render(source, {[id]: done});
+        assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), String(keepOpen));
+        await ui.render(source + token(`${id}-tool`, 'executionStatus'), {
+            [id]: done, [`${id}-tool`]: status(`${id}-tool`, {inlineState: 'running'})});
+        assert.equal(ui.host.querySelector('[data-work-process]'), group);
+        assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), String(keepOpen));
+        if (!keepOpen) await act(async () => group.querySelector('button[aria-expanded]').click());
+        const record = group.querySelector('[data-process-reasoning]');
+        assert.equal(record.querySelector('button').getAttribute('aria-expanded'), String(keepOpen));
+        await act(async () => record.querySelector('button').click());
+        await ui.render(source + token(`${id}-tool`, 'executionStatus'), {[id]: done,
+            [`${id}-tool`]: status(`${id}-tool`, {inlineState: 'running', updatedAt: 30})});
+        assert.equal(record.querySelector('button').getAttribute('aria-expanded'), String(!keepOpen));
     }
 });
 
@@ -246,7 +306,7 @@ test('cleared tool placeholders leave no spaced Markdown block and can later dis
 test('mixed reasoning and tools collapse after completion without reloading media, and can be reopened manually', async (t) => {
     const ui = await setup(t);
     let source = '![演示](/demo.mp4){type=video}' + token('reasoning-one', 'thinking');
-    let replacement = {'reasoning-one': {frontend: '不应默认挂载的长推理', workProcess: {
+    let replacement = {'reasoning-one': {frontend: '首轮公开分析', workProcess: {
         kind: 'reasoning', conversationId: 'chat', runId: 'run', executionId: 'execution', state: 'running', startedAt: 1000,
     }}};
     await ui.render(source, replacement);
@@ -255,8 +315,8 @@ test('mixed reasoning and tools collapse after completion without reloading medi
     video.currentTime = 12.5;
     const group = ui.host.querySelector('[data-work-process]');
     assert.ok(group);
-    assert.doesNotMatch(group.textContent, /不应默认挂载/);
-    replacement = {...replacement, 'reasoning-one': {...replacement['reasoning-one'], frontend: '不应默认挂载的长推理\n[DONE]'}};
+    assert.match(group.textContent, /首轮公开分析/);
+    replacement = {...replacement, 'reasoning-one': {...replacement['reasoning-one'], frontend: '首轮公开分析\n[DONE]'}};
     source += token('shell', 'executionStatus');
     replacement.shell = status('shell', {toolNames: ['code_shell'], inlineState: 'running', action: '正在检查环境'});
     await ui.render(source, replacement);
@@ -264,7 +324,7 @@ test('mixed reasoning and tools collapse after completion without reloading medi
     assert.match(group.textContent, /正在检查环境/);
     assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
     assert.ok(group.querySelector('[data-process-reasoning]'));
-    assert.doesNotMatch(group.textContent, /不应默认挂载/, 'reasoning text remains lazy inside the expanded timeline');
+    assert.doesNotMatch(group.textContent, /首轮公开分析/, 'completed reasoning folds inside the expanded timeline');
     source += token('reasoning-two', 'thinking') + token('read', 'executionStatus');
     replacement = {...replacement, shell: status('shell', {toolNames: ['code_shell'], inlineState: 'failed'}),
         'reasoning-two': {frontend: '换一种办法\n[DONE]'}, read: status('read', {toolNames: ['code_read']})};
@@ -286,7 +346,7 @@ test('mixed reasoning and tools collapse after completion without reloading medi
     await ui.render(source, structuredClone(replacement), false);
     assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true', 'an explicit reopen survives later completed snapshots');
     await act(async () => group.querySelector('[data-process-reasoning] button').click());
-    assert.match(group.textContent, /不应默认挂载的长推理/);
+    assert.match(group.textContent, /首轮公开分析/);
     assert.doesNotMatch(group.textContent, /\[DONE\]/);
 });
 
