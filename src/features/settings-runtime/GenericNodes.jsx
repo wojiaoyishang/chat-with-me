@@ -23,7 +23,19 @@ import { getSettingsDialogStyle } from './dialogSizing.js';
 import { useSettingsLoadingToast } from './loadingToasts.js';
 import { settingsResourceCacheKey } from './sessionCache.js';
 import { matrixRows, matrixStoredValue, matrixValueMap } from './matrixValues.js';
+import { readonlyImageSource, readonlyImageSize } from './readonlyImage.js';
 const EMPTY_MAP = Object.freeze({});
+
+/** A display-only image primitive; QR and other views are authored by the backend. */
+export function ReadonlyImageNode({ item, value }) {
+    const source = readonlyImageSource(value);
+    if (!source) return <p role="alert" className="text-sm text-muted-foreground">图片暂不可用</p>;
+    return <figure className="flex min-w-0 flex-col items-center gap-3 py-3">
+        <img src={resolveResourceUrl(source)} alt={item.alt || item.text || ''} width={readonlyImageSize(item.width)} height={readonlyImageSize(item.height)}
+            className="max-w-full rounded-md border bg-white object-contain p-2" />
+        {item.description && <figcaption className="text-center text-xs leading-5 text-muted-foreground">{item.description}</figcaption>}
+    </figure>;
+}
 
 export function FileNode({ item, value, onChange, context }) {
     const [busy, setBusy] = useState(false);

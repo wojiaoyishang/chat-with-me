@@ -1,7 +1,7 @@
 import clientAdapter from '@/runtime/backend/clientAdapter.js';
 import { applyRules, findSettingsField as findField, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue, settingsChildFields } from '@/features/settings-runtime/model.js';
 import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
-import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ReadonlyTextNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
+import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ReadonlyImageNode, ReadonlyTextNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
 import { SettingsSection } from '@/features/settings-runtime/SettingsPresentation.jsx';
 import SettingsFormLayout from '@/features/settings-runtime/SettingsFormLayout.jsx';
 import { requestSettingsNavigation } from '@/features/settings-runtime/navigation.js';
@@ -2222,6 +2222,8 @@ function SettingItemRenderer({ item, path }) {
             return <TextInputItem item={item} path={path} />;
         case 'readonly-text':
             return <ReadonlyTextNode item={item} value={getValue(values, path)} context={context} />;
+        case 'readonly-image':
+            return <ReadonlyImageNode item={item} value={getValue(values, path)} />;
         case 'checkbox':
             return <CheckboxItem item={item} path={path} />;
         case 'radio':
@@ -2272,6 +2274,13 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     const storageBindings = useRef(new Map());
     const [confirm, confirmation] = useConfirmation();
     const [descriptorDialog, setDescriptorDialog] = useState({ open: false, value: null, serial: 0 });
+    // Preserve callback identity through exit so the memoized outgoing form is
+    // reused. The serial still prevents late callbacks closing a newer dialog.
+    const descriptorSerial = descriptorDialog.serial;
+    const closeDescriptorDialog = useCallback(() => setDescriptorDialog((current) =>
+        current.serial === descriptorSerial ? { ...current, open: false } : current), [descriptorSerial]);
+    const exitDescriptorDialog = useCallback(() => setDescriptorDialog((current) =>
+        !current.open && current.serial === descriptorSerial ? { ...current, value: null } : current), [descriptorSerial]);
     const client = runtimeContext.client || clientAdapter;
     const hydrate = useCallback((path, value) => {
         const next = setValue(valuesRef.current, path, value);
@@ -2368,8 +2377,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
             {config.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || 'field'}:${index}`} item={field} path={field.name ? pathParts(field.name) : []} />)}
         </div>
         <DescriptorDialog open={descriptorDialog.open} descriptor={descriptorDialog.value} context={ctx} renderFields={renderFields}
-            onClose={() => setDescriptorDialog((current) => current.serial === descriptorDialog.serial ? { ...current, open: false } : current)}
-            onExited={() => setDescriptorDialog((current) => !current.open && current.serial === descriptorDialog.serial ? { ...current, value: null } : current)} />
+            onClose={closeDescriptorDialog} onExited={exitDescriptorDialog} />
         {confirmation}
     </SettingsContext.Provider>;
 }

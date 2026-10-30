@@ -999,7 +999,7 @@
      - 4
      - ``src/features/settings-client/catalog.js``
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
-     - 15
+     - 16
      - 0
      - 141
      - ``src/features/settings-runtime/GenericNodes.jsx``
@@ -1078,6 +1078,11 @@
      - 0
      - 1
      - ``src/features/settings-runtime/navigation.js``
+   * - :doc:`src/features/settings-runtime/readonlyImage </api/javascript/features/settings-runtime/readonlyImage>`
+     - 2
+     - 0
+     - 0
+     - ``src/features/settings-runtime/readonlyImage.js``
    * - :doc:`src/features/settings-runtime/registry </api/javascript/features/settings-runtime/registry>`
      - 2
      - 0
@@ -1646,6 +1651,7 @@
    /api/javascript/features/settings-runtime/matrixValues
    /api/javascript/features/settings-runtime/model
    /api/javascript/features/settings-runtime/navigation
+   /api/javascript/features/settings-runtime/readonlyImage
    /api/javascript/features/settings-runtime/registry
    /api/javascript/features/settings-runtime/sessionCache
    /api/javascript/features/settings-runtime/useActionExecutor
