@@ -15,7 +15,7 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 * **源码文件**：``src/features/execution/WorkProcessGroup.jsx``
 * **模块标识**：``src/features/execution/WorkProcessGroup``
-* **顶层函数/组件/Hook**：1
+* **顶层函数/组件/Hook**：2
 * **类**：0
 * **局部函数与匿名回调**：24
 
@@ -27,13 +27,30 @@ Retain records during the CSS exit, then release their live subscriptions.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1627:2696:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:731:946:FUNCTION
+
+.. js:function:: ReasoningContent({entry})
+
+   渲染 ``ReasoningContent`` React 组件，并协调该界面的状态、事件和子组件。
+
+   **性质**：同步函数；模块内部入口；源码第 ``12``—``16`` 行。
+
+   **参数**
+
+   ``{entry}``
+      调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1799:2868:FUNCTION
 
 .. js:function:: ProcessRecords({expanded, children})
 
    渲染 ``ProcessRecords`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``27``—``47`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``33``—``53`` 行。
 
    **参数**
 
@@ -53,17 +70,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:736:1470:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:978:1642:FUNCTION
 
-.. rubric:: ``memo callback @ 12``
+.. rubric:: ``memo callback @ 18``
 
 .. code-block:: javascript
 
-   memo callback @ 12({entry})
+   memo callback @ 18({entry})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``12``—``23`` 行。
+**性质**：同步局部函数；源码第 ``18``—``29`` 行。
 
 **参数**
 
@@ -78,17 +95,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:913:949:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1155:1191:FUNCTION
 
-.. rubric:: ``onClick callback @ 15``
+.. rubric:: ``onClick callback @ 21``
 
 .. code-block:: javascript
 
-   onClick callback @ 15()
+   onClick callback @ 21()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``memo callback @ 12``。
+**性质**：同步局部函数；源码第 ``21``—``21`` 行；所属函数 ``memo callback @ 18``。
 
 **参数**
 
@@ -102,17 +119,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:931:948:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1173:1190:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 15``
+.. rubric:: ``setExpanded callback @ 21``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 15(value)
+   setExpanded callback @ 21(value)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``onClick callback @ 15``。
+**性质**：同步局部函数；源码第 ``21``—``21`` 行；所属函数 ``onClick callback @ 21``。
 
 **参数**
 
@@ -123,17 +140,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1726:2044:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1898:2216:FUNCTION
 
-.. rubric:: ``useEffect callback @ 29``
+.. rubric:: ``useEffect callback @ 35``
 
 .. code-block:: javascript
 
-   useEffect callback @ 29()
+   useEffect callback @ 35()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``29``—``38`` 行；所属函数 ``ProcessRecords``。
+**性质**：同步局部函数；源码第 ``35``—``44`` 行；所属函数 ``ProcessRecords``。
 
 **参数**
 
@@ -147,17 +164,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:1965:1989:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2137:2161:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 36``
+.. rubric:: ``setTimeout callback @ 42``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 36()
+   setTimeout callback @ 42()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``36``—``36`` 行；所属函数 ``useEffect callback @ 29``。
+**性质**：同步局部函数；源码第 ``42``—``42`` 行；所属函数 ``useEffect callback @ 35``。
 
 **参数**
 
@@ -169,17 +186,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``setRetained``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2011:2037:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2183:2209:FUNCTION
 
-.. rubric:: ``returned callback @ 37``
+.. rubric:: ``returned callback @ 43``
 
 .. code-block:: javascript
 
-   returned callback @ 37()
+   returned callback @ 43()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``useEffect callback @ 29``。
+**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``useEffect callback @ 35``。
 
 **参数**
 
@@ -191,17 +208,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2432:2588:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2604:2760:FUNCTION
 
-.. rubric:: ``onTransitionEnd callback @ 42``
+.. rubric:: ``onTransitionEnd callback @ 48``
 
 .. code-block:: javascript
 
-   onTransitionEnd callback @ 42(event)
+   onTransitionEnd callback @ 48(event)
 
 处理 ``Transition End`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``42``—``44`` 行；所属函数 ``ProcessRecords``。
+**性质**：同步局部函数；源码第 ``48``—``50`` 行；所属函数 ``ProcessRecords``。
 
 **参数**
 
@@ -214,17 +231,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``setRetained``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2821:7367:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2993:7802:FUNCTION
 
-.. rubric:: ``memo callback @ 50``
+.. rubric:: ``memo callback @ 56``
 
 .. code-block:: javascript
 
-   memo callback @ 50({entries, contextId = '', conversationId = '', isStreaming = false, tail = false})
+   memo callback @ 56({entries, contextId = '', conversationId = '', isStreaming = false, tail = false})
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``50``—``102`` 行。
+**性质**：同步局部函数；源码第 ``56``—``110`` 行。
 
 **参数**
 
@@ -239,17 +256,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **内部回调数量**：15。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:2957:2983:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3129:3155:FUNCTION
 
-.. rubric:: ``[...entries].reverse().find callback @ 51``
+.. rubric:: ``[...entries].reverse().find callback @ 57``
 
 .. code-block:: javascript
 
-   [...entries].reverse().find callback @ 51(entry)
+   [...entries].reverse().find callback @ 57(entry)
 
 作为 ``[...entries].reverse().find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -260,17 +277,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3032:3177:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3204:3349:FUNCTION
 
-.. rubric:: ``useExecutionStore callback @ 52``
+.. rubric:: ``useExecutionStore callback @ 58``
 
 .. code-block:: javascript
 
-   useExecutionStore callback @ 52(state)
+   useExecutionStore callback @ 58(state)
 
 封装 ``ExecutionStore`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``52``—``53`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``58``—``59`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -281,17 +298,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3206:3266:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3378:3438:FUNCTION
 
-.. rubric:: ``useMemo callback @ 54``
+.. rubric:: ``useMemo callback @ 60``
 
 .. code-block:: javascript
 
-   useMemo callback @ 54()
+   useMemo callback @ 60()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -303,17 +320,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``projectWorkProcess``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3533:3622:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3893:3987:FUNCTION
 
-.. rubric:: ``useEffect callback @ 58``
+.. rubric:: ``useEffect callback @ 66``
 
 .. code-block:: javascript
 
-   useEffect callback @ 58()
+   useEffect callback @ 66()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``58``—``60`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``66``—``68`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -325,17 +342,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``hasExpandedUserOverride``、``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:3678:3992:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4049:4363:FUNCTION
 
-.. rubric:: ``useEffect callback @ 61``
+.. rubric:: ``useEffect callback @ 69``
 
 .. code-block:: javascript
 
-   useEffect callback @ 61()
+   useEffect callback @ 69()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``61``—``65`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``69``—``73`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -347,17 +364,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``useExecutionStore.getState``、``Number``、``upsertExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4048:4074:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4419:4445:FUNCTION
 
-.. rubric:: ``model.records.filter callback @ 66``
+.. rubric:: ``model.records.filter callback @ 74``
 
 .. code-block:: javascript
 
-   model.records.filter callback @ 66(entry)
+   model.records.filter callback @ 74(entry)
 
 作为 ``model.records.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``66``—``66`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -368,17 +385,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4080:4134:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4451:4505:FUNCTION
 
-.. rubric:: ``model.records.filter((entry) => entry.execution).map callback @ 66``
+.. rubric:: ``model.records.filter((entry) => entry.execution).map callback @ 74``
 
 .. code-block:: javascript
 
-   model.records.filter((entry) => entry.execution).map callback @ 66(entry)
+   model.records.filter((entry) => entry.execution).map callback @ 74(entry)
 
 作为 ``model.records.filter((entry) => entry.execution).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``66``—``66`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -391,17 +408,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``getExecutionGuidance``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4190:4223:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4561:4594:FUNCTION
 
-.. rubric:: ``guidances.flatMap callback @ 67``
+.. rubric:: ``guidances.flatMap callback @ 75``
 
 .. code-block:: javascript
 
-   guidances.flatMap callback @ 67(guidance)
+   guidances.flatMap callback @ 75(guidance)
 
 实现 ``guidances.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -412,17 +429,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4229:4266:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4600:4637:FUNCTION
 
-.. rubric:: ``guidances.flatMap((guidance) => guidance.activities).map callback @ 67``
+.. rubric:: ``guidances.flatMap((guidance) => guidance.activities).map callback @ 75``
 
 .. code-block:: javascript
 
-   guidances.flatMap((guidance) => guidance.activities).map callback @ 67(activity)
+   guidances.flatMap((guidance) => guidance.activities).map callback @ 75(activity)
 
 作为 ``guidances.flatMap((guidance) => guidance.activities).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -433,17 +450,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4293:4358:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4664:4729:FUNCTION
 
-.. rubric:: ``[...new Map(guidances.flatMap((guidance) => guidance.activities).map((activity) => [activity.id, activity])).values()]… callback @ 68``
+.. rubric:: ``[...new Map(guidances.flatMap((guidance) => guidance.activities).map((activity) => [activity.id, activity])).values()]… callback @ 76``
 
 .. code-block:: javascript
 
-   [...new Map(guidances.flatMap((guidance) => guidance.activities).map((activity) => [activity.id, activity])).values()]… callback @ 68(left, right)
+   [...new Map(guidances.flatMap((guidance) => guidance.activities).map((activity) => [activity.id, activity])).values()]… callback @ 76(left, right)
 
 实现 ``[...new Map(guidances.flatMap((guidance) => guidance.activities).map((activity) => [activity.id, activity])).values()]…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``76``—``76`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -459,17 +476,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``Number``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4399:4428:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4770:4799:FUNCTION
 
-.. rubric:: ``guidances.findLast callback @ 69``
+.. rubric:: ``guidances.findLast callback @ 77``
 
 .. code-block:: javascript
 
-   guidances.findLast callback @ 69(guidance)
+   guidances.findLast callback @ 77(guidance)
 
 实现 ``guidances.findLast`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``69``—``69`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -480,7 +497,7 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:4668:4839:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5039:5210:FUNCTION
 
 .. rubric:: ``navigate``
 
@@ -490,7 +507,7 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 实现 ``navigate`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``72``—``73`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``80``—``81`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -502,17 +519,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5172:5230:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5543:5601:FUNCTION
 
-.. rubric:: ``onClick callback @ 77``
+.. rubric:: ``onClick callback @ 85``
 
 .. code-block:: javascript
 
-   onClick callback @ 77()
+   onClick callback @ 85()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -526,17 +543,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5190:5207:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:5561:5578:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 77``
+.. rubric:: ``setExpanded callback @ 85``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 77(value)
+   setExpanded callback @ 85(value)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``onClick callback @ 77``。
+**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``onClick callback @ 85``。
 
 **参数**
 
@@ -547,17 +564,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:6700:6925:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:7135:7360:FUNCTION
 
-.. rubric:: ``model.records.map callback @ 93``
+.. rubric:: ``model.records.map callback @ 101``
 
 .. code-block:: javascript
 
-   model.records.map callback @ 93(entry)
+   model.records.map callback @ 101(entry)
 
 作为 ``model.records.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``93``—``95`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``101``—``103`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 
@@ -568,17 +585,17 @@ Retain records during the CSS exit, then release their live subscriptions.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:6984:7096:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/WorkProcessGroup.jsx:7419:7531:FUNCTION
 
-.. rubric:: ``activities.map callback @ 97``
+.. rubric:: ``activities.map callback @ 105``
 
 .. code-block:: javascript
 
-   activities.map callback @ 97(activity)
+   activities.map callback @ 105(activity)
 
 作为 ``activities.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``97``—``97`` 行；所属函数 ``memo callback @ 50``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``memo callback @ 56``。
 
 **参数**
 

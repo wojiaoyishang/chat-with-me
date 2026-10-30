@@ -78,6 +78,62 @@ const finishCollapse = async (ui, group) => act(async () => {
     group.querySelector('[data-work-process-panel]').dispatchEvent(event);
 });
 
+test('first analysis is visible before prose or tools and opens live public text with one click', async (t) => {
+    const ui = await setup(t);
+    const source = token('initial', 'thinking');
+    let replacement = {initial: {frontend: '', backend: 'private backend', reasoning: 'private replay', workProcess: {
+        kind: 'reasoning', runId: 'run', conversationId: 'chat', state: 'running', label: '分析中', startedAt: 1000,
+    }}};
+    await ui.render(source, replacement);
+    const group = ui.host.querySelector('[data-work-process]');
+    assert.ok(group, 'a nonempty analysis body or a tool must not be required');
+    assert.equal(group.dataset.processState, 'running');
+    const button = group.querySelector('button[aria-expanded]');
+    assert.match(button.textContent, /分析中/);
+    assert.equal(button.getAttribute('aria-expanded'), 'false');
+    await act(async () => button.click());
+    assert.match(group.textContent, /正在等待模型返回可展示的分析内容/);
+    assert.doesNotMatch(group.textContent, /private backend|private replay/);
+    assert.equal(group.querySelectorAll('button[aria-expanded]').length, 1, 'one click reaches analysis without a second nested disclosure');
+    replacement = {...replacement, initial: {...replacement.initial, frontend: '模型返回的公开分析'}};
+    await ui.render(source, replacement);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
+    assert.equal(group.querySelector('button[aria-expanded]'), button);
+    assert.match(group.textContent, /模型返回的公开分析/);
+});
+
+test('analysis-only completion folds naturally and a hidden-reasoning provider does not invent display text', async (t) => {
+    const ui = await setup(t);
+    const source = token('hidden', 'thinking');
+    const running = {frontend: '', workProcess: {kind: 'reasoning', runId: 'run', conversationId: 'chat',
+        state: 'running', label: '分析中', startedAt: 1000}};
+    await ui.render(source, {hidden: running});
+    const group = ui.host.querySelector('[data-work-process]');
+    await ui.render(source + '\n\n最终回答。', {hidden: {...running, frontend: '\n[DONE]',
+        workProcess: {...running.workProcess, state: 'completed', finishedAt: 2000}}}, false);
+    assert.equal(ui.host.querySelector('[data-work-process]'), group);
+    assert.match(group.textContent, /分析完成/);
+    assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'false');
+    await act(async () => group.querySelector('button[aria-expanded]').click());
+    assert.match(group.textContent, /模型未提供可展示的分析内容/);
+    assert.match(ui.host.textContent, /最终回答/);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 1);
+});
+
+test('a failed or cancelled first analysis stops spinning and leaves its public details inspectable', async (t) => {
+    const ui = await setup(t);
+    for (const state of ['failed', 'cancelled']) {
+        const id = `analysis-${state}`;
+        await ui.render(token(id, 'thinking'), {[id]: {frontend: `公开的部分内容\n[${state === 'failed' ? 'FAILED' : 'DONE'}]`,
+            workProcess: {kind: 'reasoning', state, runId: id, conversationId: 'chat'}}}, false);
+        const group = ui.host.querySelector('[data-work-process]');
+        assert.equal(group.dataset.processState, state);
+        assert.equal(group.querySelector('button[aria-expanded]').getAttribute('aria-expanded'), 'true');
+        assert.match(group.textContent, /公开的部分内容/);
+        assert.equal(group.querySelector('.animate-spin'), null);
+    }
+});
+
 test('streamed calls default to expanded and retain a manual collapse until prose intervenes', async (t) => {
     const ui = await setup(t);
     let source = '```text\ncopy while executing\n```' + token('first', 'executionStatus');

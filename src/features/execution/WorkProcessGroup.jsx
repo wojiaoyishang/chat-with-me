@@ -9,6 +9,12 @@ import {getExecutionGuidance} from './executionStatusModel.js';
 import {projectWorkProcess} from './workProcessModel.js';
 import {openExecution, upsertExecution, useExecutionStore} from './useExecutionStore.js';
 
+const ReasoningContent = ({entry}) => <div className="whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">
+    {entry.text || (entry.state === 'running'
+        ? '正在等待模型返回可展示的分析内容…'
+        : '模型未提供可展示的分析内容。')}
+</div>;
+
 const ReasoningRecord = memo(({entry}) => {
     const [expanded, setExpanded] = useState(false);
     return <div className="py-1.5" data-process-reasoning={entry.id}>
@@ -18,7 +24,7 @@ const ReasoningRecord = memo(({entry}) => {
             {entry.state === 'running' ? '正在分析' : '分析记录'}
             <ChevronDown className={`size-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </button>
-        {expanded && <div className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground">{entry.text || '模型未提供可展示的推理内容。'}</div>}
+        {expanded && <div className="mt-2"><ReasoningContent entry={entry} /></div>}
     </div>;
 });
 ReasoningRecord.displayName = 'ReasoningRecord';
@@ -54,10 +60,12 @@ const WorkProcessGroup = memo(({entries, contextId = '', conversationId = '', is
     const model = useMemo(() => projectWorkProcess(entries, {live, isStreaming, tail}), [entries, live, isStreaming, tail]);
     const expandedKey = `process:${conversationId}:${contextId}:${entries[0]?.id}`;
     const completed = model.state === 'completed';
-    const [expanded, setExpanded] = useExpandedState(expandedKey, !completed);
+    const reasoningOnly = model.records.length === 1 && model.records[0].type === 'thinking';
+    const defaultExpanded = !completed && (!reasoningOnly || model.state !== 'running');
+    const [expanded, setExpanded] = useExpandedState(expandedKey, defaultExpanded);
     useEffect(() => {
-        if (!hasExpandedUserOverride(expandedKey)) setExpanded(!completed);
-    }, [completed, expandedKey, setExpanded]);
+        if (!hasExpandedUserOverride(expandedKey)) setExpanded(defaultExpanded);
+    }, [defaultExpanded, expandedKey, setExpanded]);
     useEffect(() => {
         if (!target?.executionId || !target.conversationId) return;
         const current = useExecutionStore.getState().sessions[target.conversationId]?.executions?.[target.executionId];
@@ -90,7 +98,7 @@ const WorkProcessGroup = memo(({entries, contextId = '', conversationId = '', is
             {[model.failures && `${model.failures} 项失败`, model.stopped && `${model.stopped} 项停止`].filter(Boolean).join(' · ')}{model.state === 'completed' ? ' · 查看记录' : ''}
         </div>}
         <ProcessRecords expanded={expanded}><div className="ml-3 mt-1 border-l border-border/70 pl-3" data-work-process-records>
-            {model.records.map((entry) => entry.type === 'thinking'
+            {reasoningOnly ? <ReasoningContent entry={model.records[0]} /> : model.records.map((entry) => entry.type === 'thinking'
                 ? <ReasoningRecord key={entry.id} entry={entry} />
                 : <ExecutionStatus key={entry.id} content={entry.content} conversationId={conversationId} hideGuidance />)}
         </div></ProcessRecords>
