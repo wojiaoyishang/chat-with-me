@@ -3,9 +3,12 @@ import {ChevronDown, MessageSquarePlus} from 'lucide-react';
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
 import {openExecution} from './useExecutionStore.js';
 import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
+import {executionGuidanceOriginLabel, isAutomationExecutionGuidance} from './executionStatusModel.js';
 
 export default function ExecutionGuidanceRecord({activity, execution, highlighted = false}) {
     const replaced = activity.state === 'replaced' || Boolean(activity.replacedByGuidanceId);
+    const automated = isAutomationExecutionGuidance(activity);
+    const origin = executionGuidanceOriginLabel(activity);
     const archived = replaced || activity.state === 'withdrawn';
     const hasRecord = (id) => execution.activities?.some((entry) => entry.id === id);
     const [expanded, setExpanded] = useState(!archived);
@@ -19,11 +22,13 @@ export default function ExecutionGuidanceRecord({activity, execution, highlighte
                 <button type="button" className="flex min-w-0 items-center gap-1.5 py-1 text-left" aria-expanded={expanded}
                     onClick={() => setExpanded((value) => !value)}>
                     <MessageSquarePlus className="h-3.5 w-3.5 shrink-0" />
-                    <span>{activity.widgetTitle || '执行补充'} · {label}</span>
+                    <span>{activity.widgetTitle || (automated ? '自动化补充' : '执行补充')} · {label}</span>
                     <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
                 </button>
                 <ExecutionGuidanceAction activity={activity} execution={execution} surface="execution_window" />
+                {automated && <span>外部资料</span>}
             </div>
+            {origin && <div className="mb-1 break-words text-xs text-gray-500" data-guidance-origin>{origin}</div>}
             {activity.replacesGuidanceId && (hasRecord(activity.replacesGuidanceId)
                 ? <button type="button" className="mb-1 text-xs text-blue-600 hover:underline"
                     onClick={() => openExecution(execution, {activityId: activity.replacesGuidanceId})}>此版本替代了已撤回的补充 · 查看原文</button>

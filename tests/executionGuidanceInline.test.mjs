@@ -8,7 +8,8 @@ import {createRoot} from 'react-dom/client';
 await build({
     stdin: {
         contents: `export {default as Bubble} from './src/features/execution/ExecutionGuidanceBubble.jsx';
-            export {default as Action} from './src/features/execution/ExecutionGuidanceAction.jsx';`,
+            export {default as Action} from './src/features/execution/ExecutionGuidanceAction.jsx';
+            export {default as Record} from './src/features/execution/ExecutionGuidanceRecord.jsx';`,
         resolveDir: process.cwd(),
     },
     bundle: true, packages: 'external', jsx: 'automatic', format: 'esm', platform: 'node',
@@ -19,6 +20,7 @@ await build({
         builder.onLoad({filter: /.*/, namespace: 'fixture'}, ({path}) => ({
             loader: 'jsx', resolveDir: process.cwd(), contents: path.endsWith('useExecutionStore.js')
                 ? `export const upsertExecution = (value) => globalThis.__guidanceHarness.snapshots.push(value);
+                    export const openExecution = () => {};
                     export const openGuidanceEditor = (execution, target) => {
                         globalThis.__guidanceHarness.editors.push({execution, target});
                         return globalThis.__guidanceHarness.openResult;
@@ -31,7 +33,7 @@ await build({
         }));
     }}],
 });
-const {Bubble, Action} = await import('../temp/execution-guidance-inline-test.mjs');
+const {Bubble, Action, Record} = await import('../temp/execution-guidance-inline-test.mjs');
 const activity = {id: 'guidance-1', kind: 'guidance', source: 'user_guidance', state: 'consumed', content: '请着重比较模型的泛化能力。', canToggle: true, canRewrite: true};
 const execution = {executionId: 'execution-1', conversationId: 'conversation-1', runId: 'run-1', turnId: 'turn-1', active: true, status: 'running'};
 const snapshot = (overrides = {}) => ({...execution, activities: [{...activity, state: 'withdrawn', ...overrides}]});
@@ -41,6 +43,32 @@ test('automatic input is not exposed as an editable user supplement', async (t) 
     assert.equal(ui.button('撤回并编辑'), undefined);
     assert.equal(ui.button('补充更正'), undefined);
     assert.equal(document.querySelector('button'), null);
+});
+
+test('bot supplement is visible immediately, after consumption, and in restored window history', async (t) => {
+    const automated = {...activity, source: 'automation', state: 'pending', canToggle: false, canRewrite: false,
+        displayOrigin: {platform: 'qq', platformLabel: 'QQ', conversationType: 'group', groupName: '研究讨论组', senderName: '用户乙'}};
+    const ui = await mount(t, Bubble, {activity: automated, execution});
+    assert.match(ui.html(), /自动化补充/);
+    assert.match(ui.html(), /外部资料/);
+    assert.equal(document.querySelector('[data-guidance-origin]').textContent, 'QQ · 群组：研究讨论组 · 发送者：用户乙');
+    assert.match(document.querySelector('[data-guidance-content]').textContent, /泛化能力/);
+    assert.equal(ui.button('撤回'), undefined);
+    assert.equal(ui.button('补充更正'), undefined);
+    for (const state of ['consumed', 'responded']) {
+        await ui.render({activity: {...automated, state}, execution});
+        assert.match(ui.html(), /已接收/);
+        assert.match(ui.html(), /研究讨论组/);
+    }
+    await ui.render({activity: {...automated, displayOrigin: {...automated.displayOrigin,
+        platform: 'future-platform', platformLabel: '未来通讯平台'}}, execution});
+    assert.match(document.querySelector('[data-guidance-origin]').textContent, /未来通讯平台.*研究讨论组/);
+    assert.match(ui.html(), /外部资料/);
+    await ui.unmount();
+    await mount(t, Record, {activity: JSON.parse(JSON.stringify({...automated, state: 'responded'})), execution});
+    assert.match(document.querySelector('[data-execution-guidance-record]').textContent, /自动化补充.*已接收/);
+    assert.match(document.querySelector('[data-guidance-origin]').textContent, /QQ.*研究讨论组.*用户乙/);
+    assert.equal(document.querySelector('[data-guidance-actions]'), null);
 });
 const deferred = () => { let resolve; const promise = new Promise((done) => {resolve = done;}); return {promise, resolve}; };
 

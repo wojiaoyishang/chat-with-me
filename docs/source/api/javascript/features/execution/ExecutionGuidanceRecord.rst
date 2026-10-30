@@ -22,18 +22,18 @@ src/features/execution/ExecutionGuidanceRecord 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./useExecutionStore.js``、``./ExecutionGuidanceAttachments.jsx``。
+``react``、``lucide-react``、``./ExecutionGuidanceAction.jsx``、``./useExecutionStore.js``、``./ExecutionGuidanceAttachments.jsx``、``./executionStatusModel.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:305:2911:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:408:3325:FUNCTION
 
 .. js:function:: ExecutionGuidanceRecord({activity, execution, highlighted = false})
 
    渲染 ``ExecutionGuidanceRecord`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``39`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``44`` 行。
 
    **参数**
 
@@ -44,7 +44,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-w-0 flex-1" data-execution-guidance-record={activity.id}> <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500"> <button type="button" cla…``。
 
-   **主要协作调用**：``Boolean``、``useState``、``useEffect``、``['consumed', 'responded'].includes``、``hasRecord``。
+   **主要协作调用**：``Boolean``、``isAutomationExecutionGuidance``、``executionGuidanceOriginLabel``、``useState``、``useEffect``、``['consumed', 'responded'].includes``、``hasRecord``。
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -53,7 +53,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:581:644:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:806:869:FUNCTION
 
 .. rubric:: ``hasRecord``
 
@@ -63,7 +63,7 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 实现 ``hasRecord`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``10``—``10`` 行；所属函数 ``ExecutionGuidanceRecord``。
+**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``ExecutionGuidanceRecord``。
 
 **参数**
 
@@ -78,17 +78,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:617:643:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:842:868:FUNCTION
 
-.. rubric:: ``execution.activities?.some callback @ 10``
+.. rubric:: ``execution.activities?.some callback @ 13``
 
 .. code-block:: javascript
 
-   execution.activities?.some callback @ 10(entry)
+   execution.activities?.some callback @ 13(entry)
 
 作为 ``execution.activities?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``10``—``10`` 行；所属函数 ``hasRecord``。
+**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``hasRecord``。
 
 **参数**
 
@@ -99,17 +99,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:717:750:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:942:975:FUNCTION
 
-.. rubric:: ``useEffect callback @ 12``
+.. rubric:: ``useEffect callback @ 15``
 
 .. code-block:: javascript
 
-   useEffect callback @ 12()
+   useEffect callback @ 15()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``12``—``12`` 行；所属函数 ``ExecutionGuidanceRecord``。
+**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``ExecutionGuidanceRecord``。
 
 **参数**
 
@@ -121,17 +121,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:779:824:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1004:1049:FUNCTION
 
-.. rubric:: ``useEffect callback @ 13``
+.. rubric:: ``useEffect callback @ 16``
 
 .. code-block:: javascript
 
-   useEffect callback @ 13()
+   useEffect callback @ 16()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``ExecutionGuidanceRecord``。
+**性质**：同步局部函数；源码第 ``16``—``16`` 行；所属函数 ``ExecutionGuidanceRecord``。
 
 **参数**
 
@@ -143,17 +143,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1376:1412:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1601:1637:FUNCTION
 
-.. rubric:: ``onClick callback @ 20``
+.. rubric:: ``onClick callback @ 23``
 
 .. code-block:: javascript
 
-   onClick callback @ 20()
+   onClick callback @ 23()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``ExecutionGuidanceRecord``。
+**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``ExecutionGuidanceRecord``。
 
 **参数**
 
@@ -167,17 +167,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1394:1411:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:1619:1636:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 20``
+.. rubric:: ``setExpanded callback @ 23``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 20(value)
+   setExpanded callback @ 23(value)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``onClick callback @ 20``。
+**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``onClick callback @ 23``。
 
 **参数**
 
@@ -188,17 +188,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2047:2120:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2461:2534:FUNCTION
 
-.. rubric:: ``onClick callback @ 29``
+.. rubric:: ``onClick callback @ 34``
 
 .. code-block:: javascript
 
-   onClick callback @ 29()
+   onClick callback @ 34()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``29``—``29`` 行；所属函数 ``ExecutionGuidanceRecord``。
+**性质**：同步局部函数；源码第 ``34``—``34`` 行；所属函数 ``ExecutionGuidanceRecord``。
 
 **参数**
 
@@ -210,17 +210,17 @@ src/features/execution/ExecutionGuidanceRecord 模块
 
 **主要协作调用**：``openExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2438:2513:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/ExecutionGuidanceRecord.jsx:2852:2927:FUNCTION
 
-.. rubric:: ``onClick callback @ 33``
+.. rubric:: ``onClick callback @ 38``
 
 .. code-block:: javascript
 
-   onClick callback @ 33()
+   onClick callback @ 38()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``33``—``33`` 行；所属函数 ``ExecutionGuidanceRecord``。
+**性质**：同步局部函数；源码第 ``38``—``38`` 行；所属函数 ``ExecutionGuidanceRecord``。
 
 **参数**
 

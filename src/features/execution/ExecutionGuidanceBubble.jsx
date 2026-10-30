@@ -3,7 +3,7 @@ import { memo, useState } from 'react';
 import { Check, CircleAlert, LoaderCircle, MessageSquarePlus, ListChecks } from 'lucide-react';
 
 import ExecutionGuidanceAction from './ExecutionGuidanceAction.jsx';
-import { isVisibleExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
+import { executionGuidanceOriginLabel, isAutomationExecutionGuidance, isVisibleExecutionGuidance, isWidgetExecutionGuidance } from './executionStatusModel.js';
 import ExecutionGuidanceAttachments from './ExecutionGuidanceAttachments.jsx';
 
 const stateMeta = (state) => {
@@ -29,6 +29,8 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
 
     const state = String(activity?.state || 'pending').toLowerCase();
     const meta = stateMeta(state);
+    const automated = isAutomationExecutionGuidance(activity);
+    const origin = executionGuidanceOriginLabel(activity);
     const failed = state === 'failed';
     const Icon = meta.Icon;
 
@@ -72,9 +74,11 @@ const ExecutionGuidanceBubble = memo(({ activity, execution }) => {
             >
                 <div className={`mb-1 flex flex-wrap items-center gap-1 text-[11px] font-medium ${meta.tone}`}>
                     <Icon className={`h-3.5 w-3.5 ${meta.spin ? 'animate-spin' : ''}`} aria-hidden="true" />
-                    <span>{meta.label}</span>
+                    <span>{automated ? meta.label.replace('执行补充', '自动化补充') : meta.label}</span>
+                    {automated && <span className="ml-1 text-gray-500">外部资料</span>}
                     <ExecutionGuidanceAction activity={activity} execution={execution} surface="conversation" />
                 </div>
+                {origin && <div className="mb-1 break-words text-xs text-gray-500" data-guidance-origin>{origin}</div>}
                 <div
                     className={`whitespace-pre-wrap break-words text-left text-sm leading-6 text-gray-700 ${collapsible && !expanded ? 'line-clamp-3' : ''}`}
                     data-guidance-content="true"
