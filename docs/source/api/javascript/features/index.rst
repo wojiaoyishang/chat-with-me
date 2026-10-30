@@ -1001,7 +1001,7 @@
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
      - 17
      - 0
-     - 152
+     - 155
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/ResourceActions </api/javascript/features/settings-runtime/ResourceActions>`
      - 2
@@ -1109,9 +1109,9 @@
      - 12
      - ``src/features/settings-runtime/sessionCache.js``
    * - :doc:`src/features/settings-runtime/useActionExecutor </api/javascript/features/settings-runtime/useActionExecutor>`
-     - 3
+     - 4
      - 0
-     - 15
+     - 19
      - ``src/features/settings-runtime/useActionExecutor.js``
    * - :doc:`src/features/settings-runtime/validation </api/javascript/features/settings-runtime/validation>`
      - 3

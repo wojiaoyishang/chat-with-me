@@ -2280,18 +2280,31 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     runtimeRef.current = runtimeContext;
     const previousConfigRef = useRef(config);
     const previousInitialRef = useRef(initialValues);
+    const formMounted = useRef(true);
+    useEffect(() => { formMounted.current = true; return () => { formMounted.current = false; }; }, []);
     const editorScope = useRef(null);
     const resourceRefreshers = useRef(new Map());
     const storageBindings = useRef(new Map());
     const [confirm, confirmation] = useConfirmation();
     const [descriptorDialog, setDescriptorDialog] = useState({ open: false, value: null, serial: 0 });
+    const descriptorRef = useRef(descriptorDialog);
+    descriptorRef.current = descriptorDialog;
     // Preserve callback identity through exit so the memoized outgoing form is
     // reused. The serial still prevents late callbacks closing a newer dialog.
     const descriptorSerial = descriptorDialog.serial;
     const closeDescriptorDialog = useCallback(() => setDescriptorDialog((current) =>
         current.serial === descriptorSerial ? { ...current, open: false } : current), [descriptorSerial]);
     const exitDescriptorDialog = useCallback(() => setDescriptorDialog((current) =>
-        !current.open && current.serial === descriptorSerial ? { ...current, value: null } : current), [descriptorSerial]);
+        !current.open && current.serial === descriptorSerial ? { ...current, value: null, apply: undefined } : current), [descriptorSerial]);
+    const applyDescriptorDialog = useCallback((value) => {
+        const current = descriptorRef.current;
+        if (!current.open || current.serial !== descriptorSerial || !current.apply)
+            throw new Error('当前弹窗已失效，请重新打开配置。');
+        current.apply(value);
+        closeDescriptorDialog();
+    }, [descriptorSerial, closeDescriptorDialog]);
+    const replaceDescriptorDialog = useCallback((value) => setDescriptorDialog((current) =>
+        current.open && current.serial === descriptorSerial ? { ...current, value, serial: current.serial + 1 } : current), [descriptorSerial]);
     const client = runtimeContext.client || clientAdapter;
     const hydrate = useCallback((path, value) => {
         const next = setValue(valuesRef.current, path, value);
@@ -2341,7 +2354,15 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         api: runtimeContext.api || apiClient, client, confirm, refresh, navigate, patchForm,
         openSettings: requestSettingsNavigation,
         scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {} }),
-        openDialog: (value) => setDescriptorDialog((current) => ({ open: true, value, serial: current.serial + 1 })),
+        openDialog: (value, options = {}) => setDescriptorDialog((current) => ({ open: true, value, apply: options.apply, serial: current.serial + 1 })),
+        captureDraft: () => {
+            const configuration = configRef.current;
+            const isActive = runtimeRef.current.isDialogActive;
+            return { patchForm, readForm: () => valuesRef.current,
+                isCurrent: () => formMounted.current && configRef.current === configuration && (!isActive || isActive()) };
+        },
+        applyDialog: runtimeContext.applyDialog,
+        replaceDialog: runtimeContext.replaceDialog,
         closeDialog: runtimeContext.closeDialog,
         notify: (message, tone) => tone === 'error' ? toast.error(message) : toast.success(message),
         updateUser: (user) => runtimeRef.current.updateUser?.(user),
@@ -2388,7 +2409,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
             {config.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || 'field'}:${index}`} item={field} path={field.name ? pathParts(field.name) : []} />)}
         </div>
         <DescriptorDialog open={descriptorDialog.open} descriptor={descriptorDialog.value} context={ctx} renderFields={renderFields}
-            onClose={closeDescriptorDialog} onExited={exitDescriptorDialog} />
+            onClose={closeDescriptorDialog} onExited={exitDescriptorDialog} onApply={applyDescriptorDialog} onReplace={replaceDescriptorDialog} />
         {confirmation}
     </SettingsContext.Provider>;
 }

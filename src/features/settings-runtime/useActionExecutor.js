@@ -5,6 +5,14 @@ import { useSettingsOperationToasts } from './loadingToasts.js';
 const operationKey = (action, scope) => `${action.id || action.label || 'action'}:${action.endpoint || action.clientAction || action.steps?.[0]?.endpoint || ''}:${scope.parentItem?.id || ''}:${scope.item?.id || scope.item?.key || ''}`;
 export { operationKey };
 
+/** Dialog results may address only their captured form, never storage or global scope. */
+export function settingsDialogTarget(target) {
+    if (typeof target !== 'string' || !/^form(?:\.[A-Za-z0-9_-]+)*$/.test(target)
+        || target.split('.').some((part) => ['__proto__', 'prototype', 'constructor'].includes(part)))
+        throw new Error('弹窗结果只能应用到原表单的有效路径。');
+    return target;
+}
+
 function delay(milliseconds, signal) {
     return new Promise((resolve, reject) => {
         if (signal.aborted) { reject(new DOMException('Aborted', 'AbortError')); return; }
@@ -43,6 +51,21 @@ export function useActionExecutor(services) {
     const execute = useCallback(async (action, suppliedScope = {}, callbacks = {}) => {
         const source = current.current;
         const scope = { ...source.scope(), ...suppliedScope };
+        const draft = source.captureDraft?.();
+        const formGuards = new Map();
+        for (const effect of action.effects || []) if (effect.type === 'open-dialog' && effect.guardFields !== undefined) {
+            if (!Array.isArray(effect.guardFields) || effect.guardFields.length > 16) throw new Error('弹窗草稿保护字段无效。');
+            for (const path of effect.guardFields) {
+                settingsDialogTarget('form.' + path);
+                formGuards.set(path, JSON.stringify(getValue(scope.form, path)));
+            }
+        }
+        const formStillCurrent = () => (!draft || draft.isCurrent()) && (!callbacks.isCurrent || callbacks.isCurrent())
+            && [...formGuards].every(([path, value]) => JSON.stringify(getValue(callbacks.readForm?.() || draft?.readForm(), path)) === value);
+        for (const effect of action.effects || []) if (effect.type === 'open-dialog' && effect.target !== undefined) {
+            settingsDialogTarget(effect.target);
+            if (effect.replace === true) throw new Error('替换弹窗不能重新指定结果表单。');
+        }
         const key = operationKey(action, scope);
         if (inFlight.current.has(key)) return undefined;
         // Reserve the identity before the dialog opens, so a second click cannot
@@ -135,7 +158,34 @@ export function useActionExecutor(services) {
                     (callbacks.patchForm || source.patchForm)(value, effect.target || 'form');
                 } else if (effect.type === 'open-page') source.navigate(formatValue(effect.path, resultScope, true));
                 else if (effect.type === 'open-settings') source.openSettings(resolveValue(effect.value, resultScope));
-                else if (effect.type === 'open-dialog') source.openDialog(resolveValue(effect.value || effect, resultScope));
+                else if (effect.type === 'open-dialog') {
+                    const value = resolveValue(effect.value || effect, resultScope);
+                    if (effect.replace === true) {
+                        const replace = callbacks.replaceDialog || source.replaceDialog;
+                        if (!replace) throw new Error('当前操作没有可替换的弹窗。');
+                        replace(value);
+                    } else {
+                        let apply;
+                        if (effect.target !== undefined) {
+                            const target = settingsDialogTarget(effect.target);
+                            if (!draft) throw new Error('当前操作没有可接收结果的表单。');
+                            const patch = callbacks.patchForm || draft.patchForm;
+                            apply = (result) => {
+                                if (!mounted.current || !formStillCurrent())
+                                    throw new Error('原表单已关闭或改变，请重新打开配置。');
+                                if (target === 'form' && (!result || typeof result !== 'object' || Array.isArray(result)))
+                                    throw new Error('弹窗结果必须是表单对象。');
+                                patch(cloneData(result), target);
+                            };
+                        }
+                        if (!formStillCurrent()) return undefined;
+                        source.openDialog(value, { apply });
+                    }
+                } else if (effect.type === 'apply-dialog') {
+                    const apply = callbacks.applyDialog || source.applyDialog;
+                    if (!apply) throw new Error('当前弹窗没有可应用的原表单。');
+                    apply(resolveValue(effect.value, resultScope));
+                }
                 else if (effect.type === 'close-dialog') (callbacks.closeDialog || source.closeDialog)?.();
                 else if (effect.type === 'toast') source.notify(formatValue(effect.message, resultScope), effect.tone);
                 else if (effect.type === 'client-write') await source.client.write(effect.key, resolveValue(effect.value, resultScope));

@@ -27,7 +27,7 @@ Progress belongs to the floating notice, leaving this label's size stable.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsActionLabel.jsx:743:1160:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsActionLabel.jsx:775:1192:FUNCTION
 
 .. js:function:: SettingsActionLabel({ action = {}, label })
 

@@ -573,7 +573,7 @@ export function ResourceNode({ item, context, renderFields }) {
     </SettingsSection>;
 }
 
-export function DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited }) {
+export function DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited, onApply, onReplace }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
     const [polled, setPolled] = useState(null);
     const [pollError, setPollError] = useState('');
@@ -581,7 +581,7 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
     const guardId = useId();
     const displayed = polled?.base === descriptor ? polled.value : descriptor;
     const latest = useRef(null);
-    latest.current = { displayed, values, context };
+    latest.current = { displayed, values, context, open };
     const pollKey = JSON.stringify(displayed?.poll || null);
     const locked = displayed?.dialog?.dismissible === false;
     const registerDraftGuard = context.runtimeContext.registerDraftGuard;
@@ -629,8 +629,10 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
     const form = useMemo(() => displayed && <SettingsFormLayout layout={displayed.layout || 'stacked'} columns={displayed.columns}>
         {renderFields(displayed.options || [], values, setValues, { runtimeContext: {
             ...context.runtimeContext, refresh: context.refresh, closeDialog: onClose,
+            isDialogActive: () => latest.current.open && latest.current.displayed === displayed,
+            applyDialog: onApply, replaceDialog: onReplace,
         } })}
-    </SettingsFormLayout>, [displayed, values, renderFields, context.runtimeContext, context.refresh, onClose]);
+    </SettingsFormLayout>, [displayed, values, renderFields, context.runtimeContext, context.refresh, onClose, onApply, onReplace]);
     const footerContext = { ...context, values, execute: async (action, scope, callbacks = {}) => {
         if (action.validate !== false) {
             try {
@@ -641,6 +643,9 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
         }
         return context.execute({ ...action, validate: false }, { ...scope, form: values }, {
             ...callbacks, closeDialog: onClose,
+            isCurrent: () => latest.current.open && latest.current.displayed === displayed,
+            readForm: () => latest.current.values,
+            applyDialog: onApply, replaceDialog: onReplace,
             patchForm: (patch, target = 'form') => setValues((previous) => target === 'form' ? { ...previous, ...patch } : setValue(previous, target.replace(/^form\./, ''), patch)),
         });
     } };

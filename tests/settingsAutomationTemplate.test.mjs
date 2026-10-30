@@ -11,8 +11,10 @@ const fields = [
     ] },
     { type: 'text', name: 'content', text: '补充要求', multiline: true, inlineMultiline: true, maxLength: 15000, when: is('contentFormat', 'text') },
     { type: 'code-editor', name: 'content', text: '补充要求模板', language: 'jinja2', editorHeight: 260, maxLength: 15000, when: is('contentFormat', 'jinja2') },
+    { type: 'switch', name: 'includeEvent', text: '包含触发事件内容', when: is('contentFormat', 'text') },
+    { type: 'switch', name: 'includeEvent', text: '携带事件附件', tips: '正文请在模板中引用，不自动附加事件 JSON 或规则说明。', when: is('contentFormat', 'jinja2') },
     { type: 'action', id: 'save', label: '保存规则', endpoint: '/rules', method: 'POST', body: {
-        content: ref('form.content'), contentFormat: ref('form.contentFormat'), role: ref('form.role'),
+        content: ref('form.content'), contentFormat: ref('form.contentFormat'), role: ref('form.role'), includeEvent: ref('form.includeEvent'),
     } },
 ];
 
@@ -39,27 +41,32 @@ test('plain and Jinja fields share one draft while fixed role survives save and 
     let ui = await mount(fields, {}, async (_method, endpoint, body) => {
         if (endpoint === '/rules') saved = body;
         return { saved: true };
-    }, {}, { contentFormat: 'text', role: 'user', content: '原始 {{ event.payload.text }}' });
+    }, {}, { contentFormat: 'text', role: 'user', includeEvent: true, content: '原始 {{ event.payload.text }}' });
     try {
         codeEnvironment();
         assert.equal(document.querySelector('.cm-editor'), null);
+        assert.ok(document.querySelector('[aria-label="包含触发事件内容"]'));
         await edit(document.querySelector('[aria-label="补充要求"]'), '共同草稿 {{ event.payload.text }}');
         await choose('contentFormat', 'Jinja 模板');
         let view = EditorView.findFromDOM(document.querySelector('.cm-editor'));
         assert.ok(view);
         assert.equal(view.state.doc.toString(), '共同草稿 {{ event.payload.text }}');
+        assert.ok(document.querySelector('[aria-label="携带事件附件"]'));
+        assert.equal(document.querySelector('[aria-label="包含触发事件内容"]'), null);
+        await click(document.querySelector('[aria-label="携带事件附件"]'));
         await act(async () => view.dispatch({ changes: { from: view.state.doc.length, insert: '！' }, userEvent: 'input.type' }));
         await choose('role', '系统');
         assert.equal(EditorView.findFromDOM(document.querySelector('.cm-editor')), view, 'role edits do not reset the template editor');
         await choose('contentFormat', '纯文本');
         assert.equal(view.destroyed, true);
         assert.equal(document.querySelector('[aria-label="补充要求"]').value, '共同草稿 {{ event.payload.text }}！');
+        assert.equal(document.querySelector('[aria-label="包含触发事件内容"]').checked, false);
         await choose('contentFormat', 'Jinja 模板');
         view = EditorView.findFromDOM(document.querySelector('.cm-editor'));
         assert.equal(view.state.doc.toString(), '共同草稿 {{ event.payload.text }}！');
         await choose('role', '助手');
         await click(button('保存规则'));
-        assert.deepEqual(saved, { contentFormat: 'jinja2', role: 'assistant', content: '共同草稿 {{ event.payload.text }}！' });
+        assert.deepEqual(saved, { contentFormat: 'jinja2', role: 'assistant', content: '共同草稿 {{ event.payload.text }}！', includeEvent: false });
         await ui.close();
         ui = await mount(fields, {}, null, {}, saved);
         codeEnvironment();
