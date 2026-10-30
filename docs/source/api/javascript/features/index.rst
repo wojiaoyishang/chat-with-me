@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 277
+     - 275
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -248,6 +248,11 @@
      - 0
      - 2
      - ``src/features/chat/page/utils/messageConfigUpdates.js``
+   * - :doc:`src/features/chat/page/utils/messageDeletion </api/javascript/features/chat/page/utils/messageDeletion>`
+     - 1
+     - 0
+     - 4
+     - ``src/features/chat/page/utils/messageDeletion.js``
    * - :doc:`src/features/chat/page/utils/messageMountPoints </api/javascript/features/chat/page/utils/messageMountPoints>`
      - 1
      - 0
@@ -1500,6 +1505,7 @@
    /api/javascript/features/chat/page/openChatWindow
    /api/javascript/features/chat/page/utils/liveMessageReconcile
    /api/javascript/features/chat/page/utils/messageConfigUpdates
+   /api/javascript/features/chat/page/utils/messageDeletion
    /api/javascript/features/chat/page/utils/messageMountPoints
    /api/javascript/features/chat/page/utils/messageStreamBatch
    /api/javascript/features/chat/page/utils/messageSummaries

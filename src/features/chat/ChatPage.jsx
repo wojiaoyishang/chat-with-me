@@ -1,4 +1,5 @@
 import { createMessageStreamBatch, MESSAGE_STREAM_EVENTS } from './page/utils/messageStreamBatch.js';
+import { projectMessageDeletion } from './page/utils/messageDeletion.js';
 import { openChatWindow } from './page/openChatWindow.js';
 import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -364,6 +365,13 @@ function ChatPage({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [pendingDeleteMsgId, setPendingDeleteMsgId] = useState(null);
     const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+    const messageDeletionRef = useRef(null);
+    useEffect(() => {
+        messageDeletionRef.current = null;
+        setIsDeletingMessage(false);
+        setPendingDeleteMsgId(null);
+        setShowDeleteConfirm(false);
+    }, [conversationId]);
 
     // 语音识别相关：ChatBox 负责采集真实音频和 16k PCM，ChatPage 负责最终识别/上传处理。
     const activeVoiceRecognitionEngineRef = useRef('remote');
@@ -1330,71 +1338,6 @@ function ChatPage({
         [conversationId, loadStories, openStory],
     );
 
-    // ========= 消息删除 =========
-    const deleteMessageLocally = useCallback(
-        (msgId) => {
-            if (!msgId) {
-                toast.error(t('delete_error'));
-                return false;
-            }
-
-            streamBatchRef.current?.flush();
-            const currentMessages = messagesRef.current || {};
-            const currentOrder = messagesOrderRef.current || [];
-
-            const deleteOrderIndex = currentOrder.indexOf(msgId);
-
-            if (!currentMessages[msgId] || deleteOrderIndex === -1) {
-                toast.error(t('delete_error'));
-                return false;
-            }
-
-            const targetMessage = currentMessages[msgId];
-            const parentId = targetMessage.prevMessage;
-            const parentMessage = parentId ? currentMessages[parentId] : null;
-
-            let replacementMsgId = null;
-            const newMessages = { ...currentMessages };
-
-            if (parentMessage) {
-                const oldChildren = Array.isArray(parentMessage.messages) ? parentMessage.messages : [];
-
-                const deleteChildIndex = oldChildren.indexOf(msgId);
-                const newChildren = oldChildren.filter((childId) => childId !== msgId);
-
-                if (deleteChildIndex > 0) {
-                    replacementMsgId = oldChildren[deleteChildIndex - 1];
-                }
-
-                newMessages[parentId] = {
-                    ...parentMessage,
-                    messages: newChildren,
-                    nextMessage: replacementMsgId || null,
-                };
-            }
-
-            setMessages(newMessages);
-            messagesRef.current = newMessages;
-
-            if (replacementMsgId) {
-                loadSwitchMessage(parentId, replacementMsgId);
-            } else {
-                const newOrder = [
-                    ...currentOrder.slice(0, deleteOrderIndex),
-                    ...(replacementMsgId ? [replacementMsgId] : []),
-                ];
-
-                setMessagesOrder(newOrder);
-                messagesOrderRef.current = newOrder;
-            }
-
-            scrollToBottomAfterRender(isAutoScrollEnabledRef.current, { delay: 50 });
-
-            return true;
-        },
-        [t, setMessages, setMessagesOrder, isAutoScrollEnabledRef, scrollToBottomAfterRender],
-    );
-
     // ========= 消息相关 =========
     const persistPendingWorkspaceSelection = useCallback(
         async (targetConversationId) => {
@@ -2065,6 +2008,66 @@ function ChatPage({
         [conversationId, decorateMessages, t, setMessages],
     );
 
+    // ========= Committed message deletion =========
+    const deleteMessageLocally = useCallback(
+        async (msgId, result) => {
+            if (activeConversationIdRef.current !== conversationId) return false;
+            streamBatchRef.current?.flush();
+            const projection = projectMessageDeletion(messagesRef.current || {}, messagesOrderRef.current || [], msgId, result);
+            if (!projection) {
+                setRandomMark(generateUUID());
+                return true;
+            }
+            setMessages(projection.messages);
+            messagesRef.current = projection.messages;
+            setMessagesOrder(projection.prefix);
+            messagesOrderRef.current = projection.prefix;
+            if (projection.childId) {
+                const loaded = await loadSwitchMessage(projection.parentId, projection.childId);
+                if (!loaded && activeConversationIdRef.current === conversationId) setRandomMark(generateUUID());
+            }
+            if (activeConversationIdRef.current !== conversationId) return false;
+            scrollToBottomAfterRender(isAutoScrollEnabledRef.current, { delay: 50 });
+            return true;
+        },
+        [conversationId, loadSwitchMessage, setMessages, setMessagesOrder, isAutoScrollEnabledRef, scrollToBottomAfterRender],
+    );
+
+    const submitMessageDeletion = useCallback(
+        async (msgId, { closeDialog = false } = {}) => {
+            if (!msgId || !canMutateConversation() || messageDeletionRef.current) return false;
+            const request = { conversationId, msgId };
+            messageDeletionRef.current = request;
+            setIsDeletingMessage(true);
+            try {
+                const result = await apiClient.delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, {
+                    params: { conversationId },
+                });
+                if (messageDeletionRef.current !== request || activeConversationIdRef.current !== conversationId) return false;
+                await deleteMessageLocally(msgId, result);
+                if (messageDeletionRef.current !== request || activeConversationIdRef.current !== conversationId) return false;
+                void loadMessageSummaries({ silent: true });
+                markRuntimeInspectorStale();
+                if (closeDialog) {
+                    setPendingDeleteMsgId(null);
+                    setShowDeleteConfirm(false);
+                }
+                return true;
+            } catch (error) {
+                if (messageDeletionRef.current === request && activeConversationIdRef.current === conversationId) {
+                    toast.error(t('delete_error', { message: error?.message || t('unknown_error') }));
+                }
+                return false;
+            } finally {
+                if (messageDeletionRef.current === request) {
+                    messageDeletionRef.current = null;
+                    setIsDeletingMessage(false);
+                }
+            }
+        },
+        [conversationId, canMutateConversation, deleteMessageLocally, loadMessageSummaries, markRuntimeInspectorStale, t],
+    );
+
     const switchMessage = useCallback(
         async (msg, msgId, targetMessageOrDelta, options = {}) => {
             if (!canMutateConversation()) return false;
@@ -2572,17 +2575,7 @@ function ChatPage({
                         }
 
                         if (silent) {
-                            apiClient
-                                .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + msgId, {
-                                    params: { conversationId: conversationId },
-                                })
-                                .then(() => {
-                                    deleteMessageLocally(msgId);
-                                })
-                                .catch((error) => {
-                                    toast.error(t('delete_error', { message: error?.message || t('unknown_error') }));
-                                });
-                            reply({ success: true });
+                            void submitMessageDeletion(msgId).then((success) => reply({ success }));
                         } else {
                             setPendingDeleteMsgId(msgId);
                             setShowDeleteConfirm(true);
@@ -3110,6 +3103,7 @@ function ChatPage({
         updateStreamingStatus,
         setMessages,
         loadSwitchMessage,
+        submitMessageDeletion,
         loadMessageSummaries,
         showQuickUserMessageNavigator,
         markRuntimeInspectorStale,
@@ -3947,6 +3941,7 @@ function ChatPage({
                 <DeleteConfirmDialog
                     open={showDeleteConfirm}
                     onOpenChange={(open) => {
+                        if (messageDeletionRef.current) return;
                         setShowDeleteConfirm(open);
 
                         if (!open) {
@@ -3958,30 +3953,7 @@ function ChatPage({
                     description={t('confirm_delete_description')}
                     cancelText={t('cancel')}
                     confirmText={t('confirm')}
-                    onConfirm={() => {
-                        if (!canMutateConversation()) return;
-                        if (!pendingDeleteMsgId) {
-                            setShowDeleteConfirm(false);
-                            return;
-                        }
-
-                        setIsDeletingMessage(true);
-
-                        apiClient
-                            .delete(apiEndpoint.CHAT_MESSAGES_ENDPOINT + '/' + pendingDeleteMsgId, {
-                                params: { conversationId: conversationId },
-                            })
-                            .then(() => {
-                                deleteMessageLocally(pendingDeleteMsgId);
-                            })
-                            .catch((error) => {
-                                toast.error(t('delete_error', { message: error?.message || t('unknown_error') }));
-                            });
-
-                        setIsDeletingMessage(false);
-                        setPendingDeleteMsgId(null);
-                        setShowDeleteConfirm(false);
-                    }}
+                    onConfirm={() => { void submitMessageDeletion(pendingDeleteMsgId, { closeDialog: true }); }}
                 />
             </>
         </WidgetPresentationProvider>

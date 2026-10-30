@@ -53,6 +53,15 @@ Thinking 卡文本重新构造 ``reasoning_content``。
 消息协调与 ACK 规则
 --------------------------------------------------------------------------------
 
+消息删除等待后端返回 ``parentMessageId``、``activeChildMessageId``、``activeOrder`` 和
+``treeRevision`` 后再应用。前端不能自行猜测剩余分支，尤其不能在删除首个兄弟分支时把页面截断，
+而后端实际仍选择其他分支。清除已删除的已载子树，按权威活动链更新指针并补载选中分支；
+后台广播树变化时所有客户端与 Inspector 重新加载。
+
+删除中禁止重复提交和关闭确认框；请求失败保留原状态，切换会话后忽略迟到响应。
+回调使用当前会话的分支读取器，不可捕获旧闭包。Inspector 时间线属于当时已发内容的历史快照；
+“后端消息”才是当前活动链的即时投影，两者不能混作下一次生成的上下文。
+
 ``conversation.messages.loaded`` 之后，后端会恢复活跃 Run 的 Redis Stream collector。前端对
 ``message.content.set``、``message.content.delta`` 等 Stream lane 事件按 FIFO 应用，因此无需通过业务
 ACK 来保证 baseline 与 delta 的先后顺序。
