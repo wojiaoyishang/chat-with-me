@@ -15,9 +15,9 @@ src/features/tools/toolPermissions 模块
 
 * **源码文件**：``src/features/tools/toolPermissions.js``
 * **模块标识**：``src/features/tools/toolPermissions``
-* **顶层函数/组件/Hook**：11
+* **顶层函数/组件/Hook**：16
 * **类**：0
-* **局部函数与匿名回调**：24
+* **局部函数与匿名回调**：27
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
@@ -39,13 +39,104 @@ src/features/tools/toolPermissions 模块
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:234:372:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:314:599:FUNCTION
+
+.. js:function:: getToolCallableIdentity(tool)
+
+   读取与 ``Tool Callable Identity`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``7``—``12`` 行。
+
+   **参数**
+
+   ``tool``
+      调用方传入的 ``tool`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``\x60permission:${getToolPermissionKey(tool)}\x60``、``JSON.stringify([ref.source, ref.toolset, ref.name])``、``tool?.accessPath || tool?.name || ''``。
+
+   **主要协作调用**：``getToolPermissionKey``、``JSON.stringify``。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:643:1430:FUNCTION
+
+.. js:function:: collectToolPermissionUsage(items)
+
+   实现 ``collectToolPermissionUsage`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``14``—``31`` 行。
+
+   **参数**
+
+   ``items`` （默认值 ``[]``）
+      待渲染、筛选或合并的数据项数组。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``usage``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
+
+   **主要协作调用**：``visit``。
+
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1468:1660:FUNCTION
+
+.. js:function:: getToolCatalogCounts(items)
+
+   读取与 ``Tool Catalog Counts`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``33``—``36`` 行。
+
+   **参数**
+
+   ``items`` （默认值 ``[]``）
+      待渲染、筛选或合并的数据项数组。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``{tools: [...usage.values()].reduce((sum, item) => sum + item.identities.size, 0), permissions: usage.size}``。
+
+   **主要协作调用**：``collectToolPermissionUsage``、``[...usage.values()].reduce``、``usage.values``。
+
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1705:1877:FUNCTION
+
+.. js:function:: getSharedToolPermissionText(tool, usage)
+
+   读取与 ``Shared Tool Permission Text`` 相关的数据或状态。
+
+   **性质**：同步函数；导出 API；源码第 ``38``—``41`` 行。
+
+   **参数**
+
+   ``tool``
+      调用方传入的 ``tool`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``usage``
+      调用方传入的 ``usage`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``entry?.identities.size > 1 ? \x60共享权限${entry.label ? \x60 · ${entry.label}\x60 : ''}\x60 : ''``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
+
+   **主要协作调用**：``usage.get``、``getToolPermissionKey``。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1991:2129:FUNCTION
 
 .. js:function:: getToolDisplayName(tool, fallback)
 
    读取与 ``Tool Display Name`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``6``—``7`` 行。
+   **性质**：同步函数；导出 API；源码第 ``44``—``45`` 行。
 
    **参数**
 
@@ -63,13 +154,13 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:417:876:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2174:2633:FUNCTION
 
 .. js:function:: applyBulkToolPermissionMode(permissions, tools, mode)
 
    应用与 ``Bulk Tool Permission Mode`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``9``—``20`` 行。
+   **性质**：同步函数；导出 API；源码第 ``47``—``58`` 行。
 
    **参数**
 
@@ -88,13 +179,13 @@ src/features/tools/toolPermissions 模块
 
    **主要协作调用**：``MODES.includes``、``getToolPermissionKey``、``Array.isArray``、``allowedModes.includes``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:921:1126:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2678:2883:FUNCTION
 
 .. js:function:: normalizeToolPermissionMode(value, fallback)
 
    规范化与 ``Tool Permission Mode`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``22``—``26`` 行。
+   **性质**：同步函数；导出 API；源码第 ``60``—``64`` 行。
 
    **参数**
 
@@ -110,13 +201,13 @@ src/features/tools/toolPermissions 模块
 
    **主要协作调用**：``String(value || '').toLowerCase``、``String``、``MODES.includes``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1168:1351:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2925:3108:FUNCTION
 
 .. js:function:: getToolPermissionAliases(tool)
 
    读取与 ``Tool Permission Aliases`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``28``—``31`` 行。
+   **性质**：同步函数；导出 API；源码第 ``66``—``69`` 行。
 
    **参数**
 
@@ -131,13 +222,13 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1539:2145:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3296:3902:FUNCTION
 
 .. js:function:: readToolPermission(tool, ...sources)
 
    实现 ``readToolPermission`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``35``—``48`` 行。
+   **性质**：同步函数；导出 API；源码第 ``73``—``86`` 行。
 
    **参数**
 
@@ -155,13 +246,42 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2194:3022:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3944:4230:FUNCTION
+
+.. js:function:: readSharedToolPermission(tool, usage, ...sources)
+
+   实现 ``readSharedToolPermission`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``88``—``93`` 行。
+
+   **参数**
+
+   ``tool``
+      调用方传入的 ``tool`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``usage``
+      调用方传入的 ``usage`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``...sources`` （剩余参数）
+      调用方传入的 ``sources`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``readToolPermission({...tool, permissionAliases: [...new Set([ ...getToolPermissionAliases(tool), ...peers.flatMap(getToolPermissionAliases), ])]}, ...sources)``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
+
+   **主要协作调用**：``usage.get``、``getToolPermissionKey``、``readToolPermission``、``getToolPermissionAliases``、``peers.flatMap``。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4279:5110:FUNCTION
 
 .. js:function:: deduplicateToolPermissionGroups(groups)
 
    实现 ``deduplicateToolPermissionGroups`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``50``—``71`` 行。
+   **性质**：同步函数；导出 API；源码第 ``95``—``116`` 行。
 
    **参数**
 
@@ -180,13 +300,13 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3067:4186:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5155:6274:FUNCTION
 
 .. js:function:: collectToolPermissionGroups(items)
 
    实现 ``collectToolPermissionGroups`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``73``—``100`` 行。
+   **性质**：同步函数；导出 API；源码第 ``118``—``145`` 行。
 
    **参数**
 
@@ -201,13 +321,13 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4381:5311:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6475:7408:FUNCTION
 
 .. js:function:: deduplicateToolPermissionItems(items)
 
    实现 ``deduplicateToolPermissionItems`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``104``—``128`` 行。
+   **性质**：同步函数；导出 API；源码第 ``149``—``173`` 行。
 
    **参数**
 
@@ -226,13 +346,13 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5351:6662:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:7448:8759:FUNCTION
 
 .. js:function:: collectToolPermissions(items, status)
 
    实现 ``collectToolPermissions`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``130``—``153`` 行。
+   **性质**：同步函数；导出 API；源码第 ``175``—``198`` 行。
 
    **参数**
 
@@ -254,13 +374,13 @@ src/features/tools/toolPermissions 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6708:7447:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8805:9544:FUNCTION
 
 .. js:function:: applyToolPermissionsToStatus(items, status, permissions)
 
    应用与 ``Tool Permissions To Status`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``155``—``172`` 行。
+   **性质**：同步函数；导出 API；源码第 ``200``—``217`` 行。
 
    **参数**
 
@@ -286,17 +406,97 @@ src/features/tools/toolPermissions 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:309:359:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:708:1391:FUNCTION
 
-.. rubric:: ``[tool?.text, tool?.title, tool?.name].find callback @ 7``
+.. rubric:: ``visit``
 
 .. code-block:: javascript
 
-   [tool?.text, tool?.title, tool?.name].find callback @ 7(value)
+   visit(entries)
+
+实现 ``visit`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``16``—``28`` 行；所属函数 ``collectToolPermissionUsage``。
+
+**参数**
+
+``entries``
+   调用方传入的 ``entries`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 发起 HTTP 请求或访问外部服务。
+
+**主要协作调用**：``entries.forEach``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:736:1390:FUNCTION
+
+.. rubric:: ``entries.forEach callback @ 16``
+
+.. code-block:: javascript
+
+   entries.forEach callback @ 16(item)
+
+作为 ``entries.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``16``—``28`` 行；所属函数 ``visit``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``visit(item.children || [])``、``undefined``。
+
+**副作用**
+
+* 发起 HTTP 请求或访问外部服务。
+
+**主要协作调用**：``visit``、``getToolPermissionKey``、``usage.has``、``usage.set``、``usage.get``、``entry.identities.has``、``getToolCallableIdentity``、``entry.identities.add``、``entry.tools.push``。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1586:1627:FUNCTION
+
+.. rubric:: ``[...usage.values()].reduce callback @ 35``
+
+.. code-block:: javascript
+
+   [...usage.values()].reduce callback @ 35(sum, item)
+
+作为 ``[...usage.values()].reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``35``—``35`` 行；所属函数 ``getToolCatalogCounts``。
+
+**参数**
+
+``sum``
+   调用方传入的 ``sum`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2066:2116:FUNCTION
+
+.. rubric:: ``[tool?.text, tool?.title, tool?.name].find callback @ 45``
+
+.. code-block:: javascript
+
+   [tool?.text, tool?.title, tool?.name].find callback @ 45(value)
 
 作为 ``[tool?.text, tool?.title, tool?.name].find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``7``—``7`` 行；所属函数 ``getToolDisplayName``。
+**性质**：同步局部函数；源码第 ``45``—``45`` 行；所属函数 ``getToolDisplayName``。
 
 **参数**
 
@@ -309,17 +509,17 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``value.trim``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1297:1348:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3054:3105:FUNCTION
 
-.. rubric:: ``[ tool?.name, ...(Array.isArray(tool?.permissionAliases) ? tool.permissionAliases : []), ].filter callback @ 31``
+.. rubric:: ``[ tool?.name, ...(Array.isArray(tool?.permissionAliases) ? tool.permissionAliases : []), ].filter callback @ 69``
 
 .. code-block:: javascript
 
-   [ tool?.name, ...(Array.isArray(tool?.permissionAliases) ? tool.permissionAliases : []), ].filter callback @ 31(name)
+   [ tool?.name, ...(Array.isArray(tool?.permissionAliases) ? tool.permissionAliases : []), ].filter callback @ 69(name)
 
 作为 ``[ tool?.name, ...(Array.isArray(tool?.permissionAliases) ? tool.permissionAliases : []), ].filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``31``—``31`` 行；所属函数 ``getToolPermissionAliases``。
+**性质**：同步局部函数；源码第 ``69``—``69`` 行；所属函数 ``getToolPermissionAliases``。
 
 **参数**
 
@@ -332,17 +532,17 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``getToolPermissionKey``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1801:1823:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3558:3580:FUNCTION
 
-.. rubric:: ``getToolPermissionAliases(tool) .map callback @ 40``
+.. rubric:: ``getToolPermissionAliases(tool) .map callback @ 78``
 
 .. code-block:: javascript
 
-   getToolPermissionAliases(tool) .map callback @ 40(name)
+   getToolPermissionAliases(tool) .map callback @ 78(name)
 
 作为 ``getToolPermissionAliases(tool) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``40``—``40`` 行；所属函数 ``readToolPermission``。
+**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``readToolPermission``。
 
 **参数**
 
@@ -353,17 +553,17 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1845:1891:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3602:3648:FUNCTION
 
-.. rubric:: ``getToolPermissionAliases(tool) .map(name => source?.[name]) .filter callback @ 41``
+.. rubric:: ``getToolPermissionAliases(tool) .map(name => source?.[name]) .filter callback @ 79``
 
 .. code-block:: javascript
 
-   getToolPermissionAliases(tool) .map(name => source?.[name]) .filter callback @ 41(value)
+   getToolPermissionAliases(tool) .map(name => source?.[name]) .filter callback @ 79(value)
 
 作为 ``getToolPermissionAliases(tool) .map(name => source?.[name]) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``readToolPermission``。
+**性质**：同步局部函数；源码第 ``79``—``79`` 行；所属函数 ``readToolPermission``。
 
 **参数**
 
@@ -374,17 +574,17 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:1966:2009:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3723:3766:FUNCTION
 
-.. rubric:: ``aliases.map callback @ 43``
+.. rubric:: ``aliases.map callback @ 81``
 
 .. code-block:: javascript
 
-   aliases.map callback @ 43(value)
+   aliases.map callback @ 81(value)
 
 作为 ``aliases.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``readToolPermission``。
+**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``readToolPermission``。
 
 **参数**
 
@@ -397,17 +597,17 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``normalizeToolPermissionMode``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2272:2304:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4357:4389:FUNCTION
 
-.. rubric:: ``groups.map callback @ 52``
+.. rubric:: ``groups.map callback @ 97``
 
 .. code-block:: javascript
 
-   groups.map callback @ 52(group)
+   groups.map callback @ 97(group)
 
 作为 ``groups.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``deduplicateToolPermissionGroups``。
+**性质**：同步局部函数；源码第 ``97``—``97`` 行；所属函数 ``deduplicateToolPermissionGroups``。
 
 **参数**
 
@@ -418,17 +618,17 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2326:2959:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4411:5047:FUNCTION
 
-.. rubric:: ``groups.forEach callback @ 53``
+.. rubric:: ``groups.forEach callback @ 98``
 
 .. code-block:: javascript
 
-   groups.forEach callback @ 53(group, index)
+   groups.forEach callback @ 98(group, index)
 
 作为 ``groups.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``53``—``69`` 行；所属函数 ``deduplicateToolPermissionGroups``。
+**性质**：同步局部函数；源码第 ``98``—``114`` 行；所属函数 ``deduplicateToolPermissionGroups``。
 
 **参数**
 
@@ -450,17 +650,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2382:2951:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4467:5039:FUNCTION
 
-.. rubric:: ``(group.tools || []).forEach callback @ 54``
+.. rubric:: ``(group.tools || []).forEach callback @ 99``
 
 .. code-block:: javascript
 
-   (group.tools || []).forEach callback @ 54(tool)
+   (group.tools || []).forEach callback @ 99(tool)
 
 作为 ``(group.tools || []).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``54``—``68`` 行；所属函数 ``groups.forEach callback @ 53``。
+**性质**：同步局部函数；源码第 ``99``—``113`` 行；所属函数 ``groups.forEach callback @ 98``。
 
 **参数**
 
@@ -475,19 +675,19 @@ src/features/tools/toolPermissions 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``getToolPermissionKey``、``seen.get``、``getToolPermissionAliases``、``seen.set``、``result[index].tools.push``。
+**主要协作调用**：``getToolCallableIdentity``、``seen.get``、``getToolPermissionAliases``、``seen.set``、``result[index].tools.push``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:2987:3018:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5075:5106:FUNCTION
 
-.. rubric:: ``result.filter callback @ 70``
+.. rubric:: ``result.filter callback @ 115``
 
 .. code-block:: javascript
 
-   result.filter callback @ 70(group)
+   result.filter callback @ 115(group)
 
 作为 ``result.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``70``—``70`` 行；所属函数 ``deduplicateToolPermissionGroups``。
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``deduplicateToolPermissionGroups``。
 
 **参数**
 
@@ -498,7 +698,7 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3126:4113:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5214:6201:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -508,7 +708,7 @@ src/features/tools/toolPermissions 模块
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``75``—``97`` 行；所属函数 ``collectToolPermissionGroups``。
+**性质**：同步局部函数；源码第 ``120``—``142`` 行；所属函数 ``collectToolPermissionGroups``。
 
 **参数**
 
@@ -526,17 +726,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3180:4105:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5268:6193:FUNCTION
 
-.. rubric:: ``entries.forEach callback @ 76``
+.. rubric:: ``entries.forEach callback @ 121``
 
 .. code-block:: javascript
 
-   entries.forEach callback @ 76(item)
+   entries.forEach callback @ 121(item)
 
 作为 ``entries.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``76``—``96`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``121``—``141`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -551,17 +751,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:3842:3875:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5930:5963:FUNCTION
 
-.. rubric:: ``groups.find callback @ 89``
+.. rubric:: ``groups.find callback @ 134``
 
 .. code-block:: javascript
 
-   groups.find callback @ 89(entry)
+   groups.find callback @ 134(entry)
 
 作为 ``groups.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``entries.forEach callback @ 76``。
+**性质**：同步局部函数；源码第 ``134``—``134`` 行；所属函数 ``entries.forEach callback @ 121``。
 
 **参数**
 
@@ -572,7 +772,7 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4445:5283:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6539:7380:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -582,7 +782,7 @@ src/features/tools/toolPermissions 模块
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``106``—``126`` 行；所属函数 ``deduplicateToolPermissionItems``。
+**性质**：同步局部函数；源码第 ``151``—``171`` 行；所属函数 ``deduplicateToolPermissionItems``。
 
 **参数**
 
@@ -601,17 +801,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:4473:5282:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6567:7379:FUNCTION
 
-.. rubric:: ``entries.flatMap callback @ 106``
+.. rubric:: ``entries.flatMap callback @ 151``
 
 .. code-block:: javascript
 
-   entries.flatMap callback @ 106(item)
+   entries.flatMap callback @ 151(item)
 
 实现 ``entries.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``106``—``126`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``151``—``171`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -626,9 +826,9 @@ src/features/tools/toolPermissions 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``getToolPermissionKey``、``seen.has``、``seen.get``、``getToolPermissionAliases``、``seen.set``、``visit``。
+**主要协作调用**：``getToolCallableIdentity``、``seen.has``、``seen.get``、``getToolPermissionAliases``、``seen.set``、``visit``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5431:5925:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:7528:8022:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -638,7 +838,7 @@ src/features/tools/toolPermissions 模块
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``132``—``141`` 行；所属函数 ``collectToolPermissions``。
+**性质**：同步局部函数；源码第 ``177``—``186`` 行；所属函数 ``collectToolPermissions``。
 
 **参数**
 
@@ -660,17 +860,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:5470:5924:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:7567:8021:FUNCTION
 
-.. rubric:: ``entries.forEach callback @ 132``
+.. rubric:: ``entries.forEach callback @ 177``
 
 .. code-block:: javascript
 
-   entries.forEach callback @ 132(item)
+   entries.forEach callback @ 177(item)
 
 作为 ``entries.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``132``—``141`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``177``—``186`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -687,17 +887,17 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``visit``、``getToolPermissionKey``、``records.has``、``records.set``、``records.get(key).push``、``records.get``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6000:6657:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8097:8754:FUNCTION
 
-.. rubric:: ``[...records].map callback @ 143``
+.. rubric:: ``[...records].map callback @ 188``
 
 .. code-block:: javascript
 
-   [...records].map callback @ 143([key, entries])
+   [...records].map callback @ 188([key, entries])
 
 作为 ``[...records].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``143``—``152`` 行；所属函数 ``collectToolPermissions``。
+**性质**：同步局部函数；源码第 ``188``—``197`` 行；所属函数 ``collectToolPermissions``。
 
 **参数**
 
@@ -712,17 +912,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6099:6142:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8196:8239:FUNCTION
 
-.. rubric:: ``entries.find callback @ 145``
+.. rubric:: ``entries.find callback @ 190``
 
 .. code-block:: javascript
 
-   entries.find callback @ 145(entry)
+   entries.find callback @ 190(entry)
 
 作为 ``entries.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``145``—``145`` 行；所属函数 ``[...records].map callback @ 143``。
+**性质**：同步局部函数；源码第 ``190``—``190`` 行；所属函数 ``[...records].map callback @ 188``。
 
 **参数**
 
@@ -733,17 +933,17 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6180:6234:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8277:8331:FUNCTION
 
-.. rubric:: ``entries.map callback @ 146``
+.. rubric:: ``entries.map callback @ 191``
 
 .. code-block:: javascript
 
-   entries.map callback @ 146(entry)
+   entries.map callback @ 191(entry)
 
 作为 ``entries.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``146``—``146`` 行；所属函数 ``[...records].map callback @ 143``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``[...records].map callback @ 188``。
 
 **参数**
 
@@ -756,17 +956,17 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``readToolPermission``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6243:6271:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8340:8368:FUNCTION
 
-.. rubric:: ``entries.map(entry => readToolPermission(entry.tool, entry.current)).filter callback @ 146``
+.. rubric:: ``entries.map(entry => readToolPermission(entry.tool, entry.current)).filter callback @ 191``
 
 .. code-block:: javascript
 
-   entries.map(entry => readToolPermission(entry.tool, entry.current)).filter callback @ 146(value)
+   entries.map(entry => readToolPermission(entry.tool, entry.current)).filter callback @ 191(value)
 
 作为 ``entries.map(entry => readToolPermission(entry.tool, entry.current)).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``146``—``146`` 行；所属函数 ``[...records].map callback @ 143``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``[...records].map callback @ 188``。
 
 **参数**
 
@@ -777,17 +977,17 @@ src/features/tools/toolPermissions 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6373:6425:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8470:8522:FUNCTION
 
-.. rubric:: ``legacy.some callback @ 148``
+.. rubric:: ``legacy.some callback @ 193``
 
 .. code-block:: javascript
 
-   legacy.some callback @ 148(mode)
+   legacy.some callback @ 193(mode)
 
 作为 ``legacy.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``148``—``148`` 行；所属函数 ``[...records].map callback @ 143``。
+**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``[...records].map callback @ 188``。
 
 **参数**
 
@@ -800,17 +1000,17 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``normalizeToolPermissionMode``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6466:6517:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8563:8614:FUNCTION
 
-.. rubric:: ``legacy.some callback @ 149``
+.. rubric:: ``legacy.some callback @ 194``
 
 .. code-block:: javascript
 
-   legacy.some callback @ 149(mode)
+   legacy.some callback @ 194(mode)
 
 作为 ``legacy.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``149``—``149`` 行；所属函数 ``[...records].map callback @ 143``。
+**性质**：同步局部函数；源码第 ``194``—``194`` 行；所属函数 ``[...records].map callback @ 188``。
 
 **参数**
 
@@ -823,7 +1023,7 @@ src/features/tools/toolPermissions 模块
 
 **主要协作调用**：``normalizeToolPermissionMode``。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6775:7411:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8872:9508:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -833,7 +1033,7 @@ src/features/tools/toolPermissions 模块
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``156``—``170`` 行；所属函数 ``applyToolPermissionsToStatus``。
+**性质**：同步局部函数；源码第 ``201``—``215`` 行；所属函数 ``applyToolPermissionsToStatus``。
 
 **参数**
 
@@ -851,17 +1051,17 @@ src/features/tools/toolPermissions 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:6862:7382:FUNCTION
+.. CWM-AST-FUNCTION src/features/tools/toolPermissions.js:8959:9479:FUNCTION
 
-.. rubric:: ``entries.forEach callback @ 158``
+.. rubric:: ``entries.forEach callback @ 203``
 
 .. code-block:: javascript
 
-   entries.forEach callback @ 158(item)
+   entries.forEach callback @ 203(item)
 
 作为 ``entries.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``158``—``168`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``203``—``213`` 行；所属函数 ``visit``。
 
 **参数**
 

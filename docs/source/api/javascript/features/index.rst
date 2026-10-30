@@ -1196,12 +1196,12 @@
    * - :doc:`src/features/tools/components/ConversationToolsDialog </api/javascript/features/tools/components/ConversationToolsDialog>`
      - 5
      - 0
-     - 54
+     - 55
      - ``src/features/tools/components/ConversationToolsDialog.jsx``
    * - :doc:`src/features/tools/toolPermissions </api/javascript/features/tools/toolPermissions>`
-     - 11
+     - 16
      - 0
-     - 24
+     - 27
      - ``src/features/tools/toolPermissions.js``
    * - :doc:`src/features/workflows/QuickTemplateRunDialog </api/javascript/features/workflows/QuickTemplateRunDialog>`
      - 1

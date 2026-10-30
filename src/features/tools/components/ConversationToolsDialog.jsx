@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import {Button} from '@/components/ui/button';
-import {collectToolPermissionGroups, getToolDisplayName, getToolPermissionKey, normalizeToolPermissionMode as normalizeMode, readToolPermission} from '../toolPermissions.js';
+import {collectToolPermissionGroups, collectToolPermissionUsage, getSharedToolPermissionText, getToolCallableIdentity, getToolCatalogCounts, getToolDisplayName, getToolPermissionKey, normalizeToolPermissionMode as normalizeMode, readSharedToolPermission} from '../toolPermissions.js';
 
 const toolAllowedModes = (tool) => Array.isArray(tool?.allowedModes) && tool.allowedModes.length > 0
     ? tool.allowedModes.filter(mode => ['allow', 'ask', 'deny'].includes(String(mode || '').toLowerCase())).map(mode => String(mode).toLowerCase())
@@ -39,6 +39,7 @@ const ConversationToolsDialog = ({
 
     const groups = useMemo(() => collectToolPermissionGroups(toolsConfig), [toolsConfig]);
     const allTools = useMemo(() => groups.flatMap(group => group.tools), [groups]);
+    const permissionUsage = useMemo(() => collectToolPermissionUsage(toolsConfig), [toolsConfig]);
 
     useEffect(() => {
         if (!open) {
@@ -50,7 +51,7 @@ const ConversationToolsDialog = ({
         allTools.forEach((tool) => {
             const mode = tool.locked
                 ? toolDefaultMode(tool)
-                : normalizeMode(readToolPermission(tool, currentPermissions, defaultPermissions) ?? tool.default, 'ask');
+                : normalizeMode(readSharedToolPermission(tool, permissionUsage, currentPermissions, defaultPermissions) ?? tool.default, 'ask');
             next[getToolPermissionKey(tool)] = mode;
         });
         setDraft(next);
@@ -58,7 +59,7 @@ const ConversationToolsDialog = ({
         setQuery('');
         setExpanded(new Set());
         initializedForOpen.current = true;
-    }, [allTools, currentPermissions, defaultPermissions, open]);
+    }, [allTools, currentPermissions, defaultPermissions, permissionUsage, open]);
 
     const normalizedQuery = query.trim().toLowerCase();
     const visibleGroups = useMemo(() => groups.map((group) => {
@@ -76,8 +77,8 @@ const ConversationToolsDialog = ({
         };
     }).filter(group => group.tools.length > 0), [groups, normalizedQuery]);
 
-    const permissionCounts = allTools.reduce((counts, tool) => {
-        const mode = normalizeMode(draft[getToolPermissionKey(tool)], 'ask');
+    const permissionCounts = [...permissionUsage.keys()].reduce((counts, key) => {
+        const mode = normalizeMode(draft[key], 'ask');
         counts[mode] += 1;
         return counts;
     }, {allow: 0, ask: 0, deny: 0});
@@ -174,7 +175,7 @@ const ConversationToolsDialog = ({
         allTools.forEach((tool) => {
             next[getToolPermissionKey(tool)] = tool.locked
                 ? toolDefaultMode(tool)
-                : normalizeMode(readToolPermission(tool, defaultPermissions) ?? tool.default, 'ask');
+                : normalizeMode(readSharedToolPermission(tool, permissionUsage, defaultPermissions) ?? tool.default, 'ask');
         });
         setDraft(next);
     };
@@ -283,6 +284,7 @@ const ConversationToolsDialog = ({
                         {visibleGroups.map((group) => {
                             const isExpanded = Boolean(normalizedQuery) || expanded.has(group.id);
                             const sourceTools = group.sourceTools || group.tools;
+                            const counts = getToolCatalogCounts(sourceTools);
                             const mutableSourceTools = sourceTools.filter(isToolMutable);
                             const groupPermissionCommitted = (mode) => {
                                 const batch = batchableTools(mutableSourceTools, mode);
@@ -301,9 +303,11 @@ const ConversationToolsDialog = ({
                                             onClick={() => toggleGroup(group.id)}
                                             className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
                                             aria-expanded={isExpanded}
+                                            aria-label={group.name}
                                         >
                                             <ChevronDown className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}/>
                                             <span className="min-w-0 flex-1 truncate text-sm font-semibold text-gray-800">{group.name}</span>
+                                            <span className="shrink-0 text-[11px] text-gray-400">{counts.tools ? `${counts.tools} 工具 · ` : ''}{counts.permissions} 权限</span>
                                         </button>
                                         <div className="flex shrink-0 items-center gap-1">
                                             <button
@@ -347,13 +351,14 @@ const ConversationToolsDialog = ({
                                             {group.tools.map((tool) => {
                                                 const mode = normalizeMode(draft[getToolPermissionKey(tool)], 'ask');
                                                 return (
-                                                    <div key={getToolPermissionKey(tool)} className="flex gap-3 px-3 py-3">
+                                                    <div key={getToolCallableIdentity(tool)} data-tool-callable={getToolCallableIdentity(tool)} className="flex gap-3 px-3 py-3">
                                                         <div className="min-w-0 flex-1">
                                                             <div className="flex items-center gap-1.5 text-sm font-medium text-gray-800">
                                                                 <span className="truncate">{getToolDisplayName(tool)}</span>
                                                                 {tool.locked && <LockKeyhole className="h-3.5 w-3.5 shrink-0 text-gray-400"/>}
                                                             </div>
-                                                            <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">{getToolPermissionKey(tool)}</div>
+                                                            <div className="mt-0.5 truncate font-mono text-[11px] text-gray-400">{tool.accessPath || tool.name}</div>
+                                                            {getSharedToolPermissionText(tool, permissionUsage) && <div className="mt-0.5 text-[11px] text-gray-400">{getSharedToolPermissionText(tool, permissionUsage)}</div>}
                                                             {tool.description && <div className="mt-1 text-xs leading-5 text-gray-500">{tool.description}</div>}
                                                         </div>
                                                         {tool.locked ? (
@@ -382,6 +387,8 @@ const ConversationToolsDialog = ({
                                                                         key={value}
                                                                         type="button"
                                                                         disabled={controlsDisabled || tool.disabled}
+                                                                        aria-pressed={mode === value}
+                                                                        aria-label={`${getToolDisplayName(tool)}：${label}`}
                                                                         onClick={() => setToolPermission(tool, value)}
                                                                         className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-2 py-1 text-[11px] ${
                                                                             mode === value

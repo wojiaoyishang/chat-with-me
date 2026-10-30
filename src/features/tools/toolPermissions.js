@@ -2,6 +2,44 @@ const MODES = ['allow', 'ask', 'deny'];
 
 export const getToolPermissionKey = (tool) => tool?.permissionKey || tool?.name;
 
+// A shared approval action is not a callable identity. Transport/source is part
+// of ToolRef, while provider aliases and Python handler names are not.
+export const getToolCallableIdentity = (tool) => {
+    if (tool?.permissionOnly) return `permission:${getToolPermissionKey(tool)}`;
+    const ref = tool?.toolRef;
+    if (ref?.source && ref?.toolset && ref?.name) return JSON.stringify([ref.source, ref.toolset, ref.name]);
+    return tool?.accessPath || tool?.name || '';
+};
+
+export const collectToolPermissionUsage = (items = []) => {
+    const usage = new Map();
+    const visit = entries => entries.forEach(item => {
+        if (item?.type === 'group' || item?.type === 'tool-region') return visit(item.children || []);
+        if (item?.type !== 'tool') return;
+        const key = getToolPermissionKey(item);
+        if (!key) return;
+        if (!usage.has(key)) usage.set(key, {tools: [], identities: new Set(), label: ''});
+        const entry = usage.get(key);
+        if (!entry.label && item.permissionLabel) entry.label = item.permissionLabel;
+        if (!item.permissionOnly && !entry.identities.has(getToolCallableIdentity(item))) {
+            entry.identities.add(getToolCallableIdentity(item));
+            entry.tools.push(item);
+        }
+    });
+    visit(items);
+    return usage;
+};
+
+export const getToolCatalogCounts = (items = []) => {
+    const usage = collectToolPermissionUsage(items);
+    return {tools: [...usage.values()].reduce((sum, item) => sum + item.identities.size, 0), permissions: usage.size};
+};
+
+export const getSharedToolPermissionText = (tool, usage) => {
+    const entry = usage.get(getToolPermissionKey(tool));
+    return entry?.identities.size > 1 ? `共享权限${entry.label ? ` · ${entry.label}` : ''}` : '';
+};
+
 // Catalog labels are final server-owned text, never client translation keys.
 export const getToolDisplayName = (tool, fallback = '工具') =>
     [tool?.text, tool?.title, tool?.name].find(value => typeof value === 'string' && value.trim()) || fallback;
@@ -47,12 +85,19 @@ export const readToolPermission = (tool, ...sources) => {
     return undefined;
 };
 
+export const readSharedToolPermission = (tool, usage, ...sources) => {
+    const peers = usage.get(getToolPermissionKey(tool))?.tools || [];
+    return readToolPermission({...tool, permissionAliases: [...new Set([
+        ...getToolPermissionAliases(tool), ...peers.flatMap(getToolPermissionAliases),
+    ])]}, ...sources);
+};
+
 export const deduplicateToolPermissionGroups = (groups = []) => {
     const seen = new Map();
     const result = groups.map(group => ({...group, tools: []}));
     groups.forEach((group, index) => {
         (group.tools || []).forEach(tool => {
-            const key = getToolPermissionKey(tool);
+            const key = getToolCallableIdentity(tool);
             if (!key) return;
             const existing = seen.get(key);
             if (existing) {
@@ -99,14 +144,14 @@ export const collectToolPermissionGroups = (items = []) => {
     return deduplicateToolPermissionGroups(groups);
 };
 
-// Retain actual callable names in the catalog, while only displaying one control
-// for aliases of the same business action in the composer menu.
+// Only aliases of the same actual callable are collapsed. Different functions
+// remain visible even when they intentionally share one approval action.
 export const deduplicateToolPermissionItems = (items = []) => {
     const seen = new Map();
     const visit = entries => entries.flatMap(item => {
         if (!item) return [];
         if (item.type === 'tool') {
-            const key = getToolPermissionKey(item);
+            const key = getToolCallableIdentity(item);
             if (seen.has(key)) {
                 const existing = seen.get(key);
                 existing.permissionAliases = [...new Set([

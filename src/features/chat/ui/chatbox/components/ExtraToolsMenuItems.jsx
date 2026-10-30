@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {resolveResourceUrl} from '@/lib/virtualUrl.js';
 import {setLocalSetting} from '@/lib/tools.jsx';
-import {getToolDisplayName, getToolPermissionKey, normalizeToolPermissionMode, readToolPermission} from '@/features/tools/toolPermissions.js';
+import {applyToolPermissionsToStatus, collectToolPermissions, collectToolPermissionUsage, getSharedToolPermissionText, getToolCallableIdentity, getToolCatalogCounts, getToolDisplayName, getToolPermissionKey, normalizeToolPermissionMode, readSharedToolPermission} from '@/features/tools/toolPermissions.js';
 
 import {
     collectTogglePaths,
@@ -89,7 +89,10 @@ export const useExtraToolsMenuItems = ({
         return null;
     }, []);
 
-    const renderMenuItems = useCallback((items, parentPath = []) => {
+    const renderMenuItems = useCallback((items, parentPath = [], sharedContext = null) => {
+        const context = sharedContext || {items, path: parentPath, usage: collectToolPermissionUsage(items),
+            permissions: collectToolPermissions(items, parentPath.length ? getNestedValue(toolsStatus.extra_tools, parentPath) || {} : toolsStatus.extra_tools)};
+        const permissionUsage = context.usage;
         return items.map((item, index) => {
             const itemLabel = item.type === 'group' || item.type === 'tool'
                 ? getToolDisplayName(item) : t(item.text || '');
@@ -110,6 +113,8 @@ export const useExtraToolsMenuItems = ({
 
             if (item.type === 'group') {
                 const isDisabled = item.disabled;
+                const counts = getToolCatalogCounts(item.children || []);
+                const countText = counts.tools ? `${counts.tools} 工具` : counts.permissions ? `${counts.permissions} 权限` : '';
                 const currentPath = [...parentPath, item.name];
                 const togglePaths = collectTogglePaths(item.children, []);
                 const nestedTogglePaths = togglePaths.map(path => [...currentPath, ...path]);
@@ -144,6 +149,7 @@ export const useExtraToolsMenuItems = ({
                             >
                                 {item.iconData && renderIcon(item.iconType, item.iconData)}
                                 <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
+                                {countText && <span className="ml-2 shrink-0 text-[11px] text-gray-400">{countText}</span>}
                                 <ChevronDown
                                     className={`ml-2 h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                                 />
@@ -170,7 +176,7 @@ export const useExtraToolsMenuItems = ({
                                                 </DropdownMenuItem>
                                             )}
                                             <div className={nestedTogglePaths.length > 0 ? "mt-1 border-t border-gray-100 pt-1" : ""}>
-                                                {renderMenuItems(item.children, currentPath)}
+                                                {renderMenuItems(item.children, currentPath, context)}
                                             </div>
                                         </div>
                                     </div>
@@ -190,6 +196,7 @@ export const useExtraToolsMenuItems = ({
                         >
                             {item.iconData && renderIcon(item.iconType, item.iconData)}
                             <span className={MENU_ITEM_TEXT_CLASS} title={itemLabel}>{itemLabel}</span>
+                            {countText && <span className="ml-2 shrink-0 text-[11px] text-gray-400">{countText}</span>}
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent
                             side={subMenuSide}
@@ -220,7 +227,7 @@ export const useExtraToolsMenuItems = ({
                                         </>
                                     )}
                                     <div className={GROUP_SUB_MENU_SCROLL_CLASS}>
-                                        {renderMenuItems(item.children, currentPath)}
+                                        {renderMenuItems(item.children, currentPath, context)}
                                     </div>
                                 </>
                             )}
@@ -232,11 +239,11 @@ export const useExtraToolsMenuItems = ({
             if (item.type === 'tool') {
                 const isDisabled = item.disabled;
                 const permissionKey = getToolPermissionKey(item);
-                const currentPath = [...parentPath, permissionKey];
-                const rawMode = readToolPermission(item, getNestedValue(toolsStatus.extra_tools, parentPath) || toolsStatus.extra_tools);
+                const rawMode = context.permissions[permissionKey];
+                const sharedPermissionText = getSharedToolPermissionText(item, permissionUsage);
                 const persistedMode = normalizeToolPermissionMode(rawMode ?? item.default);
                 const lockedMode = item.locked ? normalizeToolPermissionMode(item.default) : null;
-                const currentMode = lockedMode || readToolPermission(item, runtimeToolPermissions) || persistedMode;
+                const currentMode = lockedMode || readSharedToolPermission(item, permissionUsage, runtimeToolPermissions) || persistedMode;
                 const isPending = !item.locked && (pendingToolPermissionNames?.has?.(permissionKey) || false);
                 const allowedModes = Array.isArray(item.allowedModes) && item.allowedModes.length > 0
                     ? item.allowedModes.filter(value => ['allow', 'ask', 'deny'].includes(value))
@@ -250,16 +257,18 @@ export const useExtraToolsMenuItems = ({
                     event.preventDefault();
                     event.stopPropagation();
                     if (isDisabled || item.locked || !allowedModes.includes(mode)) return;
-                    setToolsStatus(prev => ({
-                        ...prev,
-                        extra_tools: setNestedValue({...prev.extra_tools}, currentPath, mode),
-                    }));
+                    setToolsStatus(prev => {
+                        const current = context.path.length ? getNestedValue(prev.extra_tools, context.path) || {} : prev.extra_tools;
+                        const next = applyToolPermissionsToStatus(context.items, current, {[permissionKey]: mode});
+                        return {...prev, extra_tools: context.path.length ? setNestedValue({...prev.extra_tools}, context.path, next) : next};
+                    });
                     onToolPermissionChange?.(permissionKey, mode);
                 };
 
                 return (
                     <div
-                        key={`tool-${permissionKey}`}
+                        key={`tool-${getToolCallableIdentity(item)}`}
+                        data-tool-callable={getToolCallableIdentity(item)}
                         aria-busy={isPending}
                         className={`${isMobileMenu ? 'rounded-lg px-2.5 py-2' : 'px-2 py-1.5'} ${
                             isDisabled ? 'pointer-events-none opacity-60' : ''
@@ -274,6 +283,7 @@ export const useExtraToolsMenuItems = ({
                                 </span>
                             )}
                         </div>
+                        {sharedPermissionText && <div className="mt-0.5 text-[10px] leading-4 text-gray-400">{sharedPermissionText}</div>}
                         {item.locked ? (
                             <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg border border-emerald-100 bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700">
                                 <LockKeyhole className="h-3.5 w-3.5"/>
