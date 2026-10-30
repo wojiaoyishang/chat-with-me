@@ -17,7 +17,8 @@ const MessageActions = memo(({
                                  speechState,
                                  onSettingsOpenChange,
                                  t,
-                                 leadingContent = null
+                                 leadingContent = null,
+                                 automatic = false
                              }) => {
     const isRight = msg.position === 'right';
     const isMid = msg.position === 'mid';
@@ -88,7 +89,7 @@ const MessageActions = memo(({
         );
     }
 
-    if (isRight) {
+    if (isRight && !automatic) {
         return (
             <div
                 data-message-action-area="true"
@@ -105,7 +106,7 @@ const MessageActions = memo(({
     return (
         <div
             data-message-action-area="true"
-            className="flex w-full min-w-0 items-center justify-start mt-1 min-h-[2rem] pl-2 lg:pl-10 transition-all duration-300"
+            className={`flex w-full min-w-0 items-center justify-start mt-1 min-h-[2rem] ${automatic ? '' : 'pl-2 lg:pl-10'} transition-all duration-300`}
         >
             <div className="flex min-w-0 max-w-full items-center justify-start gap-1">
                 {renderPaginator()}

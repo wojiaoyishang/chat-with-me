@@ -34,6 +34,12 @@ export function normalizeMessageOrigin(value) {
 export function messageAutomationOrigin(message) {
     const extra = record(message?.extraInfo || message?.extra_info);
     const explicit = record(extra.messageOrigin);
+    // This public field is written by the backend's message projection, not
+    // inferred from role, body text or a provider-specific label. Generic
+    // timers can have no contact details and still be automatic inputs.
+    if (Object.hasOwn(record(message), 'messageSource')) {
+        return message.messageSource === 'automation' ? normalizeMessageOrigin(explicit) : null;
+    }
     if (explicit.kind === 'automation') {
         return explicit.direction === 'inbound' ? normalizeMessageOrigin(explicit) : null;
     }

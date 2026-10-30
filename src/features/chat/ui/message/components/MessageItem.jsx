@@ -103,6 +103,7 @@ const MessageItem = memo(
             readonly,
             speechState,
             onSettingsOpenChange: setIsSettingsOpen,
+            automatic: Boolean(automaticOrigin),
             t,
         };
 
@@ -175,7 +176,7 @@ const MessageItem = memo(
             };
         }, [isMid, msg.content, msg.extraInfo?.replace, msg.attachments?.length]);
 
-        const renderLeftAvatarName = () => (
+        const renderLeftAvatarName = () => automaticOrigin ? null : (
             <div className="flex w-full min-w-0 items-center gap-1">
                 <div className="min-w-0 flex-1 select-none">
                     <LeftAvatarName
@@ -203,7 +204,7 @@ const MessageItem = memo(
             </div>
         );
 
-        const renderRightAvatar = (className = 'h-10 w-10 flex-shrink-0') => (
+        const renderRightAvatar = (className = 'h-10 w-10 flex-shrink-0') => automaticOrigin ? null : (
             <Avatar className={`${className} select-none`}>
                 <AvatarImage src={resolveResourceUrl(msg.avatar)} alt={displayName} />
                 <AvatarFallback>{displayName?.[0] || 'U'}</AvatarFallback>
@@ -217,6 +218,7 @@ const MessageItem = memo(
             isLeaving: leavingMessages.has(msgId),
             speechState,
             onSpeechTextClick,
+            automatic: Boolean(automaticOrigin),
         };
 
         const renderMidExpandControl = () => {
@@ -248,11 +250,11 @@ const MessageItem = memo(
                 const showMidActionsRow = shouldShowExpand || isActionActive;
 
                 return (
-                    <div className="w-full py-2 px-1">
+                    <div className={automaticOrigin ? 'w-full min-w-0' : 'w-full py-2 px-1'}>
                         <div
-                            className={`relative bg-gray-50/40 border border-gray-100 rounded-2xl transition-all duration-300 ${isActionActive ? 'shadow-sm' : ''}`}
+                            className={`relative transition-all duration-300 ${automaticOrigin ? '' : `bg-gray-50/40 border border-gray-100 rounded-2xl ${isActionActive ? 'shadow-sm' : ''}`}`}
                         >
-                            <div className="flex flex-col items-start w-full px-4 py-4 sm:px-5 sm:py-5">
+                            <div className={`flex flex-col items-start w-full ${automaticOrigin ? '' : 'px-4 py-4 sm:px-5 sm:py-5'}`}>
                                 <KnowledgeGraphViewer key={msgId} msg={msg} conversationId={conversationId} className="w-full" />
 
                                 <div
@@ -336,13 +338,13 @@ const MessageItem = memo(
 
                         {isRight ? (
                             <div className="flex items-start gap-2 max-w-full mt-1">
-                                <div className="flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7">
+                                <div className={automaticOrigin ? 'w-full min-w-0' : 'flex-1 min-w-[150px] max-w-[calc(100%-3rem)] sm:pl-0 pl-7'}>
                                     <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true} />
                                 </div>
                                 {renderRightAvatar('h-10 w-10 flex-shrink-0 mt-1')}
                             </div>
                         ) : (
-                            <div className="max-w-[95%] pl-7 mb-2">
+                            <div className={automaticOrigin ? 'w-full min-w-0 mb-2' : 'max-w-[95%] pl-7 mb-2'}>
                                 <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true} />
                             </div>
                         )}
@@ -357,7 +359,7 @@ const MessageItem = memo(
                     <>
                         {isRight ? (
                             <>
-                                <div className="max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2">
+                                <div className={automaticOrigin ? 'w-full min-w-0 mb-2' : 'max-w-[90%] lg:max-w-[55%] ml-auto pr-10 mb-2'}>
                                     <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true} />
                                 </div>
                                 <TextOnlyMessageContent {...textOnlyMessageProps} />
@@ -365,7 +367,7 @@ const MessageItem = memo(
                         ) : (
                             <div className="flex flex-col items-start w-full">
                                 {renderLeftAvatarName()}
-                                <div className="max-w-[95%] pl-7 mb-2">
+                                <div className={automaticOrigin ? 'w-full min-w-0 mb-2' : 'max-w-[95%] pl-7 mb-2'}>
                                     <AttachmentShowcase attachmentsMeta={normalizedAttachments} msgMode={true} />
                                 </div>
                                 <TextOnlyMessageContent {...textOnlyMessageProps} />
@@ -410,8 +412,9 @@ const MessageItem = memo(
                 ref={rootRef}
                 data-message-id={msgId}
                 data-message-role={msg?.role || (isMid ? 'system' : isRight ? 'user' : 'assistant')}
+                data-message-source={msg?.messageSource}
                 data-automatic-input={automaticOrigin ? 'true' : undefined}
-                className={`group/message relative flex flex-col w-full rounded-2xl transition-all duration-300 ease-in-out ${isRight ? 'items-end' : 'items-start'} ${animationClass} ${highlighted ? 'ring-2 ring-blue-400/80 ring-offset-4 ring-offset-white' : ''}`}
+                className={`group/message relative flex flex-col w-full transition-all duration-300 ease-in-out ${automaticOrigin ? 'items-start rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3' : `rounded-2xl ${isRight ? 'items-end' : 'items-start'}`} ${animationClass} ${highlighted ? 'ring-2 ring-blue-400/80 ring-offset-4 ring-offset-white' : ''}`}
                 style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 260px' }}
                 tabIndex={isMobile ? 0 : undefined}
                 onFocus={() => {
@@ -424,7 +427,7 @@ const MessageItem = memo(
                 {...hoverHandlers}
             >
                 {automaticOrigin && <MessageOrigin origin={automaticOrigin}
-                    className={`mb-1 ${isRight ? 'mr-12 max-w-[calc(100%-3rem)]' : isMid ? 'mx-5' : 'ml-2 lg:ml-10'}`}/>}
+                    className="mb-2 w-full"/>}
                 {renderMessageContent()}
 
                 <MessageContextBadges

@@ -82,13 +82,13 @@ Display-only projection of backend-authored message provenance. Nothing in this 
 
    **主要协作调用**：``record``、``text``、``/^botmsg_[a-zA-Z0-9-]{1,80}$/.test``、``Boolean``。
 
-.. CWM-AST-FUNCTION src/components/message/messageOriginModel.js:1842:2948:FUNCTION
+.. CWM-AST-FUNCTION src/components/message/messageOriginModel.js:1842:3335:FUNCTION
 
 .. js:function:: messageAutomationOrigin(message)
 
    实现 ``messageAutomationOrigin`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``34``—``50`` 行。
+   **性质**：同步函数；导出 API；源码第 ``34``—``56`` 行。
 
    **参数**
 
@@ -97,17 +97,17 @@ Display-only projection of backend-authored message provenance. Nothing in this 
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``explicit.direction === 'inbound' ? normalizeMessageOrigin(explicit) : null``、``null``、``normalizeMessageOrigin(origin)``。
+   根据执行分支返回结果；代表性返回表达式为 ``message.messageSource === 'automation' ? normalizeMessageOrigin(explicit) : null``、``explicit.direction === 'inbound' ? normalizeMessageOrigin(explicit) : null``、``null``、``normalizeMessageOrigin(origin)``。
 
-   **主要协作调用**：``record``、``normalizeMessageOrigin``、``Object.keys``。
+   **主要协作调用**：``record``、``Object.hasOwn``、``normalizeMessageOrigin``、``Object.keys``。
 
-.. CWM-AST-FUNCTION src/components/message/messageOriginModel.js:2948:3237:FUNCTION
+.. CWM-AST-FUNCTION src/components/message/messageOriginModel.js:3335:3624:FUNCTION
 
 .. js:function:: messageOriginSummary(value)
 
    实现 ``messageOriginSummary`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``52``—``56`` 行。
+   **性质**：同步函数；导出 API；源码第 ``58``—``62`` 行。
 
    **参数**
 
