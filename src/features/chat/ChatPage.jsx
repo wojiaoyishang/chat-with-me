@@ -1514,12 +1514,12 @@ function ChatPage({
             // Keep the admission occupied across both the reply and the server's
             // temporary composer.clear/normal events, until this Turn starts.
             const generatesReply = !isFork && (isRegenerate || isProgenerate || (role || 'user') === 'user');
-            if (sendButtonStatus !== 'generating' && ['pending', 'recovering'].includes(turnSubmissionRef.current?.phase)) {
+            if (sendButtonStatus !== 'generating' && ['saving', 'pending', 'recovering'].includes(turnSubmissionRef.current?.phase)) {
                 return Promise.resolve({ success: false, value: t('is_generating_try_later') });
             }
             const submission = sendButtonStatus === 'generating'
                 ? null
-                : { turnId: generateUUID(), phase: 'pending' };
+                : { turnId: generateUUID(), phase: generatesReply ? 'pending' : 'saving' };
             const releaseSubmission = () => {
                 if (submission && turnSubmissionRef.current?.turnId === submission.turnId) {
                     turnSubmissionRef.current = null;

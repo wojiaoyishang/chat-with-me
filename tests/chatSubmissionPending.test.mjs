@@ -29,6 +29,19 @@ function callback(source, name, scope) {
     return new Function(...Object.keys(scope), `return (${expression});`)(...Object.values(scope));
 }
 
+function composerButtonStatus(scope) {
+    const tree = ts.createSourceFile('chat.jsx', composerSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.JSX);
+    let expression;
+    const visit = (node) => {
+        if (ts.isVariableDeclaration(node) && node.name.getText(tree) === 'effectiveSendButtonStatus')
+            expression = node.initializer.getText(tree);
+        ts.forEachChild(node, visit);
+    };
+    visit(tree);
+    assert.ok(expression);
+    return new Function(...Object.keys(scope), `return (${expression});`)(...Object.values(scope));
+}
+
 function eventHandler(source, eventName, scope) {
     scope = { MESSAGE_STREAM_EVENTS, streamBatch: { flush() {} }, ...scope };
     const tree = ts.createSourceFile('chat.jsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.JSX);
@@ -103,7 +116,7 @@ function turnLifecycle(scope) {
 }
 
 function composerHarness(overrides = {}) {
-    const state = { submitting: false, sends: [], content: 'message', cleared: [] };
+    const state = { submitting: false, saving: false, sends: [], content: 'message', cleared: [] };
     const attachments = overrides.attachmentsMeta ?? [];
     const scope = {
         canMutateConversation: () => true,
@@ -116,6 +129,7 @@ function composerHarness(overrides = {}) {
         sendButtonStatusRef: { current: 'normal' },
         draftConversationIdRef: { current: 'conversation' },
         setIsTurnSubmitting: (value) => { state.submitting = value; },
+        setIsMessageSaving: (value) => { state.saving = value; },
         attachmentsMeta: attachments,
         attachmentsMetaRef: { current: attachments },
         waitForConversationToolSync: async () => {},
@@ -239,7 +253,7 @@ test('empty regeneration uses the same immediate admission lock and rejected adm
     assert.equal(harness.state.errors.length, 1);
 });
 
-test('saving system/assistant messages or a branch releases on acknowledgement while regeneration keeps its lifecycle lock', async () => {
+test('saving system/assistant messages or a branch uses a non-generating lock and releases on acknowledgement', async () => {
     for (const action of [
         { role: 'system' },
         { role: 'assistant' },
@@ -250,7 +264,10 @@ test('saving system/assistant messages or a branch releases on acknowledgement w
         const response = deferred();
         const harness = pageHarness({ emitEvent: () => response.promise });
         const sending = harness.send({ messageContent: 'saved content', sendButtonStatus: 'normal', ...action });
-        assert.equal(harness.scope.turnSubmissionRef.current.phase, 'pending');
+        assert.equal(harness.scope.turnSubmissionRef.current.phase, 'saving');
+        assert.equal(harness.state.submission.phase, 'saving');
+        await harness.send({ messageContent: 'duplicate', sendButtonStatus: 'normal', ...action });
+        assert.equal(harness.scope.turnSubmissionRef.current.phase, 'saving', 'a repeated save must retain the first lock');
         response.resolve({ success: true });
         await sending;
         assert.equal(harness.scope.turnSubmissionRef.current, null, `${JSON.stringify(action)} has no generating Turn`);
@@ -261,6 +278,41 @@ test('saving system/assistant messages or a branch releases on acknowledgement w
     response.resolve({ success: true });
     await sending;
     assert.equal(regenerating.scope.turnSubmissionRef.current.phase, 'pending');
+});
+
+test('manual system/assistant saves retain the composer lock without entering model loading', async () => {
+    const actions = [
+        { currentRole: { name: 'system' } },
+        { currentRole: { name: 'assistant' } },
+        { currentRole: { name: 'user' }, isForkMode: true },
+    ];
+    for (const [action, outcome] of actions.flatMap((action) => ['success', 'rejected', 'error'].map((outcome) => [action, outcome]))) {
+        const response = deferred();
+        const harness = composerHarness({
+            ...action,
+            isEditMessageRef: { current: true },
+            editDraftRef: { current: { messageId: 'edited', mode: 'edit' } },
+            editMessageId: 'edited',
+            onSendMessage: (value) => { harness.state.sends.push(value); return response.promise; },
+        });
+        const sending = harness.send();
+        assert.equal(harness.state.saving, true);
+        assert.equal(harness.state.submitting, false, 'saving must not enable the generation spinner');
+        assert.ok(harness.scope.turnSubmissionRef.current);
+        await tick();
+        await harness.send();
+        assert.equal(harness.state.sends.length, 1, 'saving still prevents duplicate submissions');
+        if (outcome === 'error') response.reject(new Error('save failed'));
+        else response.resolve({ success: outcome === 'success' });
+        await sending;
+        assert.equal(harness.state.saving, false);
+        assert.equal(harness.state.submitting, false);
+        assert.equal(harness.scope.turnSubmissionRef.current, null);
+        if (outcome !== 'success') {
+            assert.equal(harness.scope.pendingEditClearRef.current, false);
+            assert.equal(harness.scope.messageContentRef.current, 'message', 'failed saves preserve the editable draft');
+        }
+    }
 });
 
 test('reconnection keeps loading until an authoritative restored status replaces the old turn lock', () => {
@@ -397,6 +449,20 @@ test('cleared input remains a disabled spinner during admission and resumes voic
     try {
         await act(async () => root.render(React.createElement(ComposerPrimaryAction, props)));
         assert.ok(document.querySelector('[aria-label="realtime voice"]'));
+        for (const saving of [
+            { isMessageSaving: true, turnSubmissionPhase: '' },
+            { isMessageSaving: false, turnSubmissionPhase: 'saving' },
+        ]) {
+            const status = composerButtonStatus({ ...saving, submissionPending: false, sendButtonStatus: 'loading' });
+            await act(async () => root.render(React.createElement(ComposerPrimaryAction, {
+                ...props, status, messageContent: 'saved system message', isEditMessage: true,
+            })));
+            const saveButton = document.querySelector('button');
+            assert.equal(saveButton.disabled, true);
+            assert.equal(saveButton.getAttribute('aria-busy'), 'false');
+            assert.equal(saveButton.querySelector('.animate-spin'), null, 'a plain save never displays the model-generation spinner');
+            assert.equal(document.querySelector('[aria-label="realtime voice"]'), null);
+        }
         for (const status of ['normal', 'loading']) {
             await act(async () => root.render(React.createElement(ComposerPrimaryAction, { ...props, status, submissionPending: true })));
             assert.equal(document.querySelector('[aria-label="realtime voice"]'), null);

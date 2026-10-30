@@ -107,7 +107,7 @@ function composerHarness({ content = guidance.content, attachments = [image, fil
         attachmentsMeta: attachments, draftConversationIdRef: { current: execution.conversationId }, renderedConversationIdRef: currentConversation,
         conversationId: execution.conversationId, uncertainGuidanceRef: { current: new Map() }, guidanceDraftFingerprint, refreshGuidanceSubmission: () => {},
         useExecutionStore: { getState: () => ({ sessions: {} }) },
-        setIsTurnSubmitting: () => {}, waitForConversationToolSync: async () => {}, waitForWorkspaceSelectionSync: async () => {}, uploadFiles: [],
+        setIsTurnSubmitting: () => {}, setIsMessageSaving: () => {}, waitForConversationToolSync: async () => {}, waitForWorkspaceSelectionSync: async () => {}, uploadFiles: [],
         executionGuidancePendingRef: { current: false }, guidanceSubmissionRef: { current: null }, setIsExecutionGuidancePending: (value) => { state.pending = value; },
         createExecutionGuidanceId: () => `new-supplement-${++state.sequence}`, currentRoleRef: { current: { name: 'user' } }, persistActiveDraft: (value) => value,
         saveComposerGuidanceSubmission: (cid, value) => { state.receipts.set(cid, value); return value; },

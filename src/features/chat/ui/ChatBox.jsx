@@ -284,12 +284,14 @@ function ChatBox({
     // 按钮
     const [sendButtonStatus, setSendButtonStatus] = useState('normal');
     const [isTurnSubmitting, setIsTurnSubmitting] = useState(false);
+    const [isMessageSaving, setIsMessageSaving] = useState(false);
     const turnSubmissionRef = useRef(null);
     const turnSubmissionPhaseRef = useRef(turnSubmissionPhase);
     turnSubmissionPhaseRef.current = turnSubmissionPhase;
     const submissionPending = isTurnSubmitting || ['pending', 'recovering'].includes(turnSubmissionPhase);
-    const effectiveSendButtonStatus = submissionPending
-        ? 'loading'
+    const effectiveSendButtonStatus = isMessageSaving || turnSubmissionPhase === 'saving'
+        ? 'disabled'
+        : submissionPending ? 'loading'
         : turnSubmissionPhase === 'running' && sendButtonStatus === 'normal'
           ? 'generating'
           : sendButtonStatus;
@@ -864,7 +866,7 @@ function ChatBox({
 
     const handleSendMessage = useCallback(async (options = {}) => {
         if (!canMutateConversation()) return;
-        if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) return;
+        if (turnSubmissionRef.current || ['saving', 'pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) return;
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
         const retry = options?.retryGuidance === true ? uncertainGuidanceRef.current.get(conversationId) : null;
@@ -893,7 +895,11 @@ function ChatBox({
         const targetConversationId = draftConversationIdRef.current;
         if (submission) {
             turnSubmissionRef.current = submission;
-            setIsTurnSubmitting(true);
+            // Manual system/assistant messages and forks only persist a message.
+            // Keep the submission lock, but reserve the spinner for model generation.
+            const generatesReply = !isForkMode && (currentRole?.name || 'user') === 'user';
+            setIsMessageSaving(!generatesReply);
+            setIsTurnSubmitting(generatesReply);
         }
         try {
 
@@ -1154,6 +1160,7 @@ function ChatBox({
             if (submission && turnSubmissionRef.current === submission) {
                 turnSubmissionRef.current = null;
                 setIsTurnSubmitting(false);
+                setIsMessageSaving(false);
             }
         }
     }, [
@@ -1833,7 +1840,7 @@ function ChatBox({
                 case 'composer.edit.set':
                     if (!canMutateConversation()) break;
                     if (payload.immediate) {
-                        if (turnSubmissionRef.current || ['pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) break;
+                        if (turnSubmissionRef.current || ['saving', 'pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) break;
                         const currentStatus = turnSubmissionPhaseRef.current === 'running' && sendButtonStatusRef.current === 'normal'
                             ? 'generating'
                             : sendButtonStatusRef.current;
@@ -2122,6 +2129,7 @@ function ChatBox({
         if (!isNewConversationAssigned) {
             turnSubmissionRef.current = null;
             setIsTurnSubmitting(false);
+            setIsMessageSaving(false);
         }
         const pendingPermissions = pendingConversationToolPermissionsRef.current;
 
