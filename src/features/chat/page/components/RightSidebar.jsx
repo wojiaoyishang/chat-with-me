@@ -1,9 +1,9 @@
 import React, {memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
-import {motion} from 'framer-motion';
+import {motion as Motion} from 'framer-motion';
 import {X} from 'lucide-react';
 import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
 
-const DEFAULT_DESKTOP_WIDTH = 256;
+const DEFAULT_DESKTOP_WIDTH = 360;
 const MIN_DESKTOP_WIDTH = 256;
 const MAX_DESKTOP_WIDTH = 720;
 const MIN_CHAT_CONTENT_WIDTH = 420;
@@ -174,9 +174,9 @@ const RightSidebar = memo(({
     const sidebarContent = useCallback(() => {
         const hasDynamicSettings = Array.isArray(advancedSettings) && advancedSettings.length > 0;
         return (
-            <div className="pb-4">
+            <div className="min-w-0 pb-4">
                 {hasDynamicSettings ? (
-                    <div>
+                    <div className="min-w-0">
                         <DynamicSettings
                             key={dynamicSettingsKey}
                             config={advancedSettings}
@@ -198,7 +198,7 @@ const RightSidebar = memo(({
 
     if (lockedMode) {
         return (
-            <motion.div
+            <Motion.div
                 ref={sidebarRef}
                 initial={{width: 0}}
                 animate={{width: isOpen ? desktopWidth : 0}}
@@ -220,31 +220,31 @@ const RightSidebar = memo(({
                 >
                     <span className="absolute inset-y-0 left-0 w-px bg-transparent transition-colors group-hover:bg-blue-400 group-focus-visible:bg-blue-400 group-active:bg-blue-500"/>
                 </div>
-                <div className="h-full flex flex-col" style={{width: desktopWidth}}>
-                    <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
-                        <span className="font-medium text-gray-700">
+                <div className="min-h-0 min-w-0 h-full flex flex-col" style={{width: desktopWidth}}>
+                    <div className="flex min-w-0 items-start justify-between gap-3 border-b border-border/60 px-4 py-4 shrink-0">
+                        <span className="min-w-0 break-words text-sm font-medium leading-6 text-gray-700">
                             {t('advanced_conversation_settings')}
                         </span>
                         <button
                             onClick={onClose}
-                            className="p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+                            className="shrink-0 p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
                             aria-label={t('close')}
                         >
                             <X className="h-4 w-4 text-gray-500"/>
                         </button>
                     </div>
-                    <div className="p-1 flex-1 overflow-y-auto">
+                    <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-2">
                         {sidebarContent()}
                     </div>
                 </div>
-            </motion.div>
+            </Motion.div>
         );
     }
 
     return (
         <>
             {isOpen && (
-                <motion.div
+                <Motion.div
                     initial={{opacity: 0}}
                     animate={{opacity: 1}}
                     exit={{opacity: 0}}
@@ -256,32 +256,32 @@ const RightSidebar = memo(({
                     onClick={onClose}
                 />
             )}
-            <motion.div
+            <Motion.div
                 ref={sidebarRef}
                 initial={{x: '100%'}}
                 animate={{x: isOpen ? 0 : '100%'}}
                 transition={{duration: 0.3, ease: 'easeInOut'}}
                 className={isWindowMode
-                    ? 'absolute top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-[9999] flex flex-col'
-                    : 'fixed top-0 right-0 h-full w-[16rem] bg-white shadow-xl z-50 flex flex-col'
+                    ? 'absolute top-0 right-0 min-h-0 min-w-0 h-full w-full max-w-sm bg-white shadow-xl z-[9999] flex flex-col'
+                    : 'fixed top-0 right-0 min-h-0 min-w-0 h-full w-full max-w-sm bg-white shadow-xl z-50 flex flex-col'
                 }
             >
-                <div className="flex items-center justify-between pt-4 pl-4 pr-4 shrink-0">
-                    <span className="font-medium text-gray-700">
+                <div className="flex min-w-0 items-start justify-between gap-3 border-b border-border/60 px-4 py-4 shrink-0">
+                    <span className="min-w-0 break-words text-sm font-medium leading-6 text-gray-700">
                         {t('advanced_conversation_settings')}
                     </span>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+                        className="shrink-0 p-1 rounded hover:bg-gray-100 cursor-pointer transition-colors"
                         aria-label={t('close')}
                     >
                         <X className="h-4 w-4 text-gray-500"/>
                     </button>
                 </div>
-                <div className="p-1 flex-1 overflow-y-auto">
+                <div className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-2">
                     {sidebarContent()}
                 </div>
-            </motion.div>
+            </Motion.div>
         </>
     );
 });

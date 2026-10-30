@@ -27,7 +27,7 @@ src/features/chat/page/components/RightSidebar 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:464:876:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:474:886:FUNCTION
 
 .. js:function:: loadStoredDesktopWidth()
 
@@ -50,7 +50,7 @@ src/features/chat/page/components/RightSidebar 模块
 
    **主要协作调用**：``Number``、``window.localStorage.getItem``、``Number.isFinite``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:876:1149:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:886:1159:FUNCTION
 
 .. js:function:: storeDesktopWidth(width)
 
@@ -79,7 +79,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1177:11700:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1187:12014:FUNCTION
 
 .. rubric:: ``memo callback @ 33``
 
@@ -98,7 +98,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <motion.div ref={sidebarRef} initial={{width: 0}} animate={{width: isOpen ? desktopWidth : 0}} transition={{duration: isResizing ? 0 : 0.3, ease: 'easeInOut'}} className="relati…``、``( <> {isOpen && ( <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} transition={{duration: 0.2}} className={isWindowMode ? 'absolute inset-0 bg-black/2…``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <Motion.div ref={sidebarRef} initial={{width: 0}} animate={{width: isOpen ? desktopWidth : 0}} transition={{duration: isResizing ? 0 : 0.3, ease: 'easeInOut'}} className="relati…``、``( <> {isOpen && ( <Motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} transition={{duration: 0.2}} className={isWindowMode ? 'absolute inset-0 bg-black/2…``。
 
 **副作用**
 
@@ -109,7 +109,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1974:2233:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1984:2243:FUNCTION
 
 .. rubric:: ``useMemo callback @ 50``
 
@@ -133,7 +133,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2071:2125:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2081:2135:FUNCTION
 
 .. rubric:: ``advancedSettings.map callback @ 52``
 
@@ -154,7 +154,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2298:2786:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2308:2796:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 58``
 
@@ -178,7 +178,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2659:2717:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2669:2727:FUNCTION
 
 .. rubric:: ``setTimeout callback @ 67``
 
@@ -200,7 +200,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``setLockedMode``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2743:2769:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2753:2779:FUNCTION
 
 .. rubric:: ``returned callback @ 70``
 
@@ -222,7 +222,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2869:3264:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2879:3274:FUNCTION
 
 .. rubric:: ``useCallback callback @ 74``
 
@@ -248,7 +248,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3326:3419:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3336:3429:FUNCTION
 
 .. rubric:: ``useCallback callback @ 85``
 
@@ -271,7 +271,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``Math.min``、``getMaxDesktopWidth``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3465:4090:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3475:4100:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 89``
 
@@ -300,7 +300,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3581:3679:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3591:3689:FUNCTION
 
 .. rubric:: ``syncWidth``
 
@@ -324,7 +324,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3618:3667:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3628:3677:FUNCTION
 
 .. rubric:: ``setDesktopWidth callback @ 94``
 
@@ -347,7 +347,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clampDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3962:4083:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3972:4093:FUNCTION
 
 .. rubric:: ``returned callback @ 104``
 
@@ -373,7 +373,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``resizeObserver?.disconnect``、``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4189:4528:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4199:4538:FUNCTION
 
 .. rubric:: ``useCallback callback @ 110``
 
@@ -396,7 +396,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``event.preventDefault``、``event.currentTarget.setPointerCapture``、``setIsResizing``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4612:5086:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4622:5096:FUNCTION
 
 .. rubric:: ``useCallback callback @ 122``
 
@@ -421,7 +421,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4895:5078:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4905:5088:FUNCTION
 
 .. rubric:: ``setDesktopWidth callback @ 128``
 
@@ -444,7 +444,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clampDesktopWidth``、``storeDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5145:6658:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5155:6668:FUNCTION
 
 .. rubric:: ``useEffect callback @ 135``
 
@@ -473,7 +473,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5457:5725:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5467:5735:FUNCTION
 
 .. rubric:: ``handlePointerMove``
 
@@ -496,7 +496,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``setDesktopWidth``、``clampDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5756:6062:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5766:6072:FUNCTION
 
 .. rubric:: ``stopResizing``
 
@@ -520,7 +520,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5870:6050:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5880:6060:FUNCTION
 
 .. rubric:: ``setDesktopWidth callback @ 154``
 
@@ -543,7 +543,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clampDesktopWidth``、``storeDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6299:6651:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6309:6661:FUNCTION
 
 .. rubric:: ``returned callback @ 165``
 
@@ -569,7 +569,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6734:7619:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6744:7657:FUNCTION
 
 .. rubric:: ``useCallback callback @ 174``
 
@@ -587,6 +587,6 @@ src/features/chat/page/components/RightSidebar 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="pb-4"> {hasDynamicSettings ? ( <div> <DynamicSettings key={dynamicSettingsKey} config={advancedSettings} initialValues={initialSettingValues} onChange={onSetting…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-w-0 pb-4"> {hasDynamicSettings ? ( <div className="min-w-0"> <DynamicSettings key={dynamicSettingsKey} config={advancedSettings} initialValues={initialSettin…``。
 
 **主要协作调用**：``Array.isArray``、``t``。

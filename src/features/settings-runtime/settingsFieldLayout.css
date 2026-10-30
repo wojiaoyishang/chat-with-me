@@ -1,0 +1,61 @@
+/* Settings can live in a narrow sidebar on a wide screen. Measure the form,
+   not the viewport; compact switches/default buttons keep their inline row. */
+@container settings-fields (max-width: 34rem) {
+    .cwm-settings-row[data-field-layout="rows"]:not([data-control-compact="true"]) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.625rem;
+    }
+
+    .cwm-settings-row[data-field-layout="rows"]:not([data-control-compact="true"]) > .cwm-settings-label,
+    .cwm-settings-row[data-field-layout="rows"]:not([data-control-compact="true"]) > .cwm-settings-control {
+        flex: none;
+        width: 100%;
+        min-width: 0;
+        margin-left: 0;
+    }
+
+    .cwm-settings-row[data-field-layout="rows"] > .cwm-settings-control {
+        justify-content: flex-start;
+    }
+
+    .cwm-settings-row[data-control-compact="true"] > .cwm-settings-control {
+        justify-content: flex-end;
+    }
+
+    /* The shared editor's viewport media query does not cover a desktop
+       sidebar. Keep nested fields and its add controls within this form. */
+    .cwm-json-editor .cje-hint {
+        flex-basis: 100%;
+        margin-left: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .cwm-json-editor .cje-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 5.375rem auto;
+    }
+
+    .cwm-json-editor .cje-label,
+    .cwm-json-editor .cje-key {
+        min-width: 0;
+    }
+
+    .cwm-json-editor .cje-value,
+    .cwm-json-editor .cje-picker,
+    .cwm-json-editor .cje-null {
+        grid-column: 1 / -1;
+        min-width: 0;
+    }
+
+    .cwm-json-editor .cje-add {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .cwm-json-editor .cje-add input {
+        grid-column: 1 / -1;
+        min-width: 0;
+        width: 100%;
+    }
+}

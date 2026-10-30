@@ -13,6 +13,7 @@ import '@/features/settings-runtime/extensions.jsx';
 import { useConfirmation } from '@/components/ui/useConfirmation.jsx';
 import OrderedOptionsEditor from './OrderedOptionsEditor.jsx';
 import JsonConfigEditor from './JsonConfigEditor.jsx';
+import '@/features/settings-runtime/settingsFieldLayout.css';
 import MultilineEditor from '@/components/ui/MultilineEditor.jsx';
 import React, { useState, useCallback, useEffect, useRef, useMemo, createContext, useContext, memo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -238,8 +239,8 @@ function SettingRow({
     const fieldLayout = useSettingsFieldLayout();
     const layout = controlCompact ? 'rows' : fieldLayout;
     if (fullWidth) {
-        return <div className={`w-full ${layout === 'rows' ? 'py-3' : 'py-2'} ${className || ''}`}>
-            {text && <div className="mb-2.5 flex items-center gap-2 text-sm font-medium"><span>{text}</span><TipWrapper tips={tips} />{required && <span className="text-destructive">*</span>}</div>}
+        return <div className={`w-full min-w-0 max-w-full ${layout === 'rows' ? 'py-3' : 'py-2'} ${className || ''}`}>
+            {text && <div className="mb-2.5 flex flex-wrap items-center gap-2 text-sm font-medium"><span>{text}</span><TipWrapper tips={tips} />{required && <span className="text-destructive">*</span>}</div>}
             {children}
         </div>;
     }
@@ -247,11 +248,12 @@ function SettingRow({
     return (
         <div
             data-field-layout={layout}
+            data-control-compact={controlCompact || undefined}
             className={layout === 'rows'
                 ? `cwm-settings-row ${className || ''} flex ${controlCompact ? 'flex-nowrap' : 'flex-wrap'} items-center justify-between ${density === 'compact' ? 'min-h-[44px]' : 'min-h-[48px]'} gap-x-5 gap-y-2 ${expanded ? 'items-start' : ''} ${noTopPadding ? 'pt-0 -mt-2.5' : ''} ${noLeftRightPadding ? '' : density === 'compact' ? 'py-2.5' : 'py-3'}`
                 : `cwm-settings-row min-w-0 ${className || ''} grid items-center gap-x-4 gap-y-2 py-2 ${layout === 'compact' ? 'grid-cols-[minmax(5rem,8rem)_minmax(0,1fr)]' : 'grid-cols-1'}`}
         >
-            <div className="min-w-0 max-w-full flex-1" style={layout === 'rows' ? { flexBasis: 'max-content' } : undefined}>
+            <div className="cwm-settings-label min-w-0 max-w-full flex-1" style={layout === 'rows' ? { flexBasis: 'max-content' } : undefined}>
                 <div className="flex items-center gap-1.5">
                 <TipWrapper tips={tips} nullable={nullable} isNull={isNull} onToggleNull={onToggleNull}>
                     <AutoScrollText className="text-sm font-medium flex-1 min-w-0" title={text}>
@@ -263,7 +265,7 @@ function SettingRow({
                 {description && <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>}
             </div>
             <div
-                className={
+                className={'cwm-settings-control ' + (
                     layout !== 'rows'
                         ? 'flex min-w-0 max-w-full items-center justify-start [&>input]:w-full [&>input]:max-w-none [&>[role="combobox"]]:w-full [&>[role="combobox"]]:max-w-none'
                         : controlFillAvailable
@@ -271,7 +273,7 @@ function SettingRow({
                         : controlCompact
                           ? 'flex items-center justify-end min-w-0 max-w-full flex-none ml-auto'
                           : 'flex items-center justify-start sm:justify-end min-w-0 max-w-full flex-[1_1_auto] sm:flex-[0_1_auto] w-full sm:w-auto sm:ml-auto'
-                }
+                )}
             >
                 {children}
             </div>
@@ -1084,7 +1086,7 @@ function NumberSliderItem({ item, path }) {
             className={hasRange ? 'w-full min-w-0 flex items-center gap-3' : 'flex-none'}
         >
             {hasRange && (
-                <div ref={sliderRef} className="flex-1 min-w-[120px] py-1">
+                <div ref={sliderRef} className="flex-1 min-w-12 py-1">
                     <Slider
                         min={item.min}
                         max={item.max}
@@ -1833,7 +1835,7 @@ function TagsItem({ item, path }) {
     );
 
     const tagsContent = (
-        <div className="flex flex-col gap-2.5 w-full sm:max-w-[460px]">
+        <div className="flex min-w-0 max-w-full flex-col gap-2.5 w-full sm:max-w-[460px]">
             {tags.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     {tags.map((tag, index) => (
@@ -2405,7 +2407,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     }, [config, initialValues]);
     return <SettingsContext.Provider value={ctx}>
         <div ref={(node) => { editorScope.current = node; if (node) node._cwmSettingsValues = valuesRef; if (validationRef) validationRef.current = node; }}
-            className={`grid w-full min-w-0 grid-cols-1 gap-4 ${className || ''}`}>
+            className={`cwm-settings-fields @container/settings-fields grid w-full min-w-0 grid-cols-1 gap-4 ${className || ''}`}>
             {config.map((field, index) => <SettingItemRenderer key={field.id || `${field.name || 'field'}:${index}`} item={field} path={field.name ? pathParts(field.name) : []} />)}
         </div>
         <DescriptorDialog open={descriptorDialog.open} descriptor={descriptorDialog.value} context={ctx} renderFields={renderFields}
