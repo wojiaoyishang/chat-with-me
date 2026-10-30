@@ -53,13 +53,13 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
    **主要协作调用**：``view.state.doc.toString``、``view.dispatch``、``value.slice``、``externalValue.of``、``Transaction.addToHistory.of``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:1356:8530:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:1356:8584:FUNCTION
 
 .. js:function:: SettingsCodeEditor({ item, value, onChange, disabled = false })
 
    A lazy, controlled code field; language support colors text without executing it.
 
-   **性质**：同步函数；导出 API；源码第 ``26``—``132`` 行。
+   **性质**：同步函数；导出 API；源码第 ``26``—``133`` 行。
 
    **参数**
 
@@ -365,7 +365,7 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
 **主要协作调用**：``editor.current?.dispatch``、``configuration.current.reconfigure``、``fieldExtensions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:7049:7328:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:7049:7382:FUNCTION
 
 .. rubric:: ``useEffect callback @ 115``
 
@@ -375,7 +375,7 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``115``—``120`` 行；所属函数 ``SettingsCodeEditor``。
+**性质**：同步局部函数；源码第 ``115``—``121`` 行；所属函数 ``SettingsCodeEditor``。
 
 **参数**
 
@@ -387,7 +387,7 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
 **主要协作调用**：``view.state.doc.toString``、``replaceExternalValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:7359:7452:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:7413:7506:FUNCTION
 
 .. rubric:: ``command``
 
@@ -397,7 +397,7 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
 实现 ``command`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``122``—``122`` 行；所属函数 ``SettingsCodeEditor``。
+**性质**：同步局部函数；源码第 ``123``—``123`` 行；所属函数 ``SettingsCodeEditor``。
 
 **参数**
 
@@ -410,17 +410,17 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
 **主要协作调用**：``run``、``editor.current.focus``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:7990:8009:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:8044:8063:FUNCTION
 
-.. rubric:: ``onClick callback @ 126``
+.. rubric:: ``onClick callback @ 127``
 
 .. code-block:: javascript
 
-   onClick callback @ 126()
+   onClick callback @ 127()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``SettingsCodeEditor``。
+**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``SettingsCodeEditor``。
 
 **参数**
 
@@ -432,17 +432,17 @@ Patch only the changed range so unaffected selections and undo entries can be ma
 
 **主要协作调用**：``command``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:8205:8224:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCodeEditor.jsx:8259:8278:FUNCTION
 
-.. rubric:: ``onClick callback @ 127``
+.. rubric:: ``onClick callback @ 128``
 
 .. code-block:: javascript
 
-   onClick callback @ 127()
+   onClick callback @ 128()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``127``—``127`` 行；所属函数 ``SettingsCodeEditor``。
+**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``SettingsCodeEditor``。
 
 **参数**
 

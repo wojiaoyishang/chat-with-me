@@ -103,6 +103,14 @@ test('code field supports Jinja highlighting, real keyboard editing, external pa
         await render();
         await act(async () => { view.dispatch({ selection: { anchor: 0 } }); view.focus(); });
         await act(async () => view.contentDOM.dispatchEvent(new window.CompositionEvent('compositionstart', { bubbles: true })));
+        await render({ value: '已被取消的外部补丁' });
+        await render({ value: latest });
+        await act(async () => {
+            view.contentDOM.dispatchEvent(new window.CompositionEvent('compositionend', { bubbles: true }));
+            await new Promise((resolve) => setTimeout(resolve, 65));
+        });
+        assert.equal(view.state.doc.toString(), latest, 'a reverted external update cannot replay its stale deferred patch');
+        await act(async () => view.contentDOM.dispatchEvent(new window.CompositionEvent('compositionstart', { bubbles: true })));
         await render({ value: '外部补丁等待输入法结束' });
         assert.equal(view.state.doc.toString(), latest, 'external patches do not replace an active composition');
         await act(async () => {

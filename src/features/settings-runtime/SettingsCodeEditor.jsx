@@ -114,7 +114,8 @@ export default function SettingsCodeEditor({ item, value, onChange, disabled = f
 
     useEffect(() => {
         const view = editor.current;
-        if (!view || view.state.doc.toString() === text) return;
+        if (!view) return;
+        if (view.state.doc.toString() === text) { pendingExternal.current = null; return; }
         if (composing.current || view.composing) pendingExternal.current = text;
         else { pendingExternal.current = null; replaceExternalValue(view, text); }
     }, [text]);
