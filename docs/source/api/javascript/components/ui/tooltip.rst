@@ -78,7 +78,7 @@ src/components/ui/tooltip 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />``。
 
-.. CWM-AST-FUNCTION src/components/ui/tooltip.tsx:840:2023:FUNCTION
+.. CWM-AST-FUNCTION src/components/ui/tooltip.tsx:840:2093:FUNCTION
 
 .. js:function:: TooltipContent({ className, style, sideOffset = 0, children, ...props })
 

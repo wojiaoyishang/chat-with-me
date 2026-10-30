@@ -27,7 +27,7 @@ Icon names are presentation vocabulary; pages never select a business renderer.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsPresentation.jsx:591:1222:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsPresentation.jsx:639:1270:FUNCTION
 
 .. js:function:: SettingsIcon({ icon = 'settings', className = 'size-4', framed = false })
 
@@ -46,7 +46,7 @@ Icon names are presentation vocabulary; pages never select a business renderer.
 
    **主要协作调用**：``/^(?:cwm:\/\/|https?:\/\/|\/)/.test``、``resolveResourceUrl``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsPresentation.jsx:1222:3120:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsPresentation.jsx:1270:3168:FUNCTION
 
 .. js:function:: SettingsSection({ title, description, icon, actions, children, variant, className = '', bodyClassName = '' })
 

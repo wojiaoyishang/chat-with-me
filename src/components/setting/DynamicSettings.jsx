@@ -189,14 +189,15 @@ function TipWrapper({ tips, children, nullable, isNull, onToggleNull }) {
         </span>
     );
     const tooltipClasses =
-        'bg-[#1a1d21] text-white text-xs leading-relaxed px-2.5 py-1.5 rounded-md max-w-[260px] z-[9999] dark:bg-[#e4e7eb] dark:text-[#1c1e21]';
+        'bg-[#1a1d21] text-white text-xs leading-relaxed px-2.5 py-1.5 rounded-md whitespace-pre-wrap select-text z-[9999] dark:bg-[#e4e7eb] dark:text-[#1c1e21]';
     return (
         <>
             {children}
             {tips && (
                 <Popover>
                     <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-                    <PopoverContent className={tooltipClasses} sideOffset={6}>
+                    <PopoverContent className={tooltipClasses} sideOffset={6}
+                        style={{ maxWidth: 'min(260px, calc(100vw - 2rem))', overflowWrap: 'anywhere' }}>
                         {tips}
                     </PopoverContent>
                 </Popover>

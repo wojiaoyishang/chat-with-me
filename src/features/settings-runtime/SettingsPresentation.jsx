@@ -1,5 +1,5 @@
 import {
-    Bell, Cpu, Database, FolderOpen, KeyRound, Palette, Plug, Server,
+    Bell, Cpu, Database, FolderOpen, KeyRound, MessageCircle, Palette, Plug, Server,
     Settings2, ShieldCheck, Sparkles, Terminal, UserRound, Users,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 
 const ICONS = {
     settings: Settings2, palette: Palette, server: Server, bell: Bell,
-    user: UserRound, shield: ShieldCheck, database: Database, plug: Plug,
+    user: UserRound, shield: ShieldCheck, database: Database, plug: Plug, 'message-circle': MessageCircle,
     sparkles: Sparkles, folder: FolderOpen, cpu: Cpu, terminal: Terminal, key: KeyRound, users: Users,
 };
 

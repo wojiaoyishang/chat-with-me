@@ -52,7 +52,7 @@ function TooltipContent({
         )}
         {...props}
         data-window-layer={layer['data-window-layer']}
-        style={{...style, zIndex: layer.zIndex}}
+        style={{maxWidth: 'min(20rem, calc(100vw - 2rem))', overflowWrap: 'anywhere', ...style, zIndex: layer.zIndex}}
       >
         {children}
         <TooltipPrimitive.Arrow className="bg-foreground fill-foreground z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]" />

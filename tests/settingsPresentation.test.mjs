@@ -42,6 +42,17 @@ test('resource cards retain column information and explicit tables remain availa
     } finally { await second.close(); }
 });
 
+test('symbolic connection icons render vectors rather than broken image URLs', async () => {
+    const ui = await mount([resource({ recordIcon: 'message-circle' })], { items: [{ id: 'chat', title: '示例消息连接' }] });
+    try {
+        const card = document.querySelector('article');
+        assert.ok(card.querySelector('svg.lucide-message-circle'));
+        assert.equal(card.querySelector('img'), null);
+        assert.equal(card.querySelector('svg').getAttribute('stroke'), 'currentColor');
+        assert.equal(card.querySelector('svg').getAttribute('fill'), 'none');
+    } finally { await ui.close(); }
+});
+
 test('plain groups retain readable single-row preferences without an outer card', async () => {
     const ui = await mount([{ type: 'group', text: '消息提醒', children: [{ type: 'switch', name: ['type.example'], text: '完成提醒', description: '有结果时通知', density: 'compact', default: true }] }]);
     try {

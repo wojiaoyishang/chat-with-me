@@ -16,7 +16,7 @@ test('Headless menus consume Escape inside a real resource dialog and leave its 
     window.HTMLElement.prototype.scrollIntoView = () => {};
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     const { createRoot } = await import('react-dom/client');
-    await build({ entryPoints: ['src/components/setting/DynamicSettings.jsx'], outfile: 'temp/settings-headless-popover.mjs', bundle: true, packages: 'external', jsx: 'automatic', platform: 'node', format: 'esm', plugins: [{ name: 'real-dialog-and-listbox', setup(builder) {
+    await build({ stdin: { contents: "export {default} from './src/components/setting/DynamicSettings.jsx';export {Tooltip,TooltipTrigger,TooltipContent} from './src/components/ui/tooltip.tsx';", resolveDir: process.cwd() }, outfile: 'temp/settings-headless-popover.mjs', bundle: true, packages: 'external', jsx: 'automatic', platform: 'node', format: 'esm', plugins: [{ name: 'real-dialog-and-listbox', setup(builder) {
         builder.onResolve({ filter: /^react(?:\/|$)/ }, ({ path: name }) => ({ path: name, external: true }));
         builder.onResolve({ filter: /^sonner$|^framer-motion$|^react-i18next$/ }, ({ path: name }) => ({ path: name, namespace: 'mock' }));
         builder.onResolve({ filter: /JsonConfigEditor\.jsx$/ }, () => ({ path: 'json', namespace: 'mock' }));
@@ -38,7 +38,7 @@ test('Headless menus consume Escape inside a real resource dialog and leave its 
             throw new Error(`Unexpected mock ${name}`);
         });
     } }] });
-    const { default: DynamicSettings } = await import('../temp/settings-headless-popover.mjs');
+    const { default: DynamicSettings, Tooltip, TooltipTrigger, TooltipContent } = await import('../temp/settings-headless-popover.mjs');
     const config = [{ type: 'resource', id: 'members', text: '成员', source: { endpoint: '/members', listPath: 'items' }, titleField: 'title', actions: [{ kind: 'edit', label: '编辑权限' }], editor: { title: '编辑成员', options: [{ type: 'select', name: 'permission', text: '权限', options: [{ value: 'view', label: '查看' }, { value: 'use', label: '使用' }, { value: 'manage', label: '管理' }] }] } }];
     const root = createRoot(document.getElementById('root'));
     const settle = () => new Promise(resolve => setTimeout(resolve, 35));
@@ -77,6 +77,27 @@ test('Headless menus consume Escape inside a real resource dialog and leave its 
         assert.equal(document.querySelector('[role="listbox"]'), null);
         assert.match(trigger().textContent, /使用/);
         assert.equal(document.querySelector('[data-slot="dialog-content"]'), editor, 'keyboard selection retains the parent editor');
+
+        const longJSON = JSON.stringify({ contains: { value: '不间断的JSON字串'.repeat(100) } });
+        await act(async () => { root.render(React.createElement(DynamicSettings, { config: [{ type: 'text', name: 'filter', text: '匹配条件', tips: longJSON }] })); await settle(); });
+        const tipTrigger = document.querySelector('.lucide-info').parentElement;
+        await act(async () => { pointerClick(tipTrigger); await settle(); });
+        const tip = document.querySelector('[data-slot="popover-content"]');
+        assert.ok(tip, 'the real settings tip opens in its portal');
+        assert.equal(tip.textContent, longJSON, 'long examples remain intact and selectable');
+        assert.equal(tip.style.overflowWrap, 'anywhere');
+        assert.equal(tip.style.maxWidth, 'min(260px, calc(100vw - 2rem))');
+        assert.ok(tip.classList.contains('select-text'));
+        assert.ok(!tip.classList.contains('truncate'));
+
+        await act(async () => { root.render(React.createElement(Tooltip, { defaultOpen: true },
+            React.createElement(TooltipTrigger, null, '查看说明'),
+            React.createElement(TooltipContent, null, longJSON))); await settle(); });
+        const tooltip = document.querySelector('[data-slot="tooltip-content"]');
+        assert.ok(tooltip, 'ordinary tooltips share wrapping even outside settings');
+        assert.equal(tooltip.style.overflowWrap, 'anywhere');
+        assert.equal(tooltip.style.maxWidth, 'min(20rem, calc(100vw - 2rem))');
+        assert.ok(tooltip.textContent.includes(longJSON));
     } finally {
         await act(async () => root.unmount());
         dom.window.close();
