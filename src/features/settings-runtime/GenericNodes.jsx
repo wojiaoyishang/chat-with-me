@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { copyTextToClipboard } from '@/lib/tools.jsx';
-import { cloneData, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
+import { cloneData, executeRequest, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
 import { operationKey } from './useActionExecutor.js';
 import { validateSettingsFields, validateSettingsScope } from './validation.js';
 import { SettingsIcon, SettingsSection } from './SettingsPresentation.jsx';
@@ -357,6 +357,7 @@ export function ResourceNode({ item, context, renderFields }) {
     const editorScope = useRef(null);
     const alive = useRef(true);
     const latestContext = useRef(context);
+    const resourceHost = useRef(null);
     latestContext.current = context;
     const source = item.source || {};
     const { registerResource, subscribe, client } = context;
@@ -398,6 +399,18 @@ export function ResourceNode({ item, context, renderFields }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [load]);
     useEffect(() => registerResource(item.id || item.name, load), [registerResource, item.id, item.name, load]);
+    useEffect(() => {
+        const interval = Number(item.refreshIntervalMs);
+        if (!(interval > 0)) return undefined;
+        let stopped = false, timer;
+        const tick = async () => {
+            if (stopped) return;
+            if (document.visibilityState !== 'hidden' && !resourceHost.current?.closest('[hidden],[aria-hidden="true"],[data-state="closed"]')) await load({ silent: true });
+            if (!stopped) timer = setTimeout(tick, Math.max(500, Math.min(60000, interval)));
+        };
+        timer = setTimeout(tick, Math.max(500, Math.min(60000, interval)));
+        return () => { stopped = true; clearTimeout(timer); };
+    }, [item.refreshIntervalMs, load]);
     useEffect(() => {
         const subscriptions = (item.events || []).map((event) => subscribe(event, () => { void load(); }));
         // Local observations already have their own progress. Reading their
@@ -521,7 +534,7 @@ export function ResourceNode({ item, context, renderFields }) {
         {item.create && item.editor && <Button type="button" size="sm" className="rounded-md" disabled={context.disabled} onClick={() => { void openEditor(null); }}><Plus className="size-3.5" />{item.create.label || '添加'}</Button>}
     </>;
     return <SettingsSection title={<span className="flex items-center gap-2">{item.text || item.title}<span className="text-xs font-normal tabular-nums text-muted-foreground">{rows.length} 项</span></span>} description={item.description} variant={item.variant} actions={resourceActions} bodyClassName={item.variant === 'card' ? 'p-4' : ''}>
-        <div className={`relative ${inlineLoading && !rows.length && (loading || error) ? 'min-h-28 rounded-lg border bg-card' : ''} ${loading ? '' : 'cwm-settings-reveal'}`} aria-busy={loading || undefined}>
+        <div ref={resourceHost} className={`relative ${inlineLoading && !rows.length && (loading || error) ? 'min-h-28 rounded-lg border bg-card' : ''} ${loading ? '' : 'cwm-settings-reveal'}`} aria-busy={loading || undefined}>
         {!rows.length ? !loading && !error && <div className="flex min-h-28 flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-4 text-center"><Inbox className="size-5 text-muted-foreground" /><p className="text-sm text-muted-foreground">{item.emptyText || '暂无数据'}</p></div>
                 : records}
         {inlineLoading && (loading || error) && <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/80 p-4">
@@ -551,30 +564,88 @@ export function ResourceNode({ item, context, renderFields }) {
 
 export function DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited }) {
     const [values, setValues] = useState(() => pageValues(descriptor?.options || [], descriptor?.defaultOptions || {}));
+    const [polled, setPolled] = useState(null);
+    const [pollError, setPollError] = useState('');
+    const bodyRef = useRef(null);
     const guardId = useId();
-    const locked = descriptor?.dialog?.dismissible === false;
+    const displayed = polled?.base === descriptor ? polled.value : descriptor;
+    const latest = useRef(null);
+    latest.current = { displayed, values, context };
+    const pollKey = JSON.stringify(displayed?.poll || null);
+    const locked = displayed?.dialog?.dismissible === false;
     const registerDraftGuard = context.runtimeContext.registerDraftGuard;
-    useEffect(() => { setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
+    useEffect(() => { setPolled(null); setPollError(''); setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
+    useEffect(() => {
+        const poll = displayed?.poll;
+        if (!open || !poll?.action?.endpoint) return undefined;
+        let stopped = false, timer, failures = 0;
+        const controller = new AbortController();
+        const tick = async () => {
+            if (stopped) return;
+            if (document.visibilityState === 'hidden') { timer = setTimeout(tick, 1000); return; }
+            try {
+                const current = latest.current;
+                const next = await executeRequest(poll.action, { form: current.values, item: current.context.item, parentItem: current.context.parentItem },
+                    { api: current.context.api, client: current.context.client, signal: controller.signal });
+                if (stopped || controller.signal.aborted) return;
+                if (!next || !Array.isArray(next.options)) throw new Error('状态接口未返回有效页面定义');
+                setValues((previous) => {
+                    let updated = pageValues(next.options, next.defaultOptions || {});
+                    for (const path of poll.preserveFields || []) if (getValue(previous, path) !== undefined) updated = setValue(updated, path, getValue(previous, path));
+                    return updated;
+                });
+                setPolled({ base: descriptor, value: next }); setPollError(''); failures = 0;
+                if (!next.poll?.action?.endpoint) {
+                    for (const target of poll.refreshTargets || []) await current.context.refresh(target);
+                    return;
+                }
+            } catch (error) {
+                if (stopped || controller.signal.aborted) return;
+                failures += 1;
+                setPollError(poll.errorText || '状态检查暂时中断，正在重试…');
+            }
+            if (!stopped) timer = setTimeout(tick, Math.max(500, Math.min(15000, Number(poll.intervalMs) || 1000)) * Math.min(5, failures || 1));
+        };
+        timer = setTimeout(tick, Math.max(500, Math.min(15000, Number(poll.intervalMs) || 1000)));
+        return () => { stopped = true; clearTimeout(timer); controller.abort(); };
+    // The current descriptor and values are read from latest, not frozen in the polling request.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, descriptor, pollKey]);
     useEffect(() => {
         if (!open || !locked || !registerDraftGuard) return undefined;
         return registerDraftGuard(`descriptor-dialog:${guardId}`, () => false);
     }, [open, locked, guardId, registerDraftGuard]);
-    const form = useMemo(() => descriptor && <SettingsFormLayout layout={descriptor.layout || 'stacked'} columns={descriptor.columns}>
-        {renderFields(descriptor.options || [], values, setValues, { runtimeContext: {
+    const form = useMemo(() => displayed && <SettingsFormLayout layout={displayed.layout || 'stacked'} columns={displayed.columns}>
+        {renderFields(displayed.options || [], values, setValues, { runtimeContext: {
             ...context.runtimeContext, refresh: context.refresh, closeDialog: onClose,
         } })}
-    </SettingsFormLayout>, [descriptor, values, renderFields, context.runtimeContext, context.refresh, onClose]);
+    </SettingsFormLayout>, [displayed, values, renderFields, context.runtimeContext, context.refresh, onClose]);
+    const footerContext = { ...context, values, execute: async (action, scope, callbacks = {}) => {
+        if (action.validate !== false) {
+            try {
+                validateSettingsScope(bodyRef.current);
+                const errors = validateSettingsFields(bodyRef.current, displayed?.options || [], values);
+                if (Object.keys(errors).length) throw new Error(Object.values(errors)[0]);
+            } catch (error) { toast.error(error.message); throw error; }
+        }
+        return context.execute({ ...action, validate: false }, { ...scope, form: values }, {
+            ...callbacks, closeDialog: onClose,
+            patchForm: (patch, target = 'form') => setValues((previous) => target === 'form' ? { ...previous, ...patch } : setValue(previous, target.replace(/^form\./, ''), patch)),
+        });
+    } };
     return <Dialog open={open} closeOnBack={!locked} lockInteraction={locked} onOpenChange={(next) => { if (!next) onClose(); }}>
-        <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(descriptor?.dialog)} onCloseAutoFocus={onExited} aria-modal={locked || undefined}
+        <DialogContent className="flex max-w-none flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-none" style={getSettingsDialogStyle(displayed?.dialog)} onCloseAutoFocus={onExited} aria-modal={locked || undefined}
             overlayStyle={locked ? { pointerEvents: 'auto' } : undefined}
             onPointerDownOutside={locked ? (event) => event.preventDefault() : undefined}
             onEscapeKeyDown={locked ? (event) => event.preventDefault() : undefined}>
             <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12">
-                <DialogTitle className="text-base">{descriptor?.title || '详情'}</DialogTitle>
-                <DialogDescription className="mt-1.5 text-xs leading-5">{descriptor?.description}</DialogDescription>
+                <DialogTitle className="text-base">{displayed?.title || '详情'}</DialogTitle>
+                <DialogDescription className="mt-1.5 text-xs leading-5">{displayed?.description}</DialogDescription>
             </DialogHeader>
-            <div className="min-h-0 flex-1 overflow-auto p-4">{form}</div>
-            <DialogFooter className="shrink-0 border-t px-4 py-3"><Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button></DialogFooter>
+            <div ref={bodyRef} className="min-h-0 flex-1 overflow-auto p-4">{form}</div>
+            <DialogFooter className="shrink-0 items-center border-t px-4 py-3">{pollError && <span role="status" className="mr-auto text-xs text-muted-foreground">{pollError}</span>}<Button type="button" variant="outline" className="rounded-md" onClick={onClose}>关闭</Button>
+                {(displayed?.footerActions || []).map((action, index) => <ActionButton key={action.id || index} action={action} context={footerContext} />)}
+            </DialogFooter>
         </DialogContent>
     </Dialog>;
 }

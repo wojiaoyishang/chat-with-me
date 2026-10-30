@@ -1001,7 +1001,7 @@
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
      - 16
      - 0
-     - 141
+     - 152
      - ``src/features/settings-runtime/GenericNodes.jsx``
    * - :doc:`src/features/settings-runtime/ResourceFields </api/javascript/features/settings-runtime/ResourceFields>`
      - 6
@@ -1071,7 +1071,7 @@
    * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
      - 14
      - 0
-     - 12
+     - 13
      - ``src/features/settings-runtime/model.js``
    * - :doc:`src/features/settings-runtime/navigation </api/javascript/features/settings-runtime/navigation>`
      - 2

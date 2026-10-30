@@ -1628,7 +1628,10 @@ function SelectItem({ item, path }) {
     const [isNull, setIsNull] = useState(rawVal === null);
     const val = isNull ? null : (rawVal ?? item.default ?? '');
     const options = item.options || [];
-    const selected = options.find((o) => o.value === val) || options[0] || null;
+    // Rendering a fallback label must never pretend an unselected value is the
+    // first option: the form would still submit an empty/stale ID.
+    const selected = options.find((o) => o.value === val) || null;
+    const selectionLabel = selected?.label ?? (val === '' ? (item.placeholder || '请选择') : '当前选项已不可用，请重新选择');
     const buttonRef = useRef(null);
 
     const handleSelectChange = useCallback((nextValue) => update(path, nextValue), [path, update]);
@@ -1692,8 +1695,8 @@ function SelectItem({ item, path }) {
                             ref={buttonRef}
                             className="flex items-center gap-1.5 h-8 px-3 border border-[#e1e4e8] dark:border-[#3a3f45] rounded-lg bg-white dark:bg-[#1c1e21] text-[#1a1d21] dark:text-[#e4e7eb] cursor-pointer text-sm font-sans w-full sm:min-w-[140px] text-left transition-colors hover:border-[#2563eb] dark:hover:border-[#3b82f6] outline-none focus:border-[#2563eb] dark:focus:border-[#3b82f6]"
                         >
-                            <AutoScrollText className="flex-1 min-w-0" title={selected?.label ?? val}>
-                                {selected?.label ?? val}
+                            <AutoScrollText className={`flex-1 min-w-0 ${selected ? '' : 'text-muted-foreground'}`} title={selectionLabel}>
+                                {selectionLabel}
                             </AutoScrollText>
                             <motion.svg
                                 className="w-4 h-4 text-[#656d76] dark:text-[#9ca3af] ml-auto flex-shrink-0"

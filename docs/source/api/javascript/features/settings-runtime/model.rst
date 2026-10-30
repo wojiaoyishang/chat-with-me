@@ -17,7 +17,7 @@ References are data paths in a finite scope; descriptors never evaluate code.
 * **模块标识**：``src/features/settings-runtime/model``
 * **顶层函数/组件/Hook**：14
 * **类**：0
-* **局部函数与匿名回调**：12
+* **局部函数与匿名回调**：13
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -318,13 +318,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:7869:9689:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:7869:9908:FUNCTION
 
 .. js:function:: validateFields(fields, form, prefix, errors, context)
 
    校验与 ``Fields`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``158``—``178`` 行。
+   **性质**：同步函数；导出 API；源码第 ``158``—``179`` 行。
 
    **参数**
 
@@ -347,17 +347,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    根据执行分支返回结果；代表性返回表达式为 ``errors``。
 
-   **主要协作调用**：``getValue``、``matchesCondition``、``TRANSPARENT_CONTAINERS.has``、``validateFields``、``settingsChildFields``、``pathParts``、``path.join``、``Array.isArray``、``value.forEach``、``new RegExp(field.pattern).test``、``['group', 'form', 'card'].includes``。
+   **主要协作调用**：``getValue``、``matchesCondition``、``TRANSPARENT_CONTAINERS.has``、``validateFields``、``settingsChildFields``、``pathParts``、``path.join``、``Array.isArray``、``value.forEach``、``field.options.some``、``new RegExp(field.pattern).test``、``['group', 'form', 'card'].includes``。
 
-   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9689:11247:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9908:11466:FUNCTION
 
 .. js:function:: executeRequest(action, scope, { api, client, signal, onProgress })
 
    One operation executor shared by forms, resource cards and action bars.
 
-   **性质**：异步函数；导出 API；源码第 ``181``—``199`` 行。
+   **性质**：异步函数；导出 API；源码第 ``182``—``200`` 行。
 
    **参数**
 
@@ -672,3 +672,24 @@ References are data paths in a finite scope; descriptors never evaluate code.
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
 **主要协作调用**：``validateFields``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9136:9170:FUNCTION
+
+.. rubric:: ``field.options.some callback @ 170``
+
+.. code-block:: javascript
+
+   field.options.some callback @ 170(option)
+
+作为 ``field.options.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``170``—``170`` 行；所属函数 ``validateFields``。
+
+**参数**
+
+``option``
+   调用方传入的 ``option`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。

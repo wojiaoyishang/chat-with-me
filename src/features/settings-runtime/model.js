@@ -167,6 +167,7 @@ export function validateFields(fields, form, prefix = [], errors = {}, context =
         const name = path.join('.');
         if (Array.isArray(value) && field.type === 'list') value.forEach((entry, index) => validateFields(field.children, form, [...path, index], errors, context));
         if ((field.required || (field.requiredOnCreate && context.isCreate)) && (value == null || value === '' || (Array.isArray(value) && !value.length))) errors[name] = `${field.text || field.name}不能为空。`;
+        if (field.type === 'select' && Array.isArray(field.options) && value != null && value !== '' && !field.options.some((option) => option.value === value)) errors[name] = `${field.text || field.name}已不可用，请重新选择。`;
         if (typeof value === 'string') {
             if (field.maxLength && value.length > field.maxLength) errors[name] = `${field.text || field.name}超过最大长度。`;
             if (field.pattern && !new RegExp(field.pattern).test(value)) errors[name] = field.validationMessage || `${field.text || field.name}格式不正确。`;

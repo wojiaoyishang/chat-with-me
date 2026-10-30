@@ -73,7 +73,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:994:10660:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:994:10687:FUNCTION
 
 .. js:function:: useActionExecutor(services)
 
@@ -249,7 +249,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``controller.abort``、``active.clear``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2089:10616:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:2089:10643:FUNCTION
 
 .. rubric:: ``useCallback callback @ 43``
 
@@ -456,7 +456,7 @@ Reads progress only. Retrying a read never repeats the submitted operation.
 
 **主要协作调用**：``controller.signal.removeEventListener``、``update``、``resolve``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:9793:9828:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/useActionExecutor.js:9820:9855:FUNCTION
 
 .. rubric:: ``(action.effects || []).some callback @ 146``
 
