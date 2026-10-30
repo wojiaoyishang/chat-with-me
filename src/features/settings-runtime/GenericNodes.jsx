@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
+import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { copyTextToClipboard } from '@/lib/tools.jsx';
 import { cloneData, executeRequest, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
@@ -16,6 +17,7 @@ import { validateSettingsFields, validateSettingsScope } from './validation.js';
 import { SettingsIcon, SettingsSection } from './SettingsPresentation.jsx';
 import { formatSettingsValue as displayValue } from './displayValue.js';
 import { ConnectionCard, ProfileCard, SettingsCardGrid } from './SettingsCards.jsx';
+import { ResourceActions } from './ResourceActions.jsx';
 import SettingsFormLayout from './SettingsFormLayout.jsx';
 import { SettingsActionLabel } from './SettingsActionLabel.jsx';
 import { getActionPresentation } from './actionPresentation.js';
@@ -83,16 +85,23 @@ export function FileNode({ item, value, onChange, context }) {
     </div>;
 }
 
-export function ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant }) {
+function ActionControl({ action, label, disabled, busy, variant, menuItem, onInvoke }) {
+    const presentation = getActionPresentation(action, variant || 'outline');
+    const content = <SettingsActionLabel action={action} label={label} />;
+    if (menuItem) return <DropdownMenuItem className={presentation.className}
+        variant={action.tone === 'danger' || action.variant === 'destructive' || action.confirm?.danger ? 'destructive' : 'default'}
+        disabled={disabled || busy} aria-busy={busy || undefined} onSelect={onInvoke}>{content}</DropdownMenuItem>;
+    return <Button type="button" size="sm" {...presentation} disabled={disabled || busy} aria-busy={busy || undefined} onClick={onInvoke}>{content}</Button>;
+}
+
+export function ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant, menuItem = false }) {
     const actualScope = { form: context.values, item: context.item, parentItem: context.parentItem, ...scope };
     if (!matchesCondition(action.when || action.showWhen, actualScope)) return null;
     const operation = context.operations?.[operationKey(action, actualScope)];
     const isDisabled = disabled || context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, actualScope));
-    const presentation = getActionPresentation(action, variant || 'outline');
-    return <Button type="button" size="sm" {...presentation} disabled={isDisabled || operation?.busy} aria-busy={operation?.busy || undefined}
-            onClick={() => { void context.execute(action, actualScope, callbacks).catch(() => {}); }}>
-            <SettingsActionLabel action={action} label={formatValue(action.label || action.text || '执行', actualScope)} />
-        </Button>;
+    return <ActionControl action={action} label={formatValue(action.label || action.text || '执行', actualScope)}
+        disabled={isDisabled} busy={operation?.busy} variant={variant} menuItem={menuItem}
+        onInvoke={() => { void context.execute(action, actualScope, callbacks).catch(() => {}); }} />;
 }
 
 export function ActionsNode({ item, context }) {
@@ -485,9 +494,11 @@ export function ResourceNode({ item, context, renderFields }) {
             const scope = { form: context.values, item: record, parentItem: context.item };
             const visible = (item.actions || []).filter((action) => matchesCondition(action.when || action.showWhen, scope));
             if (!visible.length) return null;
-            return <div className="flex flex-wrap items-start gap-2">{visible.map((action, index) => action.kind === 'edit'
-                ? <Button key={action.id || index} type="button" size="sm" {...getActionPresentation(action)} disabled={context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))} onClick={() => { void openEditor(record); }}><SettingsActionLabel action={action} label={action.label || '编辑'} /></Button>
-                : <ActionButton key={action.id || index} action={action} context={context} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />)}</div>;
+            return <ResourceActions actions={visible} view={item.recordView} disabled={context.disabled} renderAction={(action, index, menuItem) => action.kind === 'edit'
+                ? <ActionControl key={action.id || index} action={action} label={action.label || '编辑'} menuItem={menuItem}
+                    disabled={context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, scope))}
+                    onInvoke={() => { void openEditor(record); }} />
+                : <ActionButton key={action.id || index} action={action} context={context} menuItem={menuItem} scope={{ item: record, parentItem: context.item }} disabled={conflictingActions.has(operationKey(action, scope))} callbacks={{ onError: (cause) => { if (Number(cause.code) === 409) setConflictingActions((previous) => new Set([...previous, operationKey(action, scope)])); } }} />} />;
         };
         const columns = item.columns || [];
         const valueText = (record, column) => {
@@ -599,7 +610,7 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
                     for (const target of poll.refreshTargets || []) await current.context.refresh(target);
                     return;
                 }
-            } catch (error) {
+            } catch {
                 if (stopped || controller.signal.aborted) return;
                 failures += 1;
                 setPollError(poll.errorText || '状态检查暂时中断，正在重试…');

@@ -65,6 +65,7 @@ import { CSS } from '@dnd-kit/utilities';
 // ─── Context ───────────────────────────────────────────────────────
 const SettingsContext = createContext(null);
 const ROW_KEY = Symbol('settings-row-key');
+const SettingsCodeEditor = React.lazy(() => import('@/features/settings-runtime/SettingsCodeEditor.jsx'));
 
 function useSettings() {
     return useContext(SettingsContext);
@@ -2224,6 +2225,12 @@ function SettingItemRenderer({ item, path }) {
             return <NumberSliderItem item={item} path={path} />;
         case 'text':
             return <TextInputItem item={item} path={path} />;
+        case 'code-editor':
+            return <SettingRow fullWidth text={item.text} tips={item.tips} description={item.description} required={item.required}>
+                <React.Suspense fallback={<div role="status" className="flex min-h-40 items-center justify-center text-sm text-muted-foreground">正在加载代码编辑器…</div>}>
+                    <SettingsCodeEditor item={item} value={getValue(values, path)} onChange={(next) => context.update(path, next)} disabled={context.disabled || item.disabled === true} />
+                </React.Suspense>
+            </SettingRow>;
         case 'readonly-text':
             return <ReadonlyTextNode item={item} value={getValue(values, path)} context={context} />;
         case 'readonly-image':

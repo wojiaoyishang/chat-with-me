@@ -7,6 +7,7 @@ import { JSDOM } from 'jsdom';
 import React, { act } from 'react';
 
 const realDialogs = process.env.CWM_TEST_REAL_SETTINGS_DIALOGS === '1';
+const realMenus = process.env.CWM_TEST_REAL_SETTINGS_MENUS === '1';
 const bootstrap = new JSDOM('<div></div>', { url: 'http://localhost/', pretendToBeVisual: true });
 for (const key of ['window', 'document', 'HTMLElement', 'Element', 'Node', 'Event', 'CustomEvent', 'MutationObserver']) globalThis[key] = bootstrap.window[key];
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -26,6 +27,7 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
     builder.onResolve({ filter: /^sonner$|^react-i18next$|^framer-motion$|^react-router-dom$/ }, ({ path: name }) => ({ path: name, namespace: 'mock' }));
     builder.onResolve({ filter: /^@\// }, ({ path: name }) => {
         if (realDialogs && name === '@/components/ui/dialog') return { path: path.resolve('src/components/ui/dialog.tsx') };
+        if (realMenus && name === '@/components/ui/dropdown-menu') return { path: path.resolve('src/components/ui/dropdown-menu.tsx') };
         if (name.includes('/components/ui/') || name.endsWith('/apiClient.js') || name.endsWith('/clientAdapter.js') || name.endsWith('/extensions.jsx') || name.endsWith('/useEventStore.jsx') || name.endsWith('/virtualUrl.js') || name.endsWith('/tools.jsx') || name.endsWith('/connection.js') || name.endsWith('/browserHistoryLayers.js') || name.endsWith('/userContext.jsx')) return { path: name, namespace: 'mock' };
         const target = path.resolve('src', name.slice(2));
         return { path: [target, `${target}.js`, `${target}.jsx`, `${target}.ts`, `${target}.tsx`].find(existsSync) || target };
@@ -58,6 +60,7 @@ await build({ stdin: { contents: "export {default} from './src/components/settin
         if (name.endsWith('/useConfirmation.jsx')) return { loader: 'jsx', contents: `import React,{useCallback,useEffect,useRef,useState} from 'react'; export const useConfirmation=()=>{const [value,setValue]=useState(null);const pending=useRef();useEffect(()=>()=>pending.current?.(false),[]);const finish=(accepted)=>{const callback=pending.current;pending.current=null;setValue(null);callback?.(accepted);};const confirm=useCallback(options=>{globalThis.settingsUI.confirmations.push(options);if(globalThis.settingsUI.autoConfirm!==false)return Promise.resolve(true);return new Promise(resolve=>{pending.current=resolve;setValue(options);});},[]);return [confirm,value?<div role="alertdialog"><h2>{value.title}</h2><p>{value.description}</p><button onClick={()=>finish(false)}>取消</button><button onClick={()=>finish(true)}>{value.confirmText||'确认'}</button></div>:null];};` };
         if (name.endsWith('/input')) return { loader: 'jsx', contents: 'export const Input=props=><input {...props}/>;' };
         if (name.endsWith('/button')) return { loader: 'jsx', contents: 'export const Button=({children,variant,size,...props})=><button {...props}>{children}</button>;' };
+        if (name.endsWith('/dropdown-menu')) return { loader: 'jsx', contents: `import {createContext,useContext,cloneElement} from 'react';const C=createContext({});export const DropdownMenu=({children,...props})=><C.Provider value={props}>{children}</C.Provider>;export const DropdownMenuTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{'aria-haspopup':'menu','aria-expanded':c.open,onClick:event=>{children.props.onClick?.(event);if(!event.defaultPrevented&&!children.props.disabled)c.onOpenChange(!c.open);}});};export const DropdownMenuContent=({children,align,...props})=>useContext(C).open?<div role="menu" {...props}>{children}</div>:null;export const DropdownMenuItem=({children,onSelect,variant,...props})=>{const c=useContext(C);return <button role="menuitem" data-variant={variant} {...props} onClick={event=>{onSelect?.(event);if(!event.defaultPrevented)c.onOpenChange(false);}}>{children}</button>;};export const DropdownMenuSeparator=()=> <hr role="separator"/>;` };
         if (name.endsWith('/badge')) return { loader: 'jsx', contents: 'export const Badge=({children,variant,...props})=><span {...props}>{children}</span>;' };
         if (name.endsWith('/spinner')) return { loader: 'jsx', contents: 'export const Spinner=props=><span aria-hidden="true" data-slot="spinner" {...props}/>;' };
         if (name.endsWith('/card')) return { loader: 'jsx', contents: 'export const Card=({children,...props})=><section data-slot="card" {...props}>{children}</section>;export const CardContent=({children,...props})=><div {...props}>{children}</div>;export const CardHeader=CardContent;export const CardTitle=({children,...props})=><h3 {...props}>{children}</h3>;export const CardDescription=({children,...props})=><p {...props}>{children}</p>;' };
@@ -80,7 +83,7 @@ const wrap = element => React.createElement(React.Fragment, null, element, React
 async function mount(config, response, handler, runtime = {}, initialValues = {}) {
     const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
     for (const key of ['window', 'document', 'HTMLElement', 'Element', 'Node', 'Event', 'CustomEvent', 'MutationObserver']) globalThis[key] = dom.window[key];
-    if (realDialogs) {
+    if (realDialogs || realMenus) {
         for (const key of ['NodeFilter', 'HTMLInputElement', 'HTMLTextAreaElement']) globalThis[key] = dom.window[key];
         for (const key of ['getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame']) globalThis[key] = dom.window[key].bind(dom.window);
         Object.defineProperty(globalThis, 'navigator', { configurable: true, value: dom.window.navigator });

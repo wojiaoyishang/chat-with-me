@@ -999,10 +999,15 @@
      - 4
      - ``src/features/settings-client/catalog.js``
    * - :doc:`src/features/settings-runtime/GenericNodes </api/javascript/features/settings-runtime/GenericNodes>`
-     - 16
+     - 17
      - 0
      - 152
      - ``src/features/settings-runtime/GenericNodes.jsx``
+   * - :doc:`src/features/settings-runtime/ResourceActions </api/javascript/features/settings-runtime/ResourceActions>`
+     - 2
+     - 0
+     - 7
+     - ``src/features/settings-runtime/ResourceActions.jsx``
    * - :doc:`src/features/settings-runtime/ResourceFields </api/javascript/features/settings-runtime/ResourceFields>`
      - 6
      - 0
@@ -1018,6 +1023,11 @@
      - 0
      - 6
      - ``src/features/settings-runtime/SettingsCards.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsCodeEditor </api/javascript/features/settings-runtime/SettingsCodeEditor>`
+     - 2
+     - 0
+     - 16
+     - ``src/features/settings-runtime/SettingsCodeEditor.jsx``
    * - :doc:`src/features/settings-runtime/SettingsFormLayout </api/javascript/features/settings-runtime/SettingsFormLayout>`
      - 1
      - 0
@@ -1038,6 +1048,11 @@
      - 0
      - 0
      - ``src/features/settings-runtime/actionPresentation.js``
+   * - :doc:`src/features/settings-runtime/codeEditorLanguage </api/javascript/features/settings-runtime/codeEditorLanguage>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/settings-runtime/codeEditorLanguage.js``
    * - :doc:`src/features/settings-runtime/dialogSizing </api/javascript/features/settings-runtime/dialogSizing>`
      - 2
      - 0
@@ -1636,13 +1651,16 @@
    /api/javascript/features/notification/widgetNotificationPolicy
    /api/javascript/features/settings-client/catalog
    /api/javascript/features/settings-runtime/GenericNodes
+   /api/javascript/features/settings-runtime/ResourceActions
    /api/javascript/features/settings-runtime/ResourceFields
    /api/javascript/features/settings-runtime/SettingsActionLabel
    /api/javascript/features/settings-runtime/SettingsCards
+   /api/javascript/features/settings-runtime/SettingsCodeEditor
    /api/javascript/features/settings-runtime/SettingsFormLayout
    /api/javascript/features/settings-runtime/SettingsPresentation
    /api/javascript/features/settings-runtime/SettingsTabs
    /api/javascript/features/settings-runtime/actionPresentation
+   /api/javascript/features/settings-runtime/codeEditorLanguage
    /api/javascript/features/settings-runtime/dialogSizing
    /api/javascript/features/settings-runtime/displayValue
    /api/javascript/features/settings-runtime/extensions
