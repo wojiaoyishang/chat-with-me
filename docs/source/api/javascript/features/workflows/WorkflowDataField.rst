@@ -22,18 +22,18 @@ The same source values are edited on nodes and in quick template forms.
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/components/ui/input``、``@/components/ui/switch``、``@/components/ui/MultilineEditor.jsx``、``@/components/setting/JsonConfigEditor.jsx``、``./WorkflowSchemaInput.jsx``、``./WorkflowModelQueue.jsx``、``./WorkflowKnowledgePicker.jsx``、``./WorkflowSourcePicker.jsx``、``./workflowModel.js``。
+``@/components/ui/input``、``@/components/ui/switch``、``@/components/ui/MultilineEditor.jsx``、``@/components/setting/JsonConfigEditor.jsx``、``./WorkflowSchemaInput.jsx``、``./WorkflowModelQueue.jsx``、``./WorkflowModelOptions.jsx``、``./WorkflowKnowledgePicker.jsx``、``./WorkflowSourcePicker.jsx``、``./workflowModel.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:667:5605:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:730:5940:FUNCTION
 
 .. js:function:: WorkflowDataField({ value, onChange, disabled, label = "输入内容", schema = {}, rootSchema = schema, compact = false, onB…)
 
    The same source values are edited on nodes and in quick template forms.
 
-   **性质**：同步函数；导出 API；源码第 ``21``—``210`` 行。
+   **性质**：同步函数；导出 API；源码第 ``22``—``216`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ The same source values are edited on nodes and in quick template forms.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <WorkflowGraphDatabasePicker value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} /> )``、``( <WorkflowKnowledgeChunkPicker value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} compact={compact} /> )``、``( <WorkflowModelQueue value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} models={models} /> )``、``( <WorkflowSchemaInput value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} compact={compact} onBusyChange={onBusyChange} /> )``。
+   根据执行分支返回结果；代表性返回表达式为 ``<WorkflowModelOptions value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} models={models} modelIds={fieldValues[schema.ui?.modelIdsField || "modelI…``、``( <WorkflowGraphDatabasePicker value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} /> )``、``( <WorkflowKnowledgeChunkPicker value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} compact={compact} /> )``、``( <WorkflowModelQueue value={value} onChange={onChange} disabled={disabled} label={label} schema={schema} models={models} /> )``。
 
    **主要协作调用**：``scalarSchema``、``resolveWorkflowSchema``、``normalizeWorkflowSchema``、``["model-queue", "model-list-picker"].includes``、``[ "resource-source-picker", "document-source-picker", "source-picker", ].includes``、``models.map``、``schema.enum.map``、``Boolean``、``["number", "integer"].includes``。
 
@@ -53,17 +53,17 @@ The same source values are edited on nodes and in quick template forms.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:2964:3124:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:3299:3459:FUNCTION
 
-.. rubric:: ``onChange callback @ 110``
+.. rubric:: ``onChange callback @ 116``
 
 .. code-block:: javascript
 
-   onChange callback @ 110(next)
+   onChange callback @ 116(next)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``110``—``115`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``116``—``121`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -76,17 +76,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **主要协作调用**：``onChange``、``clone``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:3413:3526:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:3748:3861:FUNCTION
 
-.. rubric:: ``models.map callback @ 128``
+.. rubric:: ``models.map callback @ 134``
 
 .. code-block:: javascript
 
-   models.map callback @ 128(model)
+   models.map callback @ 134(model)
 
 作为 ``models.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``128``—``131`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``134``—``137`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -97,17 +97,17 @@ The same source values are edited on nodes and in quick template forms.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:3734:3821:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:4069:4156:FUNCTION
 
-.. rubric:: ``onChange callback @ 142``
+.. rubric:: ``onChange callback @ 148``
 
 .. code-block:: javascript
 
-   onChange callback @ 142(next)
+   onChange callback @ 148(next)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``142``—``143`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``148``—``149`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -122,17 +122,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:3780:3811:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:4115:4146:FUNCTION
 
-.. rubric:: ``schema.enum.find callback @ 143``
+.. rubric:: ``schema.enum.find callback @ 149``
 
 .. code-block:: javascript
 
-   schema.enum.find callback @ 143(item)
+   schema.enum.find callback @ 149(item)
 
 作为 ``schema.enum.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``143``—``143`` 行；所属函数 ``onChange callback @ 142``。
+**性质**：同步局部函数；源码第 ``149``—``149`` 行；所属函数 ``onChange callback @ 148``。
 
 **参数**
 
@@ -145,17 +145,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:3865:3986:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:4200:4321:FUNCTION
 
-.. rubric:: ``schema.enum.map callback @ 145``
+.. rubric:: ``schema.enum.map callback @ 151``
 
 .. code-block:: javascript
 
-   schema.enum.map callback @ 145(item, index)
+   schema.enum.map callback @ 151(item, index)
 
 作为 ``schema.enum.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``145``—``148`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``151``—``154`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -171,17 +171,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:4652:4742:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:4987:5077:FUNCTION
 
-.. rubric:: ``onInput callback @ 173``
+.. rubric:: ``onInput callback @ 179``
 
 .. code-block:: javascript
 
-   onInput callback @ 173(event)
+   onInput callback @ 179(event)
 
 处理 ``Input`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``173``—``174`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``179``—``180`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -194,17 +194,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **主要协作调用**：``onChange``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:4993:5032:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:5328:5367:FUNCTION
 
-.. rubric:: ``onChange callback @ 185``
+.. rubric:: ``onChange callback @ 191``
 
 .. code-block:: javascript
 
-   onChange callback @ 185(event)
+   onChange callback @ 191(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``185``—``185`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -217,17 +217,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:5319:5358:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:5654:5693:FUNCTION
 
-.. rubric:: ``onChange callback @ 197``
+.. rubric:: ``onChange callback @ 203``
 
 .. code-block:: javascript
 
-   onChange callback @ 197(event)
+   onChange callback @ 203(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``197``—``197`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``203``—``203`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 
@@ -240,17 +240,17 @@ The same source values are edited on nodes and in quick template forms.
 
 **主要协作调用**：``onChange``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:5544:5590:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowDataField.jsx:5879:5925:FUNCTION
 
-.. rubric:: ``onStateChange callback @ 207``
+.. rubric:: ``onStateChange callback @ 213``
 
 .. code-block:: javascript
 
-   onStateChange callback @ 207(state)
+   onStateChange callback @ 213(state)
 
 处理 ``State Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``207``—``207`` 行；所属函数 ``WorkflowDataField``。
+**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``WorkflowDataField``。
 
 **参数**
 

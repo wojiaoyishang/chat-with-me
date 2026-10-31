@@ -47,6 +47,7 @@ export default function WorkflowSettingsFields({
                 value={current[key] ?? property.default}
                 disabled={disabled}
                 models={models}
+                fieldValues={current}
                 onValidity={onValidity}
                 onChange={(next) => onChange({ ...current, [key]: next })}
               />

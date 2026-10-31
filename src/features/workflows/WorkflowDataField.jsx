@@ -4,6 +4,7 @@ import MultilineEditor from "@/components/ui/MultilineEditor.jsx";
 import JsonConfigEditor from "@/components/setting/JsonConfigEditor.jsx";
 import WorkflowSchemaInput from "./WorkflowSchemaInput.jsx";
 import WorkflowModelQueue from "./WorkflowModelQueue.jsx";
+import WorkflowModelOptions from "./WorkflowModelOptions.jsx";
 import WorkflowKnowledgeChunkPicker, {
   WorkflowGraphDatabasePicker,
 } from "./WorkflowKnowledgePicker.jsx";
@@ -29,11 +30,16 @@ export default function WorkflowDataField({
   onBusyChange,
   onValidity,
   models = [],
+  fieldValues = {},
 }) {
   schema = scalarSchema(
     resolveWorkflowSchema(normalizeWorkflowSchema(schema), rootSchema),
   );
   const widget = schema.ui?.widget;
+  if (widget === "model-options")
+    return <WorkflowModelOptions value={value} onChange={onChange} disabled={disabled}
+      label={label} schema={schema} models={models}
+      modelIds={fieldValues[schema.ui?.modelIdsField || "modelIds"] || []} />;
   if (widget === "graph-database-picker")
     return (
       <WorkflowGraphDatabasePicker

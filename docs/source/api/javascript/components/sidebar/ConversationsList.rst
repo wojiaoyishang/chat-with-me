@@ -17,7 +17,7 @@ src/components/sidebar/ConversationsList 模块
 * **模块标识**：``src/components/sidebar/ConversationsList``
 * **顶层函数/组件/Hook**：11
 * **类**：0
-* **局部函数与匿名回调**：74
+* **局部函数与匿名回调**：78
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,13 @@ src/components/sidebar/ConversationsList 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:1442:1696:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:1472:1726:FUNCTION
 
 .. js:function:: normalizeAgentSession(session)
 
    规范化与 ``Agent Session`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``60``—``65`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``62``—``67`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/components/sidebar/ConversationsList 模块
 
    **主要协作调用**：``Date.now``、``(session.children || []).map``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:1721:2090:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:1751:2120:FUNCTION
 
 .. js:function:: toConversation(conversation)
 
    实现 ``toConversation`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``67``—``74`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``69``—``76`` 行。
 
    **参数**
 
@@ -65,13 +65,13 @@ src/components/sidebar/ConversationsList 模块
 
    **主要协作调用**：``Boolean``、``(conversation.children || []).map``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2113:2341:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2143:2371:FUNCTION
 
 .. js:function:: mapAgentTree(nodes, updater)
 
    映射与 ``Agent Tree`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``76``—``84`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``78``—``86`` 行。
 
    **参数**
 
@@ -89,13 +89,13 @@ src/components/sidebar/ConversationsList 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2367:2617:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2397:2647:FUNCTION
 
 .. js:function:: removeAgentNode(nodes, conversationId)
 
    移除与 ``Agent Node`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``86``—``93`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``88``—``95`` 行。
 
    **参数**
 
@@ -113,13 +113,13 @@ src/components/sidebar/ConversationsList 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2641:2990:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2671:3020:FUNCTION
 
 .. js:function:: findAgentPath(nodes, conversationId, path)
 
    查找与 ``Agent Path`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``95``—``103`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``97``—``105`` 行。
 
    **参数**
 
@@ -138,13 +138,13 @@ src/components/sidebar/ConversationsList 模块
 
    **主要协作调用**：``findAgentPath``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3022:3154:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3052:3184:FUNCTION
 
 .. js:function:: countAgentDescendants(nodes)
 
    实现 ``countAgentDescendants`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``105``—``109`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``107``—``111`` 行。
 
    **参数**
 
@@ -159,13 +159,13 @@ src/components/sidebar/ConversationsList 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3187:3446:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3217:3476:FUNCTION
 
 .. js:function:: mergeConversationPages(previous, incoming, reset)
 
    合并与 ``Conversation Pages`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``111``—``116`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``113``—``118`` 行。
 
    **参数**
 
@@ -186,13 +186,13 @@ src/components/sidebar/ConversationsList 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3479:3800:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3509:3830:FUNCTION
 
 .. js:function:: formatConversationTime(date, locale)
 
    格式化与 ``Conversation Time`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``118``—``124`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``120``—``126`` 行。
 
    **参数**
 
@@ -208,13 +208,13 @@ src/components/sidebar/ConversationsList 模块
 
    **主要协作调用**：``Number.isNaN``、``date.getTime``、``isToday``、``new Intl.DateTimeFormat(locale, {hour: '2-digit', minute: '2-digit'}).format``、``new Intl.DateTimeFormat(locale, {month: 'numeric', day: 'numeric'}).format``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3835:4086:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3865:4116:FUNCTION
 
 .. js:function:: conversationDisplayTitle(conversation, fallback)
 
    实现 ``conversationDisplayTitle`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``126``—``130`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``128``—``132`` 行。
 
    **参数**
 
@@ -230,13 +230,13 @@ src/components/sidebar/ConversationsList 模块
 
    **主要协作调用**：``conversation.name.trim``、``conversation.title.trim``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:4113:14221:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:4143:14251:FUNCTION
 
 .. js:function:: ConversationMenu({conversation, canPin = false, onDelete, onChange, onFork, className = ''})
 
    渲染 ``ConversationMenu`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``132``—``352`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``134``—``354`` 行。
 
    **参数**
 
@@ -251,13 +251,13 @@ src/components/sidebar/ConversationsList 模块
 
    **内部回调数量**：11。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:14713:19895:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:14743:19925:FUNCTION
 
 .. js:function:: AgentSessionRow({ child, selectedConversationId, onSelect, onDelete, onChange, onFork, expandedNodes, setExpandedNo…)
 
    渲染 ``AgentSessionRow`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``365``—``468`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``367``—``470`` 行。
 
    **参数**
 
@@ -277,17 +277,17 @@ src/components/sidebar/ConversationsList 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2158:2338:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2188:2368:FUNCTION
 
-.. rubric:: ``(nodes || []).map callback @ 77``
+.. rubric:: ``(nodes || []).map callback @ 79``
 
 .. code-block:: javascript
 
-   (nodes || []).map callback @ 77(node)
+   (nodes || []).map callback @ 79(node)
 
 作为 ``(nodes || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``77``—``83`` 行；所属函数 ``mapAgentTree``。
+**性质**：同步局部函数；源码第 ``79``—``85`` 行；所属函数 ``mapAgentTree``。
 
 **参数**
 
@@ -300,17 +300,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``updater``、``mapAgentTree``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2431:2479:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2461:2509:FUNCTION
 
-.. rubric:: ``(nodes || []) .filter callback @ 88``
+.. rubric:: ``(nodes || []) .filter callback @ 90``
 
 .. code-block:: javascript
 
-   (nodes || []) .filter callback @ 88(node)
+   (nodes || []) .filter callback @ 90(node)
 
 作为 ``(nodes || []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``88``—``88`` 行；所属函数 ``removeAgentNode``。
+**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``removeAgentNode``。
 
 **参数**
 
@@ -321,17 +321,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2494:2614:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:2524:2644:FUNCTION
 
-.. rubric:: ``(nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback @ 89``
+.. rubric:: ``(nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback @ 91``
 
 .. code-block:: javascript
 
-   (nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback @ 89(node)
+   (nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback @ 91(node)
 
 作为 ``(nodes || []) .filter((node) => node.conversationId !== conversationId) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``89``—``92`` 行；所属函数 ``removeAgentNode``。
+**性质**：同步局部函数；源码第 ``91``—``94`` 行；所属函数 ``removeAgentNode``。
 
 **参数**
 
@@ -344,17 +344,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``removeAgentNode``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3061:3148:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3091:3178:FUNCTION
 
-.. rubric:: ``(nodes || []).reduce callback @ 106``
+.. rubric:: ``(nodes || []).reduce callback @ 108``
 
 .. code-block:: javascript
 
-   (nodes || []).reduce callback @ 106(total, node)
+   (nodes || []).reduce callback @ 108(total, node)
 
 作为 ``(nodes || []).reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``106``—``108`` 行；所属函数 ``countAgentDescendants``。
+**性质**：同步局部函数；源码第 ``108``—``110`` 行；所属函数 ``countAgentDescendants``。
 
 **参数**
 
@@ -370,17 +370,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``countAgentDescendants``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3293:3330:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3323:3360:FUNCTION
 
-.. rubric:: ``previous.map callback @ 113``
+.. rubric:: ``previous.map callback @ 115``
 
 .. code-block:: javascript
 
-   previous.map callback @ 113(item)
+   previous.map callback @ 115(item)
 
 作为 ``previous.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``mergeConversationPages``。
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``mergeConversationPages``。
 
 **参数**
 
@@ -391,17 +391,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3355:3402:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:3385:3432:FUNCTION
 
-.. rubric:: ``incoming.forEach callback @ 114``
+.. rubric:: ``incoming.forEach callback @ 116``
 
 .. code-block:: javascript
 
-   incoming.forEach callback @ 114(item)
+   incoming.forEach callback @ 116(item)
 
 作为 ``incoming.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``mergeConversationPages``。
+**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``mergeConversationPages``。
 
 **参数**
 
@@ -414,17 +414,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``merged.set``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:4700:4830:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:4730:4860:FUNCTION
 
-.. rubric:: ``useEffect callback @ 142``
+.. rubric:: ``useEffect callback @ 144``
 
 .. code-block:: javascript
 
-   useEffect callback @ 142()
+   useEffect callback @ 144()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``142``—``146`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``144``—``148`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -436,7 +436,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setDraftTitle``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:4922:5059:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:4952:5089:FUNCTION
 
 .. rubric:: ``patchConversation``
 
@@ -446,7 +446,7 @@ src/components/sidebar/ConversationsList 模块
 
 实现 ``patchConversation`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``148``—``150`` 行；所属函数 ``ConversationMenu``。
+**性质**：异步局部函数；源码第 ``150``—``152`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -459,7 +459,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``apiClient.patch``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:5086:5810:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:5116:5840:FUNCTION
 
 .. rubric:: ``handleRename``
 
@@ -469,7 +469,7 @@ src/components/sidebar/ConversationsList 模块
 
 处理 ``Rename`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``152``—``172`` 行；所属函数 ``ConversationMenu``。
+**性质**：异步局部函数；源码第 ``154``—``174`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -482,7 +482,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``event?.preventDefault``、``draftTitle.trim``、``setIsSaving``、``patchConversation``、``onChange``、``toast.success``、``t``、``setShowRenameDialog``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:5834:6590:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:5864:6620:FUNCTION
 
 .. rubric:: ``handlePin``
 
@@ -492,7 +492,7 @@ src/components/sidebar/ConversationsList 模块
 
 处理 ``Pin`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``174``—``192`` 行；所属函数 ``ConversationMenu``。
+**性质**：异步局部函数；源码第 ``176``—``194`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -504,7 +504,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setIsPinning``、``patchConversation``、``onChange``、``Boolean``、``toast.success``、``t``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:6624:7156:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:6654:7186:FUNCTION
 
 .. rubric:: ``handleConfirmDelete``
 
@@ -514,7 +514,7 @@ src/components/sidebar/ConversationsList 模块
 
 处理 ``Confirm Delete`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``194``—``208`` 行；所属函数 ``ConversationMenu``。
+**性质**：异步局部函数；源码第 ``196``—``210`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -526,7 +526,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setIsDeleting``、``apiClient.delete``、``onDelete``、``toast.success``、``t``、``setShowDeleteConfirm``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:7187:7264:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:7217:7294:FUNCTION
 
 .. rubric:: ``openRenameDialog``
 
@@ -536,7 +536,7 @@ src/components/sidebar/ConversationsList 模块
 
 打开与 ``Rename Dialog`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``210``—``213`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``212``—``215`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -548,7 +548,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setMenuOpen``、``setShowRenameDialog``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:7295:7373:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:7325:7403:FUNCTION
 
 .. rubric:: ``openDeleteDialog``
 
@@ -558,7 +558,7 @@ src/components/sidebar/ConversationsList 模块
 
 打开与 ``Delete Dialog`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``215``—``218`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``217``—``220`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -570,7 +570,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setMenuOpen``、``setShowDeleteConfirm``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:7400:7468:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:7430:7498:FUNCTION
 
 .. rubric:: ``runPinAction``
 
@@ -580,7 +580,7 @@ src/components/sidebar/ConversationsList 模块
 
 实现 ``runPinAction`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``220``—``223`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``222``—``225`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -592,17 +592,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setMenuOpen``、``handlePin``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:10006:10059:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:10036:10089:FUNCTION
 
-.. rubric:: ``onSelect callback @ 269``
+.. rubric:: ``onSelect callback @ 271``
 
 .. code-block:: javascript
 
-   onSelect callback @ 269()
+   onSelect callback @ 271()
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``269``—``269`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``271``—``271`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -614,17 +614,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setMenuOpen``、``onFork``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:12809:12853:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:12839:12883:FUNCTION
 
-.. rubric:: ``onChange callback @ 319``
+.. rubric:: ``onChange callback @ 321``
 
 .. code-block:: javascript
 
-   onChange callback @ 319(event)
+   onChange callback @ 321(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``319``—``319`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``321``—``321`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -637,17 +637,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setDraftTitle``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:13247:13279:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:13277:13309:FUNCTION
 
-.. rubric:: ``onClick callback @ 327``
+.. rubric:: ``onClick callback @ 329``
 
 .. code-block:: javascript
 
-   onClick callback @ 327()
+   onClick callback @ 329()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``327``—``327`` 行；所属函数 ``ConversationMenu``。
+**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``ConversationMenu``。
 
 **参数**
 
@@ -659,17 +659,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setShowRenameDialog``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:16184:16357:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:16214:16387:FUNCTION
 
-.. rubric:: ``onClick callback @ 397``
+.. rubric:: ``onClick callback @ 399``
 
 .. code-block:: javascript
 
-   onClick callback @ 397()
+   onClick callback @ 399()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``397``—``400`` 行；所属函数 ``AgentSessionRow``。
+**性质**：同步局部函数；源码第 ``399``—``402`` 行；所属函数 ``AgentSessionRow``。
 
 **参数**
 
@@ -683,17 +683,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:16207:16356:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:16237:16386:FUNCTION
 
-.. rubric:: ``setExpandedNodes callback @ 397``
+.. rubric:: ``setExpandedNodes callback @ 399``
 
 .. code-block:: javascript
 
-   setExpandedNodes callback @ 397(previous)
+   setExpandedNodes callback @ 399(previous)
 
 设置与 ``Expanded Nodes`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``397``—``400`` 行；所属函数 ``onClick callback @ 397``。
+**性质**：同步局部函数；源码第 ``399``—``402`` 行；所属函数 ``onClick callback @ 399``。
 
 **参数**
 
@@ -704,17 +704,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:17142:17178:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:17172:17208:FUNCTION
 
-.. rubric:: ``onClick callback @ 415``
+.. rubric:: ``onClick callback @ 417``
 
 .. code-block:: javascript
 
-   onClick callback @ 415()
+   onClick callback @ 417()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``AgentSessionRow``。
+**性质**：同步局部函数；源码第 ``417``—``417`` 行；所属函数 ``AgentSessionRow``。
 
 **参数**
 
@@ -726,17 +726,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``onSelect``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:19022:19833:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:19052:19863:FUNCTION
 
-.. rubric:: ``child.children.map callback @ 447``
+.. rubric:: ``child.children.map callback @ 449``
 
 .. code-block:: javascript
 
-   child.children.map callback @ 447(nestedChild)
+   child.children.map callback @ 449(nestedChild)
 
 作为 ``child.children.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``447``—``463`` 行；所属函数 ``AgentSessionRow``。
+**性质**：同步局部函数；源码第 ``449``—``465`` 行；所属函数 ``AgentSessionRow``。
 
 **参数**
 
@@ -747,50 +747,50 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:19935:41913:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:19965:44214:FUNCTION
 
-.. rubric:: ``forwardRef callback @ 470``
+.. rubric:: ``forwardRef callback @ 472``
 
 .. code-block:: javascript
 
-   forwardRef callback @ 470({onSelect, onDelete, selectedConversationId}, ref)
+   forwardRef callback @ 472({onSelect, onDelete, selectedConversationId, selectionOptions, emptyLabel}, ref)
 
 实现 ``forwardRef`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``470``—``913`` 行。
+**性质**：同步局部函数；源码第 ``472``—``935`` 行。
 
 **参数**
 
-``{onSelect, onDelete, selectedConversationId}``
-   目标对象的公共或运行时标识。
+``{onSelect, onDelete, selectedConversationId, selectionOptions, emptyLabel}``
+   调用方提供的事件回调。
 
 ``ref``
    调用方传入的 ``ref`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto pr-1 hide-scrollbar"> <div className="shrink-0 border-b border-border/60 pb-3"> <div className="relative"> <Search c…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto pr-1 hide-scrollbar" data-conversation-selection-mode={selectionOnly || undefined}> <div className="shrink-0 border-…``。
 
 **副作用**
 
 * 发起 HTTP 请求或访问外部服务。
 * 更新 React 或全局 Store 状态。
 
-**主要协作调用**：``useTranslation``、``useRef``、``useState``、``query.trim``、``useLocalSetting``、``useCallback``、``useImperativeHandle``、``useEffect``、``useMemo``、``t``、``pinnedConversations.map``、``Object.entries(groupedConversations).map``。
+**主要协作调用**：``useTranslation``、``useRef``、``useState``、``query.trim``、``Array.isArray``、``useLocalSetting``、``useCallback``、``useMemo``、``useImperativeHandle``、``useEffect``、``t``、``pinnedConversations.map``。
 
-**内部回调数量**：20。这些回调也会在本页逐项说明。
+**内部回调数量**：21。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:21351:22690:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:21627:23001:FUNCTION
 
-.. rubric:: ``useCallback callback @ 497``
+.. rubric:: ``useCallback callback @ 502``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 497(reset)
+   async useCallback callback @ 502(reset)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``497``—``522`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：异步局部函数；源码第 ``502``—``528`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -810,17 +810,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:22144:22206:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:22455:22517:FUNCTION
 
-.. rubric:: ``setConversations callback @ 512``
+.. rubric:: ``setConversations callback @ 518``
 
 .. code-block:: javascript
 
-   setConversations callback @ 512(previous)
+   setConversations callback @ 518(previous)
 
 设置与 ``Conversations`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``512``—``512`` 行；所属函数 ``useCallback callback @ 497``。
+**性质**：同步局部函数；源码第 ``518``—``518`` 行；所属函数 ``useCallback callback @ 502``。
 
 **参数**
 
@@ -833,17 +833,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``mergeConversationPages``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:22746:24370:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:23072:24731:FUNCTION
 
-.. rubric:: ``useCallback callback @ 524``
+.. rubric:: ``useCallback callback @ 530``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 524(reset)
+   async useCallback callback @ 530(reset)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``524``—``552`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：异步局部函数；源码第 ``530``—``559`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -862,17 +862,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:23201:23259:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:23562:23620:FUNCTION
 
-.. rubric:: ``setSearchState callback @ 532``
+.. rubric:: ``setSearchState callback @ 539``
 
 .. code-block:: javascript
 
-   setSearchState callback @ 532(previous)
+   setSearchState callback @ 539(previous)
 
 设置与 ``Search State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``532``—``532`` 行；所属函数 ``useCallback callback @ 524``。
+**性质**：同步局部函数；源码第 ``539``—``539`` 行；所属函数 ``useCallback callback @ 530``。
 
 **参数**
 
@@ -883,17 +883,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:23736:24114:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:24097:24475:FUNCTION
 
-.. rubric:: ``setSearchState callback @ 540``
+.. rubric:: ``setSearchState callback @ 547``
 
 .. code-block:: javascript
 
-   setSearchState callback @ 540(previous)
+   setSearchState callback @ 547(previous)
 
 设置与 ``Search State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``540``—``547`` 行；所属函数 ``useCallback callback @ 524``。
+**性质**：同步局部函数；源码第 ``547``—``554`` 行；所属函数 ``useCallback callback @ 530``。
 
 **参数**
 
@@ -906,17 +906,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``mergeConversationPages``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:24294:24352:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:24655:24713:FUNCTION
 
-.. rubric:: ``setSearchState callback @ 550``
+.. rubric:: ``setSearchState callback @ 557``
 
 .. code-block:: javascript
 
-   setSearchState callback @ 550(previous)
+   setSearchState callback @ 557(previous)
 
 设置与 ``Search State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``550``—``550`` 行；所属函数 ``useCallback callback @ 524``。
+**性质**：同步局部函数；源码第 ``557``—``557`` 行；所属函数 ``useCallback callback @ 530``。
 
 **参数**
 
@@ -927,17 +927,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:24419:24835:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:24795:25211:FUNCTION
 
-.. rubric:: ``useCallback callback @ 554``
+.. rubric:: ``useCallback callback @ 561``
 
 .. code-block:: javascript
 
-   useCallback callback @ 554(value)
+   useCallback callback @ 561(value)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``554``—``563`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``561``—``570`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -950,17 +950,87 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``value.slice(0, 200).trim``、``value.slice``、``searchRequest.current.controller?.abort``、``setSearchState``、``Boolean``、``setQuery``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25220:25843:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25253:25638:FUNCTION
 
-.. rubric:: ``useCallback callback @ 570``
+.. rubric:: ``useMemo callback @ 572``
 
 .. code-block:: javascript
 
-   useCallback callback @ 570(conversationId, patch)
+   useMemo callback @ 572()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``572``—``575`` 行；所属函数 ``forwardRef callback @ 472``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``(selectionOptions || []).filter(item => { const text = \x60${item.label || ''} ${item.group || ''} ${item.description || '…``、``(selectionOptions || []).filter``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25291:25523:FUNCTION
+
+.. rubric:: ``(selectionOptions || []).filter callback @ 572``
+
+.. code-block:: javascript
+
+   (selectionOptions || []).filter callback @ 572(item)
+
+作为 ``(selectionOptions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``572``—``575`` 行；所属函数 ``useMemo callback @ 572``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``!normalizedQuery || text.toLocaleLowerCase().includes(normalizedQuery.toLocaleLowerCase())``。
+
+**主要协作调用**：``text.toLocaleLowerCase().includes``、``text.toLocaleLowerCase``、``normalizedQuery.toLocaleLowerCase``。
+
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25529:25637:FUNCTION
+
+.. rubric:: ``(selectionOptions || []).filter(item => { const text = \x60${item.label || ''} ${item.group || ''} ${item.description || '… callback @ 575``
+
+.. code-block:: javascript
+
+   (selectionOptions || []).filter(item => { const text = `${item.label || ''} ${item.group || ''} ${item.description || '… callback @ 575(item)
+
+实现 ``(selectionOptions || []).filter(item => { const text = \x60${item.label || ''} ${item.group || ''} ${item.description || '…`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``575``—``575`` 行；所属函数 ``useMemo callback @ 572``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``String``。
+
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26155:26778:FUNCTION
+
+.. rubric:: ``useCallback callback @ 581``
+
+.. code-block:: javascript
+
+   useCallback callback @ 581(conversationId, patch)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``570``—``584`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``581``—``595`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -982,7 +1052,7 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25271:25716:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26206:26651:FUNCTION
 
 .. rubric:: ``update``
 
@@ -992,7 +1062,7 @@ src/components/sidebar/ConversationsList 模块
 
 更新与 ``update`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``571``—``581`` 行；所属函数 ``useCallback callback @ 570``。
+**性质**：同步局部函数；源码第 ``582``—``592`` 行；所属函数 ``useCallback callback @ 581``。
 
 **参数**
 
@@ -1007,17 +1077,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25299:25715:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26234:26650:FUNCTION
 
-.. rubric:: ``previous.map callback @ 571``
+.. rubric:: ``previous.map callback @ 582``
 
 .. code-block:: javascript
 
-   previous.map callback @ 571(conversation)
+   previous.map callback @ 582(conversation)
 
 作为 ``previous.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``571``—``581`` 行；所属函数 ``update``。
+**性质**：同步局部函数；源码第 ``582``—``592`` 行；所属函数 ``update``。
 
 **参数**
 
@@ -1032,17 +1102,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25566:25688:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26501:26623:FUNCTION
 
-.. rubric:: ``mapAgentTree callback @ 577``
+.. rubric:: ``mapAgentTree callback @ 588``
 
 .. code-block:: javascript
 
-   mapAgentTree callback @ 577(child)
+   mapAgentTree callback @ 588(child)
 
 映射与 ``Agent Tree`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``577``—``579`` 行；所属函数 ``previous.map callback @ 571``。
+**性质**：同步局部函数；源码第 ``588``—``590`` 行；所属函数 ``previous.map callback @ 582``。
 
 **参数**
 
@@ -1053,17 +1123,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25775:25835:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26710:26770:FUNCTION
 
-.. rubric:: ``setSearchState callback @ 583``
+.. rubric:: ``setSearchState callback @ 594``
 
 .. code-block:: javascript
 
-   setSearchState callback @ 583(previous)
+   setSearchState callback @ 594(previous)
 
 设置与 ``Search State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``583``—``583`` 行；所属函数 ``useCallback callback @ 570``。
+**性质**：同步局部函数；源码第 ``594``—``594`` 行；所属函数 ``useCallback callback @ 581``。
 
 **参数**
 
@@ -1076,17 +1146,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``update``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:25886:26528:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26821:27463:FUNCTION
 
-.. rubric:: ``useCallback callback @ 586``
+.. rubric:: ``useCallback callback @ 597``
 
 .. code-block:: javascript
 
-   useCallback callback @ 586(conversation)
+   useCallback callback @ 597(conversation)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``586``—``601`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``597``—``612`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1099,17 +1169,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``setForkOpen``、``toast.info``、``t``、``conversationDisplayTitle``、``generateUUID``、``setForkOperation``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26578:26747:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27513:27682:FUNCTION
 
-.. rubric:: ``useCallback callback @ 603``
+.. rubric:: ``useCallback callback @ 614``
 
 .. code-block:: javascript
 
-   useCallback callback @ 603(status)
+   useCallback callback @ 614(status)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``603``—``607`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``614``—``618`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1122,17 +1192,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``['completed', 'finished'].includes``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26798:26902:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27733:27837:FUNCTION
 
-.. rubric:: ``useCallback callback @ 609``
+.. rubric:: ``useCallback callback @ 620``
 
 .. code-block:: javascript
 
-   useCallback callback @ 609()
+   useCallback callback @ 620()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``609``—``612`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``620``—``623`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1144,17 +1214,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``loadConversations``、``loadSearch``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26967:27395:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27902:28330:FUNCTION
 
-.. rubric:: ``useImperativeHandle callback @ 614``
+.. rubric:: ``useImperativeHandle callback @ 625``
 
 .. code-block:: javascript
 
-   useImperativeHandle callback @ 614()
+   useImperativeHandle callback @ 625()
 
 封装 ``ImperativeHandle`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``614``—``622`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``625``—``633`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1166,7 +1236,7 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:26992:27081:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27927:28016:FUNCTION
 
 .. rubric:: ``reload``
 
@@ -1176,7 +1246,7 @@ src/components/sidebar/ConversationsList 模块
 
 实现 ``reload`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``615``—``615`` 行；所属函数 ``useImperativeHandle callback @ 614``。
+**性质**：同步局部函数；源码第 ``626``—``626`` 行；所属函数 ``useImperativeHandle callback @ 625``。
 
 **参数**
 
@@ -1188,7 +1258,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``Promise.all``、``loadConversations``、``loadSearch``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27102:27234:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28037:28169:FUNCTION
 
 .. rubric:: ``updateDate``
 
@@ -1198,7 +1268,7 @@ src/components/sidebar/ConversationsList 模块
 
 更新与 ``Date`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``616``—``618`` 行；所属函数 ``useImperativeHandle callback @ 614``。
+**性质**：同步局部函数；源码第 ``627``—``629`` 行；所属函数 ``useImperativeHandle callback @ 625``。
 
 **参数**
 
@@ -1214,7 +1284,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``handleConversationChange``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27256:27387:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28191:28322:FUNCTION
 
 .. rubric:: ``updateTitle``
 
@@ -1224,7 +1294,7 @@ src/components/sidebar/ConversationsList 模块
 
 更新与 ``Title`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``619``—``621`` 行；所属函数 ``useImperativeHandle callback @ 614``。
+**性质**：同步局部函数；源码第 ``630``—``632`` 行；所属函数 ``useImperativeHandle callback @ 625``。
 
 **参数**
 
@@ -1240,17 +1310,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``handleConversationChange``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27472:27898:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28407:28833:FUNCTION
 
-.. rubric:: ``useEffect callback @ 624``
+.. rubric:: ``useEffect callback @ 635``
 
 .. code-block:: javascript
 
-   useEffect callback @ 624()
+   useEffect callback @ 635()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``624``—``636`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``635``—``647`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1264,17 +1334,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27619:27789:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28554:28724:FUNCTION
 
-.. rubric:: ``returned callback @ 628``
+.. rubric:: ``returned callback @ 639``
 
 .. code-block:: javascript
 
-   returned callback @ 628()
+   returned callback @ 639()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``628``—``633`` 行；所属函数 ``useEffect callback @ 624``。
+**性质**：同步局部函数；源码第 ``639``—``644`` 行；所属函数 ``useEffect callback @ 635``。
 
 **参数**
 
@@ -1286,17 +1356,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``normal.controller?.abort``、``search.controller?.abort``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27920:28081:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28855:29016:FUNCTION
 
-.. rubric:: ``useEffect callback @ 638``
+.. rubric:: ``useEffect callback @ 649``
 
 .. code-block:: javascript
 
-   useEffect callback @ 638()
+   useEffect callback @ 649()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``638``—``642`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``649``—``653`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1310,17 +1380,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:27999:28026:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28934:28961:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 640``
+.. rubric:: ``setTimeout callback @ 651``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 640()
+   setTimeout callback @ 651()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``640``—``640`` 行；所属函数 ``useEffect callback @ 638``。
+**性质**：同步局部函数；源码第 ``651``—``651`` 行；所属函数 ``useEffect callback @ 649``。
 
 **参数**
 
@@ -1332,17 +1402,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``loadSearch``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28048:28074:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28983:29009:FUNCTION
 
-.. rubric:: ``returned callback @ 641``
+.. rubric:: ``returned callback @ 652``
 
 .. code-block:: javascript
 
-   returned callback @ 641()
+   returned callback @ 652()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``641``—``641`` 行；所属函数 ``useEffect callback @ 638``。
+**性质**：同步局部函数；源码第 ``652``—``652`` 行；所属函数 ``useEffect callback @ 649``。
 
 **参数**
 
@@ -1354,17 +1424,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28130:28738:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29065:29673:FUNCTION
 
-.. rubric:: ``useEffect callback @ 644``
+.. rubric:: ``useEffect callback @ 655``
 
 .. code-block:: javascript
 
-   useEffect callback @ 644()
+   useEffect callback @ 655()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``644``—``659`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``655``—``670`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1378,17 +1448,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28475:28701:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29410:29636:FUNCTION
 
-.. rubric:: ``setExpandedNodes callback @ 650``
+.. rubric:: ``setExpandedNodes callback @ 661``
 
 .. code-block:: javascript
 
-   setExpandedNodes callback @ 650(previous)
+   setExpandedNodes callback @ 661(previous)
 
 设置与 ``Expanded Nodes`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``650``—``656`` 行；所属函数 ``useEffect callback @ 644``。
+**性质**：同步局部函数；源码第 ``661``—``667`` 行；所属函数 ``useEffect callback @ 655``。
 
 **参数**
 
@@ -1403,17 +1473,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28568:28656:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29503:29591:FUNCTION
 
-.. rubric:: ``toExpand.forEach callback @ 652``
+.. rubric:: ``toExpand.forEach callback @ 663``
 
 .. code-block:: javascript
 
-   toExpand.forEach callback @ 652(conversationId)
+   toExpand.forEach callback @ 663(conversationId)
 
 作为 ``toExpand.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``652``—``654`` 行；所属函数 ``setExpandedNodes callback @ 650``。
+**性质**：同步局部函数；源码第 ``663``—``665`` 行；所属函数 ``setExpandedNodes callback @ 661``。
 
 **参数**
 
@@ -1424,17 +1494,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28891:29086:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29826:30021:FUNCTION
 
-.. rubric:: ``useMemo callback @ 663``
+.. rubric:: ``useMemo callback @ 674``
 
 .. code-block:: javascript
 
-   useMemo callback @ 663()
+   useMemo callback @ 674()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``663``—``667`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``674``—``678`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1448,17 +1518,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:28949:28986:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29884:29921:FUNCTION
 
-.. rubric:: ``filteredConversations .filter callback @ 665``
+.. rubric:: ``filteredConversations .filter callback @ 676``
 
 .. code-block:: javascript
 
-   filteredConversations .filter callback @ 665(conversation)
+   filteredConversations .filter callback @ 676(conversation)
 
 作为 ``filteredConversations .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``665``—``665`` 行；所属函数 ``useMemo callback @ 663``。
+**性质**：同步局部函数；源码第 ``676``—``676`` 行；所属函数 ``useMemo callback @ 674``。
 
 **参数**
 
@@ -1469,17 +1539,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29006:29079:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29941:30014:FUNCTION
 
-.. rubric:: ``filteredConversations .filter((conversation) => conversation.pinned) .sort callback @ 666``
+.. rubric:: ``filteredConversations .filter((conversation) => conversation.pinned) .sort callback @ 677``
 
 .. code-block:: javascript
 
-   filteredConversations .filter((conversation) => conversation.pinned) .sort callback @ 666(a, b)
+   filteredConversations .filter((conversation) => conversation.pinned) .sort callback @ 677(a, b)
 
 作为 ``filteredConversations .filter((conversation) => conversation.pinned) .sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``666``—``666`` 行；所属函数 ``useMemo callback @ 663``。
+**性质**：同步局部函数；源码第 ``677``—``677`` 行；所属函数 ``useMemo callback @ 674``。
 
 **参数**
 
@@ -1495,17 +1565,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``b.pinnedAt?.getTime``、``a.pinnedAt?.getTime``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29156:30168:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30091:31339:FUNCTION
 
-.. rubric:: ``useMemo callback @ 669``
+.. rubric:: ``useMemo callback @ 680``
 
 .. code-block:: javascript
 
-   useMemo callback @ 669()
+   useMemo callback @ 680()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``669``—``690`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``680``—``706`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1513,23 +1583,49 @@ src/components/sidebar/ConversationsList 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``groups``。
+根据执行分支返回结果；代表性返回表达式为 ``filteredConversations.reduce((groups, item) => { const group = item.group || '会话'; (groups[group] ||= []).push(item); return groups; }, Object.create(null))``、``groups``。
 
-**主要协作调用**：``filteredConversations.filter((conversation) => !conversation.pinned).forEach``、``filteredConversations.filter``、``Object.values(groups).forEach``、``Object.values``。
+**主要协作调用**：``filteredConversations.reduce``、``Object.create``、``filteredConversations.filter((conversation) => !conversation.pinned).forEach``、``filteredConversations.filter``、``Object.values(groups).forEach``、``Object.values``。
 
-**内部回调数量**：3。这些回调也会在本页逐项说明。
+**内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29405:29443:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30162:30311:FUNCTION
 
-.. rubric:: ``filteredConversations.filter callback @ 678``
+.. rubric:: ``filteredConversations.reduce callback @ 681``
 
 .. code-block:: javascript
 
-   filteredConversations.filter callback @ 678(conversation)
+   filteredConversations.reduce callback @ 681(groups, item)
+
+作为 ``filteredConversations.reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``681``—``685`` 行；所属函数 ``useMemo callback @ 680``。
+
+**参数**
+
+``groups``
+   调用方传入的 ``groups`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``groups``。
+
+**主要协作调用**：``(groups[group] ||= []).push``。
+
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30576:30614:FUNCTION
+
+.. rubric:: ``filteredConversations.filter callback @ 694``
+
+.. code-block:: javascript
+
+   filteredConversations.filter callback @ 694(conversation)
 
 作为 ``filteredConversations.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``678``—``678`` 行；所属函数 ``useMemo callback @ 669``。
+**性质**：同步局部函数；源码第 ``694``—``694`` 行；所属函数 ``useMemo callback @ 680``。
 
 **参数**
 
@@ -1540,17 +1636,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:29453:30036:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30624:31207:FUNCTION
 
-.. rubric:: ``filteredConversations.filter((conversation) => !conversation.pinned).forEach callback @ 678``
+.. rubric:: ``filteredConversations.filter((conversation) => !conversation.pinned).forEach callback @ 694``
 
 .. code-block:: javascript
 
-   filteredConversations.filter((conversation) => !conversation.pinned).forEach callback @ 678(conversation)
+   filteredConversations.filter((conversation) => !conversation.pinned).forEach callback @ 694(conversation)
 
 作为 ``filteredConversations.filter((conversation) => !conversation.pinned).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``678``—``687`` 行；所属函数 ``useMemo callback @ 669``。
+**性质**：同步局部函数；源码第 ``694``—``703`` 行；所属函数 ``useMemo callback @ 680``。
 
 **参数**
 
@@ -1563,17 +1659,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``isToday``、``groups.Today.push``、``isYesterday``、``groups.Yesterday.push``、``isWithinInterval``、``subDays``、``groups['Past 7 Days'].push``、``subMonths``、``groups['Past Month'].push``、``groups.Earlier.push``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30077:30137:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31248:31308:FUNCTION
 
-.. rubric:: ``Object.values(groups).forEach callback @ 688``
+.. rubric:: ``Object.values(groups).forEach callback @ 704``
 
 .. code-block:: javascript
 
-   Object.values(groups).forEach callback @ 688(items)
+   Object.values(groups).forEach callback @ 704(items)
 
 作为 ``Object.values(groups).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``688``—``688`` 行；所属函数 ``useMemo callback @ 669``。
+**性质**：同步局部函数；源码第 ``704``—``704`` 行；所属函数 ``useMemo callback @ 680``。
 
 **参数**
 
@@ -1588,17 +1684,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30099:30136:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31270:31307:FUNCTION
 
-.. rubric:: ``items.sort callback @ 688``
+.. rubric:: ``items.sort callback @ 704``
 
 .. code-block:: javascript
 
-   items.sort callback @ 688(a, b)
+   items.sort callback @ 704(a, b)
 
 作为 ``items.sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``688``—``688`` 行；所属函数 ``Object.values(groups).forEach callback @ 688``。
+**性质**：同步局部函数；源码第 ``704``—``704`` 行；所属函数 ``Object.values(groups).forEach callback @ 704``。
 
 **参数**
 
@@ -1612,7 +1708,7 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30233:30996:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31419:32182:FUNCTION
 
 .. rubric:: ``handleDeleteConversation``
 
@@ -1622,7 +1718,7 @@ src/components/sidebar/ConversationsList 模块
 
 处理 ``Delete Conversation`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``692``—``705`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``708``—``721`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1641,17 +1737,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30288:30579:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31474:31765:FUNCTION
 
-.. rubric:: ``setConversations callback @ 693``
+.. rubric:: ``setConversations callback @ 709``
 
 .. code-block:: javascript
 
-   setConversations callback @ 693(previous)
+   setConversations callback @ 709(previous)
 
 设置与 ``Conversations`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``693``—``698`` 行；所属函数 ``handleDeleteConversation``。
+**性质**：同步局部函数；源码第 ``709``—``714`` 行；所属函数 ``handleDeleteConversation``。
 
 **参数**
 
@@ -1666,17 +1762,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30331:30402:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31517:31588:FUNCTION
 
-.. rubric:: ``previous .filter callback @ 694``
+.. rubric:: ``previous .filter callback @ 710``
 
 .. code-block:: javascript
 
-   previous .filter callback @ 694(conversation)
+   previous .filter callback @ 710(conversation)
 
 作为 ``previous .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``694``—``694`` 行；所属函数 ``setConversations callback @ 693``。
+**性质**：同步局部函数；源码第 ``710``—``710`` 行；所属函数 ``setConversations callback @ 709``。
 
 **参数**
 
@@ -1687,17 +1783,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30421:30578:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31607:31764:FUNCTION
 
-.. rubric:: ``previous .filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 695``
+.. rubric:: ``previous .filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 711``
 
 .. code-block:: javascript
 
-   previous .filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 695(conversation)
+   previous .filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 711(conversation)
 
 作为 ``previous .filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``695``—``698`` 行；所属函数 ``setConversations callback @ 693``。
+**性质**：同步局部函数；源码第 ``711``—``714`` 行；所属函数 ``setConversations callback @ 709``。
 
 **参数**
 
@@ -1710,17 +1806,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``removeAgentNode``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30605:30892:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31791:32078:FUNCTION
 
-.. rubric:: ``setSearchState callback @ 699``
+.. rubric:: ``setSearchState callback @ 715``
 
 .. code-block:: javascript
 
-   setSearchState callback @ 699(previous)
+   setSearchState callback @ 715(previous)
 
 设置与 ``Search State`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``699``—``702`` 行；所属函数 ``handleDeleteConversation``。
+**性质**：同步局部函数；源码第 ``715``—``718`` 行；所属函数 ``handleDeleteConversation``。
 
 **参数**
 
@@ -1735,17 +1831,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30675:30746:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31861:31932:FUNCTION
 
-.. rubric:: ``previous.items.filter callback @ 700``
+.. rubric:: ``previous.items.filter callback @ 716``
 
 .. code-block:: javascript
 
-   previous.items.filter callback @ 700(conversation)
+   previous.items.filter callback @ 716(conversation)
 
 作为 ``previous.items.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``700``—``700`` 行；所属函数 ``setSearchState callback @ 699``。
+**性质**：同步局部函数；源码第 ``716``—``716`` 行；所属函数 ``setSearchState callback @ 715``。
 
 **参数**
 
@@ -1756,17 +1852,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:30769:30879:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31955:32065:FUNCTION
 
-.. rubric:: ``previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 701``
+.. rubric:: ``previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 717``
 
 .. code-block:: javascript
 
-   previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 701(conversation)
+   previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback @ 717(conversation)
 
 作为 ``previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``701``—``701`` 行；所属函数 ``setSearchState callback @ 699``。
+**性质**：同步局部函数；源码第 ``717``—``717`` 行；所属函数 ``setSearchState callback @ 715``。
 
 **参数**
 
@@ -1779,7 +1875,7 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``removeAgentNode``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:31029:36031:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:32215:38143:FUNCTION
 
 .. rubric:: ``renderConversation``
 
@@ -1789,7 +1885,7 @@ src/components/sidebar/ConversationsList 模块
 
 渲染与 ``Conversation`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``707``—``793`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``723``—``815`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1800,21 +1896,21 @@ src/components/sidebar/ConversationsList 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <React.Fragment key={conversation.conversationId}> <li data-conversation-id={conversation.conversationId}> <div className={\x60group flex w-full items-center rounded-lg px-1.5 tran…``。
 
-**主要协作调用**：``Boolean``、``countAgentDescendants``、``conversationDisplayTitle``、``t``、``formatConversationTime``、``conversation.children.map``。
+**主要协作调用**：``Boolean``、``countAgentDescendants``、``conversationDisplayTitle``、``t``、``[conversation.description, conversation.status ? STATUS_META[conversation.status]?.label || conversation.status : ''].f…``、``formatConversationTime``、``conversation.children.map``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:32154:32358:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:33340:33544:FUNCTION
 
-.. rubric:: ``onClick callback @ 725``
+.. rubric:: ``onClick callback @ 741``
 
 .. code-block:: javascript
 
-   onClick callback @ 725()
+   onClick callback @ 741()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``725``—``728`` 行；所属函数 ``renderConversation``。
+**性质**：同步局部函数；源码第 ``741``—``744`` 行；所属函数 ``renderConversation``。
 
 **参数**
 
@@ -1828,17 +1924,17 @@ src/components/sidebar/ConversationsList 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:32177:32357:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:33363:33543:FUNCTION
 
-.. rubric:: ``setExpandedNodes callback @ 725``
+.. rubric:: ``setExpandedNodes callback @ 741``
 
 .. code-block:: javascript
 
-   setExpandedNodes callback @ 725(previous)
+   setExpandedNodes callback @ 741(previous)
 
 设置与 ``Expanded Nodes`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``725``—``728`` 行；所属函数 ``onClick callback @ 725``。
+**性质**：同步局部函数；源码第 ``741``—``744`` 行；所属函数 ``onClick callback @ 741``。
 
 **参数**
 
@@ -1849,17 +1945,17 @@ src/components/sidebar/ConversationsList 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:33085:33130:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:34623:34668:FUNCTION
 
-.. rubric:: ``onClick callback @ 742``
+.. rubric:: ``onClick callback @ 762``
 
 .. code-block:: javascript
 
-   onClick callback @ 742()
+   onClick callback @ 762()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``742``—``742`` 行；所属函数 ``renderConversation``。
+**性质**：同步局部函数；源码第 ``762``—``762`` 行；所属函数 ``renderConversation``。
 
 **参数**
 
@@ -1871,17 +1967,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``onSelect``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:35026:35937:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:37138:38049:FUNCTION
 
-.. rubric:: ``conversation.children.map callback @ 772``
+.. rubric:: ``conversation.children.map callback @ 794``
 
 .. code-block:: javascript
 
-   conversation.children.map callback @ 772(child)
+   conversation.children.map callback @ 794(child)
 
 作为 ``conversation.children.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``772``—``788`` 行；所属函数 ``renderConversation``。
+**性质**：同步局部函数；源码第 ``794``—``810`` 行；所属函数 ``renderConversation``。
 
 **参数**
 
@@ -1894,17 +1990,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:36624:36666:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:38798:38840:FUNCTION
 
-.. rubric:: ``onChange callback @ 806``
+.. rubric:: ``onChange callback @ 828``
 
 .. code-block:: javascript
 
-   onChange callback @ 806(event)
+   onChange callback @ 828(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``806``—``806`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``828``—``828`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1917,17 +2013,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``changeQuery``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:37353:37504:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:39527:39678:FUNCTION
 
-.. rubric:: ``onClick callback @ 817``
+.. rubric:: ``onClick callback @ 839``
 
 .. code-block:: javascript
 
-   onClick callback @ 817()
+   onClick callback @ 839()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``817``—``820`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``839``—``842`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1939,17 +2035,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``changeQuery``、``searchInputRef.current?.focus``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:38634:38700:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:40877:40943:FUNCTION
 
-.. rubric:: ``onRetry callback @ 842``
+.. rubric:: ``onRetry callback @ 864``
 
 .. code-block:: javascript
 
-   onRetry callback @ 842()
+   onRetry callback @ 864()
 
 处理 ``Retry`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``842``—``842`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``864``—``864`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1961,17 +2057,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``loadSearch``、``loadConversations``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:39722:40265:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:41965:42532:FUNCTION
 
-.. rubric:: ``Object.entries(groupedConversations).map callback @ 863``
+.. rubric:: ``Object.entries(groupedConversations).map callback @ 885``
 
 .. code-block:: javascript
 
-   Object.entries(groupedConversations).map callback @ 863([group, items])
+   Object.entries(groupedConversations).map callback @ 885([group, items])
 
 作为 ``Object.entries(groupedConversations).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``863``—``874`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``885``—``896`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 
@@ -1984,17 +2080,17 @@ src/components/sidebar/ConversationsList 模块
 
 **主要协作调用**：``t``、``group.replace(/\s/g, '_').toLowerCase``、``group.replace``、``items.map``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:40424:40492:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/ConversationsList.jsx:42691:42759:FUNCTION
 
-.. rubric:: ``onClick callback @ 879``
+.. rubric:: ``onClick callback @ 901``
 
 .. code-block:: javascript
 
-   onClick callback @ 879()
+   onClick callback @ 901()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``879``—``879`` 行；所属函数 ``forwardRef callback @ 470``。
+**性质**：同步局部函数；源码第 ``901``—``901`` 行；所属函数 ``forwardRef callback @ 472``。
 
 **参数**
 

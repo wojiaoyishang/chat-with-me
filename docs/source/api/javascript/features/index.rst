@@ -1033,6 +1033,11 @@
      - 0
      - 16
      - ``src/features/settings-runtime/SettingsCodeEditor.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsConversationPicker </api/javascript/features/settings-runtime/SettingsConversationPicker>`
+     - 1
+     - 0
+     - 4
+     - ``src/features/settings-runtime/SettingsConversationPicker.jsx``
    * - :doc:`src/features/settings-runtime/SettingsFormLayout </api/javascript/features/settings-runtime/SettingsFormLayout>`
      - 1
      - 0
@@ -1258,6 +1263,11 @@
      - 0
      - 23
      - ``src/features/workflows/WorkflowLogViewer.jsx``
+   * - :doc:`src/features/workflows/WorkflowModelOptions </api/javascript/features/workflows/WorkflowModelOptions>`
+     - 1
+     - 0
+     - 18
+     - ``src/features/workflows/WorkflowModelOptions.jsx``
    * - :doc:`src/features/workflows/WorkflowModelQueue </api/javascript/features/workflows/WorkflowModelQueue>`
      - 1
      - 0
@@ -1286,7 +1296,7 @@
    * - :doc:`src/features/workflows/WorkflowNodePanel </api/javascript/features/workflows/WorkflowNodePanel>`
      - 2
      - 0
-     - 52
+     - 53
      - ``src/features/workflows/WorkflowNodePanel.jsx``
    * - :doc:`src/features/workflows/WorkflowNodePicker </api/javascript/features/workflows/WorkflowNodePicker>`
      - 1
@@ -1388,6 +1398,11 @@
      - 0
      - 159
      - ``src/features/workflows/workflowModel.js``
+   * - :doc:`src/features/workflows/workflowModelOptionsState </api/javascript/features/workflows/workflowModelOptionsState>`
+     - 4
+     - 0
+     - 2
+     - ``src/features/workflows/workflowModelOptionsState.js``
    * - :doc:`src/features/workflows/workflowParallelModel </api/javascript/features/workflows/workflowParallelModel>`
      - 4
      - 0
@@ -1662,6 +1677,7 @@
    /api/javascript/features/settings-runtime/SettingsActionLabel
    /api/javascript/features/settings-runtime/SettingsCards
    /api/javascript/features/settings-runtime/SettingsCodeEditor
+   /api/javascript/features/settings-runtime/SettingsConversationPicker
    /api/javascript/features/settings-runtime/SettingsFormLayout
    /api/javascript/features/settings-runtime/SettingsPresentation
    /api/javascript/features/settings-runtime/SettingsTabs
@@ -1707,6 +1723,7 @@
    /api/javascript/features/workflows/WorkflowInterfacePanel
    /api/javascript/features/workflows/WorkflowKnowledgePicker
    /api/javascript/features/workflows/WorkflowLogViewer
+   /api/javascript/features/workflows/WorkflowModelOptions
    /api/javascript/features/workflows/WorkflowModelQueue
    /api/javascript/features/workflows/WorkflowMonitorPanel
    /api/javascript/features/workflows/WorkflowNode
@@ -1733,6 +1750,7 @@
    /api/javascript/features/workflows/workflowFieldModel
    /api/javascript/features/workflows/workflowInterfaceModel
    /api/javascript/features/workflows/workflowModel
+   /api/javascript/features/workflows/workflowModelOptionsState
    /api/javascript/features/workflows/workflowParallelModel
    /api/javascript/features/workflows/workflowPendingConnection
    /api/javascript/features/workflows/workflowProducts

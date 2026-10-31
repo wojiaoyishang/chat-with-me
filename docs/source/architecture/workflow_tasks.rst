@@ -104,6 +104,23 @@ menuPath/nodeMenus 不写进用户 graph.nodes，也不改变独立节点身份�
 添加入口先展示随指针移动的虚拟节点；左键放置，右键或 Esc 取消。放置前不写草稿、ID 或历史，
 正式节点与所选连线一次提交，取消不留下半条连接。子图参数胶囊仅在内部作用域参与菜单。
 
+逐模型调用参数
+--------------------------------------------------------------------------------
+
+工作流模型目录使用 ``GET /tasks/workflows/models``，每个模型携带后端的
+``callOptionsSchema``。``model-options`` 控件复用通用字段编辑器，根据声明展示
+思考程度和支持的请求参数；客户端不维护模型参数清单或固定思考档位。
+
+选择模型仍保存 ``modelIds``，其覆盖保存为 ``modelOptions[模型配置ID]``，包含
+``parameters`` 与可选 ``reasoningEffort``。全局公共配置、子图公共配置和单节点使用
+同一字段。该字段整体继承，单节点关闭继承后显式清空覆盖会回到模型默认值。
+未勾选参数不发送覆盖，数值零与空值区分，``default`` 不等于 ``none``。
+
+参数窗口提供草稿、应用、取消与重置。未完成的 JSON、类型或范围错误不能应用，
+停止序列遵守字符串和数量约束。不可用模型的原配置继续保留并提示，不自动改投其他模型。
+窗口关闭时保留内容供退出动画，不先清空正文。任务提交时由后端校验、冻结参数，
+重试与缓存使用本次冻结版本；前端不会改写模型管理页面的全局配置。
+
 完整函数参考：:doc:`React 包装 </api/javascript/features/tasks/RunObservation>`、
 :doc:`共享渲染器副本 </api/javascript/features/tasks/observation-components>`、
 :doc:`工作流模型 </api/javascript/features/workflows/workflowModel>`。

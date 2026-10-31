@@ -22,18 +22,18 @@ src/features/settings-runtime/extensions 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``./registry.js``、``react``、``@/components/ui/spinner``、``./ResourceFields.jsx``。
+``./registry.js``、``react``、``@/components/ui/spinner``、``./ResourceFields.jsx``、``./SettingsConversationPicker.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:373:553:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:448:628:FUNCTION
 
 .. js:function:: LoadingExtension()
 
    渲染 ``LoadingExtension`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``10``—``12`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``11``—``13`` 行。
 
    **参数**
 
@@ -43,13 +43,13 @@ src/features/settings-runtime/extensions 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<div role="status" className="flex min-h-24 items-center justify-center gap-2 text-sm text-muted-foreground"><Spinner />正在加载图编辑组件…</div>``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:553:758:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:628:833:FUNCTION
 
 .. js:function:: LazyNodeGraphField(props)
 
    渲染 ``LazyNodeGraphField`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``14``—``20`` 行。
+   **性质**：同步函数；导出 API；源码第 ``15``—``21`` 行。
 
    **参数**
 
@@ -65,17 +65,17 @@ src/features/settings-runtime/extensions 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:305:369:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:380:444:FUNCTION
 
-.. rubric:: ``lazy callback @ 7``
+.. rubric:: ``lazy callback @ 8``
 
 .. code-block:: javascript
 
-   lazy callback @ 7()
+   lazy callback @ 8()
 
 实现 ``lazy`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``7``—``7`` 行。
+**性质**：同步局部函数；源码第 ``8``—``8`` 行。
 
 **参数**
 

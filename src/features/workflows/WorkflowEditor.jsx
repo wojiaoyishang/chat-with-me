@@ -409,7 +409,7 @@ function WorkflowEditorWorkspace({ request = {}, onClose, onChanged }) {
         if (!controller.signal.aborted) setLoading(false);
       });
     apiClient
-      .get("/chat/models", { signal: controller.signal })
+      .get("/tasks/workflows/models", { signal: controller.signal })
       .then((result) => {
         if (!controller.signal.aborted)
           setModels(Array.isArray(result) ? result : result.models || []);

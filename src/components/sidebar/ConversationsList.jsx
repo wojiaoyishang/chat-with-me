@@ -22,6 +22,8 @@ import {
     Search,
     Trash,
     X,
+    Check,
+    MessageSquare,
 } from 'lucide-react';
 import {
     CONVERSATION_LIST_COMPACT_SETTING_KEY,
@@ -467,7 +469,7 @@ const AgentSessionRow = ({
     );
 };
 
-const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationId}, ref) => {
+const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationId, selectionOptions, emptyLabel}, ref) => {
     const {t, i18n} = useTranslation();
     const listRef = useRef(null);
     const searchInputRef = useRef(null);
@@ -491,10 +493,14 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     const normalRequest = useRef({generation: 0, controller: null});
     const searchRequest = useRef({generation: 0, controller: null});
     const normalizedQuery = query.trim();
+    // A picker reuses the list presentation with server-authorized candidates.
+    // It never starts sidebar discovery, pagination, or management actions.
+    const selectionOnly = Array.isArray(selectionOptions);
     const [compact] = useLocalSetting(CONVERSATION_LIST_COMPACT_SETTING_KEY, false);
     const [showTimestamps] = useLocalSetting(CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY, true);
 
     const loadConversations = useCallback(async (reset = false) => {
+        if (selectionOnly) return;
         const generation = ++normalRequest.current.generation;
         normalRequest.current.controller?.abort();
         const controller = new AbortController();
@@ -519,9 +525,10 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         } finally {
             if (generation === normalRequest.current.generation) setIsLoading(false);
         }
-    }, [limit, offset]);
+    }, [limit, offset, selectionOnly]);
 
     const loadSearch = useCallback(async (reset = true) => {
+        if (selectionOnly) return;
         const value = queryRef.current;
         if (!value || (!reset && searchStateRef.current.loading)) return;
         const generation = ++searchRequest.current.generation;
@@ -549,7 +556,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
             if (controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
             setSearchState((previous) => ({...previous, loading: false, error: true}));
         }
-    }, [limit]);
+    }, [limit, selectionOnly]);
 
     const changeQuery = useCallback((value) => {
         const next = value.slice(0, 200).trim();
@@ -562,10 +569,14 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         setQuery(value.slice(0, 200));
     }, []);
 
-    const displayedConversations = normalizedQuery ? searchState.items : conversations;
-    const displayedLoading = normalizedQuery ? searchState.loading : isLoading;
-    const displayedError = normalizedQuery ? searchState.error : isLoadingError;
-    const displayedHasMore = normalizedQuery ? searchState.hasMore : hasMore;
+    const selectionRows = useMemo(() => (selectionOptions || []).filter(item => {
+        const text = `${item.label || ''} ${item.group || ''} ${item.description || ''} ${item.value || ''}`;
+        return !normalizedQuery || text.toLocaleLowerCase().includes(normalizedQuery.toLocaleLowerCase());
+    }).map(item => ({...item, conversationId: String(item.value), title:item.label || String(item.value), children:[]})), [selectionOptions, normalizedQuery]);
+    const displayedConversations = selectionOnly ? selectionRows : normalizedQuery ? searchState.items : conversations;
+    const displayedLoading = selectionOnly ? false : normalizedQuery ? searchState.loading : isLoading;
+    const displayedError = selectionOnly ? false : normalizedQuery ? searchState.error : isLoadingError;
+    const displayedHasMore = !selectionOnly && (normalizedQuery ? searchState.hasMore : hasMore);
 
     const handleConversationChange = useCallback((conversationId, patch) => {
         const update = (previous) => previous.map((conversation) => {
@@ -667,6 +678,11 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     ), [filteredConversations]);
 
     const groupedConversations = useMemo(() => {
+        if (selectionOnly) return filteredConversations.reduce((groups, item) => {
+            const group = item.group || '会话';
+            (groups[group] ||= []).push(item);
+            return groups;
+        }, Object.create(null));
         const groups = {
             Today: [],
             Yesterday: [],
@@ -687,7 +703,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         });
         Object.values(groups).forEach((items) => items.sort((a, b) => b.updateDate - a.updateDate));
         return groups;
-    }, [filteredConversations]);
+    }, [filteredConversations, selectionOnly]);
 
     const handleDeleteConversation = (deletedConversationId) => {
         setConversations((previous) => previous
@@ -732,39 +748,45 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                                 {isExpanded ? <ChevronDown/> : <ChevronRight/>}
                             </Button>
                         ) : (
-                            <span className="mr-0.5 w-6 shrink-0"/>
+                            selectionOnly ? (conversation.status
+                                ? <Bot className="mr-2 size-4 shrink-0 text-muted-foreground"/>
+                                : <MessageSquare className="mr-2 size-4 shrink-0 text-muted-foreground"/>)
+                                : <span className="mr-0.5 w-6 shrink-0"/>
                         )}
                         {conversation.pinned && (
                             <Pin className="mr-1 h-3.5 w-3.5 shrink-0 fill-primary/15 text-primary/70"/>
                         )}
                         <button
                             type="button"
+                            disabled={selectionOnly && conversation.disabled}
                             onClick={() => onSelect?.(conversation.conversationId)}
-                            className="min-w-0 flex-1 cursor-pointer text-left"
+                            className="min-w-0 flex-1 cursor-pointer text-left disabled:cursor-not-allowed disabled:opacity-50"
                             aria-label={displayTitle}
+                            aria-pressed={selectionOnly ? isSelected : undefined}
                         >
                             <span className={`block truncate font-medium ${compact ? 'text-sm' : 'text-[15px]'}`}>
                                 {displayTitle}
                             </span>
+                            {selectionOnly && (conversation.description || conversation.status) && <span className="block truncate text-xs text-muted-foreground">{[conversation.description, conversation.status ? STATUS_META[conversation.status]?.label || conversation.status : ''].filter(Boolean).join(' · ')}</span>}
                             {!compact && hasChildren && (
                                 <span className="block text-[11px] text-muted-foreground">
                                     {t('subagent_conversation_count', {count: descendantCount})}
                                 </span>
                             )}
                         </button>
-                        {showTimestamps && (
+                        {!selectionOnly && showTimestamps && (
                             <span className="ml-1 shrink-0 text-[10px] tabular-nums text-muted-foreground/70">
                                 {formatConversationTime(conversation.updateDate, i18n.language)}
                             </span>
                         )}
-                        <ConversationMenu
+                        {selectionOnly ? (isSelected && <Check className="mx-2 size-4 shrink-0 text-primary" aria-label="已选择"/>) : <ConversationMenu
                             conversation={conversation}
                             canPin={conversation.conversationKind !== 'agent_session'}
                             onDelete={handleDeleteConversation}
                             onChange={handleConversationChange}
                             onFork={handleFork}
                             className={`${isSelected ? 'opacity-100' : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100'} transition-opacity`}
-                        />
+                        />}
                     </div>
                 </li>
                 {hasChildren && isExpanded && (
@@ -795,7 +817,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     const visibleCount = filteredConversations.length;
 
     return (
-        <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto pr-1 hide-scrollbar">
+        <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto pr-1 hide-scrollbar" data-conversation-selection-mode={selectionOnly || undefined}>
             <div className="shrink-0 border-b border-border/60 pb-3">
                 <div className="relative">
                     <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"/>
@@ -827,8 +849,8 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 </div>
                 {normalizedQuery && (
                     <div className="mt-1.5 flex items-center justify-between px-1 text-[11px] text-muted-foreground">
-                        <span>{searchState.loading && !visibleCount ? t('searching_conversations') : t('conversation_search_results', {count: searchState.total})}</span>
-                        <span>{t('conversation_search_scope')}</span>
+                        <span>{searchState.loading && !visibleCount && !selectionOnly ? t('searching_conversations') : t('conversation_search_results', {count: selectionOnly ? visibleCount : searchState.total})}</span>
+                        {!selectionOnly && <span>{t('conversation_search_scope')}</span>}
                     </div>
                 )}
             </div>
@@ -864,7 +886,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 items.length > 0 && (
                     <section key={group} data-group={group} className="mb-4">
                         <h3 className="mb-1.5 px-1 text-xs font-semibold text-muted-foreground">
-                            {t(group.replace(/\s/g, '_').toLowerCase())}
+                            {selectionOnly ? group : t(group.replace(/\s/g, '_').toLowerCase())}
                         </h3>
                         <ul className="space-y-0.5">
                             {items.map(renderConversation)}
@@ -894,7 +916,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
             {visibleCount === 0 && !displayedLoading && !displayedError && (
                 <div className="flex flex-col items-center gap-2 py-10 text-center text-muted-foreground">
                     {normalizedQuery ? <Search className="h-5 w-5 opacity-50"/> : <Clock3 className="h-5 w-5 opacity-50"/>}
-                    <span className="text-sm">{t(normalizedQuery ? 'no_conversation_search_results' : 'no_conversations')}</span>
+                    <span className="text-sm">{!normalizedQuery && emptyLabel || t(normalizedQuery ? 'no_conversation_search_results' : 'no_conversations')}</span>
                 </div>
             )}
 

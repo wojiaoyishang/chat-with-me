@@ -17,7 +17,7 @@ Constructor settings and documentation; invoke values live on the canvas.
 * **模块标识**：``src/features/workflows/WorkflowNodePanel``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：52
+* **局部函数与匿名回调**：53
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -51,13 +51,13 @@ Constructor settings and documentation; invoke values live on the canvas.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:1107:17266:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:1107:17590:FUNCTION
 
 .. js:function:: WorkflowNodePanel({ node, graph, definitions, context, models, onGraphChange, onValidity, disabled, nodeHeader, })
 
    Constructor settings and documentation; invoke values live on the canvas.
 
-   **性质**：同步函数；导出 API；源码第 ``33``—``476`` 行。
+   **性质**：同步函数；导出 API；源码第 ``33``—``479`` 行。
 
    **参数**
 
@@ -761,7 +761,7 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``hiddenKeys.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:9085:12215:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:9085:12539:FUNCTION
 
 .. rubric:: ``common .filter((key) => !hiddenKeys.includes(key)) .map callback @ 265``
 
@@ -771,7 +771,7 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 作为 ``common .filter((key) => !hiddenKeys.includes(key)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``265``—``337`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``265``—``340`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -782,9 +782,9 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 根据执行分支返回结果；代表性返回表达式为 ``( <section className="space-y-2 rounded-lg border p-3" key={key}> <div className="flex items-center justify-between gap-2"> <label className="workflow-label m-0">{fieldLabel}</lab…``。
 
-**主要协作调用**：``scalarSchema``、``resolveWorkflowSchema``、``["model-queue", "model-list-picker"].includes``、``workflowModelQueueSummary``、``models.find``、``String``。
+**主要协作调用**：``scalarSchema``、``resolveWorkflowSchema``、``["model-queue", "model-list-picker"].includes``、``workflowModelQueueSummary``、``models.find``、``Object.keys``、``String``、``Object.fromEntries``、``Object.entries(node.config || {}).filter``、``Object.entries``。
 
-**内部回调数量**：3。这些回调也会在本页逐项说明。
+**内部回调数量**：4。这些回调也会在本页逐项说明。
 
 .. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:10067:10252:FUNCTION
 
@@ -830,17 +830,38 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:11789:11870:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12049:12076:FUNCTION
 
-.. rubric:: ``onChange callback @ 325``
+.. rubric:: ``Object.entries(node.config || {}).filter callback @ 327``
 
 .. code-block:: javascript
 
-   onChange callback @ 325(value)
+   Object.entries(node.config || {}).filter callback @ 327([,value])
+
+作为 ``Object.entries(node.config || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``327``—``327`` 行；所属函数 ``common .filter((key) => !hiddenKeys.includes(key)) .map callback @ 265``。
+
+**参数**
+
+``[,value]``
+   调用方传入的 ``,value`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12113:12194:FUNCTION
+
+.. rubric:: ``onChange callback @ 328``
+
+.. code-block:: javascript
+
+   onChange callback @ 328(value)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``325``—``326`` 行；所属函数 ``common .filter((key) => !hiddenKeys.includes(key)) .map callback @ 265``。
+**性质**：同步局部函数；源码第 ``328``—``329`` 行；所属函数 ``common .filter((key) => !hiddenKeys.includes(key)) .map callback @ 265``。
 
 **参数**
 
@@ -853,17 +874,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``updateConfig``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12257:12305:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12581:12629:FUNCTION
 
-.. rubric:: ``widgets .filter callback @ 339``
+.. rubric:: ``widgets .filter callback @ 342``
 
 .. code-block:: javascript
 
-   widgets .filter callback @ 339(widget)
+   widgets .filter callback @ 342(widget)
 
 作为 ``widgets .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``339``—``339`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``342``—``342`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -874,17 +895,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12324:12724:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12648:13048:FUNCTION
 
-.. rubric:: ``widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback @ 340``
+.. rubric:: ``widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback @ 343``
 
 .. code-block:: javascript
 
-   widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback @ 340(widget, index)
+   widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback @ 343(widget, index)
 
 作为 ``widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``340``—``349`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``343``—``352`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -900,17 +921,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12644:12692:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12968:13016:FUNCTION
 
-.. rubric:: ``onBusyChange callback @ 347``
+.. rubric:: ``onBusyChange callback @ 350``
 
 .. code-block:: javascript
 
-   onBusyChange callback @ 347(busy)
+   onBusyChange callback @ 350(busy)
 
 处理 ``Busy Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``347``—``347`` 行；所属函数 ``widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback @ 340``。
+**性质**：同步局部函数；源码第 ``350``—``350`` 行；所属函数 ``widgets .filter((widget) => widget.widget === "knowledge-schema") .map callback @ 343``。
 
 **参数**
 
@@ -923,17 +944,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``onValidity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12768:12827:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:13092:13151:FUNCTION
 
-.. rubric:: ``modelKeys .filter callback @ 351``
+.. rubric:: ``modelKeys .filter callback @ 354``
 
 .. code-block:: javascript
 
-   modelKeys .filter callback @ 351(key)
+   modelKeys .filter callback @ 354(key)
 
 作为 ``modelKeys .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``351``—``351`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``354``—``354`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -946,17 +967,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``common.includes``、``hiddenKeys.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:12846:13955:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:13170:14279:FUNCTION
 
-.. rubric:: ``modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback @ 352``
+.. rubric:: ``modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback @ 355``
 
 .. code-block:: javascript
 
-   modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback @ 352(key)
+   modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback @ 355(key)
 
 作为 ``modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``352``—``380`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``355``—``383`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -969,17 +990,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:13573:13650:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:13897:13974:FUNCTION
 
-.. rubric:: ``onChange callback @ 370``
+.. rubric:: ``onChange callback @ 373``
 
 .. code-block:: javascript
 
-   onChange callback @ 370(value)
+   onChange callback @ 373(value)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``370``—``371`` 行；所属函数 ``modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback @ 352``。
+**性质**：同步局部函数；源码第 ``373``—``374`` 行；所属函数 ``modelKeys .filter((key) => !common.includes(key) && !hiddenKeys.includes(key)) .map callback @ 355``。
 
 **参数**
 
@@ -992,17 +1013,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``updateConfig``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14219:14265:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14543:14589:FUNCTION
 
-.. rubric:: ``dynamicKeys .filter callback @ 387``
+.. rubric:: ``dynamicKeys .filter callback @ 390``
 
 .. code-block:: javascript
 
-   dynamicKeys .filter callback @ 387(key)
+   dynamicKeys .filter callback @ 390(key)
 
 作为 ``dynamicKeys .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``387``—``387`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``390``—``390`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1015,17 +1036,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``Object.hasOwn``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14290:14322:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14614:14646:FUNCTION
 
-.. rubric:: ``dynamicKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 388``
+.. rubric:: ``dynamicKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 391``
 
 .. code-block:: javascript
 
-   dynamicKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 388(key)
+   dynamicKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 391(key)
 
 作为 ``dynamicKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``388``—``388`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``391``—``391`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1036,17 +1057,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14432:14481:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14756:14805:FUNCTION
 
-.. rubric:: ``onValidity callback @ 392``
+.. rubric:: ``onValidity callback @ 395``
 
 .. code-block:: javascript
 
-   onValidity callback @ 392(valid)
+   onValidity callback @ 395(valid)
 
 处理 ``Validity`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``392``—``392`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``395``—``395`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1059,17 +1080,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``onValidity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14507:14801:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14831:15125:FUNCTION
 
-.. rubric:: ``onChange callback @ 393``
+.. rubric:: ``onChange callback @ 396``
 
 .. code-block:: javascript
 
-   onChange callback @ 393(next)
+   onChange callback @ 396(next)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``393``—``401`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``396``—``404`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1084,17 +1105,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14650:14710:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:14974:15034:FUNCTION
 
-.. rubric:: ``Object.entries(node.config || {}).filter callback @ 397``
+.. rubric:: ``Object.entries(node.config || {}).filter callback @ 400``
 
 .. code-block:: javascript
 
-   Object.entries(node.config || {}).filter callback @ 397([key])
+   Object.entries(node.config || {}).filter callback @ 400([key])
 
 作为 ``Object.entries(node.config || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``397``—``397`` 行；所属函数 ``onChange callback @ 393``。
+**性质**：同步局部函数；源码第 ``400``—``400`` 行；所属函数 ``onChange callback @ 396``。
 
 **参数**
 
@@ -1107,17 +1128,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``dynamicKeys.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15088:15134:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15412:15458:FUNCTION
 
-.. rubric:: ``jsonKeys .filter callback @ 411``
+.. rubric:: ``jsonKeys .filter callback @ 414``
 
 .. code-block:: javascript
 
-   jsonKeys .filter callback @ 411(key)
+   jsonKeys .filter callback @ 414(key)
 
 作为 ``jsonKeys .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``411``—``411`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``414``—``414`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1130,17 +1151,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``Object.hasOwn``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15159:15191:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15483:15515:FUNCTION
 
-.. rubric:: ``jsonKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 412``
+.. rubric:: ``jsonKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 415``
 
 .. code-block:: javascript
 
-   jsonKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 412(key)
+   jsonKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback @ 415(key)
 
 作为 ``jsonKeys .filter((key) => Object.hasOwn(node.config || {}, key)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``412``—``412`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``415``—``415`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1151,17 +1172,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15307:15388:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15631:15712:FUNCTION
 
-.. rubric:: ``onStateChange callback @ 416``
+.. rubric:: ``onStateChange callback @ 419``
 
 .. code-block:: javascript
 
-   onStateChange callback @ 416(state)
+   onStateChange callback @ 419(state)
 
 处理 ``State Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``416``—``417`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``419``—``420`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1174,17 +1195,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``onValidity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15429:15720:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15753:16044:FUNCTION
 
-.. rubric:: ``onChange callback @ 419``
+.. rubric:: ``onChange callback @ 422``
 
 .. code-block:: javascript
 
-   onChange callback @ 419(next)
+   onChange callback @ 422(next)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``419``—``427`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``422``—``430`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1199,17 +1220,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15572:15629:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:15896:15953:FUNCTION
 
-.. rubric:: ``Object.entries(node.config || {}).filter callback @ 423``
+.. rubric:: ``Object.entries(node.config || {}).filter callback @ 426``
 
 .. code-block:: javascript
 
-   Object.entries(node.config || {}).filter callback @ 423([key])
+   Object.entries(node.config || {}).filter callback @ 426([key])
 
 作为 ``Object.entries(node.config || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``423``—``423`` 行；所属函数 ``onChange callback @ 419``。
+**性质**：同步局部函数；源码第 ``426``—``426`` 行；所属函数 ``onChange callback @ 422``。
 
 **参数**
 
@@ -1222,17 +1243,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 **主要协作调用**：``jsonKeys.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:16352:16388:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:16676:16712:FUNCTION
 
-.. rubric:: ``Object.entries( definition.documentation || definition.pythonDocs, ) .map callback @ 445``
+.. rubric:: ``Object.entries( definition.documentation || definition.pythonDocs, ) .map callback @ 448``
 
 .. code-block:: javascript
 
-   Object.entries( definition.documentation || definition.pythonDocs, ) .map callback @ 445([name, text])
+   Object.entries( definition.documentation || definition.pythonDocs, ) .map callback @ 448([name, text])
 
 作为 ``Object.entries( definition.documentation || definition.pythonDocs, ) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``445``—``445`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``448``—``448`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 
@@ -1243,17 +1264,17 @@ Constructor settings and documentation; invoke values live on the canvas.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:16579:17219:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowNodePanel.jsx:16903:17543:FUNCTION
 
-.. rubric:: ``[...(definition.inputs || []), ...(definition.outputs || [])].map callback @ 453``
+.. rubric:: ``[...(definition.inputs || []), ...(definition.outputs || [])].map callback @ 456``
 
 .. code-block:: javascript
 
-   [...(definition.inputs || []), ...(definition.outputs || [])].map callback @ 453(port, index)
+   [...(definition.inputs || []), ...(definition.outputs || [])].map callback @ 456(port, index)
 
 作为 ``[...(definition.inputs || []), ...(definition.outputs || [])].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``453``—``471`` 行；所属函数 ``WorkflowNodePanel``。
+**性质**：同步局部函数；源码第 ``456``—``474`` 行；所属函数 ``WorkflowNodePanel``。
 
 **参数**
 

@@ -81,7 +81,7 @@ src/features/workflows/WorkflowEditor 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <ReactFlowProvider> <WorkflowEditorWorkspace {...props} /> </ReactFlowProvider> )``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:4264:97897:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:4264:97908:FUNCTION
 
 .. js:function:: WorkflowEditorWorkspace({ request = {}, onClose, onChanged })
 
@@ -601,7 +601,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:11272:13789:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:11272:13800:FUNCTION
 
 .. rubric:: ``useEffect callback @ 351``
 
@@ -625,7 +625,7 @@ src/features/workflows/WorkflowEditor 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``setLoading``、``setError``、``Promise.all([ workflowApi.catalog(controller.signal), workflowApi.templates(controller.signal), request.taskId ? workfl…``、``Promise.all``、``workflowApi.catalog``、``workflowApi.templates``、``workflowApi.task``、``request.templateId.startsWith``、``workflowApi.template``、``Promise.resolve``、``apiClient .get("/chat/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.aborted) setMo…``、``apiClient .get("/chat/models", { signal: controller.signal }) .then``。
+**主要协作调用**：``setLoading``、``setError``、``Promise.all([ workflowApi.catalog(controller.signal), workflowApi.templates(controller.signal), request.taskId ? workfl…``、``Promise.all``、``workflowApi.catalog``、``workflowApi.templates``、``workflowApi.task``、``request.templateId.startsWith``、``workflowApi.template``、``Promise.resolve``、``apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.abo…``、``apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then``。
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
@@ -720,15 +720,15 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setLoading``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13587:13723:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13598:13734:FUNCTION
 
-.. rubric:: ``apiClient .get("/chat/models", { signal: controller.signal }) .then callback @ 413``
+.. rubric:: ``apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then callback @ 413``
 
 .. code-block:: javascript
 
-   apiClient .get("/chat/models", { signal: controller.signal }) .then callback @ 413(result)
+   apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then callback @ 413(result)
 
-处理 ``apiClient .get("/chat/models", { signal: controller.signal }) .then callback`` 对应的事件或订阅结果。
+处理 ``apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then callback`` 对应的事件或订阅结果。
 
 **性质**：同步局部函数；源码第 ``413``—``416`` 行；所属函数 ``useEffect callback @ 351``。
 
@@ -743,15 +743,15 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setModels``、``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13738:13746:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13749:13757:FUNCTION
 
-.. rubric:: ``apiClient .get("/chat/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.aborted) setMo… callback @ 417``
+.. rubric:: ``apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.abo… callback @ 417``
 
 .. code-block:: javascript
 
-   apiClient .get("/chat/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.aborted) setMo… callback @ 417()
+   apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.abo… callback @ 417()
 
-实现 ``apiClient .get("/chat/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.aborted) setMo…`` 对应的前端处理。
+实现 ``apiClient .get("/tasks/workflows/models", { signal: controller.signal }) .then((result) => { if (!controller.signal.abo…`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``417``—``417`` 行；所属函数 ``useEffect callback @ 351``。
 
@@ -763,7 +763,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13759:13784:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13770:13795:FUNCTION
 
 .. rubric:: ``returned callback @ 418``
 
@@ -785,7 +785,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13901:14325:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:13912:14336:FUNCTION
 
 .. rubric:: ``useCallback callback @ 421``
 
@@ -812,7 +812,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``update``、``snapshot``、``history.current.past.push``、``clone``、``history.current.past.shift``、``setDraft``、``setNotice``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14366:14761:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14377:14772:FUNCTION
 
 .. rubric:: ``useCallback callback @ 433``
 
@@ -840,7 +840,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14411:14760:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14422:14771:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 434``
 
@@ -863,7 +863,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``updateWorkflowGraphAtPath``、``pruneDeletedWorkflowRegions``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14833:15358:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14844:15369:FUNCTION
 
 .. rubric:: ``useCallback callback @ 451``
 
@@ -891,7 +891,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14935:15350:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:14946:15361:FUNCTION
 
 .. rubric:: ``changeGraph callback @ 453``
 
@@ -916,7 +916,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15010:15052:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15021:15063:FUNCTION
 
 .. rubric:: ``(inner.executionRegions || []).filter callback @ 455``
 
@@ -937,7 +937,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15456:16469:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15467:16480:FUNCTION
 
 .. rubric:: ``useCallback callback @ 469``
 
@@ -962,7 +962,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15578:15776:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15589:15787:FUNCTION
 
 .. rubric:: ``setMonitorPositions callback @ 472``
 
@@ -983,7 +983,7 @@ src/features/workflows/WorkflowEditor 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``next``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15814:16453:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15825:16464:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 480``
 
@@ -1008,7 +1008,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15927:15992:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:15938:16003:FUNCTION
 
 .. rubric:: ``updateWorkflowGraphAtPath callback @ 484``
 
@@ -1031,7 +1031,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``updateWorkflowNodePositions``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:16561:16789:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:16572:16800:FUNCTION
 
 .. rubric:: ``useCallback callback @ 503``
 
@@ -1057,7 +1057,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``history.current.past.pop``、``history.current.future.push``、``clone``、``setDraft``、``setNotice``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:16823:17035:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:16834:17046:FUNCTION
 
 .. rubric:: ``useCallback callback @ 512``
 
@@ -1083,7 +1083,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``history.current.future.pop``、``history.current.past.push``、``clone``、``setDraft``、``setNotice``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17071:17201:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17082:17212:FUNCTION
 
 .. rubric:: ``useCallback callback @ 521``
 
@@ -1106,7 +1106,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setSelected``、``setSelectedIds``、``setSelectedEdges``、``setSelectionRequest``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17247:17707:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17258:17718:FUNCTION
 
 .. rubric:: ``useCallback callback @ 528``
 
@@ -1131,7 +1131,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17324:17341:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17335:17352:FUNCTION
 
 .. rubric:: ``chosen.map callback @ 529``
 
@@ -1152,7 +1152,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17374:17391:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17385:17402:FUNCTION
 
 .. rubric:: ``connected.map callback @ 530``
 
@@ -1173,7 +1173,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17415:17487:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17426:17498:FUNCTION
 
 .. rubric:: ``setSelectedIds callback @ 531``
 
@@ -1196,7 +1196,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``current.join``、``ids.join``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17521:17597:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17532:17608:FUNCTION
 
 .. rubric:: ``setSelectedEdges callback @ 534``
 
@@ -1219,7 +1219,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``current.join``、``edges.join``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17756:17947:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17767:17958:FUNCTION
 
 .. rubric:: ``useMemo callback @ 543``
 
@@ -1239,7 +1239,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:17997:18151:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18008:18162:FUNCTION
 
 .. rubric:: ``useMemo callback @ 552``
 
@@ -1259,7 +1259,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18201:18383:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18212:18394:FUNCTION
 
 .. rubric:: ``useMemo callback @ 560``
 
@@ -1281,7 +1281,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``workflowRuntimeForGraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18467:18580:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18478:18591:FUNCTION
 
 .. rubric:: ``useEffect callback @ 571``
 
@@ -1303,7 +1303,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``workflowGraphAtPath``、``setGraphPath``、``select``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18651:18928:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18662:18939:FUNCTION
 
 .. rubric:: ``useCallback callback @ 578``
 
@@ -1328,7 +1328,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18809:18829:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18820:18840:FUNCTION
 
 .. rubric:: ``setFitRequest callback @ 584``
 
@@ -1349,7 +1349,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18985:19231:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:18996:19242:FUNCTION
 
 .. rubric:: ``useCallback callback @ 592``
 
@@ -1374,7 +1374,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19080:19104:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19091:19115:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 594``
 
@@ -1395,7 +1395,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19339:19481:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19350:19492:FUNCTION
 
 .. rubric:: ``useMemo callback @ 600``
 
@@ -1417,7 +1417,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``Array.isArray``、``Object.values``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19523:19662:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19534:19673:FUNCTION
 
 .. rubric:: ``useCallback callback @ 604``
 
@@ -1443,7 +1443,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.preventDefault``、``setPicker``、``setMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19701:19999:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19712:20010:FUNCTION
 
 .. rubric:: ``useCallback callback @ 609``
 
@@ -1471,7 +1471,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19754:19993:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:19765:20004:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 611``
 
@@ -1497,7 +1497,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``active?.hasAttribute``、``dialogRef.current?.querySelector(".workflow-canvas")?.focus``、``dialogRef.current?.querySelector``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20036:20445:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20047:20456:FUNCTION
 
 .. rubric:: ``useCallback callback @ 621``
 
@@ -1525,7 +1525,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20074:20444:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20085:20455:FUNCTION
 
 .. rubric:: ``changeGraph callback @ 622``
 
@@ -1550,7 +1550,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20143:20423:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20154:20434:FUNCTION
 
 .. rubric:: ``current.nodes.map callback @ 624``
 
@@ -1573,7 +1573,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``sourceValueConfig``、``catalogNode``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20518:20623:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20529:20634:FUNCTION
 
 .. rubric:: ``useCallback callback @ 640``
 
@@ -1604,7 +1604,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20564:20622:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20575:20633:FUNCTION
 
 .. rubric:: ``changeGraph callback @ 641``
 
@@ -1627,7 +1627,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``bindWorkflowInput``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20678:20728:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20689:20739:FUNCTION
 
 .. rubric:: ``useCallback callback @ 645``
 
@@ -1653,7 +1653,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``validity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20784:20847:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20795:20858:FUNCTION
 
 .. rubric:: ``useCallback callback @ 649``
 
@@ -1682,7 +1682,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``openMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20911:22118:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:20922:22129:FUNCTION
 
 .. rubric:: ``useCallback callback @ 653``
 
@@ -1712,7 +1712,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:21185:21217:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:21196:21228:FUNCTION
 
 .. rubric:: ``catalog.builtinTemplates?.find callback @ 660``
 
@@ -1733,7 +1733,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:21720:21839:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:21731:21850:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 674``
 
@@ -1756,7 +1756,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``updateWorkflowGraphAtPath``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:22241:24380:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:22252:24391:FUNCTION
 
 .. rubric:: ``useCallback callback @ 692``
 
@@ -1784,7 +1784,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:22286:22316:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:22297:22327:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 693``
 
@@ -1805,7 +1805,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23390:23418:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23401:23429:FUNCTION
 
 .. rubric:: ``setTemplates callback @ 722``
 
@@ -1826,7 +1826,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23441:24128:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23452:24139:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 723``
 
@@ -1851,7 +1851,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23573:24103:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23584:24114:FUNCTION
 
 .. rubric:: ``updateWorkflowGraphAtPath callback @ 728``
 
@@ -1876,7 +1876,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23661:24070:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:23672:24081:FUNCTION
 
 .. rubric:: ``inner.nodes.map callback @ 730``
 
@@ -1897,7 +1897,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24556:24597:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24567:24608:FUNCTION
 
 .. rubric:: ``useMemo callback @ 766``
 
@@ -1919,7 +1919,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``workflowNodeNumbers``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24656:24730:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24667:24741:FUNCTION
 
 .. rubric:: ``useMemo callback @ 770``
 
@@ -1941,7 +1941,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``analyzeWorkflowParallelism``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24815:25061:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24826:25072:FUNCTION
 
 .. rubric:: ``useCallback callback @ 774``
 
@@ -1969,7 +1969,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24855:25060:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:24866:25071:FUNCTION
 
 .. rubric:: ``changeGraph callback @ 775``
 
@@ -1994,7 +1994,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25030:25049:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25041:25060:FUNCTION
 
 .. rubric:: ``(current.outputNodes || []).filter callback @ 779``
 
@@ -2015,7 +2015,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25118:25302:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25129:25313:FUNCTION
 
 .. rubric:: ``useCallback callback @ 784``
 
@@ -2041,7 +2041,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.currentTarget.getBoundingClientRect``、``select``、``openMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25357:27200:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25368:27211:FUNCTION
 
 .. rubric:: ``useMemo callback @ 792``
 
@@ -2065,7 +2065,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25395:26967:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:25406:26978:FUNCTION
 
 .. rubric:: ``graph.nodes.map callback @ 793``
 
@@ -2090,7 +2090,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26024:26056:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26035:26067:FUNCTION
 
 .. rubric:: ``runtimeStages.find callback @ 811``
 
@@ -2111,7 +2111,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26623:26742:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26634:26753:FUNCTION
 
 .. rubric:: ``onSaveSubgraphTemplate``
 
@@ -2136,7 +2136,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26702:26726:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26713:26737:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 827``
 
@@ -2157,7 +2157,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26853:26932:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:26864:26943:FUNCTION
 
 .. rubric:: ``(catalog.builtinTemplates || []).map callback @ 831``
 
@@ -2178,7 +2178,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:27009:27192:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:27020:27203:FUNCTION
 
 .. rubric:: ``interfaceProjection.nodes.map callback @ 838``
 
@@ -2201,7 +2201,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``Boolean``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:27740:28426:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:27751:28437:FUNCTION
 
 .. rubric:: ``useMemo callback @ 872``
 
@@ -2225,7 +2225,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:27808:28425:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:27819:28436:FUNCTION
 
 .. rubric:: ``[...graph.edges, ...interfaceProjection.edges].map callback @ 873``
 
@@ -2248,7 +2248,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``selectedEdges.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:28608:28638:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:28619:28649:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 895``
 
@@ -2269,7 +2269,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29263:29361:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29274:29372:FUNCTION
 
 .. rubric:: ``onLocate callback @ 912``
 
@@ -2291,7 +2291,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setFocusRequest``、``setMobilePane``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29377:29420:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29388:29431:FUNCTION
 
 .. rubric:: ``onMenu callback @ 916``
 
@@ -2314,7 +2314,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``nodeMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29444:29495:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29455:29506:FUNCTION
 
 .. rubric:: ``onToggleOutput callback @ 917``
 
@@ -2337,7 +2337,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``toggleOutput``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29545:29579:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29556:29590:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 920``
 
@@ -2358,7 +2358,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29784:29835:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29795:29846:FUNCTION
 
 .. rubric:: ``interfaceContainer?.subgraph.interface?.[selectedInterface.direction]?.find callback @ 925``
 
@@ -2379,7 +2379,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29869:30213:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:29880:30224:FUNCTION
 
 .. rubric:: ``changeInterface``
 
@@ -2407,7 +2407,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30086:30128:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30097:30139:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 936``
 
@@ -2428,7 +2428,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30241:30562:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30252:30573:FUNCTION
 
 .. rubric:: ``connectInterface``
 
@@ -2453,7 +2453,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30288:30477:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30299:30488:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 944``
 
@@ -2476,7 +2476,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``connectWorkflowInterface``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30595:31258:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30606:31269:FUNCTION
 
 .. rubric:: ``useMemo callback @ 958``
 
@@ -2504,7 +2504,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30690:30726:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30701:30737:FUNCTION
 
 .. rubric:: ``runtimeStages.map callback @ 961``
 
@@ -2525,7 +2525,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30754:30828:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30765:30839:FUNCTION
 
 .. rubric:: ``status``
 
@@ -2552,7 +2552,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``stageStatus.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30872:30908:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30883:30919:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 966``
 
@@ -2575,7 +2575,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``status``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30936:30971:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30947:30982:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 967``
 
@@ -2598,7 +2598,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``status``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:30999:31071:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31010:31082:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 968``
 
@@ -2621,7 +2621,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``["queued", "pending", "paused"].includes``、``status``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31140:31199:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31151:31210:FUNCTION
 
 .. rubric:: ``[...graph.nodes] .reverse() .find callback @ 973``
 
@@ -2644,7 +2644,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``["completed", "succeeded"].includes``、``status``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31327:31468:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31338:31479:FUNCTION
 
 .. rubric:: ``useEffect callback @ 977``
 
@@ -2666,7 +2666,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``select``、``setFocusRequest``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31554:31661:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31565:31672:FUNCTION
 
 .. rubric:: ``stopFollowingTask``
 
@@ -2688,7 +2688,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setFollowTask``、``setFocusRequest``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31683:31881:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31694:31892:FUNCTION
 
 .. rubric:: ``locateTask``
 
@@ -2710,7 +2710,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``stopFollowingTask``、``setMobilePane``、``setMonitorView``、``setFollowTask``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31902:32091:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:31913:32102:FUNCTION
 
 .. rubric:: ``chosenIds``
 
@@ -2732,7 +2732,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``selectedIds.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:32107:32362:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:32118:32373:FUNCTION
 
 .. rubric:: ``copy``
 
@@ -2754,7 +2754,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``copyWorkflowSelection``、``currentEditableGraph``、``chosenIds``、``workflowAncestorRegions``、``setHasClipboard``、``Boolean``、``setMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:32379:32850:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:32390:32861:FUNCTION
 
 .. rubric:: ``paste``
 
@@ -2780,7 +2780,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``pasteWorkflowSelection``、``currentEditableGraph``、``flow.screenToFlowPosition``、``changeGraph``、``select``、``setMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:32871:33057:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:32882:33068:FUNCTION
 
 .. rubric:: ``duplicate``
 
@@ -2802,7 +2802,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``paste``、``copyWorkflowSelection``、``currentEditableGraph``、``chosenIds``、``workflowAncestorRegions``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:33083:33690:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:33094:33701:FUNCTION
 
 .. rubric:: ``groupSelection``
 
@@ -2826,7 +2826,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:33217:33268:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:33228:33279:FUNCTION
 
 .. rubric:: ``workflowGraphAtPath(rootGraph, graphPath.slice(0, -1))?.nodes.find callback @ 1044``
 
@@ -2849,7 +2849,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``graphPath.at``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:33718:34036:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:33729:34047:FUNCTION
 
 .. rubric:: ``ungroupSelection``
 
@@ -2871,7 +2871,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``unwrapWorkflowSubgraph``、``currentEditableGraph``、``changeGraph``、``select``、``setMenu``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:34070:36211:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:34081:36222:FUNCTION
 
 .. rubric:: ``updateSubgraphTemplate``
 
@@ -2895,7 +2895,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:34288:34338:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:34299:34349:FUNCTION
 
 .. rubric:: ``catalog.builtinTemplates?.find callback @ 1085``
 
@@ -2916,7 +2916,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:34952:34969:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:34963:34980:FUNCTION
 
 .. rubric:: ``(wrapper.subgraph.interface?.inputs || []).map callback @ 1102``
 
@@ -2937,7 +2937,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35078:35116:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35089:35127:FUNCTION
 
 .. rubric:: ``(wrapper.subgraph.interface?.parameters || []).map callback @ 1106``
 
@@ -2958,7 +2958,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35238:35280:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35249:35291:FUNCTION
 
 .. rubric:: ``Object.entries(selectedNode.inputs || {}).filter callback @ 1110``
 
@@ -2981,7 +2981,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``inputNames.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35422:35469:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35433:35480:FUNCTION
 
 .. rubric:: ``Object.entries({ ...wrapper.config, ...selectedNode.config }).filter callback @ 1116``
 
@@ -3004,7 +3004,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``parameterNames.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35673:35737:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:35684:35748:FUNCTION
 
 .. rubric:: ``graph.nodes.map callback @ 1125``
 
@@ -3025,7 +3025,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36237:36783:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36248:36794:FUNCTION
 
 .. rubric:: ``exportWorkflow``
 
@@ -3054,7 +3054,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36591:36636:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36602:36647:FUNCTION
 
 .. rubric:: ``[...(title || "工作流")] .filter callback @ 1157``
 
@@ -3077,7 +3077,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``character.codePointAt``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36741:36771:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36752:36782:FUNCTION
 
 .. rubric:: ``window.setTimeout callback @ 1161``
 
@@ -3103,7 +3103,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``URL.revokeObjectURL``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36809:38017:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:36820:38028:FUNCTION
 
 .. rubric:: ``importWorkflow``
 
@@ -3130,7 +3130,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:37501:37780:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:37512:37791:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 1183``
 
@@ -3151,7 +3151,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:38043:40153:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:38054:40164:FUNCTION
 
 .. rubric:: ``deleteSelected``
 
@@ -3175,7 +3175,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:38129:40033:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:38140:40044:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 1205``
 
@@ -3200,7 +3200,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:39005:39278:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:39016:39289:FUNCTION
 
 .. rubric:: ``updateWorkflowGraphAtPath callback @ 1230``
 
@@ -3225,7 +3225,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:39102:39253:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:39113:39264:FUNCTION
 
 .. rubric:: ``inner.edges.filter callback @ 1233``
 
@@ -3248,7 +3248,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``ids.includes``、``edgeIds.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:40252:41274:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:40263:41285:FUNCTION
 
 .. rubric:: ``addNode``
 
@@ -3284,7 +3284,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:40600:40650:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:40611:40661:FUNCTION
 
 .. rubric:: ``changeDraft callback @ 1275``
 
@@ -3305,7 +3305,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41296:41506:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41307:41517:FUNCTION
 
 .. rubric:: ``openPicker``
 
@@ -3331,7 +3331,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setMenu``、``setPicker``、``flow.screenToFlowPosition``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41529:41670:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41540:41681:FUNCTION
 
 .. rubric:: ``closePicker``
 
@@ -3355,7 +3355,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41585:41658:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41596:41669:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1312``
 
@@ -3377,7 +3377,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``dialogRef.current?.querySelector(".workflow-canvas")?.focus``、``dialogRef.current?.querySelector``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41696:42011:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41707:42022:FUNCTION
 
 .. rubric:: ``beginPlacement``
 
@@ -3411,7 +3411,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41973:42005:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:41984:42016:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1323``
 
@@ -3433,7 +3433,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``canvasRef.current?.focus``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:42033:42301:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:42044:42312:FUNCTION
 
 .. rubric:: ``chooseNode``
 
@@ -3459,7 +3459,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``beginPlacement``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:42329:42725:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:42340:42736:FUNCTION
 
 .. rubric:: ``placePendingNode``
 
@@ -3482,7 +3482,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``flow.screenToFlowPosition``、``addNode``、``setPendingPlacement``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:42753:43527:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:42764:43538:FUNCTION
 
 .. rubric:: ``finishConnection``
 
@@ -3512,7 +3512,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``parseWorkflowInterfaceId``、``Math.hypot``、``document.elementFromPoint``、``isWorkflowCanvasBlankTarget``、``openPicker``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:43545:43911:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:43556:43922:FUNCTION
 
 .. rubric:: ``rename``
 
@@ -3536,7 +3536,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:43695:43899:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:43706:43910:FUNCTION
 
 .. rubric:: ``requestAnimationFrame callback @ 1381``
 
@@ -3558,7 +3558,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``dialogRef.current ?.querySelector( parseWorkflowInterfaceId(menu?.nodeId) ? '[aria-label="参数名称"]' : '[aria-label="节点名称"…``、``dialogRef.current ?.querySelector``、``parseWorkflowInterfaceId``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:43928:44030:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:43939:44041:FUNCTION
 
 .. rubric:: ``close``
 
@@ -3580,7 +3580,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setConfirmation``、``onClose``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44052:44279:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44063:44290:FUNCTION
 
 .. rubric:: ``hasInvalid``
 
@@ -3604,7 +3604,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44092:44272:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44103:44283:FUNCTION
 
 .. rubric:: ``Object.entries(invalid).some callback @ 1397``
 
@@ -3629,7 +3629,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44233:44270:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44244:44281:FUNCTION
 
 .. rubric:: ``graph.nodes.some callback @ 1400``
 
@@ -3652,7 +3652,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``key.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44297:47889:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:44308:47900:FUNCTION
 
 .. rubric:: ``action``
 
@@ -3682,7 +3682,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:45883:45981:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:45894:45992:FUNCTION
 
 .. rubric:: ``setTemplates callback @ 1446``
 
@@ -3707,7 +3707,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:45922:45952:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:45933:45963:FUNCTION
 
 .. rubric:: ``items.filter callback @ 1447``
 
@@ -3728,7 +3728,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:47381:47405:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:47392:47416:FUNCTION
 
 .. rubric:: ``setFitRequest callback @ 1486``
 
@@ -3749,7 +3749,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:47913:49213:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:47924:49224:FUNCTION
 
 .. rubric:: ``loadTemplate``
 
@@ -3777,7 +3777,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:48158:48191:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:48169:48202:FUNCTION
 
 .. rubric:: ``(catalog.builtinTemplates || []).find callback @ 1515``
 
@@ -3798,7 +3798,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49239:49762:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49250:49773:FUNCTION
 
 .. rubric:: ``deleteTemplate``
 
@@ -3822,7 +3822,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49430:49488:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49441:49499:FUNCTION
 
 .. rubric:: ``setTemplates callback @ 1555``
 
@@ -3847,7 +3847,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49454:49487:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49465:49498:FUNCTION
 
 .. rubric:: ``items.filter callback @ 1555``
 
@@ -3868,7 +3868,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49782:50876:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:49793:50887:FUNCTION
 
 .. rubric:: ``keyboard``
 
@@ -3891,7 +3891,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.preventDefault``、``setPendingPlacement``、``event.key.toLowerCase``、``action``、``isWorkflowTextEditing``、``redo``、``undo``、``copy``、``paste``、``duplicate``、``["delete", "backspace"].includes``、``deleteSelected``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:50901:51321:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:50912:51332:FUNCTION
 
 .. rubric:: ``runtimeAction``
 
@@ -3914,7 +3914,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setBusy``、``setError``、``workflowApi.taskAction``、``workflowApi.task``、``setInitialTask``、``onChanged``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:51348:51674:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:51359:51685:FUNCTION
 
 .. rubric:: ``downloadResult``
 
@@ -3937,7 +3937,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setDownloading``、``setError``、``downloadAttachmentResource``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:51696:52238:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:51707:52249:FUNCTION
 
 .. rubric:: ``editAgain``
 
@@ -3961,7 +3961,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:51875:51899:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:51886:51910:FUNCTION
 
 .. rubric:: ``setFitRequest callback @ 1641``
 
@@ -3982,7 +3982,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52110:52140:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52121:52151:FUNCTION
 
 .. rubric:: ``editableGraph.nodes.some callback @ 1650``
 
@@ -4003,7 +4003,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52295:52342:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52306:52353:FUNCTION
 
 .. rubric:: ``onOpenChange callback @ 1660``
 
@@ -4026,7 +4026,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``close``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52519:52552:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52530:52563:FUNCTION
 
 .. rubric:: ``onInteractOutside callback @ 1669``
 
@@ -4049,7 +4049,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52579:52839:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:52590:52850:FUNCTION
 
 .. rubric:: ``onEscapeKeyDown callback @ 1670``
 
@@ -4072,7 +4072,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.preventDefault``、``setPendingPlacement``、``setSidebarPane``、``close``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:54292:54324:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:54303:54335:FUNCTION
 
 .. rubric:: ``onClick callback @ 1721``
 
@@ -4094,7 +4094,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setMonitorView``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:54528:54556:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:54539:54567:FUNCTION
 
 .. rubric:: ``onClick callback @ 1729``
 
@@ -4116,7 +4116,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setMonitorView``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:54995:55437:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55006:55448:FUNCTION
 
 .. rubric:: ``[ ...(!readOnly ? [["sidebar", "工作流设置"]] : []), ["canvas", "流程画布"], ["config", readOnly ? "执行详情" : "节点信息"], ].map callback @ 1744``
 
@@ -4139,7 +4139,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55189:55358:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55200:55369:FUNCTION
 
 .. rubric:: ``onClick callback @ 1749``
 
@@ -4161,7 +4161,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setMobilePane``、``setSidebarPane``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55844:55881:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55855:55892:FUNCTION
 
 .. rubric:: ``onClick callback @ 1770``
 
@@ -4185,7 +4185,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55860:55880:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:55871:55891:FUNCTION
 
 .. rubric:: ``setReload callback @ 1770``
 
@@ -4206,7 +4206,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:56886:56915:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:56897:56926:FUNCTION
 
 .. rubric:: ``onChange callback @ 1797``
 
@@ -4229,7 +4229,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``loadTemplate``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:57069:57195:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:57080:57206:FUNCTION
 
 .. rubric:: ``(catalog.builtinTemplates || []).map callback @ 1800``
 
@@ -4250,7 +4250,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:57239:57390:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:57250:57401:FUNCTION
 
 .. rubric:: ``templates.map callback @ 1804``
 
@@ -4271,7 +4271,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:57758:57784:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:57769:57795:FUNCTION
 
 .. rubric:: ``onClick callback @ 1816``
 
@@ -4293,7 +4293,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:58273:58314:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:58284:58325:FUNCTION
 
 .. rubric:: ``onClick callback @ 1827``
 
@@ -4315,7 +4315,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setConfirmation``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:58953:58990:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:58964:59001:FUNCTION
 
 .. rubric:: ``onChange callback @ 1845``
 
@@ -4338,7 +4338,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``importWorkflow``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:59213:59249:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:59224:59260:FUNCTION
 
 .. rubric:: ``onClick callback @ 1851``
 
@@ -4360,7 +4360,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``importFileRef.current?.click``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:60019:60106:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:60030:60117:FUNCTION
 
 .. rubric:: ``onChange callback @ 1872``
 
@@ -4383,7 +4383,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeDraft``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:60398:60568:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:60409:60579:FUNCTION
 
 .. rubric:: ``onChange callback @ 1881``
 
@@ -4406,7 +4406,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeDraft``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:60870:61037:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:60881:61048:FUNCTION
 
 .. rubric:: ``onPointerMove callback @ 1897``
 
@@ -4429,7 +4429,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``stopFollowingTask``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:61069:61518:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:61080:61529:FUNCTION
 
 .. rubric:: ``onClickCapture callback @ 1901``
 
@@ -4452,7 +4452,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.target.closest``、``event.preventDefault``、``event.stopPropagation``、``placePendingNode``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:61556:61813:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:61567:61824:FUNCTION
 
 .. rubric:: ``onContextMenuCapture callback @ 1913``
 
@@ -4475,7 +4475,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.target.closest``、``event.preventDefault``、``event.stopPropagation``、``setPendingPlacement``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:61844:62113:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:61855:62124:FUNCTION
 
 .. rubric:: ``onDoubleClick callback @ 1920``
 
@@ -4498,7 +4498,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``isWorkflowCanvasBlankTarget``、``event.preventDefault``、``openPicker``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:62277:62311:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:62288:62322:FUNCTION
 
 .. rubric:: ``onPointerMove callback @ 1931``
 
@@ -4521,7 +4521,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:62475:62498:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:62486:62509:FUNCTION
 
 .. rubric:: ``onClick callback @ 1936``
 
@@ -4543,7 +4543,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``navigateGraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:62649:63622:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:62660:63633:FUNCTION
 
 .. rubric:: ``graphPath.map callback @ 1941``
 
@@ -4571,7 +4571,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:63288:63364:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:63299:63375:FUNCTION
 
 .. rubric:: ``onClick callback @ 1955``
 
@@ -4593,7 +4593,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``navigateGraph``、``graphPath.slice``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:63459:63483:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:63470:63494:FUNCTION
 
 .. rubric:: ``parent?.nodes.find callback @ 1959``
 
@@ -4614,7 +4614,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:63833:64003:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:63844:64014:FUNCTION
 
 .. rubric:: ``onClick callback @ 1969``
 
@@ -4636,7 +4636,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``saveSubgraphTemplate``、``graphPath.slice``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:65463:65802:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:65474:65813:FUNCTION
 
 .. rubric:: ``onNodeClick callback @ 2009``
 
@@ -4662,7 +4662,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setSelected``、``setSelectedIds``、``setSelectedEdges``、``setPanel``、``setMonitorView``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:65839:66208:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:65850:66219:FUNCTION
 
 .. rubric:: ``onNodeDoubleClick callback @ 2018``
 
@@ -4688,7 +4688,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``enterSubgraph``、``setSelected``、``setPanel``、``setMonitorView``、``setMobilePane``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:66292:66571:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:66303:66582:FUNCTION
 
 .. rubric:: ``onPaneClick callback @ 2029``
 
@@ -4710,7 +4710,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setSelected``、``setSelectedIds``、``setSelectedEdges``、``setMenu``、``setMonitorView``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:66608:66841:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:66619:66852:FUNCTION
 
 .. rubric:: ``onNodeContextMenu callback @ 2037``
 
@@ -4736,7 +4736,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``selectedIds.includes``、``select``、``openMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:66878:67019:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:66889:67030:FUNCTION
 
 .. rubric:: ``onPaneContextMenu callback @ 2043``
 
@@ -4759,7 +4759,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``openMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67056:67172:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67067:67183:FUNCTION
 
 .. rubric:: ``onEdgeContextMenu callback @ 2047``
 
@@ -4785,7 +4785,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``openMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67205:67770:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67216:67781:FUNCTION
 
 .. rubric:: ``onEdgesChange callback @ 2050``
 
@@ -4810,7 +4810,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67272:67329:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67283:67340:FUNCTION
 
 .. rubric:: ``changes.filter callback @ 2052``
 
@@ -4831,7 +4831,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67430:67750:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67441:67761:FUNCTION
 
 .. rubric:: ``setSelectedEdges callback @ 2055``
 
@@ -4854,7 +4854,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``ids.add``、``ids.delete``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67799:69219:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:67810:69230:FUNCTION
 
 .. rubric:: ``onConnect callback @ 2064``
 
@@ -4881,7 +4881,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:68392:68626:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:68403:68637:FUNCTION
 
 .. rubric:: ``interfaceContainer?.subgraph.interface?.inputs?.some callback @ 2078``
 
@@ -4902,7 +4902,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:68821:69042:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:68832:69053:FUNCTION
 
 .. rubric:: ``changeGraph callback @ 2087``
 
@@ -4925,7 +4925,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``connectWorkflow``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:69253:69878:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:69264:69889:FUNCTION
 
 .. rubric:: ``onConnectStart callback @ 2100``
 
@@ -4951,7 +4951,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setPicker``、``setMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:69956:70086:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:69967:70097:FUNCTION
 
 .. rubric:: ``onDragOver callback @ 2120``
 
@@ -4974,7 +4974,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:70112:70813:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:70123:70824:FUNCTION
 
 .. rubric:: ``onDrop callback @ 2124``
 
@@ -4999,7 +4999,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:70296:70493:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:70307:70504:FUNCTION
 
 .. rubric:: ``paletteDefinitions.find callback @ 2128``
 
@@ -5022,7 +5022,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.dataTransfer.getData``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:72795:73445:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:72806:73456:FUNCTION
 
 .. rubric:: ``(pendingPlacement.definition.inputs || []).map callback @ 2189``
 
@@ -5043,7 +5043,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:73596:74351:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:73607:74362:FUNCTION
 
 .. rubric:: ``(pendingPlacement.definition.outputs || []).map callback @ 2206``
 
@@ -5064,7 +5064,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:74980:75056:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:74991:75067:FUNCTION
 
 .. rubric:: ``onClick callback @ 2238``
 
@@ -5088,7 +5088,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:75034:75055:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:75045:75066:FUNCTION
 
 .. rubric:: ``setParallelRegionsVisible callback @ 2239``
 
@@ -5109,7 +5109,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:75495:75681:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:75506:75692:FUNCTION
 
 .. rubric:: ``onClick callback @ 2252``
 
@@ -5132,7 +5132,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``event.currentTarget.getBoundingClientRect``、``openPicker``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:75991:76167:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:76002:76178:FUNCTION
 
 .. rubric:: ``onClick callback @ 2265``
 
@@ -5154,7 +5154,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``flow.fitView``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:77242:77278:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:77253:77289:FUNCTION
 
 .. rubric:: ``onClick callback @ 2297``
 
@@ -5176,7 +5176,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``enterSubgraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:79463:79476:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:79474:79487:FUNCTION
 
 .. rubric:: ``onPaste callback @ 2355``
 
@@ -5198,7 +5198,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``paste``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:79717:79827:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:79728:79838:FUNCTION
 
 .. rubric:: ``onEnter callback @ 2361``
 
@@ -5220,7 +5220,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``enterSubgraph``、``setMenu``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:79876:80064:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:79887:80075:FUNCTION
 
 .. rubric:: ``graph.nodes.some callback @ 2366``
 
@@ -5241,7 +5241,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80215:80412:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80226:80423:FUNCTION
 
 .. rubric:: ``onAddNode callback @ 2373``
 
@@ -5264,7 +5264,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``beginPlacement``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80748:80815:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80759:80826:FUNCTION
 
 .. rubric:: ``onToggleOutput callback @ 2386``
 
@@ -5287,7 +5287,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``toggleOutput``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80861:80903:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80872:80914:FUNCTION
 
 .. rubric:: ``onAdd callback @ 2389``
 
@@ -5309,7 +5309,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``openPicker``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80935:81764:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:80946:81775:FUNCTION
 
 .. rubric:: ``onPortMode callback @ 2390``
 
@@ -5334,7 +5334,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:81017:81683:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:81028:81694:FUNCTION
 
 .. rubric:: ``changeGraph callback @ 2392``
 
@@ -5359,7 +5359,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:81447:81513:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:81458:81524:FUNCTION
 
 .. rubric:: ``current.nodes.find callback @ 2403``
 
@@ -5380,7 +5380,7 @@ src/features/workflows/WorkflowEditor 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:82625:82654:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:82636:82665:FUNCTION
 
 .. rubric:: ``onEnterSubgraph callback @ 2434``
 
@@ -5402,7 +5402,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``enterSubgraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:82727:82755:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:82738:82766:FUNCTION
 
 .. rubric:: ``onOpenLogs callback @ 2436``
 
@@ -5424,7 +5424,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setMonitorView``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:83068:83090:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:83079:83101:FUNCTION
 
 .. rubric:: ``onClick callback @ 2445``
 
@@ -5446,7 +5446,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setPanel``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:83358:83384:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:83369:83395:FUNCTION
 
 .. rubric:: ``onClick callback @ 2453``
 
@@ -5468,7 +5468,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setPanel``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:84021:84099:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:84032:84110:FUNCTION
 
 .. rubric:: ``onChange callback @ 2468``
 
@@ -5491,7 +5491,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeInterface``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:84160:84299:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:84171:84310:FUNCTION
 
 .. rubric:: ``onDelete callback @ 2471``
 
@@ -5513,7 +5513,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeInterface``、``select``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:84336:85049:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:84347:85060:FUNCTION
 
 .. rubric:: ``onConnect callback @ 2475``
 
@@ -5539,7 +5539,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``connectInterface``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:85835:85906:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:85846:85917:FUNCTION
 
 .. rubric:: ``workflowGraphAtPath( rootGraph, graphPath.slice(0, -1), )?.nodes.find callback @ 2508``
 
@@ -5562,7 +5562,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``graphPath.at``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:86060:86096:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:86071:86107:FUNCTION
 
 .. rubric:: ``onEnter callback @ 2512``
 
@@ -5584,7 +5584,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``enterSubgraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:86138:86171:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:86149:86182:FUNCTION
 
 .. rubric:: ``onSaveTemplate callback @ 2513``
 
@@ -5606,7 +5606,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``saveSubgraphTemplate``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:86215:86250:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:86226:86261:FUNCTION
 
 .. rubric:: ``onUpdateTemplate callback @ 2514``
 
@@ -5628,7 +5628,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``updateSubgraphTemplate``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:87503:87539:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:87514:87550:FUNCTION
 
 .. rubric:: ``onValidity callback @ 2542``
 
@@ -5651,7 +5651,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``validity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:87575:87650:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:87586:87661:FUNCTION
 
 .. rubric:: ``onChange callback @ 2543``
 
@@ -5674,7 +5674,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeGraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:88353:88438:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:88364:88449:FUNCTION
 
 .. rubric:: ``onStateChange callback @ 2559``
 
@@ -5697,7 +5697,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``validity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:88503:88589:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:88514:88600:FUNCTION
 
 .. rubric:: ``onChange callback @ 2562``
 
@@ -5720,7 +5720,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeDraft``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:89085:89173:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:89096:89184:FUNCTION
 
 .. rubric:: ``onStateChange callback @ 2575``
 
@@ -5743,7 +5743,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``validity``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:89234:89324:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:89245:89335:FUNCTION
 
 .. rubric:: ``onChange callback @ 2578``
 
@@ -5766,7 +5766,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``changeDraft``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:90434:91115:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:90445:91126:FUNCTION
 
 .. rubric:: ``workflowArtifacts(task?.result).map callback @ 2611``
 
@@ -5789,7 +5789,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:90687:90718:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:90698:90729:FUNCTION
 
 .. rubric:: ``onClick callback @ 2617``
 
@@ -5811,7 +5811,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``downloadResult``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:91376:91409:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:91387:91420:FUNCTION
 
 .. rubric:: ``onClick callback @ 2635``
 
@@ -5833,7 +5833,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``runtimeAction``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:91646:91680:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:91657:91691:FUNCTION
 
 .. rubric:: ``onClick callback @ 2643``
 
@@ -5855,7 +5855,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``runtimeAction``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:92058:92099:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:92069:92110:FUNCTION
 
 .. rubric:: ``onClick callback @ 2655``
 
@@ -5877,7 +5877,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setConfirmation``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:93166:93195:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:93177:93206:FUNCTION
 
 .. rubric:: ``onClick callback @ 2691``
 
@@ -5899,7 +5899,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:93551:93575:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:93562:93586:FUNCTION
 
 .. rubric:: ``onClick callback @ 2703``
 
@@ -5921,7 +5921,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:94031:94056:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:94042:94067:FUNCTION
 
 .. rubric:: ``onClick callback @ 2718``
 
@@ -5943,7 +5943,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:94774:94852:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:94785:94863:FUNCTION
 
 .. rubric:: ``onOpenChange callback @ 2741``
 
@@ -5966,7 +5966,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setConfirmation``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:96022:96049:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:96033:96060:FUNCTION
 
 .. rubric:: ``onClick callback @ 2774``
 
@@ -5988,7 +5988,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``setConfirmation``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:96580:96611:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:96591:96622:FUNCTION
 
 .. rubric:: ``onClick callback @ 2789``
 
@@ -6010,7 +6010,7 @@ src/features/workflows/WorkflowEditor 模块
 
 **主要协作调用**：``action``。
 
-.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:97097:97470:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/WorkflowEditor.jsx:97108:97481:FUNCTION
 
 .. rubric:: ``onClick callback @ 2803``
 

@@ -366,7 +366,7 @@
    * - :doc:`src/components/sidebar/ConversationsList </api/javascript/components/sidebar/ConversationsList>`
      - 11
      - 0
-     - 74
+     - 78
      - ``src/components/sidebar/ConversationsList.jsx``
    * - :doc:`src/components/sidebar/Sidebar </api/javascript/components/sidebar/Sidebar>`
      - 1

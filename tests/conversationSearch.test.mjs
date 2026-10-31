@@ -95,7 +95,7 @@ const row = (id, title = id, children = []) => ({
 const normal = Array.from({ length: 30 }, (_, index) => row(`normal-${index}`));
 let Root;
 let ConversationsList;
-async function page(responder = () => undefined) {
+async function page(responder = () => undefined, props = {}) {
   const dom = new JSDOM('<div id="root"></div>', {
     url: "http://localhost/doc/doc-1/chat-1",
     pretendToBeVisual: true,
@@ -129,6 +129,7 @@ async function page(responder = () => undefined) {
       React.createElement(ConversationsList, {
         ref,
         onSelect: (id) => selections.push(id),
+        ...props,
       }),
     ),
   );
@@ -145,6 +146,34 @@ async function page(responder = () => undefined) {
     },
   };
 }
+test('server-scoped picker reuses grouped conversation rows without sidebar requests or management controls', async () => {
+  const fixture = await page(() => { throw Error('picker must never request sidebar data'); }, {
+    selectedConversationId: 'child-one',
+    selectionOptions: [
+      {value:'child-one',label:'资料整理',group:'研究项目',status:'idle',description:'已授权子智能体'},
+      {value:'child-stopped',label:'已停止代理',group:'研究项目',status:'closed',disabled:true},
+      {value:'chat-two',label:'日常交流',group:'__proto__'},
+    ],
+  });
+  try {
+    assert.equal(fixture.calls.length, 0);
+    assert.ok(fixture.document.querySelector('[data-conversation-selection-mode="true"]'));
+    assert.match(fixture.document.body.textContent, /研究项目/);
+    assert.match(fixture.document.body.textContent, /__proto__/);
+    assert.equal(fixture.document.querySelector('[aria-label="资料整理"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(fixture.document.querySelector('[aria-label="已停止代理"]').disabled, true);
+    assert.equal(fixture.document.querySelector('[aria-haspopup="menu"]'), null);
+    await click(fixture.document.querySelector('[aria-label="日常交流"]'));
+    assert.deepEqual(fixture.selections, ['chat-two']);
+    await type(fixture, '研究项目');
+    await wait();
+    assert.equal(fixture.document.querySelector('[data-conversation-id="chat-two"]'), null);
+    assert.ok(fixture.document.querySelector('[data-conversation-id="child-one"]'));
+    await act(async () => fixture.ref.current.reload());
+    assert.equal(fixture.calls.length, 0);
+  } finally { await fixture.close(); }
+});
+
 const wait = (ms = 300) =>
   act(async () => new Promise((resolve) => setTimeout(resolve, ms)));
 async function type(page, value) {

@@ -311,7 +311,9 @@ export default function WorkflowNodePanel({
                               ?.name ||
                             effective ||
                             "自动选择模型"
-                          : String(effective ?? "默认")}
+                          : property.ui?.widget === "model-options"
+                            ? `已配置 ${Object.keys(effective || {}).length} 个模型，未覆盖项继承模型设置`
+                            : String(effective ?? "默认")}
                     </p>
                   ) : (
                     <WorkflowDataField
@@ -322,6 +324,7 @@ export default function WorkflowNodePanel({
                       disabled={disabled}
                       compact
                       models={models}
+                      fieldValues={{...graph.settings?.commonConfig, ...Object.fromEntries(Object.entries(node.config || {}).filter(([,value]) => value != null))}}
                       onChange={(value) =>
                         updateConfig({ ...node.config, [key]: value })
                       }
