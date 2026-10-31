@@ -2271,7 +2271,7 @@ function SettingItemRenderer({ item, path }) {
 }
 
 // ─── Main Component ────────────────────────────────────────────────
-export default function DynamicSettings({ config = [], onChange, initialValues, className, onImageUpload, runtimeContext = {}, validationRef, onSave, disabled = false }) {
+export default function DynamicSettings({ config = [], onChange, initialValues, initialDialog, className, onImageUpload, runtimeContext = {}, validationRef, onSave, disabled = false }) {
     const [values, setValues] = useState(() => buildDefaults(config, initialValues));
     const valuesRef = useRef(values);
     const onChangeRef = useRef(onChange);
@@ -2289,6 +2289,12 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     const storageBindings = useRef(new Map());
     const [confirm, confirmation] = useConfirmation();
     const [descriptorDialog, setDescriptorDialog] = useState({ open: false, value: null, serial: 0 });
+    const openedInitialDialog = useRef(null);
+    useEffect(() => {
+        if (!initialDialog || openedInitialDialog.current === initialDialog) return;
+        openedInitialDialog.current = initialDialog;
+        setDescriptorDialog((current) => ({ open: true, value: initialDialog, serial: current.serial + 1 }));
+    }, [initialDialog]);
     const descriptorRef = useRef(descriptorDialog);
     descriptorRef.current = descriptorDialog;
     // Preserve callback identity through exit so the memoized outgoing form is

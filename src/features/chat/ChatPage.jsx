@@ -3495,6 +3495,28 @@ function ChatPage({
     );
 
     const notificationFocusRef = useRef(null);
+    const selfMessageFocusRef = useRef(null);
+    useEffect(() => {
+        const id = new URLSearchParams(routeLocation.search).get('focusSelfMessage');
+        if (!conversationId || !id || id.length > 200) return undefined;
+        const key = `${conversationId}:${routeLocation.key}:${id}`;
+        if (selfMessageFocusRef.current === key) return undefined;
+        selfMessageFocusRef.current = key;
+        let cancelled = false, opened = false;
+        void (async () => {
+            if (remoteSettingsPanelRef.current && !(await remoteSettingsPanelRef.current.canClose())) return;
+            if (cancelled) return;
+            opened = true;
+            const endpoint = `/conversation-self-messages/conversations/${encodeURIComponent(conversationId)}`;
+            setRemoteSettingsPanel({ title: '自消息', conversationId, endpoint: `${endpoint}/settings`,
+                initialDetailEndpoint: `${endpoint}/records/${encodeURIComponent(id)}/dialog` });
+            setIsSidebarOpen(true);
+        })();
+        return () => {
+            cancelled = true;
+            if (!opened && selfMessageFocusRef.current === key) selfMessageFocusRef.current = null;
+        };
+    }, [conversationId, routeLocation.search, routeLocation.key]);
     useEffect(() => {
         const id = new URLSearchParams(window.location.search).get('focusMessage');
         const key = `${conversationId}:${id}`;
@@ -3887,7 +3909,8 @@ function ChatPage({
                         title={remoteSettingsPanel?.title}
                         children={remoteSettingsPanel ? <RemoteSettingsPanel ref={remoteSettingsPanelRef}
                             active={isSidebarOpen && remoteSettingsPanel.conversationId === conversationId}
-                            endpoint={remoteSettingsPanel.endpoint} conversationId={remoteSettingsPanel.conversationId} /> : undefined}
+                            endpoint={remoteSettingsPanel.endpoint} conversationId={remoteSettingsPanel.conversationId}
+                            initialDetailEndpoint={remoteSettingsPanel.initialDetailEndpoint} /> : undefined}
                         advancedSettings={advancedSettings}
                         initialSettingValues={initialSettingValues || advancedSettingsValues}
                         settingsInstanceKey={settingsInstanceKey}

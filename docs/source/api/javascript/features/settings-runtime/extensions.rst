@@ -15,9 +15,9 @@ src/features/settings-runtime/extensions 模块
 
 * **源码文件**：``src/features/settings-runtime/extensions.jsx``
 * **模块标识**：``src/features/settings-runtime/extensions``
-* **顶层函数/组件/Hook**：2
+* **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：1
+* **局部函数与匿名回调**：2
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,30 @@ src/features/settings-runtime/extensions 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:590:770:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:675:935:FUNCTION
+
+.. js:function:: LazyConversationMessage(props)
+
+   渲染 ``LazyConversationMessage`` React 组件，并协调该界面的状态、事件和子组件。
+
+   **性质**：同步函数；导出 API；源码第 ``14``—``18`` 行。
+
+   **参数**
+
+   ``props``
+      React 组件属性。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``<Suspense fallback={<div role="status" className="flex items-center gap-2 py-3 text-xs text-muted-foreground"><Spinner />正在加载内容…</div>}> <ConversationMessage {...props} /> </Suspe…``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:935:1115:FUNCTION
 
 .. js:function:: LoadingExtension()
 
    渲染 ``LoadingExtension`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``13``—``15`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``20``—``22`` 行。
 
    **参数**
 
@@ -43,13 +60,13 @@ src/features/settings-runtime/extensions 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<div role="status" className="flex min-h-24 items-center justify-center gap-2 text-sm text-muted-foreground"><Spinner />正在加载图编辑组件…</div>``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:770:975:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:1115:1320:FUNCTION
 
 .. js:function:: LazyNodeGraphField(props)
 
    渲染 ``LazyNodeGraphField`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``17``—``23`` 行。
+   **性质**：同步函数；导出 API；源码第 ``24``—``30`` 行。
 
    **参数**
 
@@ -76,6 +93,28 @@ src/features/settings-runtime/extensions 模块
 实现 ``lazy`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``10``—``10`` 行。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``import``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/extensions.jsx:624:673:FUNCTION
+
+.. rubric:: ``lazy callback @ 12``
+
+.. code-block:: javascript
+
+   lazy callback @ 12()
+
+实现 ``lazy`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``12``—``12`` 行。
 
 **参数**
 

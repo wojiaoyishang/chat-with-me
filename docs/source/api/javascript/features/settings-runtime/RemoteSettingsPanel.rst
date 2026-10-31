@@ -67,22 +67,22 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:854:6971:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:854:7380:FUNCTION
 
 .. rubric:: ``RemoteSettingsPanel``
 
 .. code-block:: javascript
 
-   RemoteSettingsPanel({ active, endpoint, conversationId, onNavigate }, ref)
+   RemoteSettingsPanel({ active, endpoint, conversationId, initialDetailEndpoint, onNavigate }, ref)
 
 实现 ``RemoteSettingsPanel`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``14``—``116`` 行。
+**性质**：同步局部函数；源码第 ``14``—``120`` 行。
 
 **参数**
 
-``{ active, endpoint, conversationId, onNavigate }``
-   调用方传入的 ``active, endpoint, conversationId, onNavigate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ active, endpoint, conversationId, initialDetailEndpoint, onNavigate }``
+   调用方传入的 ``active, endpoint, conversationId, initialDetailEndpoint, onNavigate`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 ``ref``
    调用方传入的 ``ref`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
@@ -100,7 +100,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1606:1758:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1652:1804:FUNCTION
 
 .. rubric:: ``useCallback callback @ 27``
 
@@ -122,7 +122,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **主要协作调用**：``controller.abort``、``controllers.current.clear``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1779:1846:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1825:1892:FUNCTION
 
 .. rubric:: ``useEffect callback @ 32``
 
@@ -150,7 +150,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1802:1845:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1848:1891:FUNCTION
 
 .. rubric:: ``subscribeBackend callback @ 32``
 
@@ -172,7 +172,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **主要协作调用**：``setConnection``、``getBackendConnection``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1867:1879:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1913:1925:FUNCTION
 
 .. rubric:: ``useEffect callback @ 33``
 
@@ -192,7 +192,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1922:3315:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1968:3361:FUNCTION
 
 .. rubric:: ``useMemo callback @ 34``
 
@@ -220,7 +220,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:1993:3313:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:2039:3359:FUNCTION
 
 .. rubric:: ``['get', 'post', 'put', 'patch', 'delete'].map callback @ 34``
 
@@ -247,7 +247,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:2013:3306:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:2059:3352:FUNCTION
 
 .. rubric:: ``anonymous callback @ 35``
 
@@ -284,7 +284,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:2459:2484:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:2505:2530:FUNCTION
 
 .. rubric:: ``abort``
 
@@ -306,7 +306,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3359:4633:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3405:4957:FUNCTION
 
 .. rubric:: ``useEffect callback @ 57``
 
@@ -316,7 +316,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``57``—``81`` 行；所属函数 ``RemoteSettingsPanel``。
+**性质**：同步局部函数；源码第 ``57``—``85`` 行；所属函数 ``RemoteSettingsPanel``。
 
 **参数**
 
@@ -330,11 +330,11 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``cancel``、``setView``、``scopedApi.get(requestEndpoint(endpoint, {})).then((descriptor) => { if (serial !== epoch.current) return; if (descripto…``、``scopedApi.get(requestEndpoint(endpoint, {})).then``、``scopedApi.get``、``requestEndpoint``。
+**主要协作调用**：``cancel``、``setView``、``Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi…``、``Promise.all``、``scopedApi.get``、``requestEndpoint``。
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3602:3677:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3648:3723:FUNCTION
 
 .. rubric:: ``setView callback @ 64``
 
@@ -355,7 +355,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3825:3882:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3871:3928:FUNCTION
 
 .. rubric:: ``setView callback @ 69``
 
@@ -376,42 +376,42 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:3948:4351:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4134:4675:FUNCTION
 
-.. rubric:: ``scopedApi.get(requestEndpoint(endpoint, {})).then callback @ 70``
+.. rubric:: ``Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi… callback @ 73``
 
 .. code-block:: javascript
 
-   scopedApi.get(requestEndpoint(endpoint, {})).then callback @ 70(descriptor)
+   Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi… callback @ 73([descriptor, initialDialog])
 
-处理 ``scopedApi.get(requestEndpoint(endpoint, {})).then callback`` 对应的事件或订阅结果。
+实现 ``Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``70``—``76`` 行；所属函数 ``useEffect callback @ 57``。
+**性质**：同步局部函数；源码第 ``73``—``80`` 行；所属函数 ``useEffect callback @ 57``。
 
 **参数**
 
-``descriptor``
-   调用方传入的 ``descriptor`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``[descriptor, initialDialog]``
+   调用方传入的 ``descriptor, initialDialog`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**显式抛出**：``new Error('后端未提供支持的设置描述。')``。
+**显式抛出**：``new Error('后端未提供支持的设置描述。')``、``new Error('后端未提供支持的详情描述。')``。
 
 **主要协作调用**：``Array.isArray``、``setValues``、``cloneData``、``setView``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4359:4602:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4683:4926:FUNCTION
 
-.. rubric:: ``scopedApi.get(requestEndpoint(endpoint, {})).then((descriptor) => { if (serial !== epoch.current) return; if (descripto… callback @ 76``
+.. rubric:: ``Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi… callback @ 80``
 
 .. code-block:: javascript
 
-   scopedApi.get(requestEndpoint(endpoint, {})).then((descriptor) => { if (serial !== epoch.current) return; if (descripto… callback @ 76(error)
+   Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi… callback @ 80(error)
 
-实现 ``scopedApi.get(requestEndpoint(endpoint, {})).then((descriptor) => { if (serial !== epoch.current) return; if (descripto…`` 对应的前端处理。
+实现 ``Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``76``—``79`` 行；所属函数 ``useEffect callback @ 57``。
+**性质**：同步局部函数；源码第 ``80``—``83`` 行；所属函数 ``useEffect callback @ 57``。
 
 **参数**
 
@@ -426,17 +426,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4506:4590:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4830:4914:FUNCTION
 
-.. rubric:: ``setView callback @ 78``
+.. rubric:: ``setView callback @ 82``
 
 .. code-block:: javascript
 
-   setView callback @ 78(previous)
+   setView callback @ 82(previous)
 
 设置与 ``View`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``scopedApi.get(requestEndpoint(endpoint, {})).then((descriptor) => { if (serial !== epoch.current) return; if (descripto… callback @ 76``。
+**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``Promise.all([ scopedApi.get(requestEndpoint(endpoint, {})), initialDetailEndpoint ? scopedApi.get(requestEndpoint(initi… callback @ 80``。
 
 **参数**
 
@@ -447,17 +447,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4737:4909:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5084:5256:FUNCTION
 
-.. rubric:: ``useImperativeHandle callback @ 82``
+.. rubric:: ``useImperativeHandle callback @ 86``
 
 .. code-block:: javascript
 
-   useImperativeHandle callback @ 82()
+   useImperativeHandle callback @ 86()
 
 封装 ``ImperativeHandle`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``82``—``87`` 行；所属函数 ``RemoteSettingsPanel``。
+**性质**：同步局部函数；源码第 ``86``—``91`` 行；所属函数 ``RemoteSettingsPanel``。
 
 **参数**
 
@@ -469,7 +469,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4746:4901:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5093:5248:FUNCTION
 
 .. rubric:: ``canClose``
 
@@ -479,7 +479,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 实现 ``canClose`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``83``—``86`` 行；所属函数 ``useImperativeHandle callback @ 82``。
+**性质**：异步局部函数；源码第 ``87``—``90`` 行；所属函数 ``useImperativeHandle callback @ 86``。
 
 **参数**
 
@@ -491,17 +491,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **主要协作调用**：``guards.current.values``、``guard``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:4959:5115:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5306:5462:FUNCTION
 
-.. rubric:: ``useCallback callback @ 88``
+.. rubric:: ``useCallback callback @ 92``
 
 .. code-block:: javascript
 
-   useCallback callback @ 88(key, guard)
+   useCallback callback @ 92(key, guard)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``88``—``91`` 行；所属函数 ``RemoteSettingsPanel``。
+**性质**：同步局部函数；源码第 ``92``—``95`` 行；所属函数 ``RemoteSettingsPanel``。
 
 **参数**
 
@@ -523,17 +523,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5031:5108:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5378:5455:FUNCTION
 
-.. rubric:: ``returned callback @ 90``
+.. rubric:: ``returned callback @ 94``
 
 .. code-block:: javascript
 
-   returned callback @ 90()
+   returned callback @ 94()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``useCallback callback @ 88``。
+**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``useCallback callback @ 92``。
 
 **参数**
 
@@ -549,17 +549,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **主要协作调用**：``guards.current.get``、``guards.current.delete``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5157:5409:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5504:5783:FUNCTION
 
-.. rubric:: ``useMemo callback @ 92``
+.. rubric:: ``useMemo callback @ 96``
 
 .. code-block:: javascript
 
-   useMemo callback @ 92()
+   useMemo callback @ 96()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``92``—``97`` 行；所属函数 ``RemoteSettingsPanel``。
+**性质**：同步局部函数；源码第 ``96``—``101`` 行；所属函数 ``RemoteSettingsPanel``。
 
 **参数**
 
@@ -571,7 +571,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5277:5343:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:5624:5690:FUNCTION
 
 .. rubric:: ``isDialogActive``
 
@@ -581,7 +581,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 判断与 ``Dialog Active`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``useMemo callback @ 92``。
+**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``useMemo callback @ 96``。
 
 **参数**
 
@@ -591,17 +591,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:6846:6890:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:7255:7299:FUNCTION
 
-.. rubric:: ``onClick callback @ 113``
+.. rubric:: ``onClick callback @ 117``
 
 .. code-block:: javascript
 
-   onClick callback @ 113()
+   onClick callback @ 117()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``RemoteSettingsPanel``。
+**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``RemoteSettingsPanel``。
 
 **参数**
 
@@ -615,17 +615,17 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:6863:6889:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:7272:7298:FUNCTION
 
-.. rubric:: ``setVersion callback @ 113``
+.. rubric:: ``setVersion callback @ 117``
 
 .. code-block:: javascript
 
-   setVersion callback @ 113(previous)
+   setVersion callback @ 117(previous)
 
 设置与 ``Version`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``onClick callback @ 113``。
+**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``onClick callback @ 117``。
 
 **参数**
 

@@ -11,12 +11,12 @@ const backendKey = (connection) => JSON.stringify([connection.id, connection.url
 const aborted = () => new DOMException('The settings panel is no longer active.', 'AbortError');
 
 /** A backend-described page hosted in any drawer, scoped to its opening connection. */
-const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, endpoint, conversationId, onNavigate }, ref) {
+const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, endpoint, conversationId, initialDetailEndpoint, onNavigate }, ref) {
     const [connection, setConnection] = useState(getBackendConnection);
     const [version, setVersion] = useState(0);
     const [view, setView] = useState({ descriptor: null, key: '', loading: false, error: '' });
     const connectionKey = backendKey(connection);
-    const identity = JSON.stringify([connectionKey, endpoint, conversationId]);
+    const identity = JSON.stringify([connectionKey, endpoint, conversationId, initialDetailEndpoint]);
     const state = useRef({ active, identity });
     state.current = { active, identity };
     const epoch = useRef(0);
@@ -67,18 +67,22 @@ const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, en
         openingConnection.current = connectionKey;
         const serial = epoch.current;
         setView((previous) => ({ ...previous, loading: true, error: '' }));
-        void scopedApi.get(requestEndpoint(endpoint, {})).then((descriptor) => {
+        void Promise.all([
+            scopedApi.get(requestEndpoint(endpoint, {})),
+            initialDetailEndpoint ? scopedApi.get(requestEndpoint(initialDetailEndpoint, {})) : null,
+        ]).then(([descriptor, initialDialog]) => {
             if (serial !== epoch.current) return;
             if (descriptor?.schema !== 'cwm.settings.v1' || descriptor.scope !== 'backend' || !Array.isArray(descriptor.options))
                 throw new Error('后端未提供支持的设置描述。');
+            if (initialDialog && !Array.isArray(initialDialog.options)) throw new Error('后端未提供支持的详情描述。');
             setValues(cloneData(descriptor.defaultOptions || {}));
-            setView({ descriptor, key: identity, loading: false, error: '' });
+            setView({ descriptor, initialDialog, key: identity, loading: false, error: '' });
         }).catch((error) => {
             if (serial !== epoch.current || error.name === 'AbortError' || error.code === 'ERR_CANCELED') return;
             setView((previous) => ({ ...previous, loading: false, error: error.message || '加载失败，请重试。' }));
         });
         return cancel;
-    }, [active, endpoint, connectionKey, identity, version, cancel, scopedApi]);
+    }, [active, endpoint, initialDetailEndpoint, connectionKey, identity, version, cancel, scopedApi]);
     useImperativeHandle(ref, () => ({
         async canClose() {
             for (const guard of guards.current.values()) if (!(await guard())) return false;
@@ -92,7 +96,7 @@ const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, en
     const runtimeContext = useMemo(() => ({
         surface: 'conversation', conversationId, api: scopedApi, loadingMode: 'inline',
         isDialogActive: () => state.current.active && state.current.identity === identity,
-        registerDraftGuard,
+        registerDraftGuard, protectDialogDrafts: true,
         navigate: onNavigate,
     }), [conversationId, scopedApi, registerDraftGuard, identity, onNavigate]);
     const current = view.key === identity;
@@ -100,7 +104,7 @@ const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, en
         data-state={active ? 'open' : 'closed'} aria-hidden={!active || undefined} inert={!active ? true : undefined}>
         {current && view.descriptor && <div className="cwm-settings-reveal">
             <DynamicSettings key={identity} config={view.descriptor.options} initialValues={values} onChange={setValues}
-                disabled={!active || view.loading || Boolean(view.error)} runtimeContext={runtimeContext} />
+                initialDialog={view.initialDialog} disabled={!active || view.loading || Boolean(view.error)} runtimeContext={runtimeContext} />
         </div>}
         {active && (view.loading || !current && !view.error) && <div role="status"
             className="absolute inset-0 flex min-h-32 items-center justify-center gap-2 bg-background/85 text-sm text-muted-foreground">

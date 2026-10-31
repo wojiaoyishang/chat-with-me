@@ -197,6 +197,9 @@ const createElementRenderers = ({
 
         a: ({ href, children }) => {
             const modalLink = isUniversalModalLink(href);
+            // An independent stored reply can display a link's label, but cannot
+            // launch a conversation-bound action dialog from saved tool output.
+            if (renderSurface === 'record' && modalLink) return <span>{children}</span>;
             return (
                 <a
                     href={href}
@@ -476,7 +479,7 @@ function MarkdownRendererInner({
     onTaskToggle = null,
 }) {
     const studyIdPrefix = useId();
-    const documentSurface = renderSurface === 'document' || renderSurface === 'document-preview';
+    const documentSurface = ['document', 'document-preview', 'record'].includes(renderSurface);
     const { spec: cardSpec, loading: cardsLoading, error: cardsError } = useDocumentCardSpec(documentSurface);
     const projectionRef = useRef(null);
     const replacement = useMemo(() => {

@@ -9,6 +9,13 @@ import SettingsReadonlyMarkdown from './SettingsReadonlyMarkdown.jsx';
 const NodeGraphField = lazy(
   () => import("@/components/configuration/NodeGraphField.jsx"),
 );
+const ConversationMessage = lazy(() => import('./SettingsConversationMessage.jsx'));
+
+export function LazyConversationMessage(props) {
+    return <Suspense fallback={<div role="status" className="flex items-center gap-2 py-3 text-xs text-muted-foreground"><Spinner />正在加载内容…</div>}>
+        <ConversationMessage {...props} />
+    </Suspense>;
+}
 
 function LoadingExtension() {
   return <div role="status" className="flex min-h-24 items-center justify-center gap-2 text-sm text-muted-foreground"><Spinner />正在加载图编辑组件…</div>;
@@ -31,3 +38,4 @@ registerSettingsComponent('member-permissions', MemberPermissionsField);
 registerSettingsComponent('conversation-picker', SettingsConversationPicker);
 registerSettingsComponent('model-call-options', SettingsModelCallOptions);
 registerSettingsComponent('readonly-markdown', SettingsReadonlyMarkdown);
+registerSettingsComponent('conversation-message', LazyConversationMessage);

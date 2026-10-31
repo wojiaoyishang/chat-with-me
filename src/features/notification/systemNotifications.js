@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { getLocalSetting, setLocalSetting } from '@/lib/tools.jsx';
 import { backendStorageKey, getBackendConnection } from '../../runtime/backend/connection.js';
+import { notificationFocusSearch } from './notificationTarget.js';
 
 export const SYSTEM_NOTIFICATION_ENABLED = 'systemNotificationsEnabled';
 const ATTEMPTED = 'notificationPermissionAttempted';
@@ -107,7 +108,7 @@ export const showWidgetSystemNotification = async (notification, onOpen) => {
                 `${import.meta.env.BASE_URL}chat/${encodeURIComponent(notification.source?.conversationId || '')}`,
                 location.origin,
             );
-            if (notification.source?.messageId) target.searchParams.set('focusMessage', notification.source.messageId);
+            target.search = notificationFocusSearch(notification);
             const options = {
                 body: notification.body,
                 tag: `widget:${getBackendConnection().id}:${notification.id}`,

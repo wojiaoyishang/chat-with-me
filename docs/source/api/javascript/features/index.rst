@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 278
+     - 281
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -983,6 +983,11 @@
      - 0
      - 4
      - ``src/features/notification/notificationRegistry.js``
+   * - :doc:`src/features/notification/notificationTarget </api/javascript/features/notification/notificationTarget>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/notification/notificationTarget.js``
    * - :doc:`src/features/notification/systemNotifications </api/javascript/features/notification/systemNotifications>`
      - 9
      - 0
@@ -1038,6 +1043,11 @@
      - 0
      - 16
      - ``src/features/settings-runtime/SettingsCodeEditor.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsConversationMessage </api/javascript/features/settings-runtime/SettingsConversationMessage>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/settings-runtime/SettingsConversationMessage.jsx``
    * - :doc:`src/features/settings-runtime/SettingsConversationPicker </api/javascript/features/settings-runtime/SettingsConversationPicker>`
      - 1
      - 0
@@ -1089,9 +1099,9 @@
      - 0
      - ``src/features/settings-runtime/displayValue.js``
    * - :doc:`src/features/settings-runtime/extensions </api/javascript/features/settings-runtime/extensions>`
-     - 2
+     - 3
      - 0
-     - 1
+     - 2
      - ``src/features/settings-runtime/extensions.jsx``
    * - :doc:`src/features/settings-runtime/formLayout </api/javascript/features/settings-runtime/formLayout>`
      - 1
@@ -1682,6 +1692,7 @@
    /api/javascript/features/notification/NotificationHost
    /api/javascript/features/notification/NotificationToast
    /api/javascript/features/notification/notificationRegistry
+   /api/javascript/features/notification/notificationTarget
    /api/javascript/features/notification/systemNotifications
    /api/javascript/features/notification/useNotificationStore
    /api/javascript/features/notification/widgetNotificationPolicy
@@ -1693,6 +1704,7 @@
    /api/javascript/features/settings-runtime/SettingsActionLabel
    /api/javascript/features/settings-runtime/SettingsCards
    /api/javascript/features/settings-runtime/SettingsCodeEditor
+   /api/javascript/features/settings-runtime/SettingsConversationMessage
    /api/javascript/features/settings-runtime/SettingsConversationPicker
    /api/javascript/features/settings-runtime/SettingsFormLayout
    /api/javascript/features/settings-runtime/SettingsModelCallOptions

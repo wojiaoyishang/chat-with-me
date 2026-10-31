@@ -15,6 +15,7 @@ import { useLocation, useNavigate, useOutlet, useParams } from 'react-router-dom
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import NotificationHost from '@/features/notification/NotificationHost.jsx';
+import { notificationFocusSearch } from '@/features/notification/notificationTarget.js';
 import BackendManagementPage from '@/features/tasks/BackendManagementPage.jsx';
 
 const StoriesPage = lazy(() => import('@/features/story/StoriesPage.jsx'));
@@ -267,8 +268,8 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
                             setPageType('chat');
                             setConversationId(conversationId);
                             setDocumentId(null);
-                            const messageId = notification?.source?.messageId;
-                            const target = `/chat/${conversationId}${messageId ? `?focusMessage=${encodeURIComponent(messageId)}` : ''}`;
+                            const query = notificationFocusSearch(notification);
+                            const target = `/chat/${encodeURIComponent(conversationId)}${query ? `?${query}` : ''}`;
                             navigate(target);
                         }}
                     />

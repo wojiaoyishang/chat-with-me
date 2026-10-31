@@ -113,3 +113,50 @@ test('readonly markdown displays results without chat directives, raw HTML, imag
         assert.equal(settingsUI.calls.length, 0);
     } finally { await ui.close(); unregister(); }
 });
+
+test('an optional initial detail is opened once while background resource polling never reopens a dismissed dialog', async () => {
+    const root = { ...descriptor(), options: [resource({ refreshIntervalMs: 500 })] };
+    const detail = { title: '独立详情', options: [{ type: 'readonly-text', name: 'body', text: '结果' }], defaultOptions: { body: '只在独立记录中展示' } };
+    const ui = await mount([], null, (_method, endpoint) => endpoint === '/remote/one' ? root : endpoint === '/remote/detail' ? detail : { items: [] });
+    try {
+        await ui.render(panel({ initialDetailEndpoint: '/remote/detail' }));
+        assert.match(document.querySelector('[role="dialog"]').textContent, /独立详情.*只在独立记录中展示/s);
+        await click(button('关闭'));
+        await wait(620);
+        assert.equal(document.querySelector('[role="dialog"]'), null);
+        assert.equal(settingsUI.calls.filter((call) => call[1] === '/remote/detail').length, 1);
+    } finally { await ui.close(); }
+});
+
+test('a delayed initial detail is aborted with its panel and cannot open on another target', async () => {
+    let resolveDetail, detailSignal;
+    const ui = await mount([], null, (_method, endpoint, options) => {
+        if (endpoint === '/remote/detail') { detailSignal = options.signal; return new Promise((resolve) => { resolveDetail = resolve; }); }
+        return descriptor(endpoint);
+    });
+    try {
+        await ui.render(panel({ initialDetailEndpoint: '/remote/detail' }));
+        await ui.render(panel({ endpoint: '/remote/two', conversationId: 'two' }));
+        assert.equal(detailSignal.aborted, true);
+        await act(async () => resolveDetail({ title: '旧详情', options: [] }));
+        assert.equal(document.querySelector('[role="dialog"]'), null);
+        assert.ok(document.querySelector('[aria-label="/remote/two"]'));
+    } finally { await ui.close(); }
+});
+
+test('response-authored edit dialogs protect unsaved drafts when an external focus tries to leave the panel', async () => {
+    const ref = React.createRef();
+    const detail = { title: '配置规则', options: [{ type: 'text', name: 'title', text: '规则名称' }], defaultOptions: { title: '原名称' } };
+    const ui = await mount([], null, (_method, endpoint) => endpoint === '/remote/detail' ? detail : descriptor());
+    try {
+        await ui.render(panel({ ref, initialDetailEndpoint: '/remote/detail' }));
+        await edit(document.querySelector('[aria-label="规则名称"]'), '未保存的名称');
+        settingsUI.autoConfirm = false;
+        let allowed;
+        await act(async () => { void ref.current.canClose().then((value) => { allowed = value; }); });
+        assert.match(document.querySelector('[role="alertdialog"]').textContent, /放弃未保存/);
+        await click(button('取消'));
+        assert.equal(allowed, false);
+        assert.equal(document.querySelector('[aria-label="规则名称"]').value, '未保存的名称');
+    } finally { await ui.close(); }
+});

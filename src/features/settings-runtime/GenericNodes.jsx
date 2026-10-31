@@ -585,6 +585,8 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
     const pollKey = JSON.stringify(displayed?.poll || null);
     const locked = displayed?.dialog?.dismissible === false;
     const registerDraftGuard = context.runtimeContext.registerDraftGuard;
+    const protectDialogDrafts = context.runtimeContext.protectDialogDrafts;
+    const confirmDraft = context.confirm;
     useEffect(() => { setPolled(null); setPollError(''); setValues(pageValues(descriptor?.options || [], descriptor?.defaultOptions || {})); }, [descriptor]);
     useEffect(() => {
         const poll = displayed?.poll;
@@ -623,9 +625,14 @@ export function DescriptorDialog({ open, descriptor, context, renderFields, onCl
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, descriptor, pollKey]);
     useEffect(() => {
-        if (!open || !locked || !registerDraftGuard) return undefined;
-        return registerDraftGuard(`descriptor-dialog:${guardId}`, () => false);
-    }, [open, locked, guardId, registerDraftGuard]);
+        if (!open || !registerDraftGuard || !locked && !protectDialogDrafts) return undefined;
+        return registerDraftGuard(`descriptor-dialog:${guardId}`, async () => {
+            if (locked) return false;
+            const original = pageValues(displayed?.options || [], displayed?.defaultOptions || {});
+            return JSON.stringify(original) === JSON.stringify(latest.current.values)
+                || confirmDraft({ title: '放弃未保存的更改？', description: '离开后本次编辑内容将被丢弃。', confirmText: '放弃更改' });
+        });
+    }, [open, locked, guardId, registerDraftGuard, protectDialogDrafts, confirmDraft, displayed]);
     const form = useMemo(() => displayed && <SettingsFormLayout layout={displayed.layout || 'stacked'} columns={displayed.columns}>
         {renderFields(displayed.options || [], values, setValues, { runtimeContext: {
             ...context.runtimeContext, refresh: context.refresh, closeDialog: onClose,
