@@ -2,6 +2,8 @@
 
 设置由后端 `application/settings/pages/comfyui.py` 提供 `cwm.settings.v1` 描述，前端不再维护 ComfyUI 专用设置页面。连接、模板、导入、更新、复制与运行表单均组合通用资源集合、字段、动作与进度组件。图配置使用 `components/configuration/NodeGraphField.jsx`；执行数据始终使用原始 API prompt，画布只用于展示和布局。
 
+连接表单的 `reuseUploads`（复用已上传附件，默认开启）和运行表单的 `forceUpload`（本次强制重新上传附件，默认关闭）均由后端描述。前端不存储远端文件名或附件哈希；仍传递原始授权附件引用，由共有后端执行器验证和复用。独立 `ComfyRunDialog` 入口也发送 `forceUpload`；共享结果组件在后端提供 `inputStats` 时显示复用和上传数量。任务的节省传输字节等详细指标使用通用 observation 组件，不在前端重新推算。强制上传不等于重新提交未知状态的生成，也不改变 ComfyUI 节点的生成缓存。
+
 ## 更新与复制
 
 - 已有模板的“更新工作流”支持单独上传 API、普通画布，或同时上传同版本的两份 JSON。文件限制和初次导入一致。

@@ -58,6 +58,7 @@ export default function ComfyRunDialog({
   );
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState(() => executionModeForWorkflow(workflow));
+  const [forceUpload, setForceUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [completion, setCompletion] = useState(null);
@@ -78,6 +79,7 @@ export default function ComfyRunDialog({
         workflowId: workflow.id,
         inputs,
         mode,
+        forceUpload,
         title: title.trim() || workflow.title,
       });
       setCompletion(normalizeComfyRunResponse(result));
@@ -235,6 +237,16 @@ export default function ComfyRunDialog({
                   onChange={(event) => setTitle(event.target.value)}
                 />
               </label>
+              {fields.some((field) => ['image', 'video'].includes(field.kind)) && (
+                <label className="flex items-center justify-between gap-4 py-2">
+                  <span className="min-w-0 text-sm">
+                    强制重新上传输入附件
+                    <span className="mt-1 block text-xs text-muted-foreground">本次跳过附件上传缓存。</span>
+                  </span>
+                  <Switch checked={forceUpload} onCheckedChange={setForceUpload} disabled={busy}
+                    aria-label="强制重新上传输入附件" />
+                </label>
+              )}
               {fields.map((field) => {
                 const provided = Object.hasOwn(values, field.name);
                 const policy = defaultModeForBinding(field);

@@ -6,6 +6,7 @@ import ResourceVideo from "@/components/markdown/ResourceVideo.jsx";
 
 export default function ComfyRunResult({ result }) {
   const outputs = Array.isArray(result.outputs) ? result.outputs : [];
+  const inputStats = result.inputStats;
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -20,6 +21,12 @@ export default function ComfyRunResult({ result }) {
               ? "生成结果已保存到附件库。"
               : "已按工作流设置完成执行。"}
           </p>
+          {inputStats?.uploadedFiles !== undefined && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              输入附件：复用 {inputStats.cacheHits + inputStats.checkpointFiles} 个
+              {" · "}上传 {inputStats.uploadedFiles} 个
+            </p>
+          )}
         </div>
       </div>
       {outputs.map((item, index) => {

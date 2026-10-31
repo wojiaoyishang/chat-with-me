@@ -656,7 +656,7 @@
    * - :doc:`src/features/comfyui/ComfyRunDialog </api/javascript/features/comfyui/ComfyRunDialog>`
      - 1
      - 0
-     - 25
+     - 26
      - ``src/features/comfyui/ComfyRunDialog.jsx``
    * - :doc:`src/features/comfyui/ComfyRunResult </api/javascript/features/comfyui/ComfyRunResult>`
      - 1

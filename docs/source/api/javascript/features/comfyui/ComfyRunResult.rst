@@ -27,13 +27,13 @@ src/features/comfyui/ComfyRunResult 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/comfyui/ComfyRunResult.jsx:314:2981:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/ComfyRunResult.jsx:314:3299:FUNCTION
 
 .. js:function:: ComfyRunResult({ result })
 
    渲染 ``ComfyRunResult`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``80`` 行。
+   **性质**：同步函数；导出 API；源码第 ``7``—``87`` 行。
 
    **参数**
 
@@ -53,17 +53,17 @@ src/features/comfyui/ComfyRunResult 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/comfyui/ComfyRunResult.jsx:966:2961:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/ComfyRunResult.jsx:1284:3279:FUNCTION
 
-.. rubric:: ``outputs.map callback @ 25``
+.. rubric:: ``outputs.map callback @ 32``
 
 .. code-block:: javascript
 
-   outputs.map callback @ 25(item, index)
+   outputs.map callback @ 32(item, index)
 
 作为 ``outputs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``25``—``77`` 行；所属函数 ``ComfyRunResult``。
+**性质**：同步局部函数；源码第 ``32``—``84`` 行；所属函数 ``ComfyRunResult``。
 
 **参数**
 
