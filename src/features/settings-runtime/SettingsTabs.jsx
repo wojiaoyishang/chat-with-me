@@ -127,7 +127,7 @@ export default function SettingsTabs({ item, renderPane }) {
           hidden={active !== tab.id}
           inert={active !== tab.id ? true : undefined}
           tabIndex={0}
-          className={`min-w-0 focus-visible:outline-none ${active === tab.id ? "grid gap-4" : "hidden"}`}
+          className={`min-w-0 focus-visible:outline-none ${active === tab.id ? "cwm-settings-reveal grid gap-4" : "hidden"}`}
         >
           {renderPane(tab.options, tab)}
         </div>

@@ -27,7 +27,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:236:5035:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:236:5055:FUNCTION
 
 .. js:function:: SettingsTabs({ item, renderPane })
 
@@ -488,7 +488,7 @@ Tabs change only presentation. Every pane stays mounted in its original form con
 
 **主要协作调用**：``move``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:4295:5008:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsTabs.jsx:4295:5028:FUNCTION
 
 .. rubric:: ``tabs.map callback @ 116``
 

@@ -39,7 +39,7 @@ await build({ entryPoints: ['src/components/configuration/NodeGraphField.jsx'], 
     if (name.endsWith('/badge')) return { loader: 'jsx', contents: 'export const Badge=({children,variant})=><span>{children}</span>;' };
     if (name.endsWith('/input')) return { loader: 'jsx', contents: 'export const Input=props=><input {...props}/>;' };
     if (name.endsWith('/checkbox') || name.endsWith('/switch')) return { loader: 'jsx', contents: 'export const Checkbox=({checked,onCheckedChange,...props})=><input type="checkbox" checked={checked===true} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;export const Switch=Checkbox;' };
-    if (name.endsWith('/select')) return { loader: 'jsx', contents: 'export const Select=({children})=><div>{children}</div>;export const SelectContent=Select,SelectTrigger=Select,SelectValue=()=>null,SelectItem=({children})=><span>{children}</span>;' };
+    if (name.endsWith('/select')) return { loader: 'jsx', contents: 'export const Select=({children})=><div>{children}</div>;export const SelectContent=Select,SelectTrigger=Select,SelectValue=()=>null;export const SelectItem=({children,value})=>{if(value==="")throw new Error("Radix Select.Item forbids empty values");return <span>{children}</span>;};' };
     throw new Error(`Unexpected graph dependency ${name}`);
   });
 } }] });
@@ -64,7 +64,10 @@ async function mount(readOnly = false, { openGraph = true } = {}) {
   function Host() {
     const [graph, setGraph] = useState(fixture());
     graphUI.value = graph;
-    return React.createElement(NodeGraphField, { item: { readOnly }, value: graph, onChange: setGraph, context: {}, renderFields: (fields, value, onChange) => React.createElement('button', { onClick: () => onChange({ ...value, description: '共同说明' }) }, '修改参数元信息') });
+    return React.createElement(NodeGraphField, { item: { readOnly }, value: graph, onChange: setGraph, context: {}, renderFields: (fields, value, onChange) => React.createElement(React.Fragment, null,
+      React.createElement('button', { onClick: () => onChange({ ...value, description: '共同说明' }) }, '修改参数元信息'),
+      React.createElement('button', { onClick: () => onChange({ ...value, name: '' }) }, '清空参数名'),
+      React.createElement('button', { onClick: () => onChange({ ...value, name: 'renamed' }) }, '重新填写参数名')) });
   }
   await act(async () => root.render(React.createElement(Host)));
   if (openGraph) await click(button('打开图配置'));
@@ -81,6 +84,19 @@ test('graph control exposes explicit many-target bindings through the shared par
     assert.deepEqual(graphUI.value.bindings.map(row => [row.nodeId, row.field]), [['2', 'text'], ['5', 'text']]);
     await click(button('修改参数元信息'));
     assert.ok(graphUI.value.bindings.every(row => row.description === '共同说明'));
+  } finally { await close(); }
+});
+
+test('clearing a bound parameter name keeps the draft editable without creating an empty Select.Item', async () => {
+  const close = await mount();
+  try {
+    await click(document.querySelector('[data-node="1"]'));
+    await click(document.querySelector('[aria-label="开放 共用提示"]'));
+    await click(button('清空参数名'));
+    assert.ok(graphUI.value.bindings.every(row => row.name === ''));
+    await click(button('重新填写参数名'));
+    assert.ok(graphUI.value.bindings.every(row => row.name === 'renamed'));
+    assert.equal(graphUI.value.bindings.length, 2);
   } finally { await close(); }
 });
 

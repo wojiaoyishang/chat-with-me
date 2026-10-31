@@ -3,7 +3,7 @@ src/features/chat/page/hooks/useRuntimeInspector 模块
 
 .. js:module:: src/features/chat/page/hooks/useRuntimeInspector
 
-Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \x60isOpenRef\x60 / \x60markStale\x60 handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
+Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \`isOpenRef\` / \`markStale\` handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
 
 .. note::
 
@@ -110,7 +110,7 @@ Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. Th
 
 .. js:function:: useRuntimeInspector(conversationId, branchKey)
 
-   Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \x60isOpenRef\x60 / \x60markStale\x60 handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
+   Runtime Inspector is deliberately isolated from the chat WebSocket lifecycle. The controller owns cancellable HTTP reads and lazy section caches. ChatPage only keeps a stable \`isOpenRef\` / \`markStale\` handle inside its event listener, so opening or closing the dialog can never unsubscribe that listener or invalidate already queued message delta callbacks.
 
    **性质**：同步函数；导出 API；源码第 ``53``—``332`` 行。
 

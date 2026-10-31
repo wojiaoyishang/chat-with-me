@@ -102,7 +102,7 @@ const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, en
     const current = view.key === identity;
     return <section className="relative min-h-32 min-w-0" data-remote-settings-panel="true"
         data-state={active ? 'open' : 'closed'} aria-hidden={!active || undefined} inert={!active ? true : undefined}>
-        {current && view.descriptor && <div className="cwm-settings-reveal">
+        {current && view.descriptor && <div className={active && !view.loading ? 'cwm-settings-reveal' : undefined}>
             <DynamicSettings key={identity} config={view.descriptor.options} initialValues={values} onChange={setValues}
                 initialDialog={view.initialDialog} disabled={!active || view.loading || Boolean(view.error)} runtimeContext={runtimeContext} />
         </div>}

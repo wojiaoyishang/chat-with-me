@@ -67,13 +67,13 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:3735:20903:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:3735:21042:FUNCTION
 
 .. js:function:: GraphCanvas({ graph, onChange, item, renderFields, context, disabled, })
 
    渲染 ``GraphCanvas`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``137``—``588`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``137``—``589`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
    **内部回调数量**：23。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:20903:23603:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:21042:23742:FUNCTION
 
 .. js:function:: NodeGraphField({ item, value, onChange, context, renderFields, })
 
    A generic graph-valued form control. The server supplies all field, binding and output policies; the client owns only visual navigation and interaction.
 
-   **性质**：同步函数；导出 API；源码第 ``592``—``665`` 行。
+   **性质**：同步函数；导出 API；源码第 ``593``—``666`` 行。
 
    **参数**
 
@@ -1181,7 +1181,7 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``enter``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:13303:19345:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:13303:19484:FUNCTION
 
 .. rubric:: ``(selected.inputs || []).map callback @ 404``
 
@@ -1191,7 +1191,7 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 作为 ``(selected.inputs || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``404``—``546`` 行；所属函数 ``GraphCanvas``。
+**性质**：同步局部函数；源码第 ``404``—``547`` 行；所属函数 ``GraphCanvas``。
 
 **参数**
 
@@ -1206,7 +1206,7 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **内部回调数量**：8。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:13445:13626:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:13445:13720:FUNCTION
 
 .. rubric:: ``logicalParameters(bindings).filter callback @ 407``
 
@@ -1216,7 +1216,7 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 作为 ``logicalParameters(bindings).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``407``—``410`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``407``—``411`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1227,21 +1227,21 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``(field.allowedKinds || []).some``。
+**主要协作调用**：``parameter.name.trim``、``(field.allowedKinds || []).some``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:13531:13603:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:13625:13697:FUNCTION
 
-.. rubric:: ``(field.allowedKinds || []).some callback @ 409``
+.. rubric:: ``(field.allowedKinds || []).some callback @ 410``
 
 .. code-block:: javascript
 
-   (field.allowedKinds || []).some callback @ 409(kind)
+   (field.allowedKinds || []).some callback @ 410(kind)
 
 作为 ``(field.allowedKinds || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``409``—``409`` 行；所属函数 ``logicalParameters(bindings).filter callback @ 407``。
+**性质**：同步局部函数；源码第 ``410``—``410`` 行；所属函数 ``logicalParameters(bindings).filter callback @ 407``。
 
 **参数**
 
@@ -1252,17 +1252,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:14696:14995:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:14790:15089:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 434``
+.. rubric:: ``onCheckedChange callback @ 435``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 434(enabled)
+   onCheckedChange callback @ 435(enabled)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``434``—``441`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``435``—``442`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1275,17 +1275,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``update``、``toggleBinding``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:15544:15575:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:15638:15669:FUNCTION
 
-.. rubric:: ``onClick callback @ 456``
+.. rubric:: ``onClick callback @ 457``
 
 .. code-block:: javascript
 
-   onClick callback @ 456()
+   onClick callback @ 457()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``456``—``456`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``457``—``457`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1297,17 +1297,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``focus``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:16329:16786:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:16423:16880:FUNCTION
 
-.. rubric:: ``state.targets.map callback @ 472``
+.. rubric:: ``state.targets.map callback @ 473``
 
 .. code-block:: javascript
 
-   state.targets.map callback @ 472(target)
+   state.targets.map callback @ 473(target)
 
 作为 ``state.targets.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``472``—``482`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``473``—``483`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1320,17 +1320,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:16607:16633:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:16701:16727:FUNCTION
 
-.. rubric:: ``onClick callback @ 478``
+.. rubric:: ``onClick callback @ 479``
 
 .. code-block:: javascript
 
-   onClick callback @ 478()
+   onClick callback @ 479()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``478``—``478`` 行；所属函数 ``state.targets.map callback @ 472``。
+**性质**：同步局部函数；源码第 ``479``—``479`` 行；所属函数 ``state.targets.map callback @ 473``。
 
 **参数**
 
@@ -1342,17 +1342,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``focus``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:17017:17091:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:17111:17185:FUNCTION
 
-.. rubric:: ``reusable.some callback @ 489``
+.. rubric:: ``reusable.some callback @ 490``
 
 .. code-block:: javascript
 
-   reusable.some callback @ 489(entry)
+   reusable.some callback @ 490(entry)
 
 作为 ``reusable.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``489``—``489`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``490``—``490`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1363,17 +1363,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:17273:17818:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:17382:17942:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 494``
+.. rubric:: ``onValueChange callback @ 495``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 494(name)
+   onValueChange callback @ 495(name)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``494``—``507`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``495``—``508`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1388,17 +1388,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:17343:17402:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:17452:17526:FUNCTION
 
-.. rubric:: ``reusable.find callback @ 496``
+.. rubric:: ``reusable.find callback @ 497``
 
 .. code-block:: javascript
 
-   reusable.find callback @ 496(entry)
+   reusable.find callback @ 497(entry)
 
 作为 ``reusable.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``496``—``496`` 行；所属函数 ``onValueChange callback @ 494``。
+**性质**：同步局部函数；源码第 ``497``—``497`` 行；所属函数 ``onValueChange callback @ 495``。
 
 **参数**
 
@@ -1409,17 +1409,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:18249:18466:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:18373:18605:FUNCTION
 
-.. rubric:: ``reusable.map callback @ 517``
+.. rubric:: ``reusable.map callback @ 518``
 
 .. code-block:: javascript
 
-   reusable.map callback @ 517(entry)
+   reusable.map callback @ 518(entry)
 
 作为 ``reusable.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``517``—``521`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``518``—``522`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1430,17 +1430,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:18710:19013:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:18849:19152:FUNCTION
 
-.. rubric:: ``renderFields callback @ 529``
+.. rubric:: ``renderFields callback @ 530``
 
 .. code-block:: javascript
 
-   renderFields callback @ 529(next)
+   renderFields callback @ 530(next)
 
 渲染与 ``Fields`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``529``—``536`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
+**性质**：同步局部函数；源码第 ``530``—``537`` 行；所属函数 ``(selected.inputs || []).map callback @ 404``。
 
 **参数**
 
@@ -1453,17 +1453,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``update``、``updateBindingMetadata``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:20012:20365:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:20151:20504:FUNCTION
 
-.. rubric:: ``renderFields callback @ 561``
+.. rubric:: ``renderFields callback @ 562``
 
 .. code-block:: javascript
 
-   renderFields callback @ 561(next)
+   renderFields callback @ 562(next)
 
 渲染与 ``Fields`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``561``—``568`` 行；所属函数 ``GraphCanvas``。
+**性质**：同步局部函数；源码第 ``562``—``569`` 行；所属函数 ``GraphCanvas``。
 
 **参数**
 
@@ -1478,17 +1478,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:20132:20308:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:20271:20447:FUNCTION
 
-.. rubric:: ``outputs.map callback @ 563``
+.. rubric:: ``outputs.map callback @ 564``
 
 .. code-block:: javascript
 
-   outputs.map callback @ 563(entry)
+   outputs.map callback @ 564(entry)
 
 作为 ``outputs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``563``—``566`` 行；所属函数 ``renderFields callback @ 561``。
+**性质**：同步局部函数；源码第 ``564``—``567`` 行；所属函数 ``renderFields callback @ 562``。
 
 **参数**
 
@@ -1501,17 +1501,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:22048:22067:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:22187:22206:FUNCTION
 
-.. rubric:: ``onClick callback @ 620``
+.. rubric:: ``onClick callback @ 621``
 
 .. code-block:: javascript
 
-   onClick callback @ 620()
+   onClick callback @ 621()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``620``—``620`` 行；所属函数 ``NodeGraphField``。
+**性质**：同步局部函数；源码第 ``621``—``621`` 行；所属函数 ``NodeGraphField``。
 
 **参数**
 
@@ -1523,17 +1523,17 @@ A generic graph-valued form control. The server supplies all field, binding and 
 
 **主要协作调用**：``setOpen``。
 
-.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:22498:22582:FUNCTION
+.. CWM-AST-FUNCTION src/components/configuration/NodeGraphField.jsx:22637:22721:FUNCTION
 
-.. rubric:: ``graph.warnings.map callback @ 633``
+.. rubric:: ``graph.warnings.map callback @ 634``
 
 .. code-block:: javascript
 
-   graph.warnings.map callback @ 633(warning, index)
+   graph.warnings.map callback @ 634(warning, index)
 
 作为 ``graph.warnings.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``633``—``635`` 行；所属函数 ``NodeGraphField``。
+**性质**：同步局部函数；源码第 ``634``—``636`` 行；所属函数 ``NodeGraphField``。
 
 **参数**
 

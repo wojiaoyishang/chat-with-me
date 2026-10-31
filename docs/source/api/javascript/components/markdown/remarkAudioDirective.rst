@@ -3,7 +3,7 @@ src/components/markdown/remarkAudioDirective 模块
 
 .. js:module:: src/components/markdown/remarkAudioDirective
 
-Render only the literal adjacent \x60![description](url){type=audio}\x60 marker.
+Render only the literal adjacent \`![description](url){type=audio}\` marker.
 
 .. note::
 

@@ -67,7 +67,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:854:7380:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:854:7420:FUNCTION
 
 .. rubric:: ``RemoteSettingsPanel``
 
@@ -591,7 +591,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:7255:7299:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:7295:7339:FUNCTION
 
 .. rubric:: ``onClick callback @ 117``
 
@@ -615,7 +615,7 @@ A backend-described page hosted in any drawer, scoped to its opening connection.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:7272:7298:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/RemoteSettingsPanel.jsx:7312:7338:FUNCTION
 
 .. rubric:: ``setVersion callback @ 117``
 

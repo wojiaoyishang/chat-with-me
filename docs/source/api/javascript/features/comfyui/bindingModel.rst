@@ -163,13 +163,13 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2057:2462:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2057:2538:FUNCTION
 
 .. js:function:: reusableParameters(bindings, node, field)
 
    实现 ``reusableParameters`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``66``—``76`` 行。
+   **性质**：同步函数；导出 API；源码第 ``66``—``77`` 行。
 
    **参数**
 
@@ -184,19 +184,19 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``logicalInputs(bindings).filter( (binding) => kinds.has(binding.kind) && binding.targets.some( (target) => !targets.some((own) => isTarget(target, own)), ), )``。
+   根据执行分支返回结果；代表性返回表达式为 ``logicalInputs(bindings).filter( (binding) => typeof binding.name === "string" && binding.name.trim().length > 0 && kinds.has(binding.kind) && binding.targets.some( (target) => !ta…``。
 
    **主要协作调用**：``inputKindsForField(field).map``、``inputKindsForField``、``fieldBindingState``、``logicalInputs(bindings).filter``、``logicalInputs``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2462:2867:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2538:2943:FUNCTION
 
 .. js:function:: numericValue(value, label, integer)
 
    实现 ``numericValue`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``78``—``90`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``79``—``91`` 行。
 
    **参数**
 
@@ -217,13 +217,13 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
    **主要协作调用**：``["string", "number"].includes``、``String(value).trim``、``String``、``Number``、``Number.isFinite``、``Number.isSafeInteger``。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2867:4607:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2943:4683:FUNCTION
 
 .. js:function:: prepareBindingsForSave(bindings)
 
    Form editing can contain partial numeric strings. Only serialize valid, typed defaults, so an empty/invalid number never silently becomes 0 or null.
 
-   **性质**：同步函数；导出 API；源码第 ``94``—``140`` 行。
+   **性质**：同步函数；导出 API；源码第 ``95``—``141`` 行。
 
    **参数**
 
@@ -451,7 +451,7 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2301:2454:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2301:2530:FUNCTION
 
 .. rubric:: ``logicalInputs(bindings).filter callback @ 70``
 
@@ -461,7 +461,7 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
 作为 ``logicalInputs(bindings).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``70``—``74`` 行；所属函数 ``reusableParameters``。
+**性质**：同步局部函数；源码第 ``70``—``75`` 行；所属函数 ``reusableParameters``。
 
 **参数**
 
@@ -472,21 +472,21 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``kinds.has``、``binding.targets.some``。
+**主要协作调用**：``binding.name.trim``、``kinds.has``、``binding.targets.some``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2379:2445:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2455:2521:FUNCTION
 
-.. rubric:: ``binding.targets.some callback @ 73``
+.. rubric:: ``binding.targets.some callback @ 74``
 
 .. code-block:: javascript
 
-   binding.targets.some callback @ 73(target)
+   binding.targets.some callback @ 74(target)
 
 作为 ``binding.targets.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``73``—``73`` 行；所属函数 ``logicalInputs(bindings).filter callback @ 70``。
+**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``logicalInputs(bindings).filter callback @ 70``。
 
 **参数**
 
@@ -501,17 +501,17 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2414:2444:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:2490:2520:FUNCTION
 
-.. rubric:: ``targets.some callback @ 73``
+.. rubric:: ``targets.some callback @ 74``
 
 .. code-block:: javascript
 
-   targets.some callback @ 73(own)
+   targets.some callback @ 74(own)
 
 作为 ``targets.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``73``—``73`` 行；所属函数 ``binding.targets.some callback @ 73``。
+**性质**：同步局部函数；源码第 ``74``—``74`` 行；所属函数 ``binding.targets.some callback @ 74``。
 
 **参数**
 
@@ -524,17 +524,17 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
 **主要协作调用**：``isTarget``。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:3101:4603:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:3177:4679:FUNCTION
 
-.. rubric:: ``bindings.map callback @ 95``
+.. rubric:: ``bindings.map callback @ 96``
 
 .. code-block:: javascript
 
-   bindings.map callback @ 95(binding)
+   bindings.map callback @ 96(binding)
 
 作为 ``bindings.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``95``—``139`` 行；所属函数 ``prepareBindingsForSave``。
+**性质**：同步局部函数；源码第 ``96``—``140`` 行；所属函数 ``prepareBindingsForSave``。
 
 **参数**
 
@@ -551,17 +551,17 @@ Form editing can contain partial numeric strings. Only serialize valid, typed de
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:3192:3226:FUNCTION
+.. CWM-AST-FUNCTION src/features/comfyui/bindingModel.js:3268:3302:FUNCTION
 
-.. rubric:: ``Object.entries(binding).filter callback @ 97``
+.. rubric:: ``Object.entries(binding).filter callback @ 98``
 
 .. code-block:: javascript
 
-   Object.entries(binding).filter callback @ 97([, value])
+   Object.entries(binding).filter callback @ 98([, value])
 
 作为 ``Object.entries(binding).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``97``—``97`` 行；所属函数 ``bindings.map callback @ 95``。
+**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``bindings.map callback @ 96``。
 
 **参数**
 

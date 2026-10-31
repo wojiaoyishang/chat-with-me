@@ -3,7 +3,7 @@ src/components/markdown/remarkVideoDirective 模块
 
 .. js:module:: src/components/markdown/remarkVideoDirective
 
-Render only the literal adjacent \x60![description](url){type=video}\x60 marker.
+Render only the literal adjacent \`![description](url){type=video}\` marker.
 
 .. note::
 

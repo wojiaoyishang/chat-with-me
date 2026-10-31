@@ -68,6 +68,7 @@ export function reusableParameters(bindings, node, field) {
   const { targets } = fieldBindingState(bindings, node, field);
   return logicalInputs(bindings).filter(
     (binding) =>
+      typeof binding.name === "string" && binding.name.trim().length > 0 &&
       kinds.has(binding.kind) &&
       binding.targets.some(
         (target) => !targets.some((own) => isTarget(target, own)),

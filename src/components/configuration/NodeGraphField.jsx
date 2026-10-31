@@ -405,6 +405,7 @@ function GraphCanvas({
                 const state = bindingState(bindings, field);
                 const reusable = logicalParameters(bindings).filter(
                   (parameter) =>
+                    typeof parameter.name === "string" && parameter.name.trim().length > 0 &&
                     (field.allowedKinds || []).some(
                       (kind) => (kind.value ?? kind) === parameter.kind,
                     ),
@@ -488,12 +489,12 @@ function GraphCanvas({
                           reusable.some(
                             (entry) => entry.name === state.binding?.name,
                           )
-                            ? state.binding.name
+                            ? `parameter:${state.binding.name}`
                             : ":none"
                         }
                         onValueChange={(name) => {
                           const parameter = reusable.find(
-                            (entry) => entry.name === name,
+                            (entry) => `parameter:${entry.name}` === name,
                           );
                           if (parameter)
                             update({
@@ -515,7 +516,7 @@ function GraphCanvas({
                             复用已有参数
                           </SelectItem>
                           {reusable.map((entry) => (
-                            <SelectItem key={entry.name} value={entry.name}>
+                            <SelectItem key={entry.name} value={`parameter:${entry.name}`}>
                               {entry.label || entry.name}
                             </SelectItem>
                           ))}

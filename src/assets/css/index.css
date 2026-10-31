@@ -17,7 +17,7 @@
 }
 
 .cwm-settings-reveal {
-  animation: cwm-settings-reveal 180ms ease-out;
+  animation: cwm-settings-reveal 180ms ease-out both;
 }
 
 .cwm-backend-recovery {
