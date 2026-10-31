@@ -112,3 +112,17 @@ test('standalone connection cards render references without creating another con
         assert.equal(settingsUI.changed.length, 0);
     } finally { await ui.close(); }
 });
+
+test('summary resource actions stay beside the heading instead of occupying a separate bordered footer', async () => {
+    const ui = await mount([resource({ recordView: { type: 'connection-card', variant: 'summary', actionLayout: 'split-menu' },
+        actions: [{ id: 'view', label: '查看结果', endpoint: '/records/{item.id}', method: 'GET' }],
+    })], { items: [{ id: 'one', title: '一次独立结果' }] });
+    try {
+        const card = document.querySelector('[data-settings-connection-card]');
+        assert.ok(card.querySelector('[data-settings-summary-actions]'));
+        assert.equal(card.querySelector('[data-settings-summary-actions]').contains(button('查看结果')), true);
+        assert.equal(card.querySelector('.border-t'), null);
+        await click(button('查看结果'));
+        assert.equal(settingsUI.calls.at(-1)[1], '/records/one');
+    } finally { await ui.close(); }
+});

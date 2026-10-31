@@ -3,6 +3,8 @@ import { lazy, Suspense } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { DirectoryListField, PolicyRulesField, CommandPermissionsField, MemberPermissionsField } from './ResourceFields.jsx';
 import SettingsConversationPicker from './SettingsConversationPicker.jsx';
+import SettingsModelCallOptions from './SettingsModelCallOptions.jsx';
+import SettingsReadonlyMarkdown from './SettingsReadonlyMarkdown.jsx';
 
 const NodeGraphField = lazy(
   () => import("@/components/configuration/NodeGraphField.jsx"),
@@ -27,3 +29,5 @@ registerSettingsComponent('policy-rules', PolicyRulesField);
 registerSettingsComponent('command-permissions', CommandPermissionsField);
 registerSettingsComponent('member-permissions', MemberPermissionsField);
 registerSettingsComponent('conversation-picker', SettingsConversationPicker);
+registerSettingsComponent('model-call-options', SettingsModelCallOptions);
+registerSettingsComponent('readonly-markdown', SettingsReadonlyMarkdown);

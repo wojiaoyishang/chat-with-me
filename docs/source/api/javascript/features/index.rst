@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 275
+     - 278
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -106,7 +106,7 @@
    * - :doc:`src/features/chat/page/components/ChatHeader </api/javascript/features/chat/page/components/ChatHeader>`
      - 0
      - 0
-     - 9
+     - 10
      - ``src/features/chat/page/components/ChatHeader.jsx``
    * - :doc:`src/features/chat/page/components/ChatHistoryViewport </api/javascript/features/chat/page/components/ChatHistoryViewport>`
      - 1
@@ -1008,6 +1008,11 @@
      - 0
      - 155
      - ``src/features/settings-runtime/GenericNodes.jsx``
+   * - :doc:`src/features/settings-runtime/RemoteSettingsPanel </api/javascript/features/settings-runtime/RemoteSettingsPanel>`
+     - 2
+     - 0
+     - 23
+     - ``src/features/settings-runtime/RemoteSettingsPanel.jsx``
    * - :doc:`src/features/settings-runtime/ResourceActions </api/javascript/features/settings-runtime/ResourceActions>`
      - 2
      - 0
@@ -1043,11 +1048,21 @@
      - 0
      - 0
      - ``src/features/settings-runtime/SettingsFormLayout.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsModelCallOptions </api/javascript/features/settings-runtime/SettingsModelCallOptions>`
+     - 1
+     - 0
+     - 4
+     - ``src/features/settings-runtime/SettingsModelCallOptions.jsx``
    * - :doc:`src/features/settings-runtime/SettingsPresentation </api/javascript/features/settings-runtime/SettingsPresentation>`
      - 2
      - 0
      - 0
      - ``src/features/settings-runtime/SettingsPresentation.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsReadonlyMarkdown </api/javascript/features/settings-runtime/SettingsReadonlyMarkdown>`
+     - 1
+     - 0
+     - 5
+     - ``src/features/settings-runtime/SettingsReadonlyMarkdown.jsx``
    * - :doc:`src/features/settings-runtime/SettingsTabs </api/javascript/features/settings-runtime/SettingsTabs>`
      - 1
      - 0
@@ -1672,6 +1687,7 @@
    /api/javascript/features/notification/widgetNotificationPolicy
    /api/javascript/features/settings-client/catalog
    /api/javascript/features/settings-runtime/GenericNodes
+   /api/javascript/features/settings-runtime/RemoteSettingsPanel
    /api/javascript/features/settings-runtime/ResourceActions
    /api/javascript/features/settings-runtime/ResourceFields
    /api/javascript/features/settings-runtime/SettingsActionLabel
@@ -1679,7 +1695,9 @@
    /api/javascript/features/settings-runtime/SettingsCodeEditor
    /api/javascript/features/settings-runtime/SettingsConversationPicker
    /api/javascript/features/settings-runtime/SettingsFormLayout
+   /api/javascript/features/settings-runtime/SettingsModelCallOptions
    /api/javascript/features/settings-runtime/SettingsPresentation
+   /api/javascript/features/settings-runtime/SettingsReadonlyMarkdown
    /api/javascript/features/settings-runtime/SettingsTabs
    /api/javascript/features/settings-runtime/actionPresentation
    /api/javascript/features/settings-runtime/codeEditorLanguage

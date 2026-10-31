@@ -40,7 +40,9 @@ const RightSidebar = memo(({
                                onSettingChange,
                                t,
                                containerRef,
-                               isWindowMode
+                               isWindowMode,
+                               title,
+                               children,
                            }) => {
     const [lockedMode, setLockedMode] = useState(null);
     const [desktopWidth, setDesktopWidth] = useState(loadStoredDesktopWidth);
@@ -172,6 +174,7 @@ const RightSidebar = memo(({
     }, [clampDesktopWidth, isResizing]);
 
     const sidebarContent = useCallback(() => {
+        if (children !== undefined) return children;
         const hasDynamicSettings = Array.isArray(advancedSettings) && advancedSettings.length > 0;
         return (
             <div className="min-w-0 pb-4">
@@ -192,7 +195,7 @@ const RightSidebar = memo(({
                 )}
             </div>
         );
-    }, [advancedSettings, dynamicSettingsKey, initialSettingValues, conversationId, onSettingChange, t]);
+    }, [advancedSettings, dynamicSettingsKey, initialSettingValues, conversationId, onSettingChange, t, children]);
 
     if (lockedMode === null) return null;
 
@@ -223,7 +226,7 @@ const RightSidebar = memo(({
                 <div className="min-h-0 min-w-0 h-full flex flex-col" style={{width: desktopWidth}}>
                     <div className="flex min-w-0 items-start justify-between gap-3 border-b border-border/60 px-4 py-4 shrink-0">
                         <span className="min-w-0 break-words text-sm font-medium leading-6 text-gray-700">
-                            {t('advanced_conversation_settings')}
+                            {title || t('advanced_conversation_settings')}
                         </span>
                         <button
                             onClick={onClose}
@@ -268,7 +271,7 @@ const RightSidebar = memo(({
             >
                 <div className="flex min-w-0 items-start justify-between gap-3 border-b border-border/60 px-4 py-4 shrink-0">
                     <span className="min-w-0 break-words text-sm font-medium leading-6 text-gray-700">
-                        {t('advanced_conversation_settings')}
+                        {title || t('advanced_conversation_settings')}
                     </span>
                     <button
                         onClick={onClose}

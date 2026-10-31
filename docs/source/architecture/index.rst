@@ -19,6 +19,7 @@
    workflow_tasks
    mcp_settings
    dynamic_settings
+   conversation_self_messages
    voice_runtime
    realtime_voice
    turn_admission

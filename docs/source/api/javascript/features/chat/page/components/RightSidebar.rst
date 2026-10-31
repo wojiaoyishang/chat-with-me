@@ -79,7 +79,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1187:12014:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1187:12175:FUNCTION
 
 .. rubric:: ``memo callback @ 33``
 
@@ -89,7 +89,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``33``—``287`` 行。
+**性质**：同步局部函数；源码第 ``33``—``290`` 行。
 
 **参数**
 
@@ -109,17 +109,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:1984:2243:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2064:2323:FUNCTION
 
-.. rubric:: ``useMemo callback @ 50``
+.. rubric:: ``useMemo callback @ 52``
 
 .. code-block:: javascript
 
-   useMemo callback @ 50()
+   useMemo callback @ 52()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``50``—``56`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``52``—``58`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -133,17 +133,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2081:2135:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2161:2215:FUNCTION
 
-.. rubric:: ``advancedSettings.map callback @ 52``
+.. rubric:: ``advancedSettings.map callback @ 54``
 
 .. code-block:: javascript
 
-   advancedSettings.map callback @ 52(item)
+   advancedSettings.map callback @ 54(item)
 
 作为 ``advancedSettings.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``52``—``52`` 行；所属函数 ``useMemo callback @ 50``。
+**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``useMemo callback @ 52``。
 
 **参数**
 
@@ -154,17 +154,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2308:2796:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2388:2876:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 58``
+.. rubric:: ``useLayoutEffect callback @ 60``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 58()
+   useLayoutEffect callback @ 60()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``58``—``72`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``60``—``74`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -178,17 +178,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2669:2727:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2749:2807:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 67``
+.. rubric:: ``setTimeout callback @ 69``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 67()
+   setTimeout callback @ 69()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``67``—``69`` 行；所属函数 ``useLayoutEffect callback @ 58``。
+**性质**：同步局部函数；源码第 ``69``—``71`` 行；所属函数 ``useLayoutEffect callback @ 60``。
 
 **参数**
 
@@ -200,17 +200,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``setLockedMode``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2753:2779:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2833:2859:FUNCTION
 
-.. rubric:: ``returned callback @ 70``
+.. rubric:: ``returned callback @ 72``
 
 .. code-block:: javascript
 
-   returned callback @ 70()
+   returned callback @ 72()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``70``—``70`` 行；所属函数 ``useLayoutEffect callback @ 58``。
+**性质**：同步局部函数；源码第 ``72``—``72`` 行；所属函数 ``useLayoutEffect callback @ 60``。
 
 **参数**
 
@@ -222,17 +222,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2879:3274:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:2959:3354:FUNCTION
 
-.. rubric:: ``useCallback callback @ 74``
+.. rubric:: ``useCallback callback @ 76``
 
 .. code-block:: javascript
 
-   useCallback callback @ 74()
+   useCallback callback @ 76()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``74``—``83`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``76``—``85`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -248,17 +248,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3336:3429:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3416:3509:FUNCTION
 
-.. rubric:: ``useCallback callback @ 85``
+.. rubric:: ``useCallback callback @ 87``
 
 .. code-block:: javascript
 
-   useCallback callback @ 85(width)
+   useCallback callback @ 87(width)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``85``—``87`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``87``—``89`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -271,17 +271,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``Math.min``、``getMaxDesktopWidth``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3475:4100:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3555:4180:FUNCTION
 
-.. rubric:: ``useLayoutEffect callback @ 89``
+.. rubric:: ``useLayoutEffect callback @ 91``
 
 .. code-block:: javascript
 
-   useLayoutEffect callback @ 89()
+   useLayoutEffect callback @ 91()
 
 作为 React 副作用回调，在依赖变化或组件挂载/卸载时同步外部状态并返回可选清理函数。
 
-**性质**：同步局部函数；源码第 ``89``—``108`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``91``—``110`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -300,7 +300,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3591:3689:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3671:3769:FUNCTION
 
 .. rubric:: ``syncWidth``
 
@@ -310,7 +310,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 实现 ``syncWidth`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``93``—``95`` 行；所属函数 ``useLayoutEffect callback @ 89``。
+**性质**：同步局部函数；源码第 ``95``—``97`` 行；所属函数 ``useLayoutEffect callback @ 91``。
 
 **参数**
 
@@ -324,17 +324,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3628:3677:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3708:3757:FUNCTION
 
-.. rubric:: ``setDesktopWidth callback @ 94``
+.. rubric:: ``setDesktopWidth callback @ 96``
 
 .. code-block:: javascript
 
-   setDesktopWidth callback @ 94(currentWidth)
+   setDesktopWidth callback @ 96(currentWidth)
 
 设置与 ``Desktop Width`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``94``—``94`` 行；所属函数 ``syncWidth``。
+**性质**：同步局部函数；源码第 ``96``—``96`` 行；所属函数 ``syncWidth``。
 
 **参数**
 
@@ -347,17 +347,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clampDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:3972:4093:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4052:4173:FUNCTION
 
-.. rubric:: ``returned callback @ 104``
+.. rubric:: ``returned callback @ 106``
 
 .. code-block:: javascript
 
-   returned callback @ 104()
+   returned callback @ 106()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``104``—``107`` 行；所属函数 ``useLayoutEffect callback @ 89``。
+**性质**：同步局部函数；源码第 ``106``—``109`` 行；所属函数 ``useLayoutEffect callback @ 91``。
 
 **参数**
 
@@ -373,17 +373,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``resizeObserver?.disconnect``、``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4199:4538:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4279:4618:FUNCTION
 
-.. rubric:: ``useCallback callback @ 110``
+.. rubric:: ``useCallback callback @ 112``
 
 .. code-block:: javascript
 
-   useCallback callback @ 110(event)
+   useCallback callback @ 112(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``110``—``120`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``112``—``122`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -396,17 +396,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``event.preventDefault``、``event.currentTarget.setPointerCapture``、``setIsResizing``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4622:5096:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4702:5176:FUNCTION
 
-.. rubric:: ``useCallback callback @ 122``
+.. rubric:: ``useCallback callback @ 124``
 
 .. code-block:: javascript
 
-   useCallback callback @ 122(event)
+   useCallback callback @ 124(event)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``122``—``133`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``124``—``135`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -421,17 +421,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4905:5088:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:4985:5168:FUNCTION
 
-.. rubric:: ``setDesktopWidth callback @ 128``
+.. rubric:: ``setDesktopWidth callback @ 130``
 
 .. code-block:: javascript
 
-   setDesktopWidth callback @ 128(currentWidth)
+   setDesktopWidth callback @ 130(currentWidth)
 
 设置与 ``Desktop Width`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``128``—``132`` 行；所属函数 ``useCallback callback @ 122``。
+**性质**：同步局部函数；源码第 ``130``—``134`` 行；所属函数 ``useCallback callback @ 124``。
 
 **参数**
 
@@ -444,17 +444,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clampDesktopWidth``、``storeDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5155:6668:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5235:6748:FUNCTION
 
-.. rubric:: ``useEffect callback @ 135``
+.. rubric:: ``useEffect callback @ 137``
 
 .. code-block:: javascript
 
-   useEffect callback @ 135()
+   useEffect callback @ 137()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``135``—``172`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``137``—``174`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -473,7 +473,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5467:5735:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5547:5815:FUNCTION
 
 .. rubric:: ``handlePointerMove``
 
@@ -483,7 +483,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 处理 ``Pointer Move`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``143``—``149`` 行；所属函数 ``useEffect callback @ 135``。
+**性质**：同步局部函数；源码第 ``145``—``151`` 行；所属函数 ``useEffect callback @ 137``。
 
 **参数**
 
@@ -496,7 +496,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``setDesktopWidth``、``clampDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5766:6072:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5846:6152:FUNCTION
 
 .. rubric:: ``stopResizing``
 
@@ -506,7 +506,7 @@ src/features/chat/page/components/RightSidebar 模块
 
 停止与 ``Resizing`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``151``—``159`` 行；所属函数 ``useEffect callback @ 135``。
+**性质**：同步局部函数；源码第 ``153``—``161`` 行；所属函数 ``useEffect callback @ 137``。
 
 **参数**
 
@@ -520,17 +520,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5880:6060:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:5960:6140:FUNCTION
 
-.. rubric:: ``setDesktopWidth callback @ 154``
+.. rubric:: ``setDesktopWidth callback @ 156``
 
 .. code-block:: javascript
 
-   setDesktopWidth callback @ 154(currentWidth)
+   setDesktopWidth callback @ 156(currentWidth)
 
 设置与 ``Desktop Width`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``154``—``158`` 行；所属函数 ``stopResizing``。
+**性质**：同步局部函数；源码第 ``156``—``160`` 行；所属函数 ``stopResizing``。
 
 **参数**
 
@@ -543,17 +543,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``clampDesktopWidth``、``storeDesktopWidth``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6309:6661:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6389:6741:FUNCTION
 
-.. rubric:: ``returned callback @ 165``
+.. rubric:: ``returned callback @ 167``
 
 .. code-block:: javascript
 
-   returned callback @ 165()
+   returned callback @ 167()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``165``—``171`` 行；所属函数 ``useEffect callback @ 135``。
+**性质**：同步局部函数；源码第 ``167``—``173`` 行；所属函数 ``useEffect callback @ 137``。
 
 **参数**
 
@@ -569,17 +569,17 @@ src/features/chat/page/components/RightSidebar 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6744:7657:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/RightSidebar.jsx:6824:7790:FUNCTION
 
-.. rubric:: ``useCallback callback @ 174``
+.. rubric:: ``useCallback callback @ 176``
 
 .. code-block:: javascript
 
-   useCallback callback @ 174()
+   useCallback callback @ 176()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``174``—``195`` 行；所属函数 ``memo callback @ 33``。
+**性质**：同步局部函数；源码第 ``176``—``198`` 行；所属函数 ``memo callback @ 33``。
 
 **参数**
 
@@ -587,6 +587,6 @@ src/features/chat/page/components/RightSidebar 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <div className="min-w-0 pb-4"> {hasDynamicSettings ? ( <div className="min-w-0"> <DynamicSettings key={dynamicSettingsKey} config={advancedSettings} initialValues={initialSettin…``。
+根据执行分支返回结果；代表性返回表达式为 ``children``、``( <div className="min-w-0 pb-4"> {hasDynamicSettings ? ( <div className="min-w-0"> <DynamicSettings key={dynamicSettingsKey} config={advancedSettings} initialValues={initialSettin…``。
 
 **主要协作调用**：``Array.isArray``、``t``。

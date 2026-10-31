@@ -58,6 +58,7 @@ export function ConnectionCard({ item, context, record, actions }) {
                     ? <Button type="button" variant="link" className="h-auto max-w-full justify-start whitespace-normal p-0 text-left text-sm font-semibold text-foreground" disabled={context.disabled || primaryAction.disabled === true || (primaryAction.disabledWhen && matchesCondition(primaryAction.disabledWhen, scope))} onClick={() => { void context.execute(primaryAction, { item: scope.item, parentItem: scope.parentItem }).catch(() => {}); }}>{formatSettingsValue(title)}</Button>
                     : formatSettingsValue(title)}</h4>{description && <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">{formatSettingsValue(description)}</p>}</div>
                 {stateText && <span className={`inline-flex max-w-full items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs leading-5 ${Object.hasOwn(STATE_TONES, stateTone) ? STATE_TONES[stateTone] : 'border-border bg-muted text-muted-foreground'}`} title={String(stateText)}>{item.state.busyValues?.includes(stateValue) && <Spinner className="size-3" />}{stateText}</span>}
+                {summary && actions && <div className="min-w-0 shrink-0" data-settings-summary-actions="true">{actions}</div>}
             </div>
             {properties.length > 0 && <dl className={summary ? 'flex flex-wrap gap-x-6 gap-y-2' : 'space-y-2'}>{properties.map((column, index) => {
                 const value = record ? getValue(record, column.key || column.field) : resolveValue(column.value, scope);
@@ -65,6 +66,6 @@ export function ConnectionCard({ item, context, record, actions }) {
                 return <div key={column.key || column.field || index} className="flex min-w-0 items-start gap-3 text-xs leading-5"><dt className={`${summary ? '' : 'w-20'} shrink-0 text-muted-foreground`}>{column.label}</dt><dd className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]">{text}</dd></div>;
             })}</dl>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2 border-t px-4 py-3">{actions}</div>}
+        {!summary && actions && <div className="flex flex-wrap items-center gap-2 border-t px-4 py-3">{actions}</div>}
     </Card>;
 }

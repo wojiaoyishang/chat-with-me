@@ -12,6 +12,7 @@ import {
     Minimize2,
     Minus,
     PanelRight,
+    NotebookPen,
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover.tsx';
 import { Button } from '@/components/ui/button.tsx';
@@ -34,6 +35,8 @@ const ChatHeader = memo(
         scrollToSelectedItem,
         handleSidebarToggle,
         onOpenRuntimeInspector,
+        onOpenSelfMessages,
+        selfMessagesOpen = false,
         conversationId,
         runtimeInspectorDisabled = false,
         isWindowMode,
@@ -57,6 +60,7 @@ const ChatHeader = memo(
         const modelListRef = useRef(null);
         const headerRef = useRef(null);
         const [compactHeader, setCompactHeader] = useState(false);
+        const [compactMenuOpen, setCompactMenuOpen] = useState(false);
         useEffect(() => {
             const element = headerRef.current;
             if (!element) return;
@@ -202,7 +206,7 @@ const ChatHeader = memo(
 
                 <div className="ml-auto flex shrink-0 items-center gap-0 sm:gap-2">
                     {compactHeader ? (
-                        <Popover>
+                        <Popover open={compactMenuOpen} onOpenChange={setCompactMenuOpen}>
                             <PopoverTrigger asChild>
                                 <Button variant="ghost" size="icon" className="shrink-0" aria-label="更多功能">
                                     <MoreHorizontal className="h-5 w-5" />
@@ -232,6 +236,12 @@ const ChatHeader = memo(
                                         disabled={!conversationId}
                                         label={t('message_history_map', { defaultValue: '消息历史地图' })}
                                     />
+
+                                    <Button type="button" variant="ghost" size="default" onClick={() => { setCompactMenuOpen(false); onOpenSelfMessages?.(); }}
+                                        disabled={!conversationId || !onOpenSelfMessages} aria-label="自消息" aria-pressed={selfMessagesOpen}
+                                        className="w-full justify-start gap-3 cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40">
+                                        <NotebookPen className="h-5 w-5 text-gray-600" /><span>自消息</span>
+                                    </Button>
 
                                     <Button
                                         variant="ghost"
@@ -270,6 +280,13 @@ const ChatHeader = memo(
                                 disabled={!conversationId}
                                 label={t('message_history_map', { defaultValue: '消息历史地图' })}
                             />
+
+                            <Button type="button" variant="ghost" size="icon" onClick={onOpenSelfMessages}
+                                disabled={!conversationId || !onOpenSelfMessages} aria-label="自消息" title="自消息 · 配置与运行记录"
+                                aria-pressed={selfMessagesOpen}
+                                className="cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40">
+                                <NotebookPen className="h-5 w-5 text-gray-600" />
+                            </Button>
 
                             <Button
                                 variant="ghost"

@@ -14,7 +14,7 @@ import {
 
 const output = `temp/workflow-model-options-${process.pid}.mjs`;
 await build({
-  entryPoints: ["src/features/workflows/WorkflowSettingsFields.jsx"],
+  stdin: { contents: "export {default} from './src/features/workflows/WorkflowSettingsFields.jsx'; export {default as ModelCallOptions} from './src/features/settings-runtime/SettingsModelCallOptions.jsx';", resolveDir: process.cwd() },
   outfile: output,
   bundle: true,
   format: "esm",
@@ -63,6 +63,8 @@ await build({
                 "export const Button=({size,variant,...props})=><button {...props}/>;";
             else if (name.endsWith("/input"))
               contents = "export const Input=props=><input {...props}/>;";
+            else if (name.endsWith("/spinner"))
+              contents = "export const Spinner=props=><span aria-hidden='true' {...props}/>;";
             else if (name.endsWith("/checkbox"))
               contents =
                 'export const Checkbox=({checked,onCheckedChange,...props})=><input type="checkbox" checked={checked} onChange={event=>onCheckedChange(event.target.checked)} {...props}/>;';
@@ -79,7 +81,7 @@ await build({
     },
   ],
 });
-const { default: Fields } = await import(
+const { default: Fields, ModelCallOptions } = await import(
   pathToFileURL(path.resolve(output)).href
 );
 const capabilities = {
@@ -367,4 +369,27 @@ test("list and string constraints reject malformed stop values and retain valid 
   ])
     assert.ok(workflowModelOptionErrors(value, stop).length);
   assert.deepEqual(workflowModelOptionErrors(["STOP", "结束"], stop), []);
+});
+
+test('single-model settings bind the selected/followed model and keep canonical zero/default values', async () => {
+  const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/', pretendToBeVisual: true });
+  for (const key of ['window', 'document', 'HTMLElement', 'Node', 'Event']) globalThis[key] = dom.window[key];
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  const root = createRoot(document.getElementById('root'));
+  const changes = [];
+  const item = { text: '调用参数', modelIdField: 'modelId', followModelId: 'one', models };
+  const render = async (value, modelId) => act(async () => root.render(React.createElement(ModelCallOptions, {
+    item, value, context: { values: { modelId } }, onChange: (next) => changes.push(next),
+  })));
+  try {
+    await render({ parameters: { top_p: 0 }, reasoningEffort: 'default' }, 'two');
+    assert.ok(byLabel('配置 文字模型 调用参数'));
+    assert.equal(document.querySelector('[data-settings-invalid="true"]'), null);
+    await click(byLabel('重置 文字模型 参数'));
+    assert.deepEqual(changes.at(-1), {});
+    await render({}, '');
+    assert.ok(byLabel('配置 视觉模型 调用参数'), 'empty model choice follows the server supplied model');
+    await render({ parameters: { top_k: 101 } }, 'one');
+    assert.match(document.querySelector('[data-settings-invalid="true"]').textContent, /超出模型允许范围/);
+  } finally { await act(async () => root.unmount()); dom.window.close(); }
 });

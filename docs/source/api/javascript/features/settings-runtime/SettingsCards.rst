@@ -67,13 +67,13 @@ Resource layout follows available content width, with at most two columns.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2933:6996:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:2933:7135:FUNCTION
 
 .. js:function:: ConnectionCard({ item, context, record, actions })
 
    A connection card renders declared data only; no service names select UI.
 
-   **性质**：同步函数；导出 API；源码第 ``42``—``70`` 行。
+   **性质**：同步函数；导出 API；源码第 ``42``—``71`` 行。
 
    **参数**
 
@@ -207,17 +207,17 @@ Resource layout follows available content width, with at most two columns.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:6245:6851:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/SettingsCards.jsx:6372:6978:FUNCTION
 
-.. rubric:: ``properties.map callback @ 62``
+.. rubric:: ``properties.map callback @ 63``
 
 .. code-block:: javascript
 
-   properties.map callback @ 62(column, index)
+   properties.map callback @ 63(column, index)
 
 作为 ``properties.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``62``—``66`` 行；所属函数 ``ConnectionCard``。
+**性质**：同步局部函数；源码第 ``63``—``67`` 行；所属函数 ``ConnectionCard``。
 
 **参数**
 

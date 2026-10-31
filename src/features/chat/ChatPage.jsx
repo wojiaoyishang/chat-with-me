@@ -21,6 +21,7 @@ import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { DeleteConfirmDialog } from '@/components/ui/DeleteConfirmDialog';
 import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
+import RemoteSettingsPanel from '@/features/settings-runtime/RemoteSettingsPanel.jsx';
 import useRuntimeInspector from '@/features/chat/page/hooks/useRuntimeInspector.js';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
@@ -261,6 +262,11 @@ function ChatPage({
     const [selectedModel, setSelectedModel] = useState({ name: t('no_models') });
     const selectedModelRef = useRef(selectedModel);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [remoteSettingsPanel, setRemoteSettingsPanel] = useState(null);
+    const remoteSettingsPanelRef = useRef(null);
+    useEffect(() => {
+        if (remoteSettingsPanel && remoteSettingsPanel.conversationId !== conversationId) setIsSidebarOpen(false);
+    }, [conversationId, remoteSettingsPanel]);
     const [advancedSettings, setAdvancedSettings] = useState([]);
     const [initialSettingValues, setInitialSettingValues] = useState({});
     const [advancedSettingsValues, setAdvancedSettingsValues] = useState({});
@@ -3247,10 +3253,10 @@ function ChatPage({
     );
 
     useEffect(() => {
-        if (!isSidebarOpen) return;
+        if (!isSidebarOpen || remoteSettingsPanel) return;
         // Reopening the settings should read the current backend schema.
         void loadAvailableModels({ preserveSelection: true });
-    }, [isSidebarOpen, loadAvailableModels]);
+    }, [isSidebarOpen, loadAvailableModels, remoteSettingsPanel]);
 
     const modelSettingsRefreshRevision = Number(settingsRefreshVersions?.['chat.models'] || 0);
     const runtimeOptionsRefreshRevision = Number(settingsRefreshVersions?.['chat.runtime-options'] || 0);
@@ -3452,14 +3458,37 @@ function ChatPage({
         t,
     ]);
 
-    const handleSidebarToggle = useCallback(() => {
+    const handleSidebarClose = useCallback(async () => {
+        if (remoteSettingsPanel && remoteSettingsPanelRef.current && !(await remoteSettingsPanelRef.current.canClose())) return;
+        setIsSidebarOpen(false);
+    }, [remoteSettingsPanel]);
+    const handleSidebarToggle = useCallback(async () => {
+        if (remoteSettingsPanel && isSidebarOpen) {
+            if (remoteSettingsPanelRef.current && !(await remoteSettingsPanelRef.current.canClose())) return;
+            setRemoteSettingsPanel(null);
+            return;
+        }
+        setRemoteSettingsPanel(null);
         setIsSidebarOpen((prev) => !prev);
-    }, []);
+    }, [remoteSettingsPanel, isSidebarOpen]);
+    const handleOpenSelfMessages = useCallback(async () => {
+        if (!conversationId) return;
+        if (isSidebarOpen && remoteSettingsPanel?.conversationId === conversationId) {
+            await handleSidebarClose();
+            return;
+        }
+        setRemoteSettingsPanel({
+            title: '自消息',
+            conversationId,
+            endpoint: `/conversation-self-messages/conversations/${encodeURIComponent(conversationId)}/settings`,
+        });
+        setIsSidebarOpen(true);
+    }, [conversationId, isSidebarOpen, remoteSettingsPanel, handleSidebarClose]);
 
     useBrowserBackLayer(
         isSidebarOpen,
         () => {
-            setIsSidebarOpen(false);
+            void handleSidebarClose();
             return true;
         },
         { kind: 'chat-sidebar' },
@@ -3551,6 +3580,8 @@ function ChatPage({
                             handleSidebarToggle={handleSidebarToggle}
                             conversationId={conversationId}
                             onOpenRuntimeInspector={handleOpenRuntimeInspector}
+                            onOpenSelfMessages={handleOpenSelfMessages}
+                            selfMessagesOpen={isSidebarOpen && remoteSettingsPanel?.conversationId === conversationId}
                             runtimeInspectorDisabled={!conversationId}
                             isWindowMode={isWindowMode}
                             handleDragMouseDown={handleDragMouseDown}
@@ -3852,7 +3883,11 @@ function ChatPage({
 
                     <RightSidebar
                         isOpen={isSidebarOpen}
-                        onClose={handleSidebarToggle}
+                        onClose={handleSidebarClose}
+                        title={remoteSettingsPanel?.title}
+                        children={remoteSettingsPanel ? <RemoteSettingsPanel ref={remoteSettingsPanelRef}
+                            active={isSidebarOpen && remoteSettingsPanel.conversationId === conversationId}
+                            endpoint={remoteSettingsPanel.endpoint} conversationId={remoteSettingsPanel.conversationId} /> : undefined}
                         advancedSettings={advancedSettings}
                         initialSettingValues={initialSettingValues || advancedSettingsValues}
                         settingsInstanceKey={settingsInstanceKey}
