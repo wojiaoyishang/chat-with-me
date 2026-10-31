@@ -1,5 +1,5 @@
 import clientAdapter from '@/runtime/backend/clientAdapter.js';
-import { applyRules, findSettingsField as findField, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue, settingsChildFields } from '@/features/settings-runtime/model.js';
+import { applyRules, findSettingsField as findField, getValue, matchesCondition, pageValues, pathParts, resolveValue, setValue, settingsChildFields, settingsPublicContext } from '@/features/settings-runtime/model.js';
 import { getSettingsComponent } from '@/features/settings-runtime/registry.js';
 import { ActionsNode, ActionButton, AsyncOperationNode, ConnectionCardNode, DescriptorDialog, DiffNode, FileNode, MatrixNode, ProfileCardNode, ProfileSummaryNode, ReadonlyImageNode, ReadonlyTextNode, ResourceNode, SecretMapNode, TableNode } from '@/features/settings-runtime/GenericNodes.jsx';
 import { SettingsSection } from '@/features/settings-runtime/SettingsPresentation.jsx';
@@ -2361,7 +2361,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
     const controller = useActionExecutor({
         api: runtimeContext.api || apiClient, client, confirm, refresh, navigate, patchForm,
         openSettings: requestSettingsNavigation,
-        scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {} }),
+        scope: () => ({ form: valuesRef.current, item: runtimeRef.current.item, parentItem: runtimeRef.current.parentItem, client: runtimeRef.current.clientState || {}, context: settingsPublicContext(runtimeRef.current) }),
         openDialog: (value, options = {}) => setDescriptorDialog((current) => ({ open: true, value, apply: options.apply, serial: current.serial + 1 })),
         captureDraft: () => {
             const configuration = configRef.current;
@@ -2382,7 +2382,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         execute: async (...args) => { try { if (args[0].validate !== false) validateSettingsScope(editorScope.current); } catch (cause) { toast.error(cause.message); throw cause; } return controller.execute(...args); }, operations: controller.operations,
         disabled: disabled || runtimeContext.disabled === true,
         storageBindings,
-        resolve: (value, extra = {}) => resolveValue(value, { form: valuesRef.current, item: runtimeRef.current.item, ...extra }),
+        resolve: (value, extra = {}) => resolveValue(value, { form: valuesRef.current, item: runtimeRef.current.item, context: settingsPublicContext(runtimeRef.current), ...extra }),
     };
     const renderFields = useCallback((options, initial, changed, extra = {}) => <DynamicSettings
         key={extra.key} config={options} initialValues={initial} onChange={changed}

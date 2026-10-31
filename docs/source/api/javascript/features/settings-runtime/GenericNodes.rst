@@ -27,7 +27,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:2055:2823:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:2078:2846:FUNCTION
 
 .. js:function:: ReadonlyImageNode({ item, value })
 
@@ -46,7 +46,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **主要协作调用**：``readonlyImageSource``、``resolveResourceUrl``、``readonlyImageSize``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:2823:6803:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:2846:6826:FUNCTION
 
 .. js:function:: FileNode({ item, value, onChange, context })
 
@@ -71,7 +71,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6803:7542:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6826:7565:FUNCTION
 
 .. js:function:: ActionControl({ action, label, disabled, busy, variant, menuItem, onInvoke })
 
@@ -90,13 +90,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **主要协作调用**：``getActionPresentation``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7542:8417:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:7565:8505:FUNCTION
 
 .. js:function:: ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant, menuItem = false })
 
    渲染 ``ActionButton`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``97``—``105`` 行。
+   **性质**：同步函数；导出 API；源码第 ``97``—``106`` 行。
 
    **参数**
 
@@ -107,17 +107,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    根据执行分支返回结果；代表性返回表达式为 ``null``、``<ActionControl action={action} label={formatValue(action.label || action.text || '执行', actualScope)} disabled={isDisabled} busy={operation?.busy} variant={variant} menuItem={menuI…``。
 
-   **主要协作调用**：``matchesCondition``、``operationKey``、``formatValue``。
+   **主要协作调用**：``settingsPublicContext``、``matchesCondition``、``operationKey``、``formatValue``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8417:8669:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8505:8757:FUNCTION
 
 .. js:function:: ActionsNode({ item, context })
 
    渲染 ``ActionsNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``107``—``109`` 行。
+   **性质**：同步函数；导出 API；源码第 ``108``—``110`` 行。
 
    **参数**
 
@@ -132,13 +132,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8669:10897:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8757:10985:FUNCTION
 
 .. js:function:: ReadonlyTextNode({ item, value, context })
 
    Read-only content stays selectable; clipboard access occurs only on a user click.
 
-   **性质**：同步函数；导出 API；源码第 ``112``—``138`` 行。
+   **性质**：同步函数；导出 API；源码第 ``113``—``139`` 行。
 
    **参数**
 
@@ -153,13 +153,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10897:12939:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10985:13027:FUNCTION
 
 .. js:function:: ProfileSummaryNode({ item, context })
 
    A backend-authored summary remains presentation data, not an account page.
 
-   **性质**：同步函数；导出 API；源码第 ``141``—``161`` 行。
+   **性质**：同步函数；导出 API；源码第 ``142``—``162`` 行。
 
    **参数**
 
@@ -174,13 +174,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12939:13350:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13027:13438:FUNCTION
 
 .. js:function:: presentationActions(actions, context)
 
    实现 ``presentationActions`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``163``—``167`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``164``—``168`` 行。
 
    **参数**
 
@@ -198,13 +198,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13350:13598:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13438:13686:FUNCTION
 
 .. js:function:: ProfileCardNode({ item, context, avatarControl, children })
 
    渲染 ``ProfileCardNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``169``—``171`` 行。
+   **性质**：同步函数；导出 API；源码第 ``170``—``172`` 行。
 
    **参数**
 
@@ -217,13 +217,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **主要协作调用**：``presentationActions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13598:13775:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13686:13863:FUNCTION
 
 .. js:function:: ConnectionCardNode({ item, context })
 
    渲染 ``ConnectionCardNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``173``—``175`` 行。
+   **性质**：同步函数；导出 API；源码第 ``174``—``176`` 行。
 
    **参数**
 
@@ -236,13 +236,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **主要协作调用**：``presentationActions``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13775:18749:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13863:18837:FUNCTION
 
 .. js:function:: AsyncOperationNode({ item, context })
 
    A persisted operation can be inspected again after the settings page reopens.
 
-   **性质**：同步函数；导出 API；源码第 ``178``—``236`` 行。
+   **性质**：同步函数；导出 API；源码第 ``179``—``237`` 行。
 
    **参数**
 
@@ -261,13 +261,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18749:19751:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18837:19839:FUNCTION
 
 .. js:function:: TableNode({ item, value, context })
 
    渲染 ``TableNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``238``—``242`` 行。
+   **性质**：同步函数；导出 API；源码第 ``239``—``243`` 行。
 
    **参数**
 
@@ -282,13 +282,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19751:20448:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19839:20536:FUNCTION
 
 .. js:function:: DiffNode({ item, value, context })
 
    渲染 ``DiffNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``244``—``248`` 行。
+   **性质**：同步函数；导出 API；源码第 ``245``—``249`` 行。
 
    **参数**
 
@@ -303,13 +303,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20448:23113:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20536:23201:FUNCTION
 
 .. js:function:: SecretMapNode({ item, value = EMPTY_MAP, onChange, context })
 
    渲染 ``SecretMapNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``250``—``278`` 行。
+   **性质**：同步函数；导出 API；源码第 ``251``—``279`` 行。
 
    **参数**
 
@@ -324,13 +324,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23113:30837:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23201:30925:FUNCTION
 
 .. js:function:: MatrixNode({ item, value, onChange, context })
 
    渲染 ``MatrixNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``280``—``346`` 行。
+   **性质**：同步函数；导出 API；源码第 ``281``—``347`` 行。
 
    **参数**
 
@@ -349,13 +349,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：12。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30837:51468:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30925:51556:FUNCTION
 
 .. js:function:: ResourceNode({ item, context, renderFields })
 
    渲染 ``ResourceNode`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``348``—``574`` 行。
+   **性质**：同步函数；导出 API；源码第 ``349``—``575`` 行。
 
    **参数**
 
@@ -376,13 +376,13 @@ A display-only image primitive; QR and other views are authored by the backend.
 
    **内部回调数量**：25。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51468:58682:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51556:58770:FUNCTION
 
 .. js:function:: DescriptorDialog({ open, descriptor, context, renderFields, onClose, onExited, onApply, onReplace })
 
    渲染 ``DescriptorDialog`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``576``—``674`` 行。
+   **性质**：同步函数；导出 API；源码第 ``577``—``675`` 行。
 
    **参数**
 
@@ -406,7 +406,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:3265:4365:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:3288:4388:FUNCTION
 
 .. rubric:: ``choose``
 
@@ -433,7 +433,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setBusy``、``setError``、``form.append``、``context.api.post``、``requestEndpoint``、``values.push``、``getValue``、``setUploadedPreview``、``file.text``、``JSON.parse``、``onChange``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:5500:5534:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:5523:5557:FUNCTION
 
 .. rubric:: ``onChange callback @ 74``
 
@@ -456,7 +456,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6508:6542:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:6531:6565:FUNCTION
 
 .. rubric:: ``onChange callback @ 81``
 
@@ -479,17 +479,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8330:8409:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8418:8497:FUNCTION
 
-.. rubric:: ``onInvoke callback @ 104``
+.. rubric:: ``onInvoke callback @ 105``
 
 .. code-block:: javascript
 
-   onInvoke callback @ 104()
+   onInvoke callback @ 105()
 
 处理 ``Invoke`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``ActionButton``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``ActionButton``。
 
 **参数**
 
@@ -503,17 +503,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8397:8405:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8485:8493:FUNCTION
 
-.. rubric:: ``context.execute(action, actualScope, callbacks).catch callback @ 104``
+.. rubric:: ``context.execute(action, actualScope, callbacks).catch callback @ 105``
 
 .. code-block:: javascript
 
-   context.execute(action, actualScope, callbacks).catch callback @ 104()
+   context.execute(action, actualScope, callbacks).catch callback @ 105()
 
 处理 ``context.execute(action, actualScope, callbacks).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``104``—``104`` 行；所属函数 ``onInvoke callback @ 104``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``onInvoke callback @ 105``。
 
 **参数**
 
@@ -523,17 +523,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8563:8657:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:8651:8745:FUNCTION
 
-.. rubric:: ``(item.actions || []).map callback @ 108``
+.. rubric:: ``(item.actions || []).map callback @ 109``
 
 .. code-block:: javascript
 
-   (item.actions || []).map callback @ 108(action, index)
+   (item.actions || []).map callback @ 109(action, index)
 
 作为 ``(item.actions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``ActionsNode``。
+**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``ActionsNode``。
 
 **参数**
 
@@ -547,7 +547,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:9109:9320:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:9197:9408:FUNCTION
 
 .. rubric:: ``copy``
 
@@ -557,7 +557,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``copy`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``116``—``123`` 行；所属函数 ``ReadonlyTextNode``。
+**性质**：异步局部函数；源码第 ``117``—``124`` 行；所属函数 ``ReadonlyTextNode``。
 
 **参数**
 
@@ -569,17 +569,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``copyTextToClipboard``、``toast.success``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:9938:9960:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10026:10048:FUNCTION
 
-.. rubric:: ``onClick callback @ 128``
+.. rubric:: ``onClick callback @ 129``
 
 .. code-block:: javascript
 
-   onClick callback @ 128()
+   onClick callback @ 129()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``ReadonlyTextNode``。
+**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``ReadonlyTextNode``。
 
 **参数**
 
@@ -591,17 +591,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``copy``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10547:10569:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:10635:10657:FUNCTION
 
-.. rubric:: ``onClick callback @ 134``
+.. rubric:: ``onClick callback @ 135``
 
 .. code-block:: javascript
 
-   onClick callback @ 134()
+   onClick callback @ 135()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``134``—``134`` 行；所属函数 ``ReadonlyTextNode``。
+**性质**：同步局部函数；源码第 ``135``—``135`` 行；所属函数 ``ReadonlyTextNode``。
 
 **参数**
 
@@ -613,17 +613,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``copy``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12439:12665:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12527:12753:FUNCTION
 
-.. rubric:: ``item.meta.map callback @ 156``
+.. rubric:: ``item.meta.map callback @ 157``
 
 .. code-block:: javascript
 
-   item.meta.map callback @ 156(entry, index)
+   item.meta.map callback @ 157(entry, index)
 
 作为 ``item.meta.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``156``—``156`` 行；所属函数 ``ProfileSummaryNode``。
+**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``ProfileSummaryNode``。
 
 **参数**
 
@@ -639,17 +639,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``displayValue``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12792:12886:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:12880:12974:FUNCTION
 
-.. rubric:: ``item.actions.map callback @ 158``
+.. rubric:: ``item.actions.map callback @ 159``
 
 .. code-block:: javascript
 
-   item.actions.map callback @ 158(action, index)
+   item.actions.map callback @ 159(action, index)
 
 作为 ``item.actions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``158``—``158`` 行；所属函数 ``ProfileSummaryNode``。
+**性质**：同步局部函数；源码第 ``159``—``159`` 行；所属函数 ``ProfileSummaryNode``。
 
 **参数**
 
@@ -663,17 +663,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13133:13200:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13221:13288:FUNCTION
 
-.. rubric:: ``(actions || []).filter callback @ 165``
+.. rubric:: ``(actions || []).filter callback @ 166``
 
 .. code-block:: javascript
 
-   (actions || []).filter callback @ 165(action)
+   (actions || []).filter callback @ 166(action)
 
 作为 ``(actions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``165``—``165`` 行；所属函数 ``presentationActions``。
+**性质**：同步局部函数；源码第 ``166``—``166`` 行；所属函数 ``presentationActions``。
 
 **参数**
 
@@ -686,17 +686,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13244:13338:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:13332:13426:FUNCTION
 
-.. rubric:: ``visible.map callback @ 166``
+.. rubric:: ``visible.map callback @ 167``
 
 .. code-block:: javascript
 
-   visible.map callback @ 166(action, index)
+   visible.map callback @ 167(action, index)
 
 作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``166``—``166`` 行；所属函数 ``presentationActions``。
+**性质**：同步局部函数；源码第 ``167``—``167`` 行；所属函数 ``presentationActions``。
 
 **参数**
 
@@ -710,7 +710,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14489:14684:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14577:14772:FUNCTION
 
 .. rubric:: ``read``
 
@@ -720,7 +720,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``read`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``187``—``191`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``188``—``192`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -734,17 +734,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14610:14618:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14698:14706:FUNCTION
 
-.. rubric:: ``latest.current.execute(readAction).catch callback @ 190``
+.. rubric:: ``latest.current.execute(readAction).catch callback @ 191``
 
 .. code-block:: javascript
 
-   latest.current.execute(readAction).catch callback @ 190()
+   latest.current.execute(readAction).catch callback @ 191()
 
 处理 ``latest.current.execute(readAction).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``190``—``190`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -754,17 +754,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14628:14675:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14716:14763:FUNCTION
 
-.. rubric:: ``latest.current.execute(readAction).catch(() => {}).finally callback @ 190``
+.. rubric:: ``latest.current.execute(readAction).catch(() => {}).finally callback @ 191``
 
 .. code-block:: javascript
 
-   latest.current.execute(readAction).catch(() => {}).finally callback @ 190()
+   latest.current.execute(readAction).catch(() => {}).finally callback @ 191()
 
 处理 ``latest.current.execute(readAction).catch(() => {}).finally callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``190``—``190`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``191``—``191`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -776,17 +776,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setReading``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14701:14983:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14789:15071:FUNCTION
 
-.. rubric:: ``useEffect callback @ 192``
+.. rubric:: ``useEffect callback @ 193``
 
 .. code-block:: javascript
 
-   useEffect callback @ 192()
+   useEffect callback @ 193()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``192``—``198`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``193``—``199`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -800,17 +800,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14799:14832:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:14887:14920:FUNCTION
 
-.. rubric:: ``returned callback @ 195``
+.. rubric:: ``returned callback @ 196``
 
 .. code-block:: javascript
 
-   returned callback @ 195()
+   returned callback @ 196()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``195``—``195`` 行；所属函数 ``useEffect callback @ 192``。
+**性质**：同步局部函数；源码第 ``196``—``196`` 行；所属函数 ``useEffect callback @ 193``。
 
 **参数**
 
@@ -820,17 +820,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15063:15151:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15151:15239:FUNCTION
 
-.. rubric:: ``[readAction, ...(item.actions || [])].map callback @ 199``
+.. rubric:: ``[readAction, ...(item.actions || [])].map callback @ 200``
 
 .. code-block:: javascript
 
-   [readAction, ...(item.actions || [])].map callback @ 199(action)
+   [readAction, ...(item.actions || [])].map callback @ 200(action)
 
 作为 ``[readAction, ...(item.actions || [])].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``199``—``199`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -843,17 +843,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``operationKey``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15242:15274:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15330:15362:FUNCTION
 
-.. rubric:: ``keys.map callback @ 201``
+.. rubric:: ``keys.map callback @ 202``
 
 .. code-block:: javascript
 
-   keys.map callback @ 201(key)
+   keys.map callback @ 202(key)
 
 作为 ``keys.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``202``—``202`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -864,17 +864,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15297:15330:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15385:15418:FUNCTION
 
-.. rubric:: ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 201``
+.. rubric:: ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 202``
 
 .. code-block:: javascript
 
-   keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 201(a, b)
+   keys.map((key) => context.operations[key]).filter(Boolean).sort callback @ 202(a, b)
 
 作为 ``keys.map((key) => context.operations[key]).filter(Boolean).sort callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``201``—``201`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``202``—``202`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -888,7 +888,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:15958:16008:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16046:16096:FUNCTION
 
 .. rubric:: ``onSuccess``
 
@@ -898,7 +898,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Success`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``210``—``210`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``211``—``211`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -910,7 +910,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setSubmitError``、``setUncertain``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16027:16408:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:16115:16496:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -920,7 +920,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``211``—``219`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``212``—``220`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -933,17 +933,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setSubmitError``、``Number``、``setUncertain``、``read``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17635:17929:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:17723:18017:FUNCTION
 
-.. rubric:: ``item.summary.map callback @ 232``
+.. rubric:: ``item.summary.map callback @ 233``
 
 .. code-block:: javascript
 
-   item.summary.map callback @ 232(field)
+   item.summary.map callback @ 233(field)
 
 作为 ``item.summary.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``233``—``233`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -956,17 +956,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``displayValue``、``getValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18216:18399:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18304:18487:FUNCTION
 
-.. rubric:: ``(item.actions || []).map callback @ 234``
+.. rubric:: ``(item.actions || []).map callback @ 235``
 
 .. code-block:: javascript
 
-   (item.actions || []).map callback @ 234(action, index)
+   (item.actions || []).map callback @ 235(action, index)
 
 作为 ``(item.actions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``234``—``234`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -980,17 +980,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18473:18505:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:18561:18593:FUNCTION
 
-.. rubric:: ``onClick callback @ 234``
+.. rubric:: ``onClick callback @ 235``
 
 .. code-block:: javascript
 
-   onClick callback @ 234()
+   onClick callback @ 235()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``234``—``234`` 行；所属函数 ``AsyncOperationNode``。
+**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``AsyncOperationNode``。
 
 **参数**
 
@@ -1006,17 +1006,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``context.navigate``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19250:19336:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19338:19424:FUNCTION
 
-.. rubric:: ``(item.columns || []).map callback @ 241``
+.. rubric:: ``(item.columns || []).map callback @ 242``
 
 .. code-block:: javascript
 
-   (item.columns || []).map callback @ 241(column)
+   (item.columns || []).map callback @ 242(column)
 
 作为 ``(item.columns || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``TableNode``。
+**性质**：同步局部函数；源码第 ``242``—``242`` 行；所属函数 ``TableNode``。
 
 **参数**
 
@@ -1027,17 +1027,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19368:19614:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19456:19702:FUNCTION
 
-.. rubric:: ``rows.map callback @ 241``
+.. rubric:: ``rows.map callback @ 242``
 
 .. code-block:: javascript
 
-   rows.map callback @ 241(row, index)
+   rows.map callback @ 242(row, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``TableNode``。
+**性质**：同步局部函数；源码第 ``242``—``242`` 行；所属函数 ``TableNode``。
 
 **参数**
 
@@ -1055,17 +1055,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19485:19607:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19573:19695:FUNCTION
 
-.. rubric:: ``(item.columns || []).map callback @ 241``
+.. rubric:: ``(item.columns || []).map callback @ 242``
 
 .. code-block:: javascript
 
-   (item.columns || []).map callback @ 241(column)
+   (item.columns || []).map callback @ 242(column)
 
 作为 ``(item.columns || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``241``—``241`` 行；所属函数 ``rows.map callback @ 241``。
+**性质**：同步局部函数；源码第 ``242``—``242`` 行；所属函数 ``rows.map callback @ 242``。
 
 **参数**
 
@@ -1078,17 +1078,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``displayValue``、``getValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:19972:20002:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20060:20090:FUNCTION
 
-.. rubric:: ``Object.keys(data).map callback @ 246``
+.. rubric:: ``Object.keys(data).map callback @ 247``
 
 .. code-block:: javascript
 
-   Object.keys(data).map callback @ 246(key)
+   Object.keys(data).map callback @ 247(key)
 
 作为 ``Object.keys(data).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``246``—``246`` 行；所属函数 ``DiffNode``。
+**性质**：同步局部函数；源码第 ``247``—``247`` 行；所属函数 ``DiffNode``。
 
 **参数**
 
@@ -1099,17 +1099,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20095:20436:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20183:20524:FUNCTION
 
-.. rubric:: ``columns.map callback @ 247``
+.. rubric:: ``columns.map callback @ 248``
 
 .. code-block:: javascript
 
-   columns.map callback @ 247(column)
+   columns.map callback @ 248(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``247``—``247`` 行；所属函数 ``DiffNode``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``DiffNode``。
 
 **参数**
 
@@ -1124,17 +1124,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20337:20419:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20425:20507:FUNCTION
 
-.. rubric:: ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 247``
+.. rubric:: ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 248``
 
 .. code-block:: javascript
 
-   (Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 247(entry, index)
+   (Array.isArray(data[column.key]) ? data[column.key] : []).map callback @ 248(entry, index)
 
 作为 ``(Array.isArray(data[column.key]) ? data[column.key] : []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``247``—``247`` 行；所属函数 ``columns.map callback @ 247``。
+**性质**：同步局部函数；源码第 ``248``—``248`` 行；所属函数 ``columns.map callback @ 248``。
 
 **参数**
 
@@ -1150,17 +1150,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``displayValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20570:20679:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20658:20767:FUNCTION
 
-.. rubric:: ``useState callback @ 251``
+.. rubric:: ``useState callback @ 252``
 
 .. code-block:: javascript
 
-   useState callback @ 251()
+   useState callback @ 252()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``251``—``251`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``252``—``252`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1174,17 +1174,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20608:20678:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20696:20766:FUNCTION
 
-.. rubric:: ``Object.entries(value || {}).map callback @ 251``
+.. rubric:: ``Object.entries(value || {}).map callback @ 252``
 
 .. code-block:: javascript
 
-   Object.entries(value || {}).map callback @ 251([key, content])
+   Object.entries(value || {}).map callback @ 252([key, content])
 
 作为 ``Object.entries(value || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``251``—``251`` 行；所属函数 ``useState callback @ 251``。
+**性质**：同步局部函数；源码第 ``252``—``252`` 行；所属函数 ``useState callback @ 252``。
 
 **参数**
 
@@ -1197,17 +1197,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``crypto.randomUUID``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20734:20955:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20822:21043:FUNCTION
 
-.. rubric:: ``useEffect callback @ 253``
+.. rubric:: ``useEffect callback @ 254``
 
 .. code-block:: javascript
 
-   useEffect callback @ 253()
+   useEffect callback @ 254()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``253``—``257`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``254``—``258`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1221,17 +1221,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20875:20945:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:20963:21033:FUNCTION
 
-.. rubric:: ``Object.entries(value || {}).map callback @ 256``
+.. rubric:: ``Object.entries(value || {}).map callback @ 257``
 
 .. code-block:: javascript
 
-   Object.entries(value || {}).map callback @ 256([key, content])
+   Object.entries(value || {}).map callback @ 257([key, content])
 
 作为 ``Object.entries(value || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``256``—``256`` 行；所属函数 ``useEffect callback @ 253``。
+**性质**：同步局部函数；源码第 ``257``—``257`` 行；所属函数 ``useEffect callback @ 254``。
 
 **参数**
 
@@ -1244,7 +1244,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``crypto.randomUUID``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21031:21510:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21119:21598:FUNCTION
 
 .. rubric:: ``commit``
 
@@ -1254,7 +1254,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``commit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``259``—``268`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``260``—``269`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1269,36 +1269,15 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21099:21115:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21187:21203:FUNCTION
 
-.. rubric:: ``next.map callback @ 261``
+.. rubric:: ``next.map callback @ 262``
 
 .. code-block:: javascript
 
-   next.map callback @ 261(row)
+   next.map callback @ 262(row)
 
 作为 ``next.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``261``—``261`` 行；所属函数 ``commit``。
-
-**参数**
-
-``row``
-   调用方传入的 ``row`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21157:21181:FUNCTION
-
-.. rubric:: ``next.some callback @ 262``
-
-.. code-block:: javascript
-
-   next.some callback @ 262(row)
-
-作为 ``next.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``262``—``262`` 行；所属函数 ``commit``。
 
@@ -1311,19 +1290,40 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``row.key.trim``。
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21245:21269:FUNCTION
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21386:21402:FUNCTION
-
-.. rubric:: ``next.filter callback @ 265``
+.. rubric:: ``next.some callback @ 263``
 
 .. code-block:: javascript
 
-   next.filter callback @ 265(row)
+   next.some callback @ 263(row)
+
+作为 ``next.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``263``—``263`` 行；所属函数 ``commit``。
+
+**参数**
+
+``row``
+   调用方传入的 ``row`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``row.key.trim``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21474:21490:FUNCTION
+
+.. rubric:: ``next.filter callback @ 266``
+
+.. code-block:: javascript
+
+   next.filter callback @ 266(row)
 
 作为 ``next.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``265``—``265`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``266``—``266`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1334,17 +1334,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21408:21437:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21496:21525:FUNCTION
 
-.. rubric:: ``next.filter((row) => row.key).map callback @ 265``
+.. rubric:: ``next.filter((row) => row.key).map callback @ 266``
 
 .. code-block:: javascript
 
-   next.filter((row) => row.key).map callback @ 265(row)
+   next.filter((row) => row.key).map callback @ 266(row)
 
 作为 ``next.filter((row) => row.key).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``265``—``265`` 行；所属函数 ``commit``。
+**性质**：同步局部函数；源码第 ``266``—``266`` 行；所属函数 ``commit``。
 
 **参数**
 
@@ -1355,17 +1355,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21717:22723:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21805:22811:FUNCTION
 
-.. rubric:: ``rows.map callback @ 270``
+.. rubric:: ``rows.map callback @ 271``
 
 .. code-block:: javascript
 
-   rows.map callback @ 270(row, index)
+   rows.map callback @ 271(row, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``270``—``274`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``271``—``275`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1381,53 +1381,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21972:22079:FUNCTION
-
-.. rubric:: ``onChange callback @ 271``
-
-.. code-block:: javascript
-
-   onChange callback @ 271(event)
-
-处理 ``Change`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``271``—``271`` 行；所属函数 ``rows.map callback @ 270``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``commit``、``rows.map``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:21999:22077:FUNCTION
-
-.. rubric:: ``rows.map callback @ 271``
-
-.. code-block:: javascript
-
-   rows.map callback @ 271(entry)
-
-作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``271``—``271`` 行；所属函数 ``onChange callback @ 271``。
-
-**参数**
-
-``entry``
-   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22362:22471:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22060:22167:FUNCTION
 
 .. rubric:: ``onChange callback @ 272``
 
@@ -1437,7 +1391,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``272``—``272`` 行；所属函数 ``rows.map callback @ 270``。
+**性质**：同步局部函数；源码第 ``272``—``272`` 行；所属函数 ``rows.map callback @ 271``。
 
 **参数**
 
@@ -1452,7 +1406,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22389:22469:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22087:22165:FUNCTION
 
 .. rubric:: ``rows.map callback @ 272``
 
@@ -1473,17 +1427,63 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22610:22667:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22450:22559:FUNCTION
 
-.. rubric:: ``onClick callback @ 273``
+.. rubric:: ``onChange callback @ 273``
 
 .. code-block:: javascript
 
-   onClick callback @ 273()
+   onChange callback @ 273(event)
+
+处理 ``Change`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``rows.map callback @ 271``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``commit``、``rows.map``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22477:22557:FUNCTION
+
+.. rubric:: ``rows.map callback @ 273``
+
+.. code-block:: javascript
+
+   rows.map callback @ 273(entry)
+
+作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``onChange callback @ 273``。
+
+**参数**
+
+``entry``
+   调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22698:22755:FUNCTION
+
+.. rubric:: ``onClick callback @ 274``
+
+.. code-block:: javascript
+
+   onClick callback @ 274()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``rows.map callback @ 270``。
+**性质**：同步局部函数；源码第 ``274``—``274`` 行；所属函数 ``rows.map callback @ 271``。
 
 **参数**
 
@@ -1497,17 +1497,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22635:22665:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22723:22753:FUNCTION
 
-.. rubric:: ``rows.filter callback @ 273``
+.. rubric:: ``rows.filter callback @ 274``
 
 .. code-block:: javascript
 
-   rows.filter callback @ 273(entry)
+   rows.filter callback @ 274(entry)
 
 作为 ``rows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``273``—``273`` 行；所属函数 ``onClick callback @ 273``。
+**性质**：同步局部函数；源码第 ``274``—``274`` 行；所属函数 ``onClick callback @ 274``。
 
 **参数**
 
@@ -1518,17 +1518,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:22924:23032:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23012:23120:FUNCTION
 
-.. rubric:: ``onClick callback @ 276``
+.. rubric:: ``onClick callback @ 277``
 
 .. code-block:: javascript
 
-   onClick callback @ 276()
+   onClick callback @ 277()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``276``—``276`` 行；所属函数 ``SecretMapNode``。
+**性质**：同步局部函数；源码第 ``277``—``277`` 行；所属函数 ``SecretMapNode``。
 
 **参数**
 
@@ -1540,17 +1540,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setRows``、``crypto.randomUUID``、``setError``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23273:23342:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23361:23430:FUNCTION
 
-.. rubric:: ``useState callback @ 282``
+.. rubric:: ``useState callback @ 283``
 
 .. code-block:: javascript
 
-   useState callback @ 282()
+   useState callback @ 283()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``282``—``282`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``283``—``283`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1562,7 +1562,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23485:23542:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23573:23630:FUNCTION
 
 .. rubric:: ``commit``
 
@@ -1572,7 +1572,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``commit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``287``—``287`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1585,17 +1585,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``onChange``、``matrixStoredValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:23936:24011:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24024:24099:FUNCTION
 
-.. rubric:: ``groupDefinitions.map callback @ 292``
+.. rubric:: ``groupDefinitions.map callback @ 293``
 
 .. code-block:: javascript
 
-   groupDefinitions.map callback @ 292(group)
+   groupDefinitions.map callback @ 293(group)
 
 作为 ``groupDefinitions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``292``—``292`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``293``—``293`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1608,17 +1608,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24303:24657:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24391:24745:FUNCTION
 
-.. rubric:: ``[...groupMap.values()].map callback @ 298``
+.. rubric:: ``[...groupMap.values()].map callback @ 299``
 
 .. code-block:: javascript
 
-   [...groupMap.values()].map callback @ 298(group)
+   [...groupMap.values()].map callback @ 299(group)
 
 作为 ``[...groupMap.values()].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``298``—``301`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``299``—``302`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1633,17 +1633,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24516:24646:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24604:24734:FUNCTION
 
-.. rubric:: ``group.rows.filter callback @ 300``
+.. rubric:: ``group.rows.filter callback @ 301``
 
 .. code-block:: javascript
 
-   group.rows.filter callback @ 300(row)
+   group.rows.filter callback @ 301(row)
 
 作为 ``group.rows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``[...groupMap.values()].map callback @ 298``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``[...groupMap.values()].map callback @ 299``。
 
 **参数**
 
@@ -1656,17 +1656,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase().includes``、``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24666:24694:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24754:24782:FUNCTION
 
-.. rubric:: ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''… callback @ 301``
+.. rubric:: ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''… callback @ 302``
 
 .. code-block:: javascript
 
-   [...groupMap.values()].map((group) => { const matchesGroup = grouped && `${group.label || ''} ${group.description || ''… callback @ 301(group)
+   [...groupMap.values()].map((group) => { const matchesGroup = grouped && `${group.label || ''} ${group.description || ''… callback @ 302(group)
 
 实现 ``[...groupMap.values()].map((group) => { const matchesGroup = grouped && \x60${group.label || ''} ${group.description || ''…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``302``—``302`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1677,7 +1677,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24829:25042:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:24917:25130:FUNCTION
 
 .. rubric:: ``setRow``
 
@@ -1687,7 +1687,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 设置与 ``Row`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``303``—``306`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``304``—``307`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1706,7 +1706,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25061:25922:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25149:26010:FUNCTION
 
 .. rubric:: ``bulk``
 
@@ -1716,7 +1716,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``bulk`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``307``—``319`` 行；所属函数 ``MatrixNode``。
+**性质**：异步局部函数；源码第 ``308``—``320`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1732,7 +1732,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``context.confirm``、``setRow``、``commit``、``Object.entries``、``context.update``、``path.split``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:25947:27291:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26035:27379:FUNCTION
 
 .. rubric:: ``renderRows``
 
@@ -1742,7 +1742,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 渲染与 ``Rows`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``320``—``326`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``321``—``327`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1757,17 +1757,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26173:26255:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26261:26343:FUNCTION
 
-.. rubric:: ``columns.map callback @ 321``
+.. rubric:: ``columns.map callback @ 322``
 
 .. code-block:: javascript
 
-   columns.map callback @ 321(column)
+   columns.map callback @ 322(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``321``—``321`` 行；所属函数 ``renderRows``。
+**性质**：同步局部函数；源码第 ``322``—``322`` 行；所属函数 ``renderRows``。
 
 **参数**
 
@@ -1778,17 +1778,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26283:27277:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26371:27365:FUNCTION
 
-.. rubric:: ``rows.map callback @ 322``
+.. rubric:: ``rows.map callback @ 323``
 
 .. code-block:: javascript
 
-   rows.map callback @ 322(row)
+   rows.map callback @ 323(row)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``322``—``325`` 行；所属函数 ``renderRows``。
+**性质**：同步局部函数；源码第 ``323``—``326`` 行；所属函数 ``renderRows``。
 
 **参数**
 
@@ -1803,17 +1803,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26492:26622:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26580:26710:FUNCTION
 
-.. rubric:: ``onValueChange callback @ 322``
+.. rubric:: ``onValueChange callback @ 323``
 
 .. code-block:: javascript
 
-   onValueChange callback @ 322(next)
+   onValueChange callback @ 323(next)
 
 处理 ``Value Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``322``—``322`` 行；所属函数 ``rows.map callback @ 322``。
+**性质**：同步局部函数；源码第 ``323``—``323`` 行；所属函数 ``rows.map callback @ 323``。
 
 **参数**
 
@@ -1828,17 +1828,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26532:26571:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26620:26659:FUNCTION
 
-.. rubric:: ``columns.find callback @ 322``
+.. rubric:: ``columns.find callback @ 323``
 
 .. code-block:: javascript
 
-   columns.find callback @ 322(entry)
+   columns.find callback @ 323(entry)
 
 作为 ``columns.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``322``—``322`` 行；所属函数 ``onValueChange callback @ 322``。
+**性质**：同步局部函数；源码第 ``323``—``323`` 行；所属函数 ``onValueChange callback @ 323``。
 
 **参数**
 
@@ -1851,17 +1851,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:26963:27252:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27051:27340:FUNCTION
 
-.. rubric:: ``columns.map callback @ 324``
+.. rubric:: ``columns.map callback @ 325``
 
 .. code-block:: javascript
 
-   columns.map callback @ 324(column)
+   columns.map callback @ 325(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``324``—``324`` 行；所属函数 ``rows.map callback @ 322``。
+**性质**：同步局部函数；源码第 ``325``—``325`` 行；所属函数 ``rows.map callback @ 323``。
 
 **参数**
 
@@ -1874,17 +1874,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``String``、``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27690:27729:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27778:27817:FUNCTION
 
-.. rubric:: ``onChange callback @ 328``
+.. rubric:: ``onChange callback @ 329``
 
 .. code-block:: javascript
 
-   onChange callback @ 328(event)
+   onChange callback @ 329(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``328``—``328`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1897,17 +1897,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27763:27976:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27851:28064:FUNCTION
 
-.. rubric:: ``(item.bulkActions || []).map callback @ 328``
+.. rubric:: ``(item.bulkActions || []).map callback @ 329``
 
 .. code-block:: javascript
 
-   (item.bulkActions || []).map callback @ 328(action)
+   (item.bulkActions || []).map callback @ 329(action)
 
 作为 ``(item.bulkActions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``328``—``328`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1922,17 +1922,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27898:27926:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:27986:28014:FUNCTION
 
-.. rubric:: ``onClick callback @ 328``
+.. rubric:: ``onClick callback @ 329``
 
 .. code-block:: javascript
 
-   onClick callback @ 328()
+   onClick callback @ 329()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``328``—``328`` 行；所属函数 ``(item.bulkActions || []).map callback @ 328``。
+**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``(item.bulkActions || []).map callback @ 329``。
 
 **参数**
 
@@ -1944,17 +1944,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``bulk``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28194:30646:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28282:30734:FUNCTION
 
-.. rubric:: ``visibleGroups.map callback @ 330``
+.. rubric:: ``visibleGroups.map callback @ 331``
 
 .. code-block:: javascript
 
-   visibleGroups.map callback @ 330(group)
+   visibleGroups.map callback @ 331(group)
 
 作为 ``visibleGroups.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``330``—``343`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``331``—``344`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -1969,17 +1969,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28946:29125:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29034:29213:FUNCTION
 
-.. rubric:: ``onClick callback @ 335``
+.. rubric:: ``onClick callback @ 336``
 
 .. code-block:: javascript
 
-   onClick callback @ 335()
+   onClick callback @ 336()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``335``—``335`` 行；所属函数 ``visibleGroups.map callback @ 330``。
+**性质**：同步局部函数；源码第 ``336``—``336`` 行；所属函数 ``visibleGroups.map callback @ 331``。
 
 **参数**
 
@@ -1993,17 +1993,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:28987:29121:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29075:29209:FUNCTION
 
-.. rubric:: ``setExpanded callback @ 335``
+.. rubric:: ``setExpanded callback @ 336``
 
 .. code-block:: javascript
 
-   setExpanded callback @ 335(previous)
+   setExpanded callback @ 336(previous)
 
 设置与 ``Expanded`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``335``—``335`` 行；所属函数 ``onClick callback @ 335``。
+**性质**：同步局部函数；源码第 ``336``—``336`` 行；所属函数 ``onClick callback @ 336``。
 
 **参数**
 
@@ -2016,17 +2016,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``next.has``、``next.delete``、``next.add``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29833:30449:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:29921:30537:FUNCTION
 
-.. rubric:: ``group.bulkActions.map callback @ 339``
+.. rubric:: ``group.bulkActions.map callback @ 340``
 
 .. code-block:: javascript
 
-   group.bulkActions.map callback @ 339(action, index)
+   group.bulkActions.map callback @ 340(action, index)
 
 作为 ``group.bulkActions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``339``—``339`` 行；所属函数 ``visibleGroups.map callback @ 330``。
+**性质**：同步局部函数；源码第 ``340``—``340`` 行；所属函数 ``visibleGroups.map callback @ 331``。
 
 **参数**
 
@@ -2044,17 +2044,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30218:30308:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30306:30396:FUNCTION
 
-.. rubric:: ``group.sourceRows.some callback @ 339``
+.. rubric:: ``group.sourceRows.some callback @ 340``
 
 .. code-block:: javascript
 
-   group.sourceRows.some callback @ 339(row)
+   group.sourceRows.some callback @ 340(row)
 
 作为 ``group.sourceRows.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``339``—``339`` 行；所属函数 ``group.bulkActions.map callback @ 339``。
+**性质**：同步局部函数；源码第 ``340``—``340`` 行；所属函数 ``group.bulkActions.map callback @ 340``。
 
 **参数**
 
@@ -2067,17 +2067,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``row.allowedValues.includes``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30320:30399:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30408:30487:FUNCTION
 
-.. rubric:: ``onClick callback @ 339``
+.. rubric:: ``onClick callback @ 340``
 
 .. code-block:: javascript
 
-   onClick callback @ 339()
+   onClick callback @ 340()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``339``—``339`` 行；所属函数 ``group.bulkActions.map callback @ 339``。
+**性质**：同步局部函数；源码第 ``340``—``340`` 行；所属函数 ``group.bulkActions.map callback @ 340``。
 
 **参数**
 
@@ -2089,17 +2089,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``bulk``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30676:30790:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:30764:30878:FUNCTION
 
-.. rubric:: ``allRows.filter callback @ 343``
+.. rubric:: ``allRows.filter callback @ 344``
 
 .. code-block:: javascript
 
-   allRows.filter callback @ 343(row)
+   allRows.filter callback @ 344(row)
 
 作为 ``allRows.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``343``—``343`` 行；所属函数 ``MatrixNode``。
+**性质**：同步局部函数；源码第 ``344``—``344`` 行；所属函数 ``MatrixNode``。
 
 **参数**
 
@@ -2112,17 +2112,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase().includes``、``\x60${row.label || ''} ${row.id || ''} ${row.description || ''}\x60.toLowerCase``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31131:31157:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31219:31245:FUNCTION
 
-.. rubric:: ``useState callback @ 351``
+.. rubric:: ``useState callback @ 352``
 
 .. code-block:: javascript
 
-   useState callback @ 351()
+   useState callback @ 352()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``351``—``351`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``352``—``352`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2138,17 +2138,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``cache?.get``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31834:31849:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:31922:31937:FUNCTION
 
-.. rubric:: ``useState callback @ 362``
+.. rubric:: ``useState callback @ 363``
 
 .. code-block:: javascript
 
-   useState callback @ 362()
+   useState callback @ 363()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``362``—``362`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``363``—``363`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2158,17 +2158,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32510:33883:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:32598:33971:FUNCTION
 
-.. rubric:: ``useCallback callback @ 376``
+.. rubric:: ``useCallback callback @ 377``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 376({ silent = false })
+   async useCallback callback @ 377({ silent = false })
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``376``—``396`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``377``—``397`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2187,17 +2187,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``requestController.current?.abort``、``setLoading``、``setError``、``source.endpoint?.startsWith``、``ctx.client.read``、``source.endpoint.slice``、``ctx.api.get``、``requestEndpoint``、``resolveValue``、``getValue``、``Array.isArray``、``setRows``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34219:34763:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34307:34851:FUNCTION
 
-.. rubric:: ``useEffect callback @ 400``
+.. rubric:: ``useEffect callback @ 401``
 
 .. code-block:: javascript
 
-   useEffect callback @ 400()
+   useEffect callback @ 401()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``400``—``409`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``401``—``410`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2215,17 +2215,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34499:34636:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34587:34724:FUNCTION
 
-.. rubric:: ``returned callback @ 406``
+.. rubric:: ``returned callback @ 407``
 
 .. code-block:: javascript
 
-   returned callback @ 406()
+   returned callback @ 407()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``406``—``406`` 行；所属函数 ``useEffect callback @ 400``。
+**性质**：同步局部函数；源码第 ``407``—``407`` 行；所属函数 ``useEffect callback @ 401``。
 
 **参数**
 
@@ -2237,17 +2237,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``requestController.current?.abort``、``detail.controller?.abort``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34789:34839:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34877:34927:FUNCTION
 
-.. rubric:: ``useEffect callback @ 410``
+.. rubric:: ``useEffect callback @ 411``
 
 .. code-block:: javascript
 
-   useEffect callback @ 410()
+   useEffect callback @ 411()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``410``—``410`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``411``—``411`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2259,17 +2259,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``registerResource``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34903:35553:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:34991:35641:FUNCTION
 
-.. rubric:: ``useEffect callback @ 411``
+.. rubric:: ``useEffect callback @ 412``
 
 .. code-block:: javascript
 
-   useEffect callback @ 411()
+   useEffect callback @ 412()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``411``—``422`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``412``—``423`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2287,7 +2287,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35075:35404:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35163:35492:FUNCTION
 
 .. rubric:: ``tick``
 
@@ -2297,7 +2297,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``tick`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``415``—``419`` 行；所属函数 ``useEffect callback @ 411``。
+**性质**：异步局部函数；源码第 ``416``—``420`` 行；所属函数 ``useEffect callback @ 412``。
 
 **参数**
 
@@ -2313,17 +2313,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``resourceHost.current?.closest``、``load``、``setTimeout``、``Math.max``、``Math.min``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35498:35545:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35586:35633:FUNCTION
 
-.. rubric:: ``returned callback @ 421``
+.. rubric:: ``returned callback @ 422``
 
 .. code-block:: javascript
 
-   returned callback @ 421()
+   returned callback @ 422()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``421``—``421`` 行；所属函数 ``useEffect callback @ 411``。
+**性质**：同步局部函数；源码第 ``422``—``422`` 行；所属函数 ``useEffect callback @ 412``。
 
 **参数**
 
@@ -2335,17 +2335,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35603:36109:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35691:36197:FUNCTION
 
-.. rubric:: ``useEffect callback @ 423``
+.. rubric:: ``useEffect callback @ 424``
 
 .. code-block:: javascript
 
-   useEffect callback @ 423()
+   useEffect callback @ 424()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``423``—``429`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``424``—``430`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2363,17 +2363,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35666:35717:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35754:35805:FUNCTION
 
-.. rubric:: ``(item.events || []).map callback @ 424``
+.. rubric:: ``(item.events || []).map callback @ 425``
 
 .. code-block:: javascript
 
-   (item.events || []).map callback @ 424(event)
+   (item.events || []).map callback @ 425(event)
 
 作为 ``(item.events || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``424``—``424`` 行；所属函数 ``useEffect callback @ 423``。
+**性质**：同步局部函数；源码第 ``425``—``425`` 行；所属函数 ``useEffect callback @ 424``。
 
 **参数**
 
@@ -2392,17 +2392,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35693:35716:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35781:35804:FUNCTION
 
-.. rubric:: ``subscribe callback @ 424``
+.. rubric:: ``subscribe callback @ 425``
 
 .. code-block:: javascript
 
-   subscribe callback @ 424()
+   subscribe callback @ 425()
 
 订阅与 ``subscribe`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``424``—``424`` 行；所属函数 ``(item.events || []).map callback @ 424``。
+**性质**：同步局部函数；源码第 ``425``—``425`` 行；所属函数 ``(item.events || []).map callback @ 425``。
 
 **参数**
 
@@ -2414,17 +2414,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:35960:35998:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36048:36086:FUNCTION
 
-.. rubric:: ``client.subscribe callback @ 427``
+.. rubric:: ``client.subscribe callback @ 428``
 
 .. code-block:: javascript
 
-   client.subscribe callback @ 427()
+   client.subscribe callback @ 428()
 
 实现 ``client.subscribe`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``427``—``427`` 行；所属函数 ``useEffect callback @ 423``。
+**性质**：同步局部函数；源码第 ``428``—``428`` 行；所属函数 ``useEffect callback @ 424``。
 
 **参数**
 
@@ -2436,17 +2436,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36023:36101:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36111:36189:FUNCTION
 
-.. rubric:: ``returned callback @ 428``
+.. rubric:: ``returned callback @ 429``
 
 .. code-block:: javascript
 
-   returned callback @ 428()
+   returned callback @ 429()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``428``—``428`` 行；所属函数 ``useEffect callback @ 423``。
+**性质**：同步局部函数；源码第 ``429``—``429`` 行；所属函数 ``useEffect callback @ 424``。
 
 **参数**
 
@@ -2464,17 +2464,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36054:36086:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36142:36174:FUNCTION
 
-.. rubric:: ``subscriptions.forEach callback @ 428``
+.. rubric:: ``subscriptions.forEach callback @ 429``
 
 .. code-block:: javascript
 
-   subscriptions.forEach callback @ 428(unsubscribe)
+   subscriptions.forEach callback @ 429(unsubscribe)
 
 作为 ``subscriptions.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``428``—``428`` 行；所属函数 ``returned callback @ 428``。
+**性质**：同步局部函数；源码第 ``429``—``429`` 行；所属函数 ``returned callback @ 429``。
 
 **参数**
 
@@ -2491,17 +2491,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36184:36524:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36272:36612:FUNCTION
 
-.. rubric:: ``useEffect callback @ 430``
+.. rubric:: ``useEffect callback @ 431``
 
 .. code-block:: javascript
 
-   useEffect callback @ 430()
+   useEffect callback @ 431()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``430``—``434`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``431``—``435`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2515,17 +2515,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36338:36515:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36426:36603:FUNCTION
 
-.. rubric:: ``registerDraftGuard callback @ 432``
+.. rubric:: ``registerDraftGuard callback @ 433``
 
 .. code-block:: javascript
 
-   async registerDraftGuard callback @ 432()
+   async registerDraftGuard callback @ 433()
 
 注册与 ``Draft Guard`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``432``—``433`` 行；所属函数 ``useEffect callback @ 430``。
+**性质**：异步局部函数；源码第 ``433``—``434`` 行；所属函数 ``useEffect callback @ 431``。
 
 **参数**
 
@@ -2537,17 +2537,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``JSON.stringify``、``confirm``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36634:38613:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:36722:38701:FUNCTION
 
-.. rubric:: ``useCallback callback @ 435``
+.. rubric:: ``useCallback callback @ 436``
 
 .. code-block:: javascript
 
-   async useCallback callback @ 435(record)
+   async useCallback callback @ 436(record)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：异步局部函数；源码第 ``435``—``459`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``436``—``460`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2567,17 +2567,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37261:37531:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37349:37619:FUNCTION
 
-.. rubric:: ``startTransition callback @ 445``
+.. rubric:: ``startTransition callback @ 446``
 
 .. code-block:: javascript
 
-   startTransition callback @ 445()
+   startTransition callback @ 446()
 
 启动与 ``Transition`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``445``—``448`` 行；所属函数 ``useCallback callback @ 435``。
+**性质**：同步局部函数；源码第 ``446``—``449`` 行；所属函数 ``useCallback callback @ 436``。
 
 **参数**
 
@@ -2591,17 +2591,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37397:37518:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:37485:37606:FUNCTION
 
-.. rubric:: ``setEditor callback @ 447``
+.. rubric:: ``setEditor callback @ 448``
 
 .. code-block:: javascript
 
-   setEditor callback @ 447(current)
+   setEditor callback @ 448(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``447``—``447`` 行；所属函数 ``startTransition callback @ 445``。
+**性质**：同步局部函数；源码第 ``448``—``448`` 行；所属函数 ``startTransition callback @ 446``。
 
 **参数**
 
@@ -2612,17 +2612,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38096:38279:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38184:38367:FUNCTION
 
-.. rubric:: ``startTransition callback @ 454``
+.. rubric:: ``startTransition callback @ 455``
 
 .. code-block:: javascript
 
-   startTransition callback @ 454()
+   startTransition callback @ 455()
 
 启动与 ``Transition`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``454``—``455`` 行；所属函数 ``useCallback callback @ 435``。
+**性质**：同步局部函数；源码第 ``455``—``456`` 行；所属函数 ``useCallback callback @ 436``。
 
 **参数**
 
@@ -2636,17 +2636,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38112:38278:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38200:38366:FUNCTION
 
-.. rubric:: ``setEditor callback @ 454``
+.. rubric:: ``setEditor callback @ 455``
 
 .. code-block:: javascript
 
-   setEditor callback @ 454(current)
+   setEditor callback @ 455(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``454``—``455`` 行；所属函数 ``startTransition callback @ 454``。
+**性质**：同步局部函数；源码第 ``455``—``456`` 行；所属函数 ``startTransition callback @ 455``。
 
 **参数**
 
@@ -2659,17 +2659,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``cloneData``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38576:38602:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38664:38690:FUNCTION
 
-.. rubric:: ``startTransition callback @ 458``
+.. rubric:: ``startTransition callback @ 459``
 
 .. code-block:: javascript
 
-   startTransition callback @ 458()
+   startTransition callback @ 459()
 
 启动与 ``Transition`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``458``—``458`` 行；所属函数 ``useCallback callback @ 435``。
+**性质**：同步局部函数；源码第 ``459``—``459`` 行；所属函数 ``useCallback callback @ 436``。
 
 **参数**
 
@@ -2681,7 +2681,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setEditorBusy``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38655:38883:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38743:38971:FUNCTION
 
 .. rubric:: ``patchEditor``
 
@@ -2691,7 +2691,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``patchEditor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``460``—``462`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``461``—``463`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2709,17 +2709,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38694:38882:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38782:38970:FUNCTION
 
-.. rubric:: ``setEditor callback @ 460``
+.. rubric:: ``setEditor callback @ 461``
 
 .. code-block:: javascript
 
-   setEditor callback @ 460(current)
+   setEditor callback @ 461(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``460``—``462`` 行；所属函数 ``patchEditor``。
+**性质**：同步局部函数；源码第 ``461``—``463`` 行；所属函数 ``patchEditor``。
 
 **参数**
 
@@ -2732,7 +2732,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setValue``、``target.replace``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38911:39222:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:38999:39310:FUNCTION
 
 .. rubric:: ``dismissEditor``
 
@@ -2742,7 +2742,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``dismissEditor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``463``—``469`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``464``—``470`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2757,17 +2757,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39134:39213:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39222:39301:FUNCTION
 
-.. rubric:: ``setEditor callback @ 468``
+.. rubric:: ``setEditor callback @ 469``
 
 .. code-block:: javascript
 
-   setEditor callback @ 468(current)
+   setEditor callback @ 469(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``468``—``468`` 行；所属函数 ``dismissEditor``。
+**性质**：同步局部函数；源码第 ``469``—``469`` 行；所属函数 ``dismissEditor``。
 
 **参数**
 
@@ -2778,7 +2778,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39248:39590:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39336:39678:FUNCTION
 
 .. rubric:: ``closeEditor``
 
@@ -2788,7 +2788,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 关闭与 ``Editor`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``470``—``475`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``471``—``476`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2800,7 +2800,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``JSON.stringify``、``context.confirm``、``dismissEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39697:40868:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:39785:40956:FUNCTION
 
 .. rubric:: ``onSave``
 
@@ -2810,7 +2810,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Save`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``477``—``490`` 行；所属函数 ``ResourceNode``。
+**性质**：异步局部函数；源码第 ``478``—``491`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2824,7 +2824,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40364:40460:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40452:40548:FUNCTION
 
 .. rubric:: ``patchForm``
 
@@ -2834,7 +2834,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``patchForm`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``486``—``486`` 行；所属函数 ``onSave``。
+**性质**：同步局部函数；源码第 ``487``—``487`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2850,7 +2850,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``patchEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40485:40666:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40573:40754:FUNCTION
 
 .. rubric:: ``onSuccess``
 
@@ -2860,7 +2860,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Success`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``487``—``487`` 行；所属函数 ``onSave``。
+**性质**：异步局部函数；源码第 ``488``—``488`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2874,17 +2874,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40562:40648:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40650:40736:FUNCTION
 
-.. rubric:: ``(editorAction.effects || []).some callback @ 487``
+.. rubric:: ``(editorAction.effects || []).some callback @ 488``
 
 .. code-block:: javascript
 
-   (editorAction.effects || []).some callback @ 487(effect)
+   (editorAction.effects || []).some callback @ 488(effect)
 
 作为 ``(editorAction.effects || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``487``—``487`` 行；所属函数 ``onSuccess``。
+**性质**：同步局部函数；源码第 ``488``—``488`` 行；所属函数 ``onSuccess``。
 
 **参数**
 
@@ -2895,7 +2895,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40689:40847:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40777:40935:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -2905,7 +2905,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``488``—``488`` 行；所属函数 ``onSave``。
+**性质**：同步局部函数；源码第 ``489``—``489`` 行；所属函数 ``onSave``。
 
 **参数**
 
@@ -2918,17 +2918,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setEditorError``、``setFieldErrors``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:40977:45770:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41065:45858:FUNCTION
 
-.. rubric:: ``useMemo callback @ 492``
+.. rubric:: ``useMemo callback @ 493``
 
 .. code-block:: javascript
 
-   useMemo callback @ 492()
+   useMemo callback @ 493()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``492``—``531`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``493``—``532`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -2942,7 +2942,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41012:42216:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41100:42304:FUNCTION
 
 .. rubric:: ``actionsFor``
 
@@ -2952,7 +2952,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``actionsFor`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``493``—``502`` 行；所属函数 ``useMemo callback @ 492``。
+**性质**：同步局部函数；源码第 ``494``—``503`` 行；所属函数 ``useMemo callback @ 493``。
 
 **参数**
 
@@ -2967,17 +2967,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41177:41244:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41265:41332:FUNCTION
 
-.. rubric:: ``(item.actions || []).filter callback @ 495``
+.. rubric:: ``(item.actions || []).filter callback @ 496``
 
 .. code-block:: javascript
 
-   (item.actions || []).filter callback @ 495(action)
+   (item.actions || []).filter callback @ 496(action)
 
 作为 ``(item.actions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``495``—``495`` 行；所属函数 ``actionsFor``。
+**性质**：同步局部函数；源码第 ``496``—``496`` 行；所属函数 ``actionsFor``。
 
 **参数**
 
@@ -2990,17 +2990,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41414:42200:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41502:42288:FUNCTION
 
-.. rubric:: ``renderAction callback @ 497``
+.. rubric:: ``renderAction callback @ 498``
 
 .. code-block:: javascript
 
-   renderAction callback @ 497(action, index, menuItem)
+   renderAction callback @ 498(action, index, menuItem)
 
 渲染与 ``Action`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``497``—``501`` 行；所属函数 ``actionsFor``。
+**性质**：同步局部函数；源码第 ``498``—``502`` 行；所属函数 ``actionsFor``。
 
 **参数**
 
@@ -3021,17 +3021,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41771:41805:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:41859:41893:FUNCTION
 
-.. rubric:: ``onInvoke callback @ 500``
+.. rubric:: ``onInvoke callback @ 501``
 
 .. code-block:: javascript
 
-   onInvoke callback @ 500()
+   onInvoke callback @ 501()
 
 处理 ``Invoke`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``500``—``500`` 行；所属函数 ``renderAction callback @ 497``。
+**性质**：同步局部函数；源码第 ``501``—``501`` 行；所属函数 ``renderAction callback @ 498``。
 
 **参数**
 
@@ -3043,7 +3043,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42057:42194:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42145:42282:FUNCTION
 
 .. rubric:: ``onError``
 
@@ -3053,7 +3053,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 处理 ``Error`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``501``—``501`` 行；所属函数 ``renderAction callback @ 497``。
+**性质**：同步局部函数；源码第 ``502``—``502`` 行；所属函数 ``renderAction callback @ 498``。
 
 **参数**
 
@@ -3068,17 +3068,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42125:42190:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42213:42278:FUNCTION
 
-.. rubric:: ``setConflictingActions callback @ 501``
+.. rubric:: ``setConflictingActions callback @ 502``
 
 .. code-block:: javascript
 
-   setConflictingActions callback @ 501(previous)
+   setConflictingActions callback @ 502(previous)
 
 设置与 ``Conflicting Actions`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``501``—``501`` 行；所属函数 ``onError``。
+**性质**：同步局部函数；源码第 ``502``—``502`` 行；所属函数 ``onError``。
 
 **参数**
 
@@ -3091,7 +3091,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``operationKey``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42289:42519:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42377:42607:FUNCTION
 
 .. rubric:: ``valueText``
 
@@ -3101,7 +3101,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``valueText`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``504``—``507`` 行；所属函数 ``useMemo callback @ 492``。
+**性质**：同步局部函数；源码第 ``505``—``508`` 行；所属函数 ``useMemo callback @ 493``。
 
 **参数**
 
@@ -3117,7 +3117,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``getValue``、``Object.hasOwn``、``String``、``displayValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42549:44954:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42637:45042:FUNCTION
 
 .. rubric:: ``renderCards``
 
@@ -3127,7 +3127,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 渲染与 ``Cards`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``508``—``528`` 行；所属函数 ``useMemo callback @ 492``。
+**性质**：同步局部函数；源码第 ``509``—``529`` 行；所属函数 ``useMemo callback @ 493``。
 
 **参数**
 
@@ -3141,17 +3141,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42612:44933:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:42700:45021:FUNCTION
 
-.. rubric:: ``rows.map callback @ 508``
+.. rubric:: ``rows.map callback @ 509``
 
 .. code-block:: javascript
 
-   rows.map callback @ 508(record, index)
+   rows.map callback @ 509(record, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``508``—``528`` 行；所属函数 ``renderCards``。
+**性质**：同步局部函数；源码第 ``509``—``529`` 行；所属函数 ``renderCards``。
 
 **参数**
 
@@ -3169,17 +3169,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43175:43268:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:43263:43356:FUNCTION
 
-.. rubric:: ``columns.filter callback @ 513``
+.. rubric:: ``columns.filter callback @ 514``
 
 .. code-block:: javascript
 
-   columns.filter callback @ 513(column)
+   columns.filter callback @ 514(column)
 
 作为 ``columns.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``513``—``513`` 行；所属函数 ``rows.map callback @ 508``。
+**性质**：同步局部函数；源码第 ``514``—``514`` 行；所属函数 ``rows.map callback @ 509``。
 
 **参数**
 
@@ -3190,17 +3190,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44172:44347:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44260:44435:FUNCTION
 
-.. rubric:: ``item.badges.map callback @ 521``
+.. rubric:: ``item.badges.map callback @ 522``
 
 .. code-block:: javascript
 
-   item.badges.map callback @ 521(badge)
+   item.badges.map callback @ 522(badge)
 
 作为 ``item.badges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``521``—``521`` 行；所属函数 ``rows.map callback @ 508``。
+**性质**：同步局部函数；源码第 ``522``—``522`` 行；所属函数 ``rows.map callback @ 509``。
 
 **参数**
 
@@ -3213,17 +3213,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44549:44781:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:44637:44869:FUNCTION
 
-.. rubric:: ``properties.map callback @ 524``
+.. rubric:: ``properties.map callback @ 525``
 
 .. code-block:: javascript
 
-   properties.map callback @ 524(column)
+   properties.map callback @ 525(column)
 
 作为 ``properties.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``524``—``524`` 行；所属函数 ``rows.map callback @ 508``。
+**性质**：同步局部函数；源码第 ``525``—``525`` 行；所属函数 ``rows.map callback @ 509``。
 
 **参数**
 
@@ -3236,17 +3236,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45205:45289:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45293:45377:FUNCTION
 
-.. rubric:: ``columns.map callback @ 529``
+.. rubric:: ``columns.map callback @ 530``
 
 .. code-block:: javascript
 
-   columns.map callback @ 529(column)
+   columns.map callback @ 530(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``529``—``529`` 行；所属函数 ``useMemo callback @ 492``。
+**性质**：同步局部函数；源码第 ``530``—``530`` 行；所属函数 ``useMemo callback @ 493``。
 
 **参数**
 
@@ -3257,17 +3257,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45366:45701:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45454:45789:FUNCTION
 
-.. rubric:: ``rows.map callback @ 529``
+.. rubric:: ``rows.map callback @ 530``
 
 .. code-block:: javascript
 
-   rows.map callback @ 529(record, index)
+   rows.map callback @ 530(record, index)
 
 作为 ``rows.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``529``—``529`` 行；所属函数 ``useMemo callback @ 492``。
+**性质**：同步局部函数；源码第 ``530``—``530`` 行；所属函数 ``useMemo callback @ 493``。
 
 **参数**
 
@@ -3285,17 +3285,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45529:45643:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45617:45731:FUNCTION
 
-.. rubric:: ``columns.map callback @ 529``
+.. rubric:: ``columns.map callback @ 530``
 
 .. code-block:: javascript
 
-   columns.map callback @ 529(column)
+   columns.map callback @ 530(column)
 
 作为 ``columns.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``529``—``529`` 行；所属函数 ``rows.map callback @ 529``。
+**性质**：同步局部函数；源码第 ``530``—``530`` 行；所属函数 ``rows.map callback @ 530``。
 
 **参数**
 
@@ -3308,17 +3308,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``valueText``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45914:46042:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46002:46130:FUNCTION
 
-.. rubric:: ``useCallback callback @ 533``
+.. rubric:: ``useCallback callback @ 534``
 
 .. code-block:: javascript
 
-   useCallback callback @ 533(values)
+   useCallback callback @ 534(values)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``533``—``534`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``534``—``535`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3333,17 +3333,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:45936:46041:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46024:46129:FUNCTION
 
-.. rubric:: ``setEditor callback @ 533``
+.. rubric:: ``setEditor callback @ 534``
 
 .. code-block:: javascript
 
-   setEditor callback @ 533(current)
+   setEditor callback @ 534(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``533``—``534`` 行；所属函数 ``useCallback callback @ 533``。
+**性质**：同步局部函数；源码第 ``534``—``535`` 行；所属函数 ``useCallback callback @ 534``。
 
 **参数**
 
@@ -3354,17 +3354,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46255:46708:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:46343:46796:FUNCTION
 
-.. rubric:: ``useMemo callback @ 537``
+.. rubric:: ``useMemo callback @ 538``
 
 .. code-block:: javascript
 
-   useMemo callback @ 537()
+   useMemo callback @ 538()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``537``—``541`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``538``—``542`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3376,17 +3376,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``renderFields``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47051:47073:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47139:47161:FUNCTION
 
-.. rubric:: ``onClick callback @ 543``
+.. rubric:: ``onClick callback @ 544``
 
 .. code-block:: javascript
 
-   onClick callback @ 543()
+   onClick callback @ 544()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``543``—``543`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``544``—``544`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3398,17 +3398,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47159:47253:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47247:47341:FUNCTION
 
-.. rubric:: ``(item.toolbarActions || []).map callback @ 544``
+.. rubric:: ``(item.toolbarActions || []).map callback @ 545``
 
 .. code-block:: javascript
 
-   (item.toolbarActions || []).map callback @ 544(action, index)
+   (item.toolbarActions || []).map callback @ 545(action, index)
 
 作为 ``(item.toolbarActions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``544``—``544`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``545``—``545`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3422,17 +3422,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47388:47420:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:47476:47508:FUNCTION
 
-.. rubric:: ``onClick callback @ 545``
+.. rubric:: ``onClick callback @ 546``
 
 .. code-block:: javascript
 
-   onClick callback @ 545()
+   onClick callback @ 546()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``545``—``545`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``546``—``546`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3444,17 +3444,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``openEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48873:48895:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:48961:48983:FUNCTION
 
-.. rubric:: ``onClick callback @ 553``
+.. rubric:: ``onClick callback @ 554``
 
 .. code-block:: javascript
 
-   onClick callback @ 553()
+   onClick callback @ 554()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``553``—``553`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``554``—``554`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3466,17 +3466,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``load``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49034:49078:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49122:49166:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 556``
+.. rubric:: ``onOpenChange callback @ 557``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 556(open)
+   onOpenChange callback @ 557(open)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``556``—``556`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``557``—``557`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3489,17 +3489,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``closeEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49289:49590:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49377:49678:FUNCTION
 
-.. rubric:: ``onCloseAutoFocus callback @ 558``
+.. rubric:: ``onCloseAutoFocus callback @ 559``
 
 .. code-block:: javascript
 
-   onCloseAutoFocus callback @ 558()
+   onCloseAutoFocus callback @ 559()
 
 处理 ``Close Auto Focus`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``558``—``562`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``559``—``563`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3513,17 +3513,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49487:49569:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:49575:49657:FUNCTION
 
-.. rubric:: ``setEditor callback @ 561``
+.. rubric:: ``setEditor callback @ 562``
 
 .. code-block:: javascript
 
-   setEditor callback @ 561(current)
+   setEditor callback @ 562(current)
 
 设置与 ``Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``561``—``561`` 行；所属函数 ``onCloseAutoFocus callback @ 558``。
+**性质**：同步局部函数；源码第 ``562``—``562`` 行；所属函数 ``onCloseAutoFocus callback @ 559``。
 
 **参数**
 
@@ -3534,17 +3534,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50392:50487:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50480:50575:FUNCTION
 
-.. rubric:: ``Object.entries(fieldErrors).map callback @ 566``
+.. rubric:: ``Object.entries(fieldErrors).map callback @ 567``
 
 .. code-block:: javascript
 
-   Object.entries(fieldErrors).map callback @ 566([field, message])
+   Object.entries(fieldErrors).map callback @ 567([field, message])
 
 作为 ``Object.entries(fieldErrors).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``566``—``566`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``567``—``567`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3555,17 +3555,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50905:50934:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:50993:51022:FUNCTION
 
-.. rubric:: ``onClick callback @ 570``
+.. rubric:: ``onClick callback @ 571``
 
 .. code-block:: javascript
 
-   onClick callback @ 570()
+   onClick callback @ 571()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``570``—``570`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``571``—``571`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3577,17 +3577,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``closeEditor``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51322:51362:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51410:51450:FUNCTION
 
-.. rubric:: ``onClick callback @ 570``
+.. rubric:: ``onClick callback @ 571``
 
 .. code-block:: javascript
 
-   onClick callback @ 570()
+   onClick callback @ 571()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``570``—``570`` 行；所属函数 ``ResourceNode``。
+**性质**：同步局部函数；源码第 ``571``—``571`` 行；所属函数 ``ResourceNode``。
 
 **参数**
 
@@ -3601,17 +3601,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51350:51358:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51438:51446:FUNCTION
 
-.. rubric:: ``onSave().catch callback @ 570``
+.. rubric:: ``onSave().catch callback @ 571``
 
 .. code-block:: javascript
 
-   onSave().catch callback @ 570()
+   onSave().catch callback @ 571()
 
 处理 ``onSave().catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``570``—``570`` 行；所属函数 ``onClick callback @ 570``。
+**性质**：同步局部函数；源码第 ``571``—``571`` 行；所属函数 ``onClick callback @ 571``。
 
 **参数**
 
@@ -3621,17 +3621,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51633:51710:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:51721:51798:FUNCTION
 
-.. rubric:: ``useState callback @ 577``
+.. rubric:: ``useState callback @ 578``
 
 .. code-block:: javascript
 
-   useState callback @ 577()
+   useState callback @ 578()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``577``—``577`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``578``—``578`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3643,17 +3643,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``pageValues``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:52388:52516:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:52476:52604:FUNCTION
 
-.. rubric:: ``useEffect callback @ 590``
+.. rubric:: ``useEffect callback @ 591``
 
 .. code-block:: javascript
 
-   useEffect callback @ 590()
+   useEffect callback @ 591()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``590``—``590`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``591``—``591`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3665,17 +3665,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setPolled``、``setPollError``、``setValues``、``pageValues``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:52548:54808:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:52636:54896:FUNCTION
 
-.. rubric:: ``useEffect callback @ 591``
+.. rubric:: ``useEffect callback @ 592``
 
 .. code-block:: javascript
 
-   useEffect callback @ 591()
+   useEffect callback @ 592()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``591``—``626`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``592``—``627`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3693,7 +3693,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:52783:54456:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:52871:54544:FUNCTION
 
 .. rubric:: ``tick``
 
@@ -3703,7 +3703,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``tick`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``596``—``621`` 行；所属函数 ``useEffect callback @ 591``。
+**性质**：异步局部函数；源码第 ``597``—``622`` 行；所属函数 ``useEffect callback @ 592``。
 
 **参数**
 
@@ -3723,17 +3723,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:53457:53788:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:53545:53876:FUNCTION
 
-.. rubric:: ``setValues callback @ 605``
+.. rubric:: ``setValues callback @ 606``
 
 .. code-block:: javascript
 
-   setValues callback @ 605(previous)
+   setValues callback @ 606(previous)
 
 设置与 ``Values`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``605``—``609`` 行；所属函数 ``tick``。
+**性质**：同步局部函数；源码第 ``606``—``610`` 行；所属函数 ``tick``。
 
 **参数**
 
@@ -3746,17 +3746,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``pageValues``、``getValue``、``setValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:54573:54640:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:54661:54728:FUNCTION
 
-.. rubric:: ``returned callback @ 623``
+.. rubric:: ``returned callback @ 624``
 
 .. code-block:: javascript
 
-   returned callback @ 623()
+   returned callback @ 624()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``623``—``623`` 行；所属函数 ``useEffect callback @ 591``。
+**性质**：同步局部函数；源码第 ``624``—``624`` 行；所属函数 ``useEffect callback @ 592``。
 
 **参数**
 
@@ -3768,17 +3768,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``clearTimeout``、``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:54855:55396:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:54943:55484:FUNCTION
 
-.. rubric:: ``useEffect callback @ 627``
+.. rubric:: ``useEffect callback @ 628``
 
 .. code-block:: javascript
 
-   useEffect callback @ 627()
+   useEffect callback @ 628()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``627``—``635`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``628``—``636`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3792,17 +3792,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:55025:55387:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:55113:55475:FUNCTION
 
-.. rubric:: ``registerDraftGuard callback @ 629``
+.. rubric:: ``registerDraftGuard callback @ 630``
 
 .. code-block:: javascript
 
-   async registerDraftGuard callback @ 629()
+   async registerDraftGuard callback @ 630()
 
 注册与 ``Draft Guard`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``629``—``634`` 行；所属函数 ``useEffect callback @ 627``。
+**性质**：异步局部函数；源码第 ``630``—``635`` 行；所属函数 ``useEffect callback @ 628``。
 
 **参数**
 
@@ -3814,17 +3814,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``pageValues``、``JSON.stringify``、``confirmDraft``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:55516:55998:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:55604:56086:FUNCTION
 
-.. rubric:: ``useMemo callback @ 636``
+.. rubric:: ``useMemo callback @ 637``
 
 .. code-block:: javascript
 
-   useMemo callback @ 636()
+   useMemo callback @ 637()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``636``—``642`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``637``—``643`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3838,7 +3838,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:55826:55894:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:55914:55982:FUNCTION
 
 .. rubric:: ``isDialogActive``
 
@@ -3848,7 +3848,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 判断与 ``Dialog Active`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``639``—``639`` 行；所属函数 ``useMemo callback @ 636``。
+**性质**：同步局部函数；源码第 ``640``—``640`` 行；所属函数 ``useMemo callback @ 637``。
 
 **参数**
 
@@ -3858,7 +3858,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56163:57160:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56251:57248:FUNCTION
 
 .. rubric:: ``execute``
 
@@ -3868,7 +3868,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 执行与 ``execute`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``643``—``658`` 行；所属函数 ``DescriptorDialog``。
+**性质**：异步局部函数；源码第 ``644``—``659`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -3891,7 +3891,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56775:56843:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56863:56931:FUNCTION
 
 .. rubric:: ``isCurrent``
 
@@ -3900,26 +3900,6 @@ A display-only image primitive; QR and other views are authored by the backend.
    isCurrent()
 
 判断与 ``Current`` 相关的数据或状态。
-
-**性质**：同步局部函数；源码第 ``653``—``653`` 行；所属函数 ``execute``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56867:56895:FUNCTION
-
-.. rubric:: ``readForm``
-
-.. code-block:: javascript
-
-   readForm()
-
-实现 ``readForm`` 对应的前端处理。
 
 **性质**：同步局部函数；源码第 ``654``—``654`` 行；所属函数 ``execute``。
 
@@ -3931,7 +3911,27 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56981:57139:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:56955:56983:FUNCTION
+
+.. rubric:: ``readForm``
+
+.. code-block:: javascript
+
+   readForm()
+
+实现 ``readForm`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``655``—``655`` 行；所属函数 ``execute``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57069:57227:FUNCTION
 
 .. rubric:: ``patchForm``
 
@@ -3941,7 +3941,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 实现 ``patchForm`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``656``—``656`` 行；所属函数 ``execute``。
+**性质**：同步局部函数；源码第 ``657``—``657`` 行；所属函数 ``execute``。
 
 **参数**
 
@@ -3959,17 +3959,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57020:57138:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57108:57226:FUNCTION
 
-.. rubric:: ``setValues callback @ 656``
+.. rubric:: ``setValues callback @ 657``
 
 .. code-block:: javascript
 
-   setValues callback @ 656(previous)
+   setValues callback @ 657(previous)
 
 设置与 ``Values`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``656``—``656`` 行；所属函数 ``patchForm``。
+**性质**：同步局部函数；源码第 ``657``—``657`` 行；所属函数 ``patchForm``。
 
 **参数**
 
@@ -3982,17 +3982,17 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``setValue``、``target.replace``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57257:57292:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57345:57380:FUNCTION
 
-.. rubric:: ``onOpenChange callback @ 659``
+.. rubric:: ``onOpenChange callback @ 660``
 
 .. code-block:: javascript
 
-   onOpenChange callback @ 659(next)
+   onOpenChange callback @ 660(next)
 
 处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``659``—``659`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``660``—``660`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 
@@ -4005,30 +4005,7 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``onClose``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57636:57670:FUNCTION
-
-.. rubric:: ``anonymous callback @ 662``
-
-.. code-block:: javascript
-
-   anonymous callback @ 662(event)
-
-实现 ``anonymous`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``662``—``662`` 行；所属函数 ``DescriptorDialog``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``event.preventDefault``。
-
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57722:57756:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57724:57758:FUNCTION
 
 .. rubric:: ``anonymous callback @ 663``
 
@@ -4051,17 +4028,40 @@ A display-only image primitive; QR and other views are authored by the backend.
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:58506:58606:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:57810:57844:FUNCTION
 
-.. rubric:: ``(displayed?.footerActions || []).map callback @ 670``
+.. rubric:: ``anonymous callback @ 664``
 
 .. code-block:: javascript
 
-   (displayed?.footerActions || []).map callback @ 670(action, index)
+   anonymous callback @ 664(event)
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``664``—``664`` 行；所属函数 ``DescriptorDialog``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/GenericNodes.jsx:58594:58694:FUNCTION
+
+.. rubric:: ``(displayed?.footerActions || []).map callback @ 671``
+
+.. code-block:: javascript
+
+   (displayed?.footerActions || []).map callback @ 671(action, index)
 
 作为 ``(displayed?.footerActions || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``670``—``670`` 行；所属函数 ``DescriptorDialog``。
+**性质**：同步局部函数；源码第 ``671``—``671`` 行；所属函数 ``DescriptorDialog``。
 
 **参数**
 

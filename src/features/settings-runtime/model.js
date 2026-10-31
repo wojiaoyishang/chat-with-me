@@ -4,6 +4,12 @@ const FORBIDDEN_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
 const TRANSPARENT_CONTAINERS = new Set(['tabs', 'form-layout', 'profile-card']);
 export const pathParts = (path) => Array.isArray(path) ? path : String(path || '').split('.').filter(Boolean);
 
+/** Small read-only descriptor context; never expose API clients or callbacks. */
+export function settingsPublicContext(runtime = {}) {
+    return { conversationId: typeof runtime.conversationId === 'string' ? runtime.conversationId : '',
+        surface: typeof runtime.surface === 'string' ? runtime.surface : '' };
+}
+
 export function getValue(value, path, fallback) {
     let result = value;
     for (const key of pathParts(path)) {

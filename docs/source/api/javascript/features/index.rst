@@ -1119,7 +1119,7 @@
      - 7
      - ``src/features/settings-runtime/matrixValues.js``
    * - :doc:`src/features/settings-runtime/model </api/javascript/features/settings-runtime/model>`
-     - 14
+     - 15
      - 0
      - 13
      - ``src/features/settings-runtime/model.js``

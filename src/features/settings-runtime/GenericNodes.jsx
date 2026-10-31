@@ -11,7 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { copyTextToClipboard } from '@/lib/tools.jsx';
-import { cloneData, executeRequest, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue } from './model.js';
+import { cloneData, executeRequest, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue, settingsPublicContext } from './model.js';
 import { operationKey } from './useActionExecutor.js';
 import { validateSettingsFields, validateSettingsScope } from './validation.js';
 import { SettingsIcon, SettingsSection } from './SettingsPresentation.jsx';
@@ -95,7 +95,8 @@ function ActionControl({ action, label, disabled, busy, variant, menuItem, onInv
 }
 
 export function ActionButton({ action, context, scope = {}, callbacks, disabled = false, variant, menuItem = false }) {
-    const actualScope = { form: context.values, item: context.item, parentItem: context.parentItem, ...scope };
+    const actualScope = { form: context.values, item: context.item, parentItem: context.parentItem,
+        context: settingsPublicContext(context.runtimeContext), ...scope };
     if (!matchesCondition(action.when || action.showWhen, actualScope)) return null;
     const operation = context.operations?.[operationKey(action, actualScope)];
     const isDisabled = disabled || context.disabled || action.disabled === true || (action.disabledWhen && matchesCondition(action.disabledWhen, actualScope));

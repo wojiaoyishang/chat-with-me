@@ -3,7 +3,7 @@ src/features/settings-runtime/model 模块
 
 .. js:module:: src/features/settings-runtime/model
 
-References are data paths in a finite scope; descriptors never evaluate code.
+Small read-only descriptor context; never expose API clients or callbacks.
 
 .. note::
 
@@ -15,7 +15,7 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 * **源码文件**：``src/features/settings-runtime/model.js``
 * **模块标识**：``src/features/settings-runtime/model``
-* **顶层函数/组件/Hook**：14
+* **顶层函数/组件/Hook**：15
 * **类**：0
 * **局部函数与匿名回调**：13
 
@@ -46,13 +46,30 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **主要协作调用**：``Array.isArray``、``String(path || '').split('.').filter``、``String(path || '').split``、``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:305:640:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:305:632:FUNCTION
+
+.. js:function:: settingsPublicContext(runtime)
+
+   Small read-only descriptor context; never expose API clients or callbacks.
+
+   **性质**：同步函数；导出 API；源码第 ``8``—``11`` 行。
+
+   **参数**
+
+   ``runtime`` （默认值 ``{}``）
+      调用方传入的 ``runtime`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``{ conversationId: typeof runtime.conversationId === 'string' ? runtime.conversationId : '', surface: typeof runtime.surface === 'string' ? runtime.surface : '' }``。
+
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:632:967:FUNCTION
 
 .. js:function:: getValue(value, path, fallback)
 
    读取与 ``Value`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``14`` 行。
+   **性质**：同步函数；导出 API；源码第 ``13``—``20`` 行。
 
    **参数**
 
@@ -71,13 +88,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **主要协作调用**：``pathParts``、``FORBIDDEN_KEYS.has``、``String``、``Object.hasOwn``、``Object``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:640:1065:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:967:1392:FUNCTION
 
 .. js:function:: setValue(value, path, next)
 
    设置与 ``Value`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``16``—``24`` 行。
+   **性质**：同步函数；导出 API；源码第 ``22``—``30`` 行。
 
    **参数**
 
@@ -100,13 +117,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1065:1258:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1392:1585:FUNCTION
 
 .. js:function:: cloneData(value)
 
    实现 ``cloneData`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``26``—``29`` 行。
+   **性质**：同步函数；导出 API；源码第 ``32``—``35`` 行。
 
    **参数**
 
@@ -121,13 +138,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1258:2522:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1585:2849:FUNCTION
 
 .. js:function:: resolveValue(value, scope)
 
    References are data paths in a finite scope; descriptors never evaluate code.
 
-   **性质**：同步函数；导出 API；源码第 ``32``—``52`` 行。
+   **性质**：同步函数；导出 API；源码第 ``38``—``58`` 行。
 
    **参数**
 
@@ -147,13 +164,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2522:2909:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2849:3236:FUNCTION
 
 .. js:function:: formatValue(value, scope, encode)
 
    格式化与 ``Value`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``54``—``61`` 行。
+   **性质**：同步函数；导出 API；源码第 ``60``—``67`` 行。
 
    **参数**
 
@@ -174,13 +191,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2909:3577:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:3236:3904:FUNCTION
 
 .. js:function:: requestEndpoint(value, scope)
 
    实现 ``requestEndpoint`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``63``—``75`` 行。
+   **性质**：同步函数；导出 API；源码第 ``69``—``81`` 行。
 
    **参数**
 
@@ -198,13 +215,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **主要协作调用**：``value.matchAll``、``getValue``、``formatValue``、``endpoint.startsWith``、``/[\\\r\n]/.test``、``/(^|\/)\.\.(\/|$)/.test``、``endpoint.split``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:3577:4754:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:3904:5081:FUNCTION
 
 .. js:function:: matchesCondition(condition, scope)
 
    实现 ``matchesCondition`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``77``—``94`` 行。
+   **性质**：同步函数；导出 API；源码第 ``83``—``100`` 行。
 
    **参数**
 
@@ -224,13 +241,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:4754:5206:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5081:5533:FUNCTION
 
 .. js:function:: applyRules(values, rules, scope)
 
    应用与 ``Rules`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``96``—``104`` 行。
+   **性质**：同步函数；导出 API；源码第 ``102``—``110`` 行。
 
    **参数**
 
@@ -249,13 +266,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **主要协作调用**：``matchesCondition``、``Object.entries``、``setValue``、``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5206:5540:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5533:5867:FUNCTION
 
 .. js:function:: settingsChildFields(field)
 
    Presentation containers expose descendants without adding form identity.
 
-   **性质**：同步函数；导出 API；源码第 ``107``—``110`` 行。
+   **性质**：同步函数；导出 API；源码第 ``113``—``116`` 行。
 
    **参数**
 
@@ -270,13 +287,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5540:6339:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5867:6666:FUNCTION
 
 .. js:function:: findSettingsField(fields, path)
 
    查找与 ``Settings Field`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``112``—``128`` 行。
+   **性质**：同步函数；导出 API；源码第 ``118``—``134`` 行。
 
    **参数**
 
@@ -294,13 +311,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:6339:7869:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:6666:8196:FUNCTION
 
 .. js:function:: pageValues(options, initial)
 
    实现 ``pageValues`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``130``—``156`` 行。
+   **性质**：同步函数；导出 API；源码第 ``136``—``162`` 行。
 
    **参数**
 
@@ -318,13 +335,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:7869:9908:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:8196:10235:FUNCTION
 
 .. js:function:: validateFields(fields, form, prefix, errors, context)
 
    校验与 ``Fields`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``158``—``179`` 行。
+   **性质**：同步函数；导出 API；源码第 ``164``—``185`` 行。
 
    **参数**
 
@@ -351,13 +368,13 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9908:11466:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:10235:11793:FUNCTION
 
 .. js:function:: executeRequest(action, scope, { api, client, signal, onProgress })
 
    One operation executor shared by forms, resource cards and action bars.
 
-   **性质**：异步函数；导出 API；源码第 ``182``—``200`` 行。
+   **性质**：异步函数；导出 API；源码第 ``188``—``206`` 行。
 
    **参数**
 
@@ -387,17 +404,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:783:823:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1110:1150:FUNCTION
 
-.. rubric:: ``parts.some callback @ 19``
+.. rubric:: ``parts.some callback @ 25``
 
 .. code-block:: javascript
 
-   parts.some callback @ 19(key)
+   parts.some callback @ 25(key)
 
 作为 ``parts.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``19``—``19`` 行；所属函数 ``setValue``。
+**性质**：同步局部函数；源码第 ``25``—``25`` 行；所属函数 ``setValue``。
 
 **参数**
 
@@ -410,17 +427,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``FORBIDDEN_KEYS.has``、``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1196:1252:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1523:1579:FUNCTION
 
-.. rubric:: ``JSON.stringify callback @ 28``
+.. rubric:: ``JSON.stringify callback @ 34``
 
 .. code-block:: javascript
 
-   JSON.stringify callback @ 28(key, entry)
+   JSON.stringify callback @ 34(key, entry)
 
 实现 ``JSON.stringify`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``cloneData``。
+**性质**：同步局部函数；源码第 ``34``—``34`` 行；所属函数 ``cloneData``。
 
 **参数**
 
@@ -434,17 +451,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1446:1483:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:1773:1810:FUNCTION
 
-.. rubric:: ``value.map callback @ 33``
+.. rubric:: ``value.map callback @ 39``
 
 .. code-block:: javascript
 
-   value.map callback @ 33(entry)
+   value.map callback @ 39(entry)
 
 作为 ``value.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``33``—``33`` 行；所属函数 ``resolveValue``。
+**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``resolveValue``。
 
 **参数**
 
@@ -457,17 +474,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2414:2449:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2741:2776:FUNCTION
 
-.. rubric:: ``Object.entries(value).filter callback @ 50``
+.. rubric:: ``Object.entries(value).filter callback @ 56``
 
 .. code-block:: javascript
 
-   Object.entries(value).filter callback @ 50([key])
+   Object.entries(value).filter callback @ 56([key])
 
 作为 ``Object.entries(value).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``resolveValue``。
+**性质**：同步局部函数；源码第 ``56``—``56`` 行；所属函数 ``resolveValue``。
 
 **参数**
 
@@ -480,17 +497,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``FORBIDDEN_KEYS.has``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2465:2516:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2792:2843:FUNCTION
 
-.. rubric:: ``Object.entries(value).filter(([key]) => !FORBIDDEN_KEYS.has(key)) .map callback @ 51``
+.. rubric:: ``Object.entries(value).filter(([key]) => !FORBIDDEN_KEYS.has(key)) .map callback @ 57``
 
 .. code-block:: javascript
 
-   Object.entries(value).filter(([key]) => !FORBIDDEN_KEYS.has(key)) .map callback @ 51([key, entry])
+   Object.entries(value).filter(([key]) => !FORBIDDEN_KEYS.has(key)) .map callback @ 57([key, entry])
 
 作为 ``Object.entries(value).filter(([key]) => !FORBIDDEN_KEYS.has(key)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``51``—``51`` 行；所属函数 ``resolveValue``。
+**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``resolveValue``。
 
 **参数**
 
@@ -503,17 +520,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``resolveValue``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:2692:2904:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:3019:3231:FUNCTION
 
-.. rubric:: ``value.replace callback @ 56``
+.. rubric:: ``value.replace callback @ 62``
 
 .. code-block:: javascript
 
-   value.replace callback @ 56(_, path)
+   value.replace callback @ 62(_, path)
 
 实现 ``value.replace`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``56``—``60`` 行；所属函数 ``formatValue``。
+**性质**：同步局部函数；源码第 ``62``—``66`` 行；所属函数 ``formatValue``。
 
 **参数**
 
@@ -529,17 +546,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``getValue``、``encodeURIComponent``、``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:3833:3874:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:4160:4201:FUNCTION
 
-.. rubric:: ``condition.all.every callback @ 80``
+.. rubric:: ``condition.all.every callback @ 86``
 
 .. code-block:: javascript
 
-   condition.all.every callback @ 80(entry)
+   condition.all.every callback @ 86(entry)
 
 作为 ``condition.all.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``matchesCondition``。
+**性质**：同步局部函数；源码第 ``86``—``86`` 行；所属函数 ``matchesCondition``。
 
 **参数**
 
@@ -552,17 +569,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:3942:3983:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:4269:4310:FUNCTION
 
-.. rubric:: ``condition.any.some callback @ 81``
+.. rubric:: ``condition.any.some callback @ 87``
 
 .. code-block:: javascript
 
-   condition.any.some callback @ 81(entry)
+   condition.any.some callback @ 87(entry)
 
 作为 ``condition.any.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``matchesCondition``。
+**性质**：同步局部函数；源码第 ``87``—``87`` 行；所属函数 ``matchesCondition``。
 
 **参数**
 
@@ -575,17 +592,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``matchesCondition``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5429:5484:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5756:5811:FUNCTION
 
-.. rubric:: ``(Array.isArray(field.tabs) ? field.tabs : []).flatMap callback @ 108``
+.. rubric:: ``(Array.isArray(field.tabs) ? field.tabs : []).flatMap callback @ 114``
 
 .. code-block:: javascript
 
-   (Array.isArray(field.tabs) ? field.tabs : []).flatMap callback @ 108(tab)
+   (Array.isArray(field.tabs) ? field.tabs : []).flatMap callback @ 114(tab)
 
 实现 ``(Array.isArray(field.tabs) ? field.tabs : []).flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``settingsChildFields``。
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``settingsChildFields``。
 
 **参数**
 
@@ -598,17 +615,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:5914:5965:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:6241:6292:FUNCTION
 
-.. rubric:: ``parts.every callback @ 120``
+.. rubric:: ``parts.every callback @ 126``
 
 .. code-block:: javascript
 
-   parts.every callback @ 120(key, index)
+   parts.every callback @ 126(key, index)
 
 作为 ``parts.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``findSettingsField``。
+**性质**：同步局部函数；源码第 ``126``—``126`` 行；所属函数 ``findSettingsField``。
 
 **参数**
 
@@ -624,17 +641,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:7298:7348:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:7625:7675:FUNCTION
 
-.. rubric:: ``present.map callback @ 146``
+.. rubric:: ``present.map callback @ 152``
 
 .. code-block:: javascript
 
-   present.map callback @ 146(entry)
+   present.map callback @ 152(entry)
 
 作为 ``present.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``146``—``146`` 行；所属函数 ``pageValues``。
+**性质**：同步局部函数；源码第 ``152``—``152`` 行；所属函数 ``pageValues``。
 
 **参数**
 
@@ -647,17 +664,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``pageValues``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:8711:8800:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9038:9127:FUNCTION
 
-.. rubric:: ``value.forEach callback @ 168``
+.. rubric:: ``value.forEach callback @ 174``
 
 .. code-block:: javascript
 
-   value.forEach callback @ 168(entry, index)
+   value.forEach callback @ 174(entry, index)
 
 作为 ``value.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``168``—``168`` 行；所属函数 ``validateFields``。
+**性质**：同步局部函数；源码第 ``174``—``174`` 行；所属函数 ``validateFields``。
 
 **参数**
 
@@ -673,17 +690,17 @@ References are data paths in a finite scope; descriptors never evaluate code.
 
 **主要协作调用**：``validateFields``。
 
-.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9136:9170:FUNCTION
+.. CWM-AST-FUNCTION src/features/settings-runtime/model.js:9463:9497:FUNCTION
 
-.. rubric:: ``field.options.some callback @ 170``
+.. rubric:: ``field.options.some callback @ 176``
 
 .. code-block:: javascript
 
-   field.options.some callback @ 170(option)
+   field.options.some callback @ 176(option)
 
 作为 ``field.options.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``170``—``170`` 行；所属函数 ``validateFields``。
+**性质**：同步局部函数；源码第 ``176``—``176`` 行；所属函数 ``validateFields``。
 
 **参数**
 
