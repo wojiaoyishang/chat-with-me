@@ -22,24 +22,24 @@ src/features/chat/page/components/ChatHeader 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/features/notification/NotificationCenter.jsx``、``@/features/tasks/TaskCenter.jsx``、``react``、``lucide-react``、``@/components/ui/popover.tsx``、``@/components/ui/button.tsx``、``./ModelItem.jsx``、``./ModelPreviewCard.jsx``、``@/features/story/StorySelectorButton.jsx``、``@/features/message-map/MessageHistoryMapButton.jsx``。
+``@/features/notification/NotificationCenter.jsx``、``@/features/tasks/TaskCenter.jsx``、``react``、``lucide-react``、``@/components/ui/popover.tsx``、``@/components/ui/button.tsx``、``./ModelItem.jsx``、``./ModelPreviewCard.jsx``、``@/features/story/StorySelectorButton.jsx``、``@/features/message-map/MessageHistoryMapButton.jsx``、``./ChatActivityStatus.jsx``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:881:17576:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:910:16785:FUNCTION
 
-.. rubric:: ``memo callback @ 25``
+.. rubric:: ``memo callback @ 24``
 
 .. code-block:: javascript
 
-   memo callback @ 25({ models, selectedModel, isModelPopoverOpen, previewModel, isMobile, t, handlePopoverOpenChange, ha…)
+   memo callback @ 24({ models, selectedModel, isModelPopoverOpen, previewModel, isMobile, t, handlePopoverOpenChange, ha…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``25``—``340`` 行。
+**性质**：同步局部函数；源码第 ``24``—``327`` 行。
 
 **参数**
 
@@ -54,7 +54,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2063:2365:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2124:2426:FUNCTION
 
 .. rubric:: ``useEffect callback @ 64``
 
@@ -64,7 +64,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``64``—``70`` 行；所属函数 ``memo callback @ 25``。
+**性质**：同步局部函数；源码第 ``64``—``70`` 行；所属函数 ``memo callback @ 24``。
 
 **参数**
 
@@ -78,7 +78,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2203:2263:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2264:2324:FUNCTION
 
 .. rubric:: ``anonymous callback @ 67``
 
@@ -101,7 +101,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``setCompactHeader``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2325:2353:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:2386:2414:FUNCTION
 
 .. rubric:: ``returned callback @ 69``
 
@@ -123,7 +123,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3007:3132:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3068:3193:FUNCTION
 
 .. rubric:: ``useEffect callback @ 80``
 
@@ -133,7 +133,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``80``—``84`` 行；所属函数 ``memo callback @ 25``。
+**性质**：同步局部函数；源码第 ``80``—``84`` 行；所属函数 ``memo callback @ 24``。
 
 **参数**
 
@@ -145,7 +145,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``scrollToSelectedItem``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3225:4137:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3286:4198:FUNCTION
 
 .. rubric:: ``useMemo callback @ 86``
 
@@ -155,7 +155,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``86``—``108`` 行；所属函数 ``memo callback @ 25``。
+**性质**：同步局部函数；源码第 ``86``—``108`` 行；所属函数 ``memo callback @ 24``。
 
 **参数**
 
@@ -169,7 +169,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3424:4124:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3485:4185:FUNCTION
 
 .. rubric:: ``models.map callback @ 91``
 
@@ -192,7 +192,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3541:3575:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3602:3636:FUNCTION
 
 .. rubric:: ``handleClick``
 
@@ -214,7 +214,7 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``handleModelItemClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3618:3657:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:3679:3718:FUNCTION
 
 .. rubric:: ``handleMouseEnter``
 
@@ -236,17 +236,17 @@ src/features/chat/page/components/ChatHeader 模块
 
 **主要协作调用**：``handleModelItemMouseEnter``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:12055:12115:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/ChatHeader.jsx:11264:11324:FUNCTION
 
-.. rubric:: ``onClick callback @ 240``
+.. rubric:: ``onClick callback @ 227``
 
 .. code-block:: javascript
 
-   onClick callback @ 240()
+   onClick callback @ 227()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``240``—``240`` 行；所属函数 ``memo callback @ 25``。
+**性质**：同步局部函数；源码第 ``227``—``227`` 行；所属函数 ``memo callback @ 24``。
 
 **参数**
 

@@ -17,23 +17,23 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 * **模块标识**：``src/features/chat/ui/message/components/TooltipInfo``
 * **顶层函数/组件/Hook**：5
 * **类**：0
-* **局部函数与匿名回调**：11
+* **局部函数与匿名回调**：13
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/components/ClientText.jsx``、``@/lib/clientText.js``、``react``、``lucide-react``、``@/components/ui/popover``、``@/components/ui/dialog``、``@/components/ui/tooltip``、``@/lib/tools.jsx``、``@/config.js``、``@/components/modal/universalModal.js``。
+``@/components/ClientText.jsx``、``@/lib/clientText.js``、``react``、``lucide-react``、``@/components/ui/popover``、``@/components/ui/dialog``、``@/components/ui/tooltip``、``@/lib/tools.jsx``、``@/config.js``、``@/components/modal/universalModal.js``、``@/features/chat/page/utils/bodyForwardingStatus.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:677:775:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:767:865:FUNCTION
 
 .. js:function:: toNumber(value)
 
    实现 ``toNumber`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``12``—``15`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``13``—``16`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
    **主要协作调用**：``Number``、``Number.isFinite``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:798:922:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:888:1012:FUNCTION
 
 .. js:function:: formatNumber(value, maximumFractionDigits)
 
    格式化与 ``Number`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``17``—``20`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``18``—``21`` 行。
 
    **参数**
 
@@ -68,13 +68,13 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
    **主要协作调用**：``toNumber(value).toLocaleString``、``toNumber``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:947:1029:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1037:1119:FUNCTION
 
 .. js:function:: formatDatetime(value)
 
    格式化与 ``Datetime`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``22``—``22`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``23``—``23`` 行。
 
    **参数**
 
@@ -87,13 +87,13 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
    **主要协作调用**：``formatLocalTimestamp``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1054:1222:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1144:1312:FUNCTION
 
 .. js:function:: normalizeAudit(value)
 
    规范化与 ``Audit`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``24``—``28`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``25``—``29`` 行。
 
    **参数**
 
@@ -106,13 +106,13 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
    **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1247:1743:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1337:1833:FUNCTION
 
 .. js:function:: contextDisplay(contextState)
 
    实现 ``contextDisplay`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``30``—``41`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``31``—``42`` 行。
 
    **参数**
 
@@ -130,17 +130,17 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1771:14755:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:1861:15831:FUNCTION
 
-.. rubric:: ``memo callback @ 43``
+.. rubric:: ``memo callback @ 44``
 
 .. code-block:: javascript
 
-   memo callback @ 43({ tip, useTextFormat, contextState, conversationId, messageId, msg = null, t })
+   memo callback @ 44({ tip, useTextFormat, contextState, conversationId, messageId, msg = null, t })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``43``—``333`` 行。
+**性质**：同步局部函数；源码第 ``44``—``347`` 行。
 
 **参数**
 
@@ -155,21 +155,41 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``useIsMobile``、``useState``、``useMemo``、``Boolean``、``auditInfo.sections.map``、``t``。
+**主要协作调用**：``useIsMobile``、``useState``、``useMemo``、``Boolean``、``bodyForwardingDetails``、``auditInfo.sections.map``、``forwardingDetails.map``、``t``。
 
-**内部回调数量**：7。这些回调也会在本页逐项说明。
+**内部回调数量**：9。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2046:2147:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2073:2118:FUNCTION
 
-.. rubric:: ``useMemo callback @ 49``
+.. rubric:: ``useMemo callback @ 48``
 
 .. code-block:: javascript
 
-   useMemo callback @ 49()
+   useMemo callback @ 48()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``memo callback @ 44``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2186:2287:FUNCTION
+
+.. rubric:: ``useMemo callback @ 50``
+
+.. code-block:: javascript
+
+   useMemo callback @ 50()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -181,17 +201,17 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``normalizeAudit``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2263:2327:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2403:2467:FUNCTION
 
-.. rubric:: ``useMemo callback @ 54``
+.. rubric:: ``useMemo callback @ 55``
 
 .. code-block:: javascript
 
-   useMemo callback @ 54()
+   useMemo callback @ 55()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -203,7 +223,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``contextDisplay``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2664:2966:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2944:3246:FUNCTION
 
 .. rubric:: ``openContextDetail``
 
@@ -213,7 +233,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 打开与 ``Context Detail`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``62``—``71`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``64``—``73`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -226,7 +246,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``event?.preventDefault``、``event?.stopPropagation``、``setDetailsOpen``、``openRemoteUniversalModal``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:2989:3346:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:3269:3626:FUNCTION
 
 .. rubric:: ``openHref``
 
@@ -236,7 +256,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 打开与 ``Href`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``73``—``83`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``75``—``85`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -256,7 +276,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``event?.preventDefault``、``event?.stopPropagation``、``setDetailsOpen``、``String(href).startsWith``、``String``、``openUniversalModalLink``、``window.open``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:3377:8651:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:3657:8931:FUNCTION
 
 .. rubric:: ``renderAuditValue``
 
@@ -266,7 +286,7 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 渲染与 ``Audit Value`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``85``—``199`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``87``—``201`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -284,17 +304,17 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:6319:6357:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:6599:6637:FUNCTION
 
-.. rubric:: ``onClick callback @ 140``
+.. rubric:: ``onClick callback @ 142``
 
 .. code-block:: javascript
 
-   onClick callback @ 140(event)
+   onClick callback @ 142(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``140``—``140`` 行；所属函数 ``renderAuditValue``。
+**性质**：同步局部函数；源码第 ``142``—``142`` 行；所属函数 ``renderAuditValue``。
 
 **参数**
 
@@ -307,17 +327,17 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``openHref``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:7981:8189:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:8261:8469:FUNCTION
 
-.. rubric:: ``onClick callback @ 179``
+.. rubric:: ``onClick callback @ 181``
 
 .. code-block:: javascript
 
-   onClick callback @ 179(event)
+   onClick callback @ 181(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``179``—``183`` 行；所属函数 ``renderAuditValue``。
+**性质**：同步局部函数；源码第 ``181``—``185`` 行；所属函数 ``renderAuditValue``。
 
 **参数**
 
@@ -330,17 +350,17 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``navigator.clipboard?.writeText``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:8940:10545:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:9220:10825:FUNCTION
 
-.. rubric:: ``auditInfo.sections.map callback @ 206``
+.. rubric:: ``auditInfo.sections.map callback @ 208``
 
 .. code-block:: javascript
 
-   auditInfo.sections.map callback @ 206(section, sectionIndex)
+   auditInfo.sections.map callback @ 208(section, sectionIndex)
 
 作为 ``auditInfo.sections.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``206``—``233`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``208``—``235`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 
@@ -358,17 +378,17 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:9735:10448:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:10015:10728:FUNCTION
 
-.. rubric:: ``items.map callback @ 218``
+.. rubric:: ``items.map callback @ 220``
 
 .. code-block:: javascript
 
-   items.map callback @ 218(item, itemIndex)
+   items.map callback @ 220(item, itemIndex)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``218``—``229`` 行；所属函数 ``auditInfo.sections.map callback @ 206``。
+**性质**：同步局部函数；源码第 ``220``—``231`` 行；所属函数 ``auditInfo.sections.map callback @ 208``。
 
 **参数**
 
@@ -384,17 +404,38 @@ src/features/chat/ui/message/components/TooltipInfo 模块
 
 **主要协作调用**：``renderAuditValue``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:13483:13516:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:12424:12646:FUNCTION
 
-.. rubric:: ``onOpenAutoFocus callback @ 300``
+.. rubric:: ``forwardingDetails.map callback @ 268``
 
 .. code-block:: javascript
 
-   onOpenAutoFocus callback @ 300(event)
+   forwardingDetails.map callback @ 268({label, value})
+
+作为 ``forwardingDetails.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``268``—``271`` 行；所属函数 ``memo callback @ 44``。
+
+**参数**
+
+``{label, value}``
+   调用方传入的 ``label, value`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/TooltipInfo.jsx:14559:14592:FUNCTION
+
+.. rubric:: ``onOpenAutoFocus callback @ 314``
+
+.. code-block:: javascript
+
+   onOpenAutoFocus callback @ 314(event)
 
 处理 ``Open Auto Focus`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``memo callback @ 43``。
+**性质**：同步局部函数；源码第 ``314``—``314`` 行；所属函数 ``memo callback @ 44``。
 
 **参数**
 

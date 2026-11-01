@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 290
+     - 299
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -103,6 +103,11 @@
      - 0
      - 0
      - ``src/features/chat/modelCapabilities.js``
+   * - :doc:`src/features/chat/page/components/ChatActivityStatus </api/javascript/features/chat/page/components/ChatActivityStatus>`
+     - 1
+     - 0
+     - 1
+     - ``src/features/chat/page/components/ChatActivityStatus.jsx``
    * - :doc:`src/features/chat/page/components/ChatHeader </api/javascript/features/chat/page/components/ChatHeader>`
      - 0
      - 0
@@ -238,10 +243,15 @@
      - 0
      - 3
      - ``src/features/chat/page/openChatWindow.js``
+   * - :doc:`src/features/chat/page/utils/appendedHistory </api/javascript/features/chat/page/utils/appendedHistory>`
+     - 4
+     - 0
+     - 10
+     - ``src/features/chat/page/utils/appendedHistory.js``
    * - :doc:`src/features/chat/page/utils/bodyForwardingStatus </api/javascript/features/chat/page/utils/bodyForwardingStatus>`
-     - 1
+     - 4
      - 0
-     - 0
+     - 3
      - ``src/features/chat/page/utils/bodyForwardingStatus.js``
    * - :doc:`src/features/chat/page/utils/conversationOptions </api/javascript/features/chat/page/utils/conversationOptions>`
      - 0
@@ -478,11 +488,6 @@
      - 1
      - 34
      - ``src/features/chat/ui/chatbox/utils/voiceRecorder.js``
-   * - :doc:`src/features/chat/ui/message/components/BodyForwardingStatus </api/javascript/features/chat/ui/message/components/BodyForwardingStatus>`
-     - 0
-     - 0
-     - 1
-     - ``src/features/chat/ui/message/components/BodyForwardingStatus.jsx``
    * - :doc:`src/features/chat/ui/message/components/BranchMessageSelectorDialog </api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog>`
      - 0
      - 0
@@ -571,7 +576,7 @@
    * - :doc:`src/features/chat/ui/message/components/TooltipInfo </api/javascript/features/chat/ui/message/components/TooltipInfo>`
      - 5
      - 0
-     - 11
+     - 13
      - ``src/features/chat/ui/message/components/TooltipInfo.jsx``
    * - :doc:`src/features/chat/ui/message/components/WidgetResponseMessage </api/javascript/features/chat/ui/message/components/WidgetResponseMessage>`
      - 4
@@ -1541,6 +1546,7 @@
    /api/javascript/features/chat/freeze/useConversationFreeze
    /api/javascript/features/chat/index
    /api/javascript/features/chat/modelCapabilities
+   /api/javascript/features/chat/page/components/ChatActivityStatus
    /api/javascript/features/chat/page/components/ChatHeader
    /api/javascript/features/chat/page/components/ChatHistoryViewport
    /api/javascript/features/chat/page/components/InspectorAttachments
@@ -1568,6 +1574,7 @@
    /api/javascript/features/chat/page/hooks/useIndependentChatWindow
    /api/javascript/features/chat/page/hooks/useRuntimeInspector
    /api/javascript/features/chat/page/openChatWindow
+   /api/javascript/features/chat/page/utils/appendedHistory
    /api/javascript/features/chat/page/utils/bodyForwardingStatus
    /api/javascript/features/chat/page/utils/conversationOptions
    /api/javascript/features/chat/page/utils/liveMessageReconcile
@@ -1616,7 +1623,6 @@
    /api/javascript/features/chat/ui/chatbox/components/VoicePermissionDialog
    /api/javascript/features/chat/ui/chatbox/utils/toolState
    /api/javascript/features/chat/ui/chatbox/utils/voiceRecorder
-   /api/javascript/features/chat/ui/message/components/BodyForwardingStatus
    /api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog
    /api/javascript/features/chat/ui/message/components/CompactedContextIndicator
    /api/javascript/features/chat/ui/message/components/ContextStateIndicator

@@ -1,10 +1,11 @@
 import { createMessageStreamBatch, MESSAGE_STREAM_EVENTS } from './page/utils/messageStreamBatch.js';
+import { createAppendSynchronizer } from './page/utils/appendedHistory.js';
 import { projectMessageDeletion } from './page/utils/messageDeletion.js';
 import { ConversationOptionsWriter } from './page/utils/conversationOptions.js';
 import { getBackendConnection, isCurrentConnection } from '@/runtime/backend/connection.js';
 import { openChatWindow } from './page/openChatWindow.js';
 import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useImmer } from 'use-immer';
 import { produce } from 'immer';
@@ -54,7 +55,7 @@ import {
     mergeMessageConfig,
     mergeMessageContextState,
 } from '@/features/chat/page/utils/messageConfigUpdates.js';
-import {mergeBodyForwardingStatus} from '@/features/chat/page/utils/bodyForwardingStatus.js';
+import {mergeBodyForwardingStatus, pendingBodyForwarding} from '@/features/chat/page/utils/bodyForwardingStatus.js';
 
 import {
     ChatBox,
@@ -207,6 +208,7 @@ function ChatPage({
 
     const [messagesOrder, setMessagesOrder] = useState([]);
     const [messages, setMessages] = useImmer({});
+    const forwardingPending = useMemo(() => pendingBodyForwarding(messages, messagesOrder), [messages, messagesOrder]);
     const messagesRef = useRef({});
     const streamBatchRef = useRef(null);
     const messagesOrderRef = useRef([]);
@@ -2517,6 +2519,39 @@ function ChatPage({
             },
         });
         streamBatchRef.current = streamBatch;
+        let disposed = false;
+        const connection = getBackendConnection();
+        const appendIsCurrent = () => !disposed && activeConversationIdRef.current === conversationId
+            && isCurrentConnection(connection);
+        const appendSync = createAppendSynchronizer({
+            isCurrent: appendIsCurrent,
+            read: () => {
+                streamBatch.flush();
+                return {messages: messagesRef.current, order: messagesOrderRef.current,
+                    liveMessageIds: liveStreamMessageIdsRef.current,
+                    ready: isMessageLoadedRef.current && lastHydratedConversationIdRef.current === conversationId
+                        && !historyNavigationLockedRef.current};
+            },
+            load: (afterId) => apiClient.get(apiEndpoint.CHAT_MESSAGES_ENDPOINT, {
+                params: {conversationId, afterId, limit: HISTORY_PAGE_SIZE}, timeout: CHAT_BOOTSTRAP_TIMEOUT_MS,
+            }),
+            apply: ({messages: nextMessages, order}) => {
+                const wasAutoScroll = isAutoScrollEnabledRef.current;
+                const decorated = decorateMessages(nextMessages);
+                messagesRef.current = decorated;
+                messagesOrderRef.current = order;
+                setMessages(decorated);
+                setMessagesOrder(order);
+                scrollToBottomAfterRender(wasAutoScroll, {streaming: true});
+            },
+            complete: () => emitMessagesLoaded(appendIsCurrent),
+            mismatch: () => setRandomMark(generateUUID()),
+            error: () => toast.warning('新消息暂未同步，已有内容已保留', {
+                id: `chat-append-${conversationId}`, action: {label: '重试', onClick: () => {
+                    if (appendIsCurrent()) appendSync.request();
+                }},
+            }),
+        });
         const unsubscribe1 = onEvent({
             event: [
                 'message.*',
@@ -2546,6 +2581,9 @@ function ChatPage({
             ],
             conversationId,
         }).then(({ event, payload, reply, eventRunId, eventTurnId }) => {
+            if (['conversation.messages.reload_requested', 'conversation.messages.reconciled', 'conversation.deleted'].includes(event)) {
+                appendSync.invalidate();
+            }
             if (MESSAGE_STREAM_EVENTS.has(event)) {
                 if (payload.value && typeof payload.value === 'object') {
                     markLiveStreamMessages(Object.keys(payload.value), eventRunId);
@@ -2649,7 +2687,7 @@ function ChatPage({
                                 newValue && typeof newValue === 'object'
                                     ? {
                                           ...newValue,
-                                          messages: newValue.messages === undefined ? [] : newValue.messages,
+                                          messages: newValue.messages === undefined ? (newMessages[key]?.messages || []) : newValue.messages,
                                       }
                                     : newValue;
 
@@ -2997,9 +3035,12 @@ function ChatPage({
                     if (payload.reply) reply({ success: true });
                     break;
                 case 'conversation.tree.changed':
-                    // AI 工具或其他客户端修改了对话树。统一重新加载当前活动分支，
-                    // 避免本地 messagesOrder 与后端 treeRevision 不一致。
-                    setRandomMark(generateUUID());
+                    if (payload.operation === 'message.appended') {
+                        appendSync.request();
+                    } else {
+                        appendSync.invalidate();
+                        setRandomMark(generateUUID());
+                    }
                     if (
                         messageSummariesRef.current.length > 0 ||
                         showQuickUserMessageNavigator ||
@@ -3137,7 +3178,12 @@ function ChatPage({
         }).then(({ event, payload, reply }) => {
             handleBackendSpeechEvent(event, payload, reply);
         });
+        // A subscription may rebind while an append request is in flight. Catch
+        // up from the current anchor without rebuilding the loaded message tree.
+        appendSync.request();
         return () => {
+            disposed = true;
+            appendSync.invalidate();
             streamBatch.flush();
             if (streamBatchRef.current === streamBatch) streamBatchRef.current = null;
             unsubscribe1();
@@ -3170,6 +3216,7 @@ function ChatPage({
         ensureStreamMessagesVisible,
         applyAgentConfiguration,
         getOptionWriter,
+        decorateMessages,
     ]);
 
     useEffect(() => {
@@ -3663,6 +3710,7 @@ function ChatPage({
                             onMinimize={onMinimize}
                             conversationMeta={conversationMeta}
                             contextCompactionState={contextCompactionState}
+                            forwardingPending={forwardingPending}
                             stories={stories}
                             onOpenStory={openStory}
                             onRenameStory={renameStory}

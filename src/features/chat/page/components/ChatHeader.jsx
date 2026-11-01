@@ -4,9 +4,7 @@ import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
 import {
     MoreHorizontal,
     Bot,
-    Check,
     ChevronDown,
-    LoaderCircle,
     Activity,
     Maximize2,
     Minimize2,
@@ -20,6 +18,7 @@ import ModelItem from './ModelItem.jsx';
 import ModelPreviewCard from './ModelPreviewCard.jsx';
 import StorySelectorButton from '@/features/story/StorySelectorButton.jsx';
 import MessageHistoryMapButton from '@/features/message-map/MessageHistoryMapButton.jsx';
+import ChatActivityStatus from './ChatActivityStatus.jsx';
 
 const ChatHeader = memo(
     ({
@@ -52,6 +51,7 @@ const ChatHeader = memo(
         onMinimize,
         conversationMeta,
         contextCompactionState = {},
+        forwardingPending = 0,
         stories = [],
         onOpenStory,
         onRenameStory,
@@ -174,21 +174,8 @@ const ChatHeader = memo(
                     </PopoverContent>
                 </Popover>
 
-                {(compactionRunning || compactionCompleted) && (
-                    <div
-                        className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex max-w-[42vw] -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded-full bg-gray-50/95 px-2.5 py-1 text-[11px] font-medium text-gray-500 shadow-sm ring-1 ring-gray-200/70"
-                        title={compactionRunning ? t('context_compaction_running') : t('context_compaction_completed')}
-                    >
-                        {compactionRunning ? (
-                            <LoaderCircle className="h-3.5 w-3.5 shrink-0 animate-spin" />
-                        ) : (
-                            <Check className="h-3.5 w-3.5 shrink-0" />
-                        )}
-                        <span className={isMobile ? 'sr-only' : 'truncate'}>
-                            {compactionRunning ? t('context_compaction_running') : t('context_compaction_completed')}
-                        </span>
-                    </div>
-                )}
+                <ChatActivityStatus compactionRunning={compactionRunning} compactionCompleted={compactionCompleted}
+                    forwardingPending={forwardingPending} isMobile={isMobile} t={t} />
 
                 {isWindowMode && (
                     <div

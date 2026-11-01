@@ -8,6 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useIsMobile } from '@/lib/tools.jsx';
 import { apiEndpoint } from '@/config.js';
 import { openRemoteUniversalModal, openUniversalModalLink } from '@/components/modal/universalModal.js';
+import {bodyForwardingDetails} from '@/features/chat/page/utils/bodyForwardingStatus.js';
 
 const toNumber = (value) => {
     const number = Number(value);
@@ -44,7 +45,7 @@ const TooltipInfo = memo(({ tip, useTextFormat, contextState, conversationId, me
     const isMobile = useIsMobile();
     const [detailsOpen, setDetailsOpen] = useState(false);
 
-    const extraInfo = msg?.extraInfo || msg?.extra_info || {};
+    const extraInfo = useMemo(() => msg?.extraInfo || msg?.extra_info || {}, [msg?.extraInfo, msg?.extra_info]);
     const auditInfo = useMemo(
         () => (extraInfo?.enable_audit_info === true ? normalizeAudit(extraInfo?.audit_info) : null),
         [extraInfo],
@@ -55,9 +56,10 @@ const TooltipInfo = memo(({ tip, useTextFormat, contextState, conversationId, me
         [contextState, msg?.contextState],
     );
     const hasLegacyContextDetail = !modernAuditEnabled && currentContext.actionable;
-    const useInteractivePopover = isMobile || modernAuditEnabled || hasLegacyContextDetail;
+    const forwardingDetails = bodyForwardingDetails(extraInfo.bodyForwarding);
+    const useInteractivePopover = isMobile || modernAuditEnabled || hasLegacyContextDetail || forwardingDetails.length > 0;
 
-    if (!modernAuditEnabled && !tip && !hasLegacyContextDetail) return null;
+    if (!modernAuditEnabled && !tip && !hasLegacyContextDetail && !forwardingDetails.length) return null;
 
     const openContextDetail = (event) => {
         event?.preventDefault?.();
@@ -258,7 +260,19 @@ const TooltipInfo = memo(({ tip, useTextFormat, contextState, conversationId, me
         </div>
     ) : null;
 
-    const content = modernContent || legacyContent;
+    const content = <div className="space-y-3">
+        {modernContent || legacyContent}
+        {forwardingDetails.length > 0 && <section className={`${modernAuditEnabled || tip || hasLegacyContextDetail ? 'border-t border-current/15 pt-2.5' : ''} space-y-1.5`}>
+            <div className="text-[10px] font-semibold tracking-wide opacity-60">正文转发</div>
+            <dl className="grid grid-cols-[7.25rem_minmax(0,1fr)] gap-x-3 gap-y-1 text-[11px] leading-4">
+                {forwardingDetails.map(({label, value}) => <React.Fragment key={label}>
+                    <dt className="opacity-65">{label}</dt>
+                    <dd className="min-w-0 break-words text-right">{value}</dd>
+                </React.Fragment>)}
+            </dl>
+            <p className="text-[10px] opacity-60">已提交表示平台接受，不代表对方已读。</p>
+        </section>}
+    </div>;
     const trigger = (
         <button
             type="button"
