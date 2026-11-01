@@ -3,7 +3,7 @@ src/lib/browserHistoryLayers 模块
 
 .. js:module:: src/lib/browserHistoryLayers
 
-Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser Back closes the newest layer first. - Normal close buttons collapse the synthetic history entry. - \`onBack\` may return false to keep the layer open and immediately re-arm it. This is useful for an unsaved-change confirmation flow.
+Treat an open UI surface as a same-URL browser-history layer. - Hardware/browser Back closes the newest layer first. - Normal close buttons collapse the synthetic history entry. - \x60onBack\x60 may return false to keep the layer open and immediately re-arm it. This is useful for an unsaved-change confirmation flow.
 
 .. note::
 

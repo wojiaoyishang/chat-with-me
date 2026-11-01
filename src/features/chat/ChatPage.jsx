@@ -1,5 +1,7 @@
 import { createMessageStreamBatch, MESSAGE_STREAM_EVENTS } from './page/utils/messageStreamBatch.js';
 import { projectMessageDeletion } from './page/utils/messageDeletion.js';
+import { ConversationOptionsWriter } from './page/utils/conversationOptions.js';
+import { getBackendConnection, isCurrentConnection } from '@/runtime/backend/connection.js';
 import { openChatWindow } from './page/openChatWindow.js';
 import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -52,6 +54,7 @@ import {
     mergeMessageConfig,
     mergeMessageContextState,
 } from '@/features/chat/page/utils/messageConfigUpdates.js';
+import {mergeBodyForwardingStatus} from '@/features/chat/page/utils/bodyForwardingStatus.js';
 
 import {
     ChatBox,
@@ -273,6 +276,29 @@ function ChatPage({
     const [widgetChatBoxHostElement, setWidgetChatBoxHostElement] = useState(null);
     const [settingsInstanceKey, setSettingsInstanceKey] = useState(() => `conversationless-${Date.now()}`);
     const [conversationMeta, setConversationMeta] = useState(null);
+    const optionWritersRef = useRef(new Map());
+    const getOptionWriter = useCallback((target) => {
+        const scope = getBackendConnection();
+        const key = `${scope.id}:${scope.epoch}:${target}`;
+        if (!optionWritersRef.current.has(key)) {
+            optionWritersRef.current.set(key, new ConversationOptionsWriter({
+                save: (patch) => {
+                    if (!isCurrentConnection(scope)) throw new Error('后端连接已切换，请重新打开会话设置');
+                    return apiClient.patch(`/chat/conversations/${encodeURIComponent(target)}/options`, {patch});
+                },
+                onValues: (values) => {
+                    if (!isCurrentConnection(scope) || activeConversationIdRef.current !== target) return;
+                    setAdvancedSettingsValues(values);
+                    setInitialSettingValues(values);
+                },
+                onError: (error) => toast.error(error.message || '会话设置保存失败，请重试'),
+            }));
+        }
+        return optionWritersRef.current.get(key);
+    }, []);
+    useEffect(() => () => {
+        for (const writer of optionWritersRef.current.values()) void writer.flush().catch(() => {});
+    }, []);
     const agentConfigurationTimerRef = useRef(null);
     const pendingAgentConfigurationRef = useRef(null);
     const agentConfigurationQueueRef = useRef(Promise.resolve());
@@ -1401,7 +1427,13 @@ function ChatPage({
             )
                 return;
 
-            const sendMessage = (conversationId) => {
+            const sendMessage = async (conversationId) => {
+                try {
+                    await getOptionWriter(conversationId).flush();
+                } catch {
+                    releaseSubmission();
+                    return {success: false, value: '会话设置尚未保存，请重试后发送', conversationId};
+                }
                 if (isFirstMessageSend) {
                     emitEvent({
                         event: 'sidebar.conversation.date_changed',
@@ -1533,6 +1565,7 @@ function ChatPage({
             onNewConversationId,
             persistPendingWorkspaceSelection,
             canMutateConversation,
+            getOptionWriter,
         ],
     );
 
@@ -2501,6 +2534,7 @@ function ChatPage({
                 'workspace.transfer.state_changed',
                 'widget.state.changed',
                 'conversation.agent_configuration.changed',
+                'conversation.options.changed',
                 'speech.play.requested',
                 'speech.stop.requested',
                 'speech.pause.requested',
@@ -2635,6 +2669,10 @@ function ChatPage({
                                             ...(oldMessage.extraInfo || {}),
                                             ...(incomingValue.extraInfo || {}),
                                         };
+                                        if (oldMessage.extraInfo?.bodyForwarding || incomingValue.extraInfo?.bodyForwarding) {
+                                            mergedMessage.extraInfo.bodyForwarding = mergeBodyForwardingStatus(
+                                                oldMessage.extraInfo?.bodyForwarding, incomingValue.extraInfo?.bodyForwarding);
+                                        }
                                     }
 
                                     // network 必须做增量合并，避免message.created 的短快照覆盖 message.knowledge.network_added 已追加的数据。
@@ -2830,6 +2868,12 @@ function ChatPage({
                     break;
                 case 'conversation.agent_configuration.changed': {
                     applyAgentConfiguration(payload.value);
+                    break;
+                }
+                case 'conversation.options.changed': {
+                    if (payload.value?.conversationId === activeConversationIdRef.current) {
+                        getOptionWriter(payload.value.conversationId).apply(payload.value);
+                    }
                     break;
                 }
                 case 'widget.state.changed': {
@@ -3125,6 +3169,7 @@ function ChatPage({
         clearLiveStreamRun,
         ensureStreamMessagesVisible,
         applyAgentConfiguration,
+        getOptionWriter,
     ]);
 
     useEffect(() => {
@@ -3298,8 +3343,7 @@ function ChatPage({
                     setAdvancedSettings(data.options);
                 }
                 if (data.defaultOptions) {
-                    setAdvancedSettingsValues(data.defaultOptions);
-                    setInitialSettingValues(data.defaultOptions);
+                    getOptionWriter(conversationId).apply({options: data.defaultOptions, revision: data.optionsRevision});
                 }
             } catch (error) {
                 if (isCurrent()) {
@@ -3451,6 +3495,7 @@ function ChatPage({
         executePendingScroll,
         isAutoScrollEnabledRef,
         loadAvailableModels,
+        getOptionWriter,
         markProgrammaticScroll,
         pendingScrollRef,
         randomMark,
@@ -3915,7 +3960,7 @@ function ChatPage({
                         initialSettingValues={initialSettingValues || advancedSettingsValues}
                         settingsInstanceKey={settingsInstanceKey}
                         conversationId={conversationId}
-                        onSettingChange={(values) => {
+                        onSettingChange={(values, change) => {
                             if (conversationMeta?.conversationKind === 'agent_session') {
                                 const changed = Object.fromEntries(
                                     Object.entries(values).filter(
@@ -3925,6 +3970,11 @@ function ChatPage({
                                     ),
                                 );
                                 if (Object.keys(changed).length) queueAgentConfiguration({ options: changed });
+                            } else if (conversationId && change) {
+                                const patch = change.patch || (change.path?.length === 1 ? {[change.path[0]]: change.value} : {});
+                                const allowed = Object.fromEntries(Object.entries(patch).filter(([key]) => !['avatarModelId', 'workspaceId', 'workspaceIds'].includes(key)));
+                                if (Object.keys(allowed).length) getOptionWriter(conversationId).edit(allowed,
+                                    Object.keys(allowed).some((key) => key.startsWith('botForward')) || typeof change.value !== 'string' ? 0 : 200);
                             }
 
                             if (

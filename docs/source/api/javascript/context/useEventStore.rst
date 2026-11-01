@@ -3,7 +3,7 @@ src/context/useEventStore 模块
 
 .. js:module:: src/context/useEventStore
 
-Emit one semantic event. The returned thenable waits for an event whose \`\`reply\_to\`\` references the generated \`\`event\_id\`\`.
+Emit one semantic event. The returned thenable waits for an event whose \x60\x60reply\_to\x60\x60 references the generated \x60\x60event\_id\x60\x60.
 
 .. note::
 

@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 281
+     - 290
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -238,6 +238,16 @@
      - 0
      - 3
      - ``src/features/chat/page/openChatWindow.js``
+   * - :doc:`src/features/chat/page/utils/bodyForwardingStatus </api/javascript/features/chat/page/utils/bodyForwardingStatus>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/chat/page/utils/bodyForwardingStatus.js``
+   * - :doc:`src/features/chat/page/utils/conversationOptions </api/javascript/features/chat/page/utils/conversationOptions>`
+     - 0
+     - 5
+     - 4
+     - ``src/features/chat/page/utils/conversationOptions.js``
    * - :doc:`src/features/chat/page/utils/liveMessageReconcile </api/javascript/features/chat/page/utils/liveMessageReconcile>`
      - 8
      - 0
@@ -468,6 +478,11 @@
      - 1
      - 34
      - ``src/features/chat/ui/chatbox/utils/voiceRecorder.js``
+   * - :doc:`src/features/chat/ui/message/components/BodyForwardingStatus </api/javascript/features/chat/ui/message/components/BodyForwardingStatus>`
+     - 0
+     - 0
+     - 1
+     - ``src/features/chat/ui/message/components/BodyForwardingStatus.jsx``
    * - :doc:`src/features/chat/ui/message/components/BranchMessageSelectorDialog </api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog>`
      - 0
      - 0
@@ -1553,6 +1568,8 @@
    /api/javascript/features/chat/page/hooks/useIndependentChatWindow
    /api/javascript/features/chat/page/hooks/useRuntimeInspector
    /api/javascript/features/chat/page/openChatWindow
+   /api/javascript/features/chat/page/utils/bodyForwardingStatus
+   /api/javascript/features/chat/page/utils/conversationOptions
    /api/javascript/features/chat/page/utils/liveMessageReconcile
    /api/javascript/features/chat/page/utils/messageConfigUpdates
    /api/javascript/features/chat/page/utils/messageDeletion
@@ -1599,6 +1616,7 @@
    /api/javascript/features/chat/ui/chatbox/components/VoicePermissionDialog
    /api/javascript/features/chat/ui/chatbox/utils/toolState
    /api/javascript/features/chat/ui/chatbox/utils/voiceRecorder
+   /api/javascript/features/chat/ui/message/components/BodyForwardingStatus
    /api/javascript/features/chat/ui/message/components/BranchMessageSelectorDialog
    /api/javascript/features/chat/ui/message/components/CompactedContextIndicator
    /api/javascript/features/chat/ui/message/components/ContextStateIndicator

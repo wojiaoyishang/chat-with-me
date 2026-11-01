@@ -11,6 +11,7 @@ import TextOnlyMessageContent from './TextOnlyMessageContent.jsx';
 import SpeechOverlayHighlighter from './SpeechOverlayHighlighter.jsx';
 import { useIsMobile } from '@/lib/tools.jsx';
 import MessageContextBadges from './MessageContextBadges.jsx';
+import BodyForwardingStatus from './BodyForwardingStatus.jsx';
 import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from './CompactedContextIndicator.jsx';
 import WidgetResponseMessage from './WidgetResponseMessage.jsx';
@@ -429,6 +430,7 @@ const MessageItem = memo(
                 {automaticOrigin && <MessageOrigin origin={automaticOrigin}
                     className="mb-2 w-full"/>}
                 {renderMessageContent()}
+                <BodyForwardingStatus status={messageExtraInfo.bodyForwarding} />
 
                 <MessageContextBadges
                     conversationId={conversationId}

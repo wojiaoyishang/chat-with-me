@@ -1,5 +1,6 @@
 import { mergeNetworkData } from './networkMerge.js';
 import {mergeMessageConfig, mergeMessageContextState} from './messageConfigUpdates.js';
+import {mergeBodyForwardingStatus} from './bodyForwardingStatus.js';
 
 const preserveMessageSettings = (snapshot, current) => {
     if (!snapshot?.messageConfig && !current?.messageConfig) return snapshot;
@@ -70,6 +71,10 @@ export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage) => {
             ...(liveMessage.extraInfo || {}),
             ...(snapshotMessage.extraInfo || {}),
         };
+        if (liveMessage.extraInfo?.bodyForwarding || snapshotMessage.extraInfo?.bodyForwarding) {
+            merged.extraInfo.bodyForwarding = mergeBodyForwardingStatus(
+                liveMessage.extraInfo?.bodyForwarding, snapshotMessage.extraInfo?.bodyForwarding);
+        }
 
         const snapshotReplace = snapshotMessage.extraInfo?.replace;
         const liveReplace = liveMessage.extraInfo?.replace;

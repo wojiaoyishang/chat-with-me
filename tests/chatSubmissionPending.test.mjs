@@ -89,6 +89,7 @@ function pageHarness(overrides = {}) {
         getVisionAttachmentIds: () => [],
         selectedModel: { id: 'model' },
         advancedSettingsValues: {},
+        getOptionWriter: () => ({flush: async () => {}}),
         pageType: 'chat',
         documentId: null,
         currentTurnIdempotencyKeyRef: { current: 'first-request' },

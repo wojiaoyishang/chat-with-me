@@ -2320,6 +2320,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         setValues(next);
     }, []);
     const update = useCallback((path, value) => {
+        const previous = valuesRef.current;
         let next = setValue(valuesRef.current, path, value);
         const parent = path.slice(0, -1);
         const field = findField(configRef.current, path);
@@ -2329,7 +2330,8 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         }
         valuesRef.current = next;
         setValues(next);
-        onChangeRef.current?.(next);
+        const patch = Object.fromEntries(Object.entries(next).filter(([key, item]) => JSON.stringify(previous[key]) !== JSON.stringify(item)));
+        onChangeRef.current?.(next, {path, value, patch});
         const binding = storageBindings.current.get(JSON.stringify(path));
         if (binding) {
             void Promise.resolve(client.read(binding.key, binding)).then((current) => client.write(binding.key,
@@ -2340,7 +2342,7 @@ export default function DynamicSettings({ config = [], onChange, initialValues, 
         const next = target === 'form' ? { ...valuesRef.current, ...patch } : setValue(valuesRef.current, target.replace(/^form\./, ''), patch);
         valuesRef.current = next;
         setValues(next);
-        onChangeRef.current?.(next);
+        onChangeRef.current?.(next, {patch: target === 'form' ? patch : {[target.replace(/^form\./, '')]: patch}});
     }, []);
     const refresh = useCallback(async (id) => {
         if (id && resourceRefreshers.current.has(id)) return resourceRefreshers.current.get(id)();
