@@ -25,6 +25,7 @@ export const bodyForwardingDetails = (status) => {
         ['结果待核对', count(counts.uncertain)],
         ['已取消', count(counts.cancelled)],
     ].filter(([, value]) => value > 0).map(([label, value]) => ({label, value: `${value} 条`}));
+    if (count(status.retryCount)) fields.push({label: '已重试', value: `${count(status.retryCount)} 次`});
     if (status.lastError) fields.push({label: '说明', value: String(status.lastError)});
     return fields;
 };

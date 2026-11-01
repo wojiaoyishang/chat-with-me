@@ -3,6 +3,12 @@ import assert from 'node:assert/strict';
 import {createAppendSynchronizer, reconcileAppendedHistory} from '../src/features/chat/page/utils/appendedHistory.js';
 import {pendingBodyForwarding, bodyForwardingDetails} from '../src/features/chat/page/utils/bodyForwardingStatus.js';
 
+test('forwarding retry attempts remain visible without counting them as extra messages', () => {
+    assert.deepEqual(bodyForwardingDetails({total: 2, retryCount: 3, counts: {accepted: 1, queued: 1}}), [
+        {label: '已提交', value: '1 条'}, {label: '待发送', value: '1 条'}, {label: '已重试', value: '3 次'},
+    ]);
+});
+
 const message = (id, prevMessage = null) => ({id, role: 'assistant', prevMessage, content: id, messages: [], extraInfo: {}});
 const snapshot = (branch, page, messages = Object.fromEntries(page.map((id) => [id, message(id)])), more = false) => ({
     branchOrder: branch, messagesOrder: page, appendFrom: page[0], messages, haveMoreAfter: more,
