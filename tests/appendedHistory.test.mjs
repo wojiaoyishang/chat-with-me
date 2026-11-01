@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createAppendSynchronizer, reconcileAppendedHistory} from '../src/features/chat/page/utils/appendedHistory.js';
 import {pendingBodyForwarding, bodyForwardingDetails} from '../src/features/chat/page/utils/bodyForwardingStatus.js';
 
-const message = (id, prevMessage = null) => ({id, prevMessage, content: id, messages: [], extraInfo: {}});
+const message = (id, prevMessage = null) => ({id, role: 'assistant', prevMessage, content: id, messages: [], extraInfo: {}});
 const snapshot = (branch, page, messages = Object.fromEntries(page.map((id) => [id, message(id)])), more = false) => ({
     branchOrder: branch, messagesOrder: page, appendFrom: page[0], messages, haveMoreAfter: more,
 });
@@ -33,6 +33,34 @@ test('slower HTTP cannot erase live body, cards, or newer forwarding acknowledge
     assert.equal(result.messages.b.extraInfo.bodyForwarding.revision, 8);
     assert.ok(result.messages.b.extraInfo.replace.tool);
     assert.equal(pendingBodyForwarding(result.messages, result.order), 0);
+});
+
+test('metadata arriving before bot history cannot prevent body and role hydration', () => {
+    const forwarding = {revision: 8, total: 1, counts: {sending: 1}};
+    const current = {a: message('a'), b: {messages: [], extraInfo: {bodyForwarding: forwarding}}};
+    const result = reconcileAppendedHistory({currentMessages: current, currentOrder: ['a'],
+        snapshot: snapshot(['a', 'b'], ['a', 'b'], {
+            a: {...message('a'), messages: ['b'], nextMessage: 'b'},
+            b: {...message('b', 'a'), content: '已经转发的正文也必须在聊天中显示',
+                extraInfo: {bodyForwarding: {revision: 7, total: 1, counts: {queued: 1}}}},
+        })});
+    assert.deepEqual(result.order, ['a', 'b']);
+    assert.equal(result.messages.b.role, 'assistant');
+    assert.equal(result.messages.b.content, '已经转发的正文也必须在聊天中显示');
+    assert.equal(result.messages.b.extraInfo.bodyForwarding, forwarding);
+    assert.equal(pendingBodyForwarding(result.messages, result.order), 1);
+});
+
+test('a partial object containing early text still receives its missing history fields', () => {
+    const current = {a: message('a'), b: {content: '正文完整结尾', extraInfo: {replace: {tool: '[DONE]'}}}};
+    const result = reconcileAppendedHistory({currentMessages: current, currentOrder: ['a'],
+        snapshot: snapshot(['a', 'b'], ['a', 'b'], {
+            a: message('a'), b: {...message('b', 'a'), content: '正文', extraInfo: {replace: {thinking: '分析记录'}}},
+        })});
+    assert.equal(result.messages.b.content, '正文完整结尾');
+    assert.equal(result.messages.b.role, 'assistant');
+    assert.equal(result.messages.b.prevMessage, 'a');
+    assert.deepEqual(result.messages.b.extraInfo.replace, {thinking: '分析记录', tool: '[DONE]'});
 });
 
 test('a live suffix arriving ahead of HTTP survives only with explicit identity and parent continuity', () => {

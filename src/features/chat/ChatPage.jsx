@@ -47,15 +47,15 @@ import {
     mergeMessageSummaryItems,
 } from '@/features/chat/page/utils/messageSummaries.js';
 import {
+    mergeLiveMessageWithSnapshot,
     reconcileHistorySnapshotWithLiveState,
     restoreMissingStreamTail,
 } from '@/features/chat/page/utils/liveMessageReconcile.js';
 import {
     applyMessageConfigUpdate,
-    mergeMessageConfig,
     mergeMessageContextState,
 } from '@/features/chat/page/utils/messageConfigUpdates.js';
-import {mergeBodyForwardingStatus, pendingBodyForwarding} from '@/features/chat/page/utils/bodyForwardingStatus.js';
+import {pendingBodyForwarding} from '@/features/chat/page/utils/bodyForwardingStatus.js';
 
 import {
     ChatBox,
@@ -2695,33 +2695,12 @@ function ChatPage({
                                 const oldMessage = newMessages[key];
 
                                 if (oldMessage && typeof oldMessage === 'object') {
-                                    const mergedMessage = { ...oldMessage, ...incomingValue };
-                                    if (oldMessage.messageConfig || incomingValue.messageConfig) {
-                                        mergedMessage.messageConfig = mergeMessageConfig(oldMessage.messageConfig, incomingValue.messageConfig);
-                                    }
-
-                                    // extraInfo 是增量协议的一部分。流式阶段可能只更新审计信息，
-                                    // 不能覆盖已经累积的 replacement/execution/context 等字段。
-                                    if (oldMessage.extraInfo || incomingValue.extraInfo) {
-                                        mergedMessage.extraInfo = {
-                                            ...(oldMessage.extraInfo || {}),
-                                            ...(incomingValue.extraInfo || {}),
-                                        };
-                                        if (oldMessage.extraInfo?.bodyForwarding || incomingValue.extraInfo?.bodyForwarding) {
-                                            mergedMessage.extraInfo.bodyForwarding = mergeBodyForwardingStatus(
-                                                oldMessage.extraInfo?.bodyForwarding, incomingValue.extraInfo?.bodyForwarding);
-                                        }
-                                    }
-
-                                    // network 必须做增量合并，避免message.created 的短快照覆盖 message.knowledge.network_added 已追加的数据。
-                                    if (oldMessage.network || incomingValue.network) {
-                                        mergedMessage.network = mergeNetworkData(
-                                            incomingValue.network,
-                                            oldMessage.network,
-                                        );
-                                    }
-
-                                    newMessages[key] = mergedMessage;
+                                    // Metadata and persisted checkpoints can lag the
+                                    // live stream. Share the same merge policy as HTTP
+                                    // hydration; edits still replace content explicitly.
+                                    newMessages[key] = mergeLiveMessageWithSnapshot(incomingValue, oldMessage, {
+                                        preserveStream: !payload.isEdit && liveStreamMessageIdsRef.current.has(key),
+                                    });
                                 } else {
                                     newMessages[key] = incomingValue;
 

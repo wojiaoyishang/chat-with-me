@@ -27,6 +27,7 @@ import useExecutionNavigation from './useExecutionNavigation.js';
 import useExecutionAutoFollow from './useExecutionAutoFollow.js';
 import ExecutionGuidanceEditor from './ExecutionGuidanceEditor.jsx';
 import ExecutionOperations from './ExecutionOperations.jsx';
+import ExecutionErrorMessage from './ExecutionErrorMessage.jsx';
 import ExecutionGuidanceRecord from './ExecutionGuidanceRecord.jsx';
 import AgentMessageRecord from './AgentMessageRecord.jsx';
 import {isQueuedExecutionGuidance, isWidgetExecutionGuidance} from './executionStatusModel.js';
@@ -283,7 +284,7 @@ const ExecutionWindow = memo(
                     ref={attachScroll}
                     tabIndex={0}
                     aria-label="执行时间线"
-                    className="h-full overflow-y-auto overscroll-contain px-5 py-4 pretty-scrollbar [overflow-anchor:none] [scroll-behavior:auto] [--status-sticky-gap:6px]"
+                    className="h-full w-full min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain px-5 py-4 pretty-scrollbar [overflow-anchor:none] [scroll-behavior:auto] [--status-sticky-gap:6px]"
                 >
                     <div ref={attachContent} className="flow-root min-w-0">
                         {(executionMode?.objective || executionMode?.enteredBy) && (
@@ -509,8 +510,8 @@ const ExecutionWindow = memo(
                                                         </div>
                                                     )}
                                                     {activity.detail && (
-                                                        <div className="mt-1 whitespace-pre-wrap break-words text-xs leading-5 text-gray-400">
-                                                            {String(activity.detail)}
+                                                        <div className="mt-1 min-w-0 text-xs leading-5 text-gray-400 [overflow-wrap:anywhere]">
+                                                            <ExecutionErrorMessage error={activity.detail} />
                                                         </div>
                                                     )}
                                                 </div>
@@ -522,8 +523,8 @@ const ExecutionWindow = memo(
                         </section>
 
                         {execution?.lastError && (
-                            <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                                {execution.lastError}
+                            <div className="mt-5 min-w-0 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800">
+                                <ExecutionErrorMessage error={execution.lastError} />
                             </div>
                         )}
                     </div>

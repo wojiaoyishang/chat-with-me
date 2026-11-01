@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { toast } from 'sonner';
+import ExecutionErrorMessage from './ExecutionErrorMessage.jsx';
 
 const activeStates = ['queued', 'running', 'waiting_tool_approval', 'stopping'];
 const labels = {
@@ -144,7 +145,11 @@ export default function SubAgentPanel({ conversationId }) {
                                         ? '已通过确定性校验'
                                         : '未验证，需主智能体验收'}
                                 </p>
-                                {session.lastError && <p className="mt-2 text-sm text-red-500">{session.lastError}</p>}
+                                {session.lastError && (
+                                    <div className="mt-2 min-w-0 text-sm text-red-500">
+                                        <ExecutionErrorMessage error={session.lastError} />
+                                    </div>
+                                )}
                                 <div className="mt-2 flex flex-wrap gap-2">
                                     <Button
                                         size="sm"

@@ -352,7 +352,7 @@ const FloatingDockWindow = memo(
                     </button>
                 </header>
 
-                <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+                <div className="min-h-0 min-w-0 flex-1 overflow-hidden">{children}</div>
                 {footer && (
                     <footer
                         className={`shrink-0 border-t border-gray-100 bg-white px-4 py-3 ${isMobilePage ? 'pb-[max(0.75rem,env(safe-area-inset-bottom))]' : ''}`}

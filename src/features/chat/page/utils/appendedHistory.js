@@ -37,7 +37,12 @@ export function reconcileAppendedHistory({snapshot, currentMessages, currentOrde
         if (!incoming || typeof incoming !== 'object') return null;
         const current = currentMessages[id];
         if (!current) messages[id] = incoming;
-        else if (liveMessageIds.has(id)) messages[id] = mergeLiveMessageWithSnapshot(incoming, current);
+        // A status-only message.created can precede history hydration. Having an
+        // object is not proof that the body/role arrived; otherwise this entry
+        // stays invisible forever even though its text was forwarded correctly.
+        else if (liveMessageIds.has(id) || typeof current.content !== 'string' || typeof current.role !== 'string') {
+            messages[id] = mergeLiveMessageWithSnapshot(incoming, current);
+        }
         else {
             const structure = Object.fromEntries(['messages', 'nextMessage', 'prevMessage']
                 .filter((key) => Object.hasOwn(incoming, key) && !same(current[key], incoming[key]))

@@ -14,7 +14,7 @@ const HISTORY_SENTINEL = '<PREV_MORE>';
 const asOrder = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
 const withoutHistorySentinel = (value) => asOrder(value).filter((id) => id !== HISTORY_SENTINEL);
 
-const mergeReplacementEntry = (snapshotEntry, liveEntry) => {
+const mergeReplacementEntry = (snapshotEntry, liveEntry, preserveStream) => {
     if (!snapshotEntry || typeof snapshotEntry !== 'object') return liveEntry ?? snapshotEntry;
     if (!liveEntry || typeof liveEntry !== 'object') return snapshotEntry;
 
@@ -23,7 +23,8 @@ const mergeReplacementEntry = (snapshotEntry, liveEntry) => {
     const snapshotContent = typeof snapshotEntry[field] === 'string' ? snapshotEntry[field] : null;
     const liveContent = typeof liveEntry[field] === 'string' ? liveEntry[field] : null;
     const canKeepLiveContent = (
-        snapshotContent !== null
+        preserveStream
+        && snapshotContent !== null
         && liveContent !== null
         && liveContent.length >= snapshotContent.length
         && liveContent.startsWith(snapshotContent)
@@ -37,14 +38,15 @@ const mergeReplacementEntry = (snapshotEntry, liveEntry) => {
 };
 
 /**
- * Merge a persisted HTTP message snapshot into the browser's live stream state
+ * Merge an HTTP snapshot or message.created patch into the browser's state
  * without regressing content that has already arrived over WebSocket.
  *
  * The persisted snapshot remains authoritative for structural/message metadata.
  * For the active live message(s), however, stream content and replacement payloads
- * are monotonic.  A shorter persisted prefix must never erase a longer browser copy.
+ * are monotonic. A shorter persisted prefix must never erase a longer browser copy.
+ * Explicit edits pass preserveStream=false so intentional shortening still works.
  */
-export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage) => {
+export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage, {preserveStream = true} = {}) => {
     if (!snapshotMessage || typeof snapshotMessage !== 'object') return liveMessage ?? snapshotMessage;
     if (!liveMessage || typeof liveMessage !== 'object') return snapshotMessage;
 
@@ -58,7 +60,8 @@ export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage) => {
     const liveContent = typeof liveMessage.content === 'string' ? liveMessage.content : null;
 
     if (
-        snapshotContent !== null
+        preserveStream
+        && snapshotContent !== null
         && liveContent !== null
         && liveContent.length >= snapshotContent.length
         && liveContent.startsWith(snapshotContent)
@@ -81,7 +84,7 @@ export const mergeLiveMessageWithSnapshot = (snapshotMessage, liveMessage) => {
         if (snapshotReplace || liveReplace) {
             const replace = {...(snapshotReplace || {})};
             for (const [id, liveEntry] of Object.entries(liveReplace || {})) {
-                replace[id] = mergeReplacementEntry(snapshotReplace?.[id], liveEntry);
+                replace[id] = mergeReplacementEntry(snapshotReplace?.[id], liveEntry, preserveStream);
             }
             merged.extraInfo.replace = replace;
         }
