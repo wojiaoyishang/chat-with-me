@@ -1,5 +1,5 @@
 import { getCardReplaceIdFromAttributes, normalizeReplacementEntry, parseCardReplaceAttributes } from './replacementProtocol.js';
-import { getExecutionStatusGroupKey, parseExecutionStatus } from '../../features/execution/executionStatusModel.js';
+import { getExecutionStatusGroupKey, hasExecutionGuidanceBoundary, parseExecutionStatus } from '../../features/execution/executionStatusModel.js';
 
 // A conservative dependency scan, not a second Markdown parser. References in
 // code examples may retain extra entries, but must never hide a real dependency.
@@ -45,7 +45,7 @@ export function executionGroupingKey(content, replacement, process = false) {
             const meta = replacement?.[id]?.workProcess;
             return [id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot,
                 entry.content.trim().length === 0, status?.executionId, status?.runId, status?.conversationId,
-                status?.inlineKind === 'feedback', meta?.executionId, meta?.runId, meta?.conversationId];
+                status?.inlineKind === 'feedback', hasExecutionGuidanceBoundary(status), meta?.executionId, meta?.runId, meta?.conversationId];
         }
         return [id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot,
             entry.content.trim().length === 0, getExecutionStatusGroupKey(status),

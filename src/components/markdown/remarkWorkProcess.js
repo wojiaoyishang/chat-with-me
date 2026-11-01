@@ -1,6 +1,7 @@
 import {visit} from 'unist-util-visit';
 import {normalizeReplacementEntry} from './replacementProtocol.js';
 import {processIdentity, sameProcess, workProcessEntry} from '../../features/execution/workProcessModel.js';
+import {hasExecutionGuidanceBoundary} from '../../features/execution/executionStatusModel.js';
 
 /** Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs in place. */
 export function remarkWorkProcess({replacement = {}, renderSurface = 'conversation', snapshot = false} = {}) {
@@ -35,6 +36,10 @@ export function remarkWorkProcess({replacement = {}, renderSurface = 'conversati
                     group.nodes.push(node);
                     group.allNodes.push(node);
                     group.entries.push({id, type: entry.type});
+                    // The supplement renders below its anchor group. Work added
+                    // after it belongs to a new group, including an empty active
+                    // bridge before the next model output arrives.
+                    if (hasExecutionGuidanceBoundary(entry.execution)) flush();
                     continue;
                 }
                 const other = id && normalizeReplacementEntry(replacement, id, type);

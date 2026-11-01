@@ -11,10 +11,19 @@ jobs and workflow tasks remain separate and retain their existing task APIs and 
 Pending user guidance supports `execution.guidance.interrupt`. Only backend `canInterrupt`
 enables the button; its ACK keeps the supplement queued, with deletion/editing disabled.
 Interrupting releases the foreground wait without cancelling or resubmitting the original tool.
+Each new supplement can interrupt again, including a subsequent wait for the same operation.
+`execution_wait_operation` blocks until completion by default; an explicit timeout alone
+requests a bounded wait. Neither interrupting nor timing out cancels the original work.
 `ExecutionOperations` displays backend operation IDs and truthful running/unread/uncertain states.
 The model uses `execution_list_operations`, `execution_wait_operation`, and
 `execution_cancel_operation`; uncertainty must never be presented as successful cancellation.
 No second model writer or synthetic tool completion is created by the UI.
+Consumed visible guidance ends its anchor's process group. The backend immediately
+appends an active continuation below it, even without assistant prose. A continuation
+that owns guidance becomes a durable boundary when superseded, rather than being cleared.
+Grouping invalidates on this boundary metadata alone, not progress or token deltas;
+original hosts and playing media remain mounted. Agent messages stay in the execution
+window and never split the conversation transcript.
 
 Conversation `WorkProcessGroup` projects adjacent reasoning and lightweight tool
 statuses into one activity trace, expanded while active and independent of tool family. Prose,

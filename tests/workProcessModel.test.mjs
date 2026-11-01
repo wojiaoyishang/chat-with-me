@@ -89,6 +89,42 @@ test('finished reasoning does not finish a running turn; late continuations do n
     assert.equal(done.records.some((entry) => entry.id === 'bridge'), false);
 });
 
+test('accepted guidance splits live work without needing assistant prose, keeping all original hosts', () => {
+    const ids = ['thought', 'a', 'slot', 'b', 'nextThought', 'c'];
+    const source = ids.map((id) => token(id, id.includes('Thought') || id === 'thought' ? 'thinking' : '')).join('\n\n');
+    const guidance = (id, anchorStatusId) => ({id, anchorStatusId, kind: 'guidance', source: 'user_guidance', state: 'consumed', content: id});
+    const replacement = {thought: {frontend: 'analysis\n[DONE]'}, a: status('a'),
+        b: status('b', {inlineKind: 'continuation', toolCallId: null}), nextThought: {frontend: 'next'},
+        c: status('c', {inlineKind: 'continuation', toolCallId: null, inlineState: 'running'})};
+    const before = executionGroupingKey(source, replacement, true);
+    replacement.a = status('a', {activities: [guidance('one', 'a')]});
+    replacement.b = status('b', {inlineKind: 'continuation', toolCallId: null, activities: [guidance('two', 'b')]});
+    assert.notEqual(executionGroupingKey(source, replacement, true), before, 'metadata-only supplement arrival invalidates grouping');
+    const tree = parse(source, replacement);
+    assert.deepEqual(tree.children.map((node) => node.data.hProperties.id), ids);
+    const groups = tree.children.filter((node) => node.data.hProperties.processEntries);
+    assert.deepEqual(groups.map((node) => JSON.parse(node.data.hProperties.processEntries).map((entry) => entry.id)),
+        [['thought', 'a'], ['b'], ['nextThought', 'c']]);
+    assert.deepEqual(groups.map((node) => node.data.hProperties.processTail), ['false', 'false', 'true']);
+    const saved = structuredClone(replacement);
+    assert.deepEqual(parse(source, saved), tree, 'live and reloaded grouping use identical metadata');
+    // The continuation is no longer a disposable bridge once it owns guidance.
+    const records = ['a', 'b', 'c'].map((id) => workProcessEntry(replacement, id));
+    assert.equal(projectWorkProcess(records).records.some((entry) => entry.id === 'b'), true);
+});
+
+test('queued, withdrawn and agent messages do not create visible work boundaries', () => {
+    const source = token('a') + '\n\n' + token('b');
+    const original = {a: status('a'), b: status('b')};
+    const key = executionGroupingKey(source, original, true);
+    for (const extra of [{state: 'pending'}, {state: 'withdrawn'}, {state: 'consumed', source: 'agent_message'}]) {
+        const replacement = {...original, a: status('a', {activities: [{id: 'g', anchorStatusId: 'a', kind: 'guidance',
+            source: 'user_guidance', state: 'consumed', ...extra}]})};
+        assert.equal(executionGroupingKey(source, replacement, true), key);
+        assert.equal(JSON.parse(parse(source, replacement).children[0].data.hProperties.processEntries).length, 2);
+    }
+});
+
 test('parallel running calls, failures and user pause retain distinct outcomes', () => {
     const r = {a: status('a', {inlineState: 'running'}), b: status('b', {inlineState: 'failed'}), c: status('c', {inlineState: 'running'})};
     const records = Object.keys(r).map((id) => workProcessEntry(r, id));

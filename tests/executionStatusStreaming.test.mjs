@@ -368,6 +368,36 @@ test('a late visible result splits traces without remounting a following video',
     assert.equal(video.currentTime, 8);
 });
 
+test('supplements split streamed work immediately and repeatedly without remounting media', async (t) => {
+    const ui = await setup(t);
+    const source = token('original', 'executionStatus') + [0, 1, 2].map((i) => token(`bridge-${i}`, 'executionStatus')).join('')
+        + '\n\n![视频](/after.mp4){type=video}';
+    let replacement = {original: status('original', {inlineState: 'running'})};
+    await ui.render(source, replacement);
+    const original = ui.host.querySelector('[data-work-process]');
+    const video = ui.host.querySelector('video');
+    video.currentTime = 8;
+    for (let number = 0; number < 3; number++) {
+        const anchor = number ? `bridge-${number - 1}` : 'original';
+        const next = `bridge-${number}`;
+        const value = JSON.parse(replacement[anchor]);
+        replacement = {...replacement, [anchor]: status(anchor, {...value, activities: [{
+            id: `guidance-${number}`, anchorStatusId: anchor, kind: 'guidance', source: 'user_guidance',
+            content: `补充 ${number}`, state: 'consumed',
+        }]}), [next]: continuation(next)};
+        // No prose, thought, or second tool is needed for the new active group.
+        await ui.render(source, replacement);
+        const groups = ui.host.querySelectorAll('[data-work-process]');
+        assert.equal(groups.length, number + 2);
+        assert.equal(groups[0], original);
+        assert.equal(groups[groups.length - 1].dataset.processState, 'running');
+        assert.equal(ui.host.querySelector('video'), video);
+        assert.equal(video.currentTime, 8);
+    }
+    await ui.render(source, structuredClone(replacement), false);
+    assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 4, 'persisted metadata retains the same supplement boundaries');
+});
+
 test('real execution stream with absent backend-only results stays grouped before and after history hydration', async (t) => {
     const ui = await setup(t);
     let source = token('thought-one', 'thinking') + token('enter') + token('tool-result-enter')

@@ -952,7 +952,7 @@ function ChatBox({
                         payload: {
                             executionId: execution.executionId,
                             guidanceId,
-                            anchorStatusId: guidanceRequest.execution.statusId || null,
+                            anchorStatusId: guidanceRequest.execution.continuationStatusId || guidanceRequest.execution.statusId || null,
                             content: submitted.content,
                             attachments: submitted.attachments,
                             visionAttachmentIds: getVisionAttachmentIds(submitted.attachments),

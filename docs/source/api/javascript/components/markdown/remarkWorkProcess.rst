@@ -22,18 +22,18 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 主要依赖
 --------------------------------------------------------------------------------
 
-``unist-util-visit``、``./replacementProtocol.js``、``../../features/execution/workProcessModel.js``。
+``unist-util-visit``、``./replacementProtocol.js``、``../../features/execution/workProcessModel.js``、``../../features/execution/executionStatusModel.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:216:3317:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:311:3723:FUNCTION
 
 .. js:function:: remarkWorkProcess({replacement = {}, renderSurface = 'conversation', snapshot = false})
 
    Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs in place.
 
-   **性质**：同步函数；导出 API；源码第 ``6``—``59`` 行。
+   **性质**：同步函数；导出 API；源码第 ``7``—``64`` 行。
 
    **参数**
 
@@ -51,17 +51,17 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:437:3314:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:532:3720:FUNCTION
 
-.. rubric:: ``returned callback @ 7``
+.. rubric:: ``returned callback @ 8``
 
 .. code-block:: javascript
 
-   returned callback @ 7(tree)
+   returned callback @ 8(tree)
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``7``—``58`` 行；所属函数 ``remarkWorkProcess``。
+**性质**：同步局部函数；源码第 ``8``—``63`` 行；所属函数 ``remarkWorkProcess``。
 
 **参数**
 
@@ -76,17 +76,17 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:535:574:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:630:669:FUNCTION
 
-.. rubric:: ``visit callback @ 9``
+.. rubric:: ``visit callback @ 10``
 
 .. code-block:: javascript
 
-   visit callback @ 9(node)
+   visit callback @ 10(node)
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``9``—``9`` 行；所属函数 ``returned callback @ 7``。
+**性质**：同步局部函数；源码第 ``10``—``10`` 行；所属函数 ``returned callback @ 8``。
 
 **参数**
 
@@ -99,17 +99,17 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:575:3306:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:670:3712:FUNCTION
 
-.. rubric:: ``visit callback @ 9``
+.. rubric:: ``visit callback @ 10``
 
 .. code-block:: javascript
 
-   visit callback @ 9(parent)
+   visit callback @ 10(parent)
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``9``—``57`` 行；所属函数 ``returned callback @ 7``。
+**性质**：同步局部函数；源码第 ``10``—``62`` 行；所属函数 ``returned callback @ 8``。
 
 **参数**
 
@@ -120,11 +120,11 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String``、``workProcessEntry``、``processIdentity``、``sameProcess``、``flush``、``Object.keys``、``group.nodes.push``、``group.allNodes.push``、``group.entries.push``、``normalizeReplacementEntry``、``['markdown', 'executionStatus'].includes``、``other.content.trim``。
+**主要协作调用**：``String``、``workProcessEntry``、``processIdentity``、``sameProcess``、``flush``、``Object.keys``、``group.nodes.push``、``group.allNodes.push``、``group.entries.push``、``hasExecutionGuidanceBoundary``、``normalizeReplacementEntry``、``['markdown', 'executionStatus'].includes``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:676:1384:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:771:1479:FUNCTION
 
 .. rubric:: ``flush``
 
@@ -134,7 +134,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 实现 ``flush`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``12``—``24`` 行；所属函数 ``visit callback @ 9``。
+**性质**：同步局部函数；源码第 ``13``—``25`` 行；所属函数 ``visit callback @ 10``。
 
 **参数**
 

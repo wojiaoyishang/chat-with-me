@@ -15,7 +15,7 @@ Public source labels never select a reply target or confer user/system authority
 
 * **源码文件**：``src/features/execution/executionStatusModel.js``
 * **模块标识**：``src/features/execution/executionStatusModel``
-* **顶层函数/组件/Hook**：12
+* **顶层函数/组件/Hook**：13
 * **类**：0
 * **局部函数与匿名回调**：10
 
@@ -228,13 +228,32 @@ Public source labels never select a reply target or confer user/system authority
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6034:6425:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:5643:5712:FUNCTION
+
+.. js:function:: hasExecutionGuidanceBoundary(execution)
+
+   实现 ``hasExecutionGuidanceBoundary`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``100``—``100`` 行。
+
+   **参数**
+
+   ``execution``
+      调用方传入的 ``execution`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **主要协作调用**：``getExecutionGuidance``。
+
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6238:6629:FUNCTION
 
 .. js:function:: getLegacyKnowledgeOperation(names)
 
    读取与 ``Legacy Knowledge Operation`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``107``—``113`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``110``—``116`` 行。
 
    **参数**
 
@@ -249,13 +268,13 @@ Public source labels never select a reply target or confer user/system authority
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6469:8800:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6673:9004:FUNCTION
 
 .. js:function:: getExecutionStatusGroupKey(execution)
 
    读取与 ``Execution Status Group Key`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``115``—``145`` 行。
+   **性质**：同步函数；导出 API；源码第 ``118``—``148`` 行。
 
    **参数**
 
@@ -319,84 +338,15 @@ Public source labels never select a reply target or confer user/system authority
 
 **主要协作调用**：``String(activity?.kind || '').toLowerCase``、``String``、``String(activity?.anchorStatusId || '').trim``、``isVisibleExecutionGuidance``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6086:6132:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6290:6336:FUNCTION
 
-.. rubric:: ``names.every callback @ 108``
+.. rubric:: ``names.every callback @ 111``
 
 .. code-block:: javascript
 
-   names.every callback @ 108(name)
+   names.every callback @ 111(name)
 
 作为 ``names.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``getLegacyKnowledgeOperation``。
-
-**参数**
-
-``name``
-   调用方传入的 ``name`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``name.startsWith``。
-
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6181:6229:FUNCTION
-
-.. rubric:: ``names.map callback @ 109``
-
-.. code-block:: javascript
-
-   names.map callback @ 109(name)
-
-作为 ``names.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``getLegacyKnowledgeOperation``。
-
-**参数**
-
-``name``
-   调用方传入的 ``name`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``name.slice``。
-
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6257:6299:FUNCTION
-
-.. rubric:: ``operations.every callback @ 110``
-
-.. code-block:: javascript
-
-   operations.every callback @ 110(name)
-
-作为 ``operations.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``getLegacyKnowledgeOperation``。
-
-**参数**
-
-``name``
-   调用方传入的 ``name`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``LEGACY_KNOWLEDGE_READS.has``。
-
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6342:6385:FUNCTION
-
-.. rubric:: ``operations.every callback @ 111``
-
-.. code-block:: javascript
-
-   operations.every callback @ 111(name)
-
-作为 ``operations.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``getLegacyKnowledgeOperation``。
 
@@ -409,19 +359,88 @@ Public source labels never select a reply target or confer user/system authority
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``LEGACY_KNOWLEDGE_WRITES.has``。
+**主要协作调用**：``name.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6762:6799:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6385:6433:FUNCTION
 
-.. rubric:: ``(Array.isArray(execution.toolNames) ? execution.toolNames : []) .map callback @ 120``
+.. rubric:: ``names.map callback @ 112``
 
 .. code-block:: javascript
 
-   (Array.isArray(execution.toolNames) ? execution.toolNames : []) .map callback @ 120(value)
+   names.map callback @ 112(name)
+
+作为 ``names.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``getLegacyKnowledgeOperation``。
+
+**参数**
+
+``name``
+   调用方传入的 ``name`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``name.slice``。
+
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6461:6503:FUNCTION
+
+.. rubric:: ``operations.every callback @ 113``
+
+.. code-block:: javascript
+
+   operations.every callback @ 113(name)
+
+作为 ``operations.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``getLegacyKnowledgeOperation``。
+
+**参数**
+
+``name``
+   调用方传入的 ``name`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``LEGACY_KNOWLEDGE_READS.has``。
+
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6546:6589:FUNCTION
+
+.. rubric:: ``operations.every callback @ 114``
+
+.. code-block:: javascript
+
+   operations.every callback @ 114(name)
+
+作为 ``operations.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``getLegacyKnowledgeOperation``。
+
+**参数**
+
+``name``
+   调用方传入的 ``name`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``LEGACY_KNOWLEDGE_WRITES.has``。
+
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6966:7003:FUNCTION
+
+.. rubric:: ``(Array.isArray(execution.toolNames) ? execution.toolNames : []) .map callback @ 123``
+
+.. code-block:: javascript
+
+   (Array.isArray(execution.toolNames) ? execution.toolNames : []) .map callback @ 123(value)
 
 作为 ``(Array.isArray(execution.toolNames) ? execution.toolNames : []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``getExecutionStatusGroupKey``。
+**性质**：同步局部函数；源码第 ``123``—``123`` 行；所属函数 ``getExecutionStatusGroupKey``。
 
 **参数**
 
@@ -434,17 +453,17 @@ Public source labels never select a reply target or confer user/system authority
 
 **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:6957:7004:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:7161:7208:FUNCTION
 
-.. rubric:: ``Object.values(execution.toolStatusNodes || {}).find callback @ 122``
+.. rubric:: ``Object.values(execution.toolStatusNodes || {}).find callback @ 125``
 
 .. code-block:: javascript
 
-   Object.values(execution.toolStatusNodes || {}).find callback @ 122(item)
+   Object.values(execution.toolStatusNodes || {}).find callback @ 125(item)
 
 作为 ``Object.values(execution.toolStatusNodes || {}).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``122``—``122`` 行；所属函数 ``getExecutionStatusGroupKey``。
+**性质**：同步局部函数；源码第 ``125``—``125`` 行；所属函数 ``getExecutionStatusGroupKey``。
 
 **参数**
 
@@ -455,17 +474,17 @@ Public source labels never select a reply target or confer user/system authority
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:7057:7183:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:7261:7387:FUNCTION
 
-.. rubric:: ``execution.activities?.find callback @ 123``
+.. rubric:: ``execution.activities?.find callback @ 126``
 
 .. code-block:: javascript
 
-   execution.activities?.find callback @ 123(item)
+   execution.activities?.find callback @ 126(item)
 
 作为 ``execution.activities?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``123``—``124`` 行；所属函数 ``getExecutionStatusGroupKey``。
+**性质**：同步局部函数；源码第 ``126``—``127`` 行；所属函数 ``getExecutionStatusGroupKey``。
 
 **参数**
 
@@ -476,17 +495,17 @@ Public source labels never select a reply target or confer user/system authority
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:7938:7991:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/executionStatusModel.js:8142:8195:FUNCTION
 
-.. rubric:: ``(Array.isArray(meta.evidence) ? meta.evidence : []) .filter callback @ 134``
+.. rubric:: ``(Array.isArray(meta.evidence) ? meta.evidence : []) .filter callback @ 137``
 
 .. code-block:: javascript
 
-   (Array.isArray(meta.evidence) ? meta.evidence : []) .filter callback @ 134(item)
+   (Array.isArray(meta.evidence) ? meta.evidence : []) .filter callback @ 137(item)
 
 作为 ``(Array.isArray(meta.evidence) ? meta.evidence : []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``134``—``134`` 行；所属函数 ``getExecutionStatusGroupKey``。
+**性质**：同步局部函数；源码第 ``137``—``137`` 行；所属函数 ``getExecutionStatusGroupKey``。
 
 **参数**
 

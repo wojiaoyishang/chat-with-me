@@ -27,7 +27,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:556:810:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:586:840:FUNCTION
 
 .. js:function:: references(content)
 
@@ -48,7 +48,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:811:2292:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:841:2322:FUNCTION
 
 .. js:function:: projectReplacements(content, replacement, previous, maxDepth)
 
@@ -78,7 +78,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2292:3377:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2322:3445:FUNCTION
 
 .. js:function:: executionGroupingKey(content, replacement, process)
 
@@ -110,7 +110,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:622:786:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:652:816:FUNCTION
 
 .. rubric:: ``[...String(content || '').matchAll(REFERENCES)].map callback @ 7``
 
@@ -133,7 +133,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 **主要协作调用**：``parseCardReplaceAttributes``、``getCardReplaceIdFromAttributes``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:795:809:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:825:839:FUNCTION
 
 .. rubric:: ``[...String(content || '').matchAll(REFERENCES)].map((match) => { const attrs = parseCardReplaceAttributes(match[1] || m… callback @ 10``
 
@@ -154,7 +154,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1160:2078:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1190:2108:FUNCTION
 
 .. rubric:: ``walk``
 
@@ -180,7 +180,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 **主要协作调用**：``references``、``seen.has``、``seen.add``、``Object.hasOwn``、``normalizeReplacementEntry``、``id.replace``、``walk``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2221:2258:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2251:2288:FUNCTION
 
 .. rubric:: ``ids.every callback @ 35``
 
@@ -201,7 +201,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2502:3372:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2532:3440:FUNCTION
 
 .. rubric:: ``references(content).map callback @ 41``
 
@@ -222,4 +222,4 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 根据执行分支返回结果；代表性返回表达式为 ``[id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot, entry.content.trim().length === 0, status?.executionId, status?.runId, status?.conversationId, status?…``、``[id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot, entry.content.trim().length === 0, getExecutionStatusGroupKey(status), status?.executionId, status?.ru…``。
 
-**主要协作调用**：``normalizeReplacementEntry``、``parseExecutionStatus``、``Boolean``、``entry.content.trim``、``getExecutionStatusGroupKey``。
+**主要协作调用**：``normalizeReplacementEntry``、``parseExecutionStatus``、``Boolean``、``entry.content.trim``、``hasExecutionGuidanceBoundary``、``getExecutionStatusGroupKey``。

@@ -1,5 +1,5 @@
 import {normalizeReplacementEntry} from '../../components/markdown/replacementProtocol.js';
-import {getExecutionDisplayState, parseExecutionStatus, projectExecutionStatus} from './executionStatusModel.js';
+import {getExecutionDisplayState, hasExecutionGuidanceBoundary, parseExecutionStatus, projectExecutionStatus} from './executionStatusModel.js';
 
 const terminal = new Set(['completed', 'historicalDone', 'failed', 'cancelled']);
 const marker = /\[(DONE|FAILED)(?::[^\]\r\n]+)?\]/gi;
@@ -49,6 +49,7 @@ export function projectWorkProcess(entries, {live = null, isStreaming = false, t
         // running after a later model span or tool already superseded it.
         const status = entry.execution;
         return !status || status.toolCallId || ['tool', 'terminal'].includes(status.inlineKind)
+            || hasExecutionGuidanceBoundary(status)
             || ['failed', 'cancelled'].includes(entry.state) || index === all.length - 1;
     }).filter((entry) => {
         const key = entry.execution?.toolCallId || entry.id;

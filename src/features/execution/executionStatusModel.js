@@ -96,6 +96,9 @@ export const getExecutionGuidance = (execution, live = null) => {
     return {prompt, activities};
 };
 
+/** Accepted visible guidance ends a process segment, even without intervening prose. */
+export const hasExecutionGuidanceBoundary = (execution) => getExecutionGuidance(execution).activities.length > 0;
+
 const LEGACY_KNOWLEDGE_READS = new Set([
     'list_databases', 'get_source_images', 'get_source_image', 'search_nodes_by_keywords',
     'get_related_graph', 'get_related_chunks', 'read_chunk_source', 'get_chunk_content',

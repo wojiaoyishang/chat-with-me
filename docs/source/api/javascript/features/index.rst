@@ -869,7 +869,7 @@
      - 24
      - ``src/features/execution/WorkProcessGroup.jsx``
    * - :doc:`src/features/execution/executionStatusModel </api/javascript/features/execution/executionStatusModel>`
-     - 12
+     - 13
      - 0
      - 10
      - ``src/features/execution/executionStatusModel.js``
