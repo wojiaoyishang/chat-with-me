@@ -17,7 +17,7 @@ Only the server-owned queue is eligible for pending-message controls.
 * **模块标识**：``src/features/chat/composer/pendingGuidance``
 * **顶层函数/组件/Hook**：10
 * **类**：0
-* **局部函数与匿名回调**：10
+* **局部函数与匿名回调**：11
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -227,13 +227,13 @@ Only the server-owned queue is eligible for pending-message controls.
 
    **主要协作调用**：``id``、``upsert``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/pendingGuidance.js:4108:5458:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/pendingGuidance.js:4108:5717:FUNCTION
 
 .. js:function:: mutatePendingGuidance({ action, execution, guidance, emitEvent, upsert })
 
    实现 ``mutatePendingGuidance`` 对应的前端处理。
 
-   **性质**：异步函数；导出 API；源码第 ``81``—``109`` 行。
+   **性质**：异步函数；导出 API；源码第 ``81``—``114`` 行。
 
    **参数**
 
@@ -242,17 +242,17 @@ Only the server-owned queue is eligible for pending-message controls.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``recovered``、``null``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``recovered``。
 
    **副作用**
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **显式抛出**：``new Error('不支持的补充消息操作。')``、``error``、``new Error('未收到补充消息的确认，请刷新后重试。')``、``new Error('补充消息尚未移出待接收列表，请刷新后重试。')``、``new Error('未收到对应消息的编辑内容，请刷新后重试。')``。
+   **显式抛出**：``new Error('不支持的补充消息操作。')``、``error``、``new Error('未收到补充消息的确认，请刷新后重试。')``、``new Error('打断请求尚未确认，请重试。')``、``new Error('补充消息尚未移出待接收列表，请刷新后重试。')``、``new Error('未收到对应消息的编辑内容，请刷新后重试。')``。
 
-   **主要协作调用**：``['delete', 'edit'].includes``、``emitEvent``、``acceptGuidanceSnapshot``、``guidanceActionError``、``Array.isArray``、``snapshot.pendingGuidance.some``、``id``。
+   **主要协作调用**：``['delete', 'edit', 'interrupt'].includes``、``emitEvent``、``acceptGuidanceSnapshot``、``guidanceActionError``、``snapshot.pendingGuidance?.find``、``Array.isArray``、``snapshot.pendingGuidance.some``、``id``。
 
-   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
@@ -471,17 +471,40 @@ Only the server-owned queue is eligible for pending-message controls.
 
 **主要协作调用**：``submittedFiles.get``、``getAttachmentId``、``JSON.stringify``、``canonicalValue``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/pendingGuidance.js:5119:5160:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/pendingGuidance.js:5131:5172:FUNCTION
 
-.. rubric:: ``snapshot.pendingGuidance.some callback @ 100``
+.. rubric:: ``snapshot.pendingGuidance?.find callback @ 100``
 
 .. code-block:: javascript
 
-   snapshot.pendingGuidance.some callback @ 100(item)
+   snapshot.pendingGuidance?.find callback @ 100(item)
+
+作为 ``snapshot.pendingGuidance?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``mutatePendingGuidance``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``id``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/pendingGuidance.js:5378:5419:FUNCTION
+
+.. rubric:: ``snapshot.pendingGuidance.some callback @ 105``
+
+.. code-block:: javascript
+
+   snapshot.pendingGuidance.some callback @ 105(item)
 
 作为 ``snapshot.pendingGuidance.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``mutatePendingGuidance``。
+**性质**：同步局部函数；源码第 ``105``—``105`` 行；所属函数 ``mutatePendingGuidance``。
 
 **参数**
 

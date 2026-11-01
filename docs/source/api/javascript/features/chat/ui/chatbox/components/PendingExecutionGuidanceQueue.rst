@@ -17,7 +17,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 * **模块标识**：``src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：18
+* **局部函数与匿名回调**：19
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,13 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1121:10675:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1126:11255:FUNCTION
 
 .. js:function:: PendingExecutionGuidanceQueue({ conversationId, items = [], onEdit, disabled: parentDisabled = false, submitting = false, uncerta…)
 
    渲染 ``PendingExecutionGuidanceQueue`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``17``—``128`` 行。
+   **性质**：同步函数；导出 API；源码第 ``17``—``129`` 行。
 
    **参数**
 
@@ -58,7 +58,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1436:1451:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1441:1456:FUNCTION
 
 .. rubric:: ``useState callback @ 19``
 
@@ -78,7 +78,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1508:1561:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1513:1566:FUNCTION
 
 .. rubric:: ``useState callback @ 20``
 
@@ -100,7 +100,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **主要协作调用**：``readComposerGuidanceEdits``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1615:1695:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1620:1700:FUNCTION
 
 .. rubric:: ``editReceipts.map callback @ 21``
 
@@ -121,7 +121,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1950:2020:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:1955:2025:FUNCTION
 
 .. rubric:: ``editReceipts.filter callback @ 26``
 
@@ -142,7 +142,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2044:2143:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2049:2148:FUNCTION
 
 .. rubric:: ``React.useEffect callback @ 27``
 
@@ -164,7 +164,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2100:2135:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2105:2140:FUNCTION
 
 .. rubric:: ``returned callback @ 29``
 
@@ -184,7 +184,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2171:2417:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2176:2422:FUNCTION
 
 .. rubric:: ``React.useEffect callback @ 31``
 
@@ -208,7 +208,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2294:2374:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2299:2379:FUNCTION
 
 .. rubric:: ``saved.map callback @ 33``
 
@@ -229,7 +229,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2587:5469:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:2592:5474:FUNCTION
 
 .. rubric:: ``mutate``
 
@@ -267,7 +267,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:3239:3307:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:3244:3312:FUNCTION
 
 .. rubric:: ``readComposerGuidanceEdits(execution.conversationId).some callback @ 47``
 
@@ -288,7 +288,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:3459:3761:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:3464:3766:FUNCTION
 
 .. rubric:: ``finishEdit``
 
@@ -310,7 +310,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **主要协作调用**：``clearComposerGuidanceEdit``、``edits.current.delete``、``setEditReceipts``、``edits.current.values``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:4485:4553:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:4490:4558:FUNCTION
 
 .. rubric:: ``readComposerGuidanceEdits(execution.conversationId) .some callback @ 68``
 
@@ -331,7 +331,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:4763:4797:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:4768:4802:FUNCTION
 
 .. rubric:: ``Promise.resolve().then callback @ 72``
 
@@ -353,7 +353,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **主要协作调用**：``onEdit``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:5814:8883:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:5819:9463:FUNCTION
 
 .. rubric:: ``items.map callback @ 90``
 
@@ -363,7 +363,7 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``90``—``115`` 行；所属函数 ``PendingExecutionGuidanceQueue``。
+**性质**：同步局部函数；源码第 ``90``—``116`` 行；所属函数 ``PendingExecutionGuidanceQueue``。
 
 **参数**
 
@@ -376,9 +376,9 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **主要协作调用**：``normalizeAttachmentList``、``attachments.find``、``resolveResourceUrl``、``pendingGuidanceSummary``、``busy.has``、``edits.current.has``。
 
-**内部回调数量**：2。这些回调也会在本页逐项说明。
+**内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:7784:7827:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:7837:7883:FUNCTION
 
 .. rubric:: ``onClick callback @ 106``
 
@@ -400,17 +400,17 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **主要协作调用**：``mutate``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:8648:8689:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:8334:8377:FUNCTION
 
-.. rubric:: ``onSelect callback @ 110``
+.. rubric:: ``onClick callback @ 107``
 
 .. code-block:: javascript
 
-   onSelect callback @ 110()
+   onClick callback @ 107()
 
-处理 ``Select`` 用户交互或运行时事件。
+处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``items.map callback @ 90``。
+**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``items.map callback @ 90``。
 
 **参数**
 
@@ -422,17 +422,39 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **主要协作调用**：``mutate``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:8924:10064:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:9228:9269:FUNCTION
 
-.. rubric:: ``visibleEditReceipts.map callback @ 116``
+.. rubric:: ``onSelect callback @ 111``
 
 .. code-block:: javascript
 
-   visibleEditReceipts.map callback @ 116(receipt)
+   onSelect callback @ 111()
+
+处理 ``Select`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``items.map callback @ 90``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``mutate``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:9504:10644:FUNCTION
+
+.. rubric:: ``visibleEditReceipts.map callback @ 117``
+
+.. code-block:: javascript
+
+   visibleEditReceipts.map callback @ 117(receipt)
 
 作为 ``visibleEditReceipts.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``116``—``123`` 行；所属函数 ``PendingExecutionGuidanceQueue``。
+**性质**：同步局部函数；源码第 ``117``—``124`` 行；所属函数 ``PendingExecutionGuidanceQueue``。
 
 **参数**
 
@@ -447,17 +469,17 @@ src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:9724:9781:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx:10304:10361:FUNCTION
 
-.. rubric:: ``onClick callback @ 121``
+.. rubric:: ``onClick callback @ 122``
 
 .. code-block:: javascript
 
-   onClick callback @ 121()
+   onClick callback @ 122()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``121``—``121`` 行；所属函数 ``visibleEditReceipts.map callback @ 116``。
+**性质**：同步局部函数；源码第 ``122``—``122`` 行；所属函数 ``visibleEditReceipts.map callback @ 117``。
 
 **参数**
 

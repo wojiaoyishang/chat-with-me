@@ -71,7 +71,7 @@
    * - :doc:`src/features/chat/composer/pendingGuidance </api/javascript/features/chat/composer/pendingGuidance>`
      - 10
      - 0
-     - 10
+     - 11
      - ``src/features/chat/composer/pendingGuidance.js``
    * - :doc:`src/features/chat/freeze/ConversationFreezeContext </api/javascript/features/chat/freeze/ConversationFreezeContext>`
      - 1
@@ -436,7 +436,7 @@
    * - :doc:`src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue </api/javascript/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue>`
      - 1
      - 0
-     - 18
+     - 19
      - ``src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx``
    * - :doc:`src/features/chat/ui/chatbox/components/RoleSelector </api/javascript/features/chat/ui/chatbox/components/RoleSelector>`
      - 1
@@ -823,6 +823,11 @@
      - 0
      - 17
      - ``src/features/execution/ExecutionHost.jsx``
+   * - :doc:`src/features/execution/ExecutionOperations </api/javascript/features/execution/ExecutionOperations>`
+     - 2
+     - 0
+     - 2
+     - ``src/features/execution/ExecutionOperations.jsx``
    * - :doc:`src/features/execution/ExecutionPauseControl </api/javascript/features/execution/ExecutionPauseControl>`
      - 1
      - 0
@@ -1665,6 +1670,7 @@
    /api/javascript/features/execution/ExecutionGuidanceEditor
    /api/javascript/features/execution/ExecutionGuidanceRecord
    /api/javascript/features/execution/ExecutionHost
+   /api/javascript/features/execution/ExecutionOperations
    /api/javascript/features/execution/ExecutionPauseControl
    /api/javascript/features/execution/ExecutionStatus
    /api/javascript/features/execution/ExecutionStatusGroup

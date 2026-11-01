@@ -1,6 +1,6 @@
 import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import React, { useRef, useState } from 'react';
-import { CornerDownRight, ListEnd, LoaderCircle, MoreHorizontal, Paperclip, Pencil, Trash2 } from 'lucide-react';
+import { CornerDownRight, ListEnd, LoaderCircle, MoreHorizontal, Paperclip, Pencil, Trash2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { emitEvent } from '@/context/useEventStore.jsx';
@@ -101,11 +101,12 @@ export default function PendingExecutionGuidanceQueue({ conversationId, items = 
                         <span className="min-w-0 flex-1 truncate" title={summary}>{summary}</span>
                         {attachments.length > 1 && <span className="shrink-0 text-xs text-muted-foreground">{attachments.length} 个附件</span>}
                         <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground" title="在模型下一次接收补充内容时加入当前执行">
-                            {isBusy ? <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" /> : <CornerDownRight className="size-3.5" aria-hidden="true" />}待接收
+                            {isBusy ? <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" /> : <CornerDownRight className="size-3.5" aria-hidden="true" />}{guidance.interruptRequested ? '等待打断' : '待接收'}
                         </span>
-                        <button type="button" disabled={actionDisabled} aria-label="删除待接收消息" onClick={() => mutate('delete', execution, guidance)} className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-neutral-100 hover:text-destructive disabled:opacity-40 dark:hover:bg-neutral-800"><Trash2 className="size-3.5" aria-hidden="true" /></button>
+                        {guidance.canInterrupt && <button type="button" disabled={actionDisabled} onClick={() => mutate('interrupt', execution, guidance)} title="打断工具等待，先处理这条补充；原工具继续运行" className="flex shrink-0 items-center gap-1 rounded-md border border-neutral-200 px-2 py-1 text-xs text-foreground transition-colors hover:bg-neutral-100 disabled:opacity-40 dark:border-neutral-700 dark:hover:bg-neutral-800"><Zap className="size-3" aria-hidden="true" />打断</button>}
+                        <button type="button" disabled={actionDisabled || guidance.canDelete === false} aria-label="删除待接收消息" onClick={() => mutate('delete', execution, guidance)} className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-neutral-100 hover:text-destructive disabled:opacity-40 dark:hover:bg-neutral-800"><Trash2 className="size-3.5" aria-hidden="true" /></button>
                         <DropdownMenu>
-                            <DropdownMenuTrigger asChild><button type="button" disabled={actionDisabled} aria-label="更多待接收消息操作" className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-neutral-100 disabled:opacity-40 dark:hover:bg-neutral-800"><MoreHorizontal className="size-4" aria-hidden="true" /></button></DropdownMenuTrigger>
+                            <DropdownMenuTrigger asChild><button type="button" disabled={actionDisabled || guidance.canEdit === false} aria-label="更多待接收消息操作" className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-neutral-100 disabled:opacity-40 dark:hover:bg-neutral-800"><MoreHorizontal className="size-4" aria-hidden="true" /></button></DropdownMenuTrigger>
                             <DropdownMenuContent align="end" side="top" collisionPadding={12}>
                                 <DropdownMenuItem onSelect={() => mutate('edit', execution, guidance)}><Pencil />编辑后重新发送</DropdownMenuItem>
                             </DropdownMenuContent>

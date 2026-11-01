@@ -8,6 +8,14 @@ The current contract uses `executionMode` snapshots, `execution_window` render s
 The UI consumes only this contract without alternate field or transport aliases. Background
 jobs and workflow tasks remain separate and retain their existing task APIs and identifiers.
 
+Pending user guidance supports `execution.guidance.interrupt`. Only backend `canInterrupt`
+enables the button; its ACK keeps the supplement queued, with deletion/editing disabled.
+Interrupting releases the foreground wait without cancelling or resubmitting the original tool.
+`ExecutionOperations` displays backend operation IDs and truthful running/unread/uncertain states.
+The model uses `execution_list_operations`, `execution_wait_operation`, and
+`execution_cancel_operation`; uncertainty must never be presented as successful cancellation.
+No second model writer or synthetic tool completion is created by the UI.
+
 Conversation `WorkProcessGroup` projects adjacent reasoning and lightweight tool
 statuses into one activity trace, expanded while active and independent of tool family. Prose,
 media/results, interactions, context badges and different runs stay outside it.

@@ -79,7 +79,7 @@ export const acceptGuidanceSnapshot = (response, execution, upsert) => {
 };
 
 export const mutatePendingGuidance = async ({ action, execution, guidance, emitEvent, upsert }) => {
-    if (!['delete', 'edit'].includes(action)) throw new Error('不支持的补充消息操作。');
+    if (!['delete', 'edit', 'interrupt'].includes(action)) throw new Error('不支持的补充消息操作。');
     const response = await emitEvent({
         event: `execution.guidance.${action}`,
         conversationId: execution.conversationId,
@@ -96,6 +96,11 @@ export const mutatePendingGuidance = async ({ action, execution, guidance, emitE
         throw error;
     }
     if (!snapshot) throw new Error('未收到补充消息的确认，请刷新后重试。');
+    if (action === 'interrupt') {
+        const pending = snapshot.pendingGuidance?.find((item) => id(item.id) === id(guidance.id));
+        if (pending && !pending.interruptRequested) throw new Error('打断请求尚未确认，请重试。');
+        return null;
+    }
     if (!Array.isArray(snapshot.pendingGuidance)
         || snapshot.pendingGuidance.some((item) => id(item.id) === id(guidance.id))) {
         throw new Error('补充消息尚未移出待接收列表，请刷新后重试。');

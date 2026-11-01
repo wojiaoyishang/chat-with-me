@@ -69,6 +69,20 @@ test('delete sends no withdrawal and applies the authoritative empty queue', asy
     assert.equal(Object.hasOwn(event.payload, 'withdraw'), false);
 });
 
+test('interrupt retains the queued supplement and requires an authoritative receipt', async () => {
+    const snapshots = [];
+    let event;
+    const pending = {...guidance, interruptRequested: true, canEdit: false, canDelete: false, canInterrupt: false};
+    await mutatePendingGuidance({action: 'interrupt', execution, guidance,
+        emitEvent: async (value) => { event = value; return ack({execution: {...execution, pendingGuidance: [pending]}}); },
+        upsert: (value) => snapshots.push(value)});
+    assert.equal(event.event, 'execution.guidance.interrupt');
+    assert.equal(snapshots[0].pendingGuidance[0].id, guidance.id);
+    assert.equal(snapshots[0].pendingGuidance[0].interruptRequested, true);
+    await assert.rejects(mutatePendingGuidance({action: 'interrupt', execution, guidance,
+        emitEvent: async () => ack({execution: {...execution, pendingGuidance: [guidance]}}), upsert: () => {}}), /尚未确认/);
+});
+
 test('consumption conflict refreshes the queue but never restores stale content', async () => {
     const snapshots = [];
     await assert.rejects(mutatePendingGuidance({ action: 'edit', execution, guidance, emitEvent: async () => ({ ...ack(), success: false, message: '模型已接收这条补充' }), upsert: (value) => snapshots.push(value) }), /模型已接收/);
@@ -247,7 +261,8 @@ test('uncertain receipt can still be confirmed against its original execution af
 
 await build({
     stdin: { contents: `export {default as Queue} from './src/features/chat/ui/chatbox/components/PendingExecutionGuidanceQueue.jsx';
-        export {default as SendButton} from './src/features/chat/ui/chatbox/components/SendButton.jsx';`, resolveDir: process.cwd() },
+        export {default as SendButton} from './src/features/chat/ui/chatbox/components/SendButton.jsx';
+        export {default as Operations} from './src/features/execution/ExecutionOperations.jsx';`, resolveDir: process.cwd() },
     bundle: true, packages: 'external', jsx: 'automatic', format: 'esm', platform: 'node', outfile: 'temp/pending-guidance-composer-test.mjs',
     plugins: [{ name: 'queue-controls', setup(builder) {
         builder.onResolve({ filter: /^@\// }, ({ path }) => ({ path, namespace: 'fixture' }));
@@ -261,7 +276,7 @@ await build({
                         : 'export const emitEvent = (event) => {globalThis.__pendingQueue.events.push(event); return globalThis.__pendingQueue.reply(event);};' }));
     } }],
 });
-const { Queue, SendButton } = await import('../temp/pending-guidance-composer-test.mjs');
+const { Queue, SendButton, Operations } = await import('../temp/pending-guidance-composer-test.mjs');
 
 async function mount(t, Component, props) {
     const dom = new JSDOM('<div id="root"></div>', { url: 'http://localhost/chat', pretendToBeVisual: true });
@@ -287,6 +302,36 @@ test('queue renders compact ordered rows, image thumbnails, attachment counts, a
     assert.equal(region.querySelector('img').alt, '页面.png');
     assert.match(region.querySelector('[data-pending-guidance]').className, /h-11/);
     assert.doesNotMatch(region.textContent, /撤回/);
+});
+
+test('interrupt locks the pending row after ACK without restoring it to the draft', async (t) => {
+    const edits = [];
+    const ui = await mount(t, Queue, {items: [{execution, guidance: {...guidance, canInterrupt: true}}], onEdit: (...args) => edits.push(args)});
+    const wait = deferred(); ui.state.reply = () => wait.promise;
+    await ui.click([...document.querySelectorAll('button')].find((item) => item.textContent === '打断'));
+    assert.equal(ui.state.events[0].event, 'execution.guidance.interrupt');
+    assert.equal(document.querySelector('[aria-label="删除待接收消息"]').disabled, true);
+    const pending = {...guidance, interruptRequested: true, canEdit: false, canDelete: false, canInterrupt: false};
+    await act(async () => wait.resolve(ack({execution: {...execution, pendingGuidance: [pending]}})));
+    await ui.render({items: [{execution, guidance: pending}]});
+    assert.match(document.body.textContent, /等待打断/);
+    assert.equal(document.querySelector('[aria-label="删除待接收消息"]').disabled, true);
+    assert.equal(document.querySelector('[aria-label="更多待接收消息操作"]').disabled, true);
+    assert.equal(edits.length, 0);
+});
+
+test('detached operation status distinguishes running, unread results and uncertain cancellation', async (t) => {
+    await mount(t, Operations, {operations: [
+        {id: 'ordinary', detached: false, state: 'running'},
+        {id: 'running', detached: true, state: 'running', label: '原命令'},
+        {id: 'ready', detached: true, state: 'completed'},
+        {id: 'unknown', detached: true, state: 'uncertain', error: '远端结果尚未确认'},
+    ]});
+    assert.equal(document.querySelectorAll('[data-execution-operation]').length, 3);
+    assert.match(document.body.textContent, /后台运行中/);
+    assert.match(document.body.textContent, /结果待读取/);
+    assert.match(document.body.textContent, /结果待核验/);
+    assert.match(document.body.textContent, /远端结果尚未确认/);
 });
 
 test('queue editing waits for the server and restores the complete payload only after removal', async (t) => {

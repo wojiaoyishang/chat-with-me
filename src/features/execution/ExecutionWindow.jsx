@@ -26,6 +26,7 @@ import WorkspaceTransferCard from '@/features/workspace/components/WorkspaceTran
 import useExecutionNavigation from './useExecutionNavigation.js';
 import useExecutionAutoFollow from './useExecutionAutoFollow.js';
 import ExecutionGuidanceEditor from './ExecutionGuidanceEditor.jsx';
+import ExecutionOperations from './ExecutionOperations.jsx';
 import ExecutionGuidanceRecord from './ExecutionGuidanceRecord.jsx';
 import AgentMessageRecord from './AgentMessageRecord.jsx';
 import {isQueuedExecutionGuidance, isWidgetExecutionGuidance} from './executionStatusModel.js';
@@ -318,6 +319,8 @@ const ExecutionWindow = memo(
                         )}
 
                         <ExecutionGuidanceEditor execution={execution} />
+
+                        <ExecutionOperations operations={execution?.operations} />
 
                         <section>
                             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">

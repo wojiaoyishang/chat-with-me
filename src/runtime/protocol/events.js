@@ -58,6 +58,7 @@ export const EventName = Object.freeze({
     EXECUTION_GUIDANCE_ADD: 'execution.guidance.add',
     EXECUTION_GUIDANCE_DELETE: 'execution.guidance.delete',
     EXECUTION_GUIDANCE_EDIT: 'execution.guidance.edit',
+    EXECUTION_GUIDANCE_INTERRUPT: 'execution.guidance.interrupt',
     EXECUTION_CANCEL: 'execution.cancel',
     EXECUTION_RESUME: 'execution.resume',
     EXECUTION_STATE_CHANGED: 'execution.state.changed',
