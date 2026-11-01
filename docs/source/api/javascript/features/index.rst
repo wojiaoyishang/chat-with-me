@@ -1073,6 +1073,11 @@
      - 0
      - 5
      - ``src/features/settings-runtime/SettingsReadonlyMarkdown.jsx``
+   * - :doc:`src/features/settings-runtime/SettingsReveal </api/javascript/features/settings-runtime/SettingsReveal>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/settings-runtime/SettingsReveal.jsx``
    * - :doc:`src/features/settings-runtime/SettingsTabs </api/javascript/features/settings-runtime/SettingsTabs>`
      - 1
      - 0
@@ -1710,6 +1715,7 @@
    /api/javascript/features/settings-runtime/SettingsModelCallOptions
    /api/javascript/features/settings-runtime/SettingsPresentation
    /api/javascript/features/settings-runtime/SettingsReadonlyMarkdown
+   /api/javascript/features/settings-runtime/SettingsReveal
    /api/javascript/features/settings-runtime/SettingsTabs
    /api/javascript/features/settings-runtime/actionPresentation
    /api/javascript/features/settings-runtime/codeEditorLanguage

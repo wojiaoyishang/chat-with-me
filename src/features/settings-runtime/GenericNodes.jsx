@@ -339,7 +339,7 @@ export function MatrixNode({ item, value, onChange, context }) {
                         </Button>
                         {group.bulkActions?.length > 0 && <div className="flex shrink-0 flex-wrap items-center gap-1">{group.bulkActions.map((action, index) => <Button key={action.id || action.value || index} type="button" size="sm" {...getActionPresentation(action)} className={`h-7 px-2 text-xs ${getActionPresentation(action).className}`} aria-label={`${group.label || group.id} ${action.label}`} title={`${action.label}：作用于本组全部 ${group.sourceRows.length} 项，遵循锁定与可选范围`} disabled={context.disabled || !group.sourceRows.some((row) => !row.disabled && (!row.allowedValues || row.allowedValues.includes(action.value)))} onClick={() => { void bulk(action, { rows: group.sourceRows, applyGlobalSet: false }); }}><SettingsActionLabel action={action} /></Button>)}</div>}
                     </div>
-                    {open && <CardContent id={regionId} className="px-5 py-2">{renderRows(group.rows)}</CardContent>}
+                    {open && <CardContent id={regionId} className="cwm-settings-reveal px-5 py-2">{renderRows(group.rows)}</CardContent>}
                 </Card>;
             }) : renderRows(allRows.filter((row) => !keyword || `${row.label || ''} ${row.id || ''} ${row.description || ''}`.toLowerCase().includes(keyword)))}
         </div>

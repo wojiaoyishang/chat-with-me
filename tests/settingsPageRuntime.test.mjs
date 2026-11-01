@@ -49,7 +49,7 @@ test('catalog and page reads load in the right panel, then reveal settings witho
     await act(async () => finishPage(page));
     assert.equal(panel.querySelector('[role="status"]'), null);
     assert.equal(panel.querySelector('[aria-label="自定义字段"]').value, '服务器初值');
-    assert.ok(panel.querySelector('.cwm-settings-reveal'));
+    assert.ok(panel.querySelector('[data-settings-transition="visible"]'));
     assert.equal(settingsUI.toastEvents?.some(event => event.kind === 'loading') || false, false);
   } finally { await ui.close(); }
 });

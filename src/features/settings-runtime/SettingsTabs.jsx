@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { SettingsIcon } from "./SettingsPresentation.jsx";
 import { SETTINGS_REVEAL_EVENT } from "./validation.js";
+import SettingsReveal from "./SettingsReveal.jsx";
 
 /** Tabs change only presentation. Every pane stays mounted in its original
  * form context, preserving drafts, async operations and validation state. */
@@ -113,6 +114,7 @@ export default function SettingsTabs({ item, renderPane }) {
           </Button>
         ))}
       </div>
+      <SettingsReveal revealKey={active}>
       {tabs.map((tab) => (
         <div
           key={tab.id}
@@ -127,11 +129,12 @@ export default function SettingsTabs({ item, renderPane }) {
           hidden={active !== tab.id}
           inert={active !== tab.id ? true : undefined}
           tabIndex={0}
-          className={`min-w-0 focus-visible:outline-none ${active === tab.id ? "cwm-settings-reveal grid gap-4" : "hidden"}`}
+          className={`min-w-0 focus-visible:outline-none ${active === tab.id ? "grid gap-4" : "hidden"}`}
         >
           {renderPane(tab.options, tab)}
         </div>
       ))}
+      </SettingsReveal>
     </section>
   );
 }

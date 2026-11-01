@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useConfirmation } from "@/components/ui/useConfirmation.jsx";
 import DynamicSettings from "@/components/setting/DynamicSettings.jsx";
+import SettingsReveal from "@/features/settings-runtime/SettingsReveal.jsx";
 import { validateSettingsFields, validateSettingsScope } from "@/features/settings-runtime/validation.js";
 import { useBrowserBackLayer } from "@/lib/browserHistoryLayers.js";
 import { getLocalSetting, setLocalSetting, useIsMobile, useLocalSetting } from "@/lib/tools.jsx";
@@ -711,7 +712,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested, navigat
               className="@container/settings relative min-h-0 flex-1 overflow-y-auto p-4 sm:p-5"
               aria-busy={(isLoading && !visibleError) || undefined}
             >
-              <div className={`w-full space-y-4 ${isLoading ? 'pointer-events-none opacity-40' : 'cwm-settings-reveal'}`} style={currentDescription?.layout?.maxWidth ? { maxWidth: `${Math.max(320, Math.min(1800, Number(currentDescription.layout.maxWidth)))}px` } : undefined}>
+              <SettingsReveal active={!isLoading && !visibleError} revealKey={pageKey} className={`w-full space-y-4 ${isLoading ? 'pointer-events-none opacity-40' : ''}`} style={currentDescription?.layout?.maxWidth ? { maxWidth: `${Math.max(320, Math.min(1800, Number(currentDescription.layout.maxWidth)))}px` } : undefined}>
                 {currentDescription ? (
                   <>
                     {detail && <div className="flex items-center gap-3 border-b pb-3">
@@ -791,7 +792,7 @@ export default function SettingPage({ open, onClose, onRefreshRequested, navigat
                     当前后端没有可用的设置页面。
                   </div>
                 ) : null}
-              </div>
+              </SettingsReveal>
               {isLoading && !visibleError && <div role="status" className="cwm-settings-reveal absolute inset-0 flex items-center justify-center gap-2 bg-background/80 p-6 text-sm text-muted-foreground">
                 <Spinner />{!isClient && catalogLoading && !visibleTabs.length ? '正在加载设置目录…' : '正在加载设置页…'}
               </div>}

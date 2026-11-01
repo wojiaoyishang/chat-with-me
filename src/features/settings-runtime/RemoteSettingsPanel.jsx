@@ -6,6 +6,7 @@ import DynamicSettings from '@/components/setting/DynamicSettings.jsx';
 import apiClient from '@/lib/apiClient.js';
 import { getBackendConnection, subscribeBackend } from '@/runtime/backend/connection.js';
 import { cloneData, requestEndpoint } from './model.js';
+import SettingsReveal from './SettingsReveal.jsx';
 
 const backendKey = (connection) => JSON.stringify([connection.id, connection.url, connection.epoch]);
 const aborted = () => new DOMException('The settings panel is no longer active.', 'AbortError');
@@ -102,10 +103,10 @@ const RemoteSettingsPanel = forwardRef(function RemoteSettingsPanel({ active, en
     const current = view.key === identity;
     return <section className="relative min-h-32 min-w-0" data-remote-settings-panel="true"
         data-state={active ? 'open' : 'closed'} aria-hidden={!active || undefined} inert={!active ? true : undefined}>
-        {current && view.descriptor && <div className={active && !view.loading ? 'cwm-settings-reveal' : undefined}>
+        {current && view.descriptor && <SettingsReveal active={active && !view.loading && !view.error} revealKey={identity}>
             <DynamicSettings key={identity} config={view.descriptor.options} initialValues={values} onChange={setValues}
                 initialDialog={view.initialDialog} disabled={!active || view.loading || Boolean(view.error)} runtimeContext={runtimeContext} />
-        </div>}
+        </SettingsReveal>}
         {active && (view.loading || !current && !view.error) && <div role="status"
             className="absolute inset-0 flex min-h-32 items-center justify-center gap-2 bg-background/85 text-sm text-muted-foreground">
             <Spinner className="size-4" />正在加载…

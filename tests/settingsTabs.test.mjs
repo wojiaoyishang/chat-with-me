@@ -117,6 +117,14 @@ test("tab presentation stays transparent to defaults, list entries, validation a
 
 test("switching settings tabs preserves the same inputs and never changes form values", async () => {
   const ui = await mount([tabs()]);
+  const animations = [];
+  let cancelled = 0;
+  HTMLElement.prototype.animate = function (frames, options) {
+    animations.push({ node: this, frames, options });
+    return { cancel: () => { cancelled += 1; } };
+  };
+  let reduceMotion = false;
+  window.matchMedia = () => ({ matches: reduceMotion });
   try {
     const title = document.querySelector('[aria-label="名称"]');
     const notes = document.querySelector('[aria-label="备注"]');
@@ -126,12 +134,18 @@ test("switching settings tabs preserves the same inputs and never changes form v
       tab("基础信息").id,
     );
     await edit(title, "我编辑的名称");
+    assert.equal(animations.length, 0, "typing must not replay presentation transitions");
     const count = settingsUI.changed.length;
     await click(tab("高级配置"));
+    assert.equal(animations.length, 1);
+    assert.equal(animations[0].options.duration, 200);
     assert.equal(settingsUI.changed.length, count);
     assert.equal(document.querySelector('[aria-label="备注"]'), notes);
     await edit(notes, "保留高级配置");
+    assert.equal(animations.length, 1);
     await click(tab("基础信息"));
+    assert.equal(animations.length, 2);
+    assert.equal(cancelled, 1, "a new selection cancels the previous transition");
     assert.equal(document.querySelector('[aria-label="名称"]'), title);
     assert.equal(title.value, "我编辑的名称");
     assert.equal(notes.value, "保留高级配置");
@@ -139,6 +153,9 @@ test("switching settings tabs preserves the same inputs and never changes form v
       title: "我编辑的名称",
       notes: "保留高级配置",
     });
+    reduceMotion = true;
+    await click(tab("高级配置"));
+    assert.equal(animations.length, 2, "reduced motion skips transitions");
   } finally {
     await ui.close();
   }
