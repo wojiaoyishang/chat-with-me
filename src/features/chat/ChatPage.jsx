@@ -3840,6 +3840,7 @@ function ChatPage({
                                 />
                                 <ChatBox
                                     immersive={avatarImmersive}
+                                    settingsRefreshRevision={`${modelSettingsRefreshRevision}:${runtimeOptionsRefreshRevision}`}
                                     onSendMessage={handleSendMessage}
                                     turnSubmissionPhase={turnSubmission?.phase || ''}
                                     conversationId={conversationId}

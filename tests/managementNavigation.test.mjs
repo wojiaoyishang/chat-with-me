@@ -102,11 +102,15 @@ async function workspace() {
               else if (requested === "@/config.js")
                 contents =
                   'export const BASE_BACKEND_URL="/api";export const apiEndpoint={DASHBOARD_ENDPOINT:"/dashboard",USER_INFO_ENDPOINT:"/user/info"};';
+              else if (requested === "@/runtime/backend/bootstrapRequests.js")
+                contents = `export const startDashboardLoad=({userEndpoint,displayEndpoint,onUser,onDisplay,onUserError,onDisplayError,onReady})=>{let active=true;Promise.resolve(globalThis.workspaceTest.get(displayEndpoint)).then(value=>{if(active)onDisplay(value)}).catch(error=>{if(active)onDisplayError(error)});Promise.resolve(globalThis.workspaceTest.get(userEndpoint)).then(value=>{if(active)onUser(value)}).catch(error=>{if(active)onUserError(error)}).finally(()=>{if(active)onReady()});return()=>{active=false;};};`;
               else if (requested === "@/context/userContext.jsx")
                 contents =
                   "const setUser=()=>{};export const useUserStore=()=>({setUser});";
               else if (requested === "@/context/useEventStore.jsx")
                 contents = "export const emitEvent=()=>{};";
+              else if (requested === "@/features/notification/notificationTarget.js")
+                contents = "export const notificationFocusSearch=()=>'';";
               else if (requested === "@/lib/tools.jsx")
                 contents =
                   'export const UnifiedLoadingScreen=()=>null;export const UnifiedErrorScreen=()=>null;export const updateURL=(url)=>window.history.pushState({},"",url);export const useLocalSetting=(_key,defaultValue)=>[defaultValue,()=>{}];export const setLocalSetting=()=>{};';
@@ -123,7 +127,7 @@ async function workspace() {
               else if (requested === "framer-motion")
                 contents = `export const AnimatePresence=({children})=>children;const Div=({initial,animate,exit,transition,...props})=><div {...props}/>;export const motion={div:Div};`;
               else if (requested === "react-i18next")
-                contents = "export const useTranslation=()=>({t:(key)=>key});";
+                contents = "const t=(key)=>key;export const useTranslation=()=>({t});";
               else if (requested === "sonner")
                 contents = "export const toast={error:()=>{}};";
               else if (requested.includes("useIndependentChatWindow"))

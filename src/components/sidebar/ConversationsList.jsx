@@ -58,6 +58,19 @@ import {
 import {toast} from 'sonner';
 import {DeleteConfirmDialog} from '@/components/ui/DeleteConfirmDialog';
 import ConversationForkDialog from './ConversationForkDialog.jsx';
+import {getBackendConnection, getConnectionToken, getConnectionUserId, isCurrentConnection, subscribeBackend} from '../../runtime/backend/connection.js';
+import {
+    createConversationRefreshQueue, findConversationNode, hasConversationChildren,
+    mergeConversationNodes, mergeConversationPath, removeConversationNode, updateConversationTree,
+} from './conversationTree.js';
+
+const requestScope = () => {
+    const connection = getBackendConnection();
+    return {connection, token: getConnectionToken(connection), userId: getConnectionUserId()};
+};
+const currentScope = (scope) => isCurrentConnection(scope.connection)
+    && getConnectionToken(scope.connection) === scope.token
+    && (!scope.userId || getConnectionUserId() === scope.userId);
 
 const normalizeAgentSession = (session) => ({
     ...session,
@@ -85,15 +98,6 @@ const mapAgentTree = (nodes, updater) => (
     })
 );
 
-const removeAgentNode = (nodes, conversationId) => (
-    (nodes || [])
-        .filter((node) => node.conversationId !== conversationId)
-        .map((node) => ({
-            ...node,
-            children: removeAgentNode(node.children || [], conversationId),
-        }))
-);
-
 const findAgentPath = (nodes, conversationId, path = []) => {
     for (const node of nodes || []) {
         const nextPath = [...path, node.conversationId];
@@ -111,10 +115,21 @@ const countAgentDescendants = (nodes) => (
 );
 
 const mergeConversationPages = (previous, incoming, reset) => {
-    if (reset) return incoming;
+    if (reset) return incoming.map((item) => {
+        const old = previous.find((row) => row.conversationId === item.conversationId);
+        return old && item.childrenLoaded === false && hasConversationChildren(item)
+            ? {...item, children: old.children || []} : item;
+    });
     const merged = new Map(previous.map((item) => [item.conversationId, item]));
     incoming.forEach((item) => merged.set(item.conversationId, item));
     return Array.from(merged.values());
+};
+
+const ChildPageControls = ({parentId, page, onLoad}) => {
+    if (page?.loading) return <li role="status" className="flex animate-in fade-in items-center gap-1.5 px-2 py-2 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin"/>正在加载子智能体</li>;
+    if (page?.error) return <li className="animate-in fade-in px-2 py-1.5 text-xs text-destructive"><span>{page.error}</span><button type="button" className="ml-2 cursor-pointer underline" onClick={() => onLoad(parentId)}>重试加载子智能体</button></li>;
+    if (page?.hasMore) return <li className="px-2 py-1"><Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={() => onLoad(parentId, true)}>加载更多子智能体</Button></li>;
+    return null;
 };
 
 const formatConversationTime = (date, locale) => {
@@ -373,6 +388,9 @@ const AgentSessionRow = ({
                              onFork,
                              expandedNodes,
                              setExpandedNodes,
+                             onToggle,
+                             childPages,
+                             onLoadChildren,
                              forceExpanded = false,
                              compact = false,
                              showTimestamps = false,
@@ -380,7 +398,7 @@ const AgentSessionRow = ({
                          }) => {
     const isSelected = child.conversationId === selectedConversationId;
     const status = STATUS_META[child.status] || STATUS_META.idle;
-    const hasChildren = (child.children || []).length > 0;
+    const hasChildren = hasConversationChildren(child);
     const isExpanded = forceExpanded || expandedNodes[child.conversationId] === true;
     const displayTitle = conversationDisplayTitle(child, '复杂子智能体');
 
@@ -396,10 +414,7 @@ const AgentSessionRow = ({
                         type="button"
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => setExpandedNodes((previous) => ({
-                            ...previous,
-                            [child.conversationId]: !isExpanded,
-                        }))}
+                        onClick={() => onToggle(child, isExpanded)}
                         className="h-6 w-6 text-muted-foreground"
                         aria-label={isExpanded ? '收起下级子智能体' : '展开下级子智能体'}
                     >
@@ -426,7 +441,7 @@ const AgentSessionRow = ({
                             <span>·</span>
                             <span>第 {Number(child.depth || 1)} 层</span>
                             {hasChildren && (
-                                <><span>·</span><span>{countAgentDescendants(child.children)} 个后代</span></>
+                                <><span>·</span><span>{Number(child.childCount ?? child.children.length)} 个下级</span></>
                             )}
                         </span>
                     )}
@@ -445,7 +460,7 @@ const AgentSessionRow = ({
                 />
             </div>
             {hasChildren && isExpanded && (
-                <ul className="ml-3 space-y-0.5 border-l border-border pl-1">
+                <ul className="ml-3 animate-in fade-in slide-in-from-top-1 space-y-0.5 border-l border-border pl-1 duration-150 motion-reduce:animate-none">
                     {child.children.map((nestedChild) => (
                         <AgentSessionRow
                             key={nestedChild.conversationId}
@@ -457,12 +472,16 @@ const AgentSessionRow = ({
                             onFork={onFork}
                             expandedNodes={expandedNodes}
                             setExpandedNodes={setExpandedNodes}
+                            onToggle={onToggle}
+                            childPages={childPages}
+                            onLoadChildren={onLoadChildren}
                             forceExpanded={forceExpanded}
                             compact={compact}
                             showTimestamps={showTimestamps}
                             locale={locale}
                         />
                     ))}
+                    <ChildPageControls parentId={child.conversationId} page={childPages[child.conversationId]} onLoad={onLoadChildren}/>
                 </ul>
             )}
         </li>
@@ -480,6 +499,21 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     const [limit] = useState(20);
     const [hasMore, setHasMore] = useState(false);
     const [expandedNodes, setExpandedNodes] = useState({});
+    const [childPages, setChildPages] = useState({});
+    const childPagesRef = useRef({});
+    const childRequests = useRef(new Map());
+    const mountedRef = useRef(true);
+    const initialListLoaded = useRef(false);
+    const selectedPathRef = useRef([]);
+    const selectedRowsRef = useRef([]);
+    const selectedIdRef = useRef(selectedConversationId);
+    selectedIdRef.current = selectedConversationId;
+    const ancestryAttempt = useRef('');
+    const ancestryRequest = useRef(null);
+    const normalRefreshQueue = useRef(null);
+    const imperativeRefreshQueue = useRef(null);
+    const normalLoader = useRef(null);
+    const reloadLoader = useRef(null);
     const [query, setQuery] = useState('');
     const [forkOperation, setForkOperation] = useState(null);
     const [forkOpen, setForkOpen] = useState(false);
@@ -490,7 +524,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     const searchStateRef = useRef(searchState);
     searchStateRef.current = searchState;
     const queryRef = useRef('');
-    const normalRequest = useRef({generation: 0, controller: null});
+    const normalRequest = useRef({generation: 0, controller: null, inFlight: null});
     const searchRequest = useRef({generation: 0, controller: null});
     const normalizedQuery = query.trim();
     // A picker reuses the list presentation with server-authorized candidates.
@@ -499,33 +533,52 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     const [compact] = useLocalSetting(CONVERSATION_LIST_COMPACT_SETTING_KEY, false);
     const [showTimestamps] = useLocalSetting(CONVERSATION_LIST_TIMESTAMPS_SETTING_KEY, true);
 
-    const loadConversations = useCallback(async (reset = false) => {
-        if (selectionOnly) return;
-        const generation = ++normalRequest.current.generation;
-        normalRequest.current.controller?.abort();
+    const loadConversationsOnce = useCallback((reset = false) => {
+        if (selectionOnly || !mountedRef.current) return Promise.resolve();
+        if (normalRequest.current.inFlight) return normalRequest.current.inFlight;
+        const request = normalRequest.current;
+        const generation = ++request.generation;
         const controller = new AbortController();
-        normalRequest.current.controller = controller;
-        try {
+        const scope = requestScope();
+        request.controller = controller;
+        const pending = (async () => { try {
             setIsLoading(true);
             setIsLoadingError(false);
             const currentOffset = reset ? 0 : offset;
             const response = await apiClient.get(apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT, {
                 params: {offset: currentOffset, limit},
                 signal: controller.signal,
+                timeout: 15000,
             });
-            if (controller.signal.aborted || generation !== normalRequest.current.generation) return;
+            if (!mountedRef.current || !currentScope(scope) || controller.signal.aborted || generation !== request.generation) return;
             const newData = (response.data || []).map(toConversation);
-            setConversations((previous) => mergeConversationPages(previous, newData, reset));
-            setOffset(reset ? limit : currentOffset + limit);
-            setHasMore(newData.length === limit && (response.total || 0) > currentOffset + limit);
+            setConversations((previous) => mergeConversationPath(mergeConversationPages(previous, newData, reset), selectedRowsRef.current));
+            initialListLoaded.current = true;
+            ancestryAttempt.current = '';
+            if (reset) { childPagesRef.current = {}; setChildPages({}); }
+            setOffset(currentOffset + newData.length);
+            setHasMore(response.hasMore ?? (currentOffset + newData.length < (response.total || 0)));
         } catch (error) {
-            if (controller.signal.aborted || generation !== normalRequest.current.generation) return;
+            if (!mountedRef.current || !currentScope(scope) || controller.signal.aborted || generation !== request.generation) return;
             console.error(error);
             setIsLoadingError(true);
         } finally {
-            if (generation === normalRequest.current.generation) setIsLoading(false);
-        }
+            if (mountedRef.current && generation === request.generation) setIsLoading(false);
+        } })();
+        request.inFlight = pending;
+        void pending.finally(() => { if (request.inFlight === pending) request.inFlight = null; });
+        return pending;
     }, [limit, offset, selectionOnly]);
+    normalLoader.current = loadConversationsOnce;
+    const loadConversations = useCallback((reset = false) => {
+        if (selectionOnly) return Promise.resolve();
+        if (!reset) return normalRefreshQueue.current?.pending || normalLoader.current(false);
+        if (!normalRefreshQueue.current) normalRefreshQueue.current = createConversationRefreshQueue(() => normalLoader.current(true));
+        const pending = normalRequest.current.inFlight;
+        return pending && !normalRefreshQueue.current.pending
+            ? pending.then(() => normalRefreshQueue.current?.refresh())
+            : normalRefreshQueue.current.refresh();
+    }, [selectionOnly]);
 
     const loadSearch = useCallback(async (reset = true) => {
         if (selectionOnly) return;
@@ -534,6 +587,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         const generation = ++searchRequest.current.generation;
         searchRequest.current.controller?.abort();
         const controller = new AbortController();
+        const scope = requestScope();
         searchRequest.current.controller = controller;
         const currentOffset = reset ? 0 : searchStateRef.current.offset;
         setSearchState((previous) => ({...previous, loading: true, error: false}));
@@ -541,8 +595,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
             const response = await apiClient.get(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/search`, {
                 params: {q: value, offset: currentOffset, limit},
                 signal: controller.signal,
+                timeout: 15000,
             });
-            if (controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
+            if (!mountedRef.current || !currentScope(scope) || controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
             const incoming = (response.data || []).map(toConversation);
             setSearchState((previous) => ({
                 items: mergeConversationPages(previous.items, incoming, reset),
@@ -553,10 +608,60 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                 error: false,
             }));
         } catch {
-            if (controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
+            if (!mountedRef.current || !currentScope(scope) || controller.signal.aborted || generation !== searchRequest.current.generation || queryRef.current !== value) return;
             setSearchState((previous) => ({...previous, loading: false, error: true}));
         }
     }, [limit, selectionOnly]);
+
+    const setChildPage = useCallback((identifier, value) => {
+        childPagesRef.current = {...childPagesRef.current, [identifier]: value};
+        setChildPages(childPagesRef.current);
+    }, []);
+
+    const loadChildren = useCallback((parentId, append = false) => {
+        if (selectionOnly || queryRef.current || !mountedRef.current) return Promise.resolve();
+        if (childRequests.current.has(parentId)) return childRequests.current.get(parentId).promise;
+        const previousPage = childPagesRef.current[parentId];
+        const currentOffset = append ? previousPage?.offset || 0 : 0;
+        const controller = new AbortController();
+        const scope = requestScope();
+        const entry = {controller, promise: null};
+        setChildPage(parentId, {...previousPage, loading: true, error: ''});
+        entry.promise = (async () => { try {
+            const response = await apiClient.get(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${encodeURIComponent(parentId)}/children`, {
+                params: {offset: currentOffset, limit}, signal: controller.signal, timeout: 15000,
+            });
+            if (!mountedRef.current || !currentScope(scope) || controller.signal.aborted) return;
+            const incoming = (response.data || []).map(normalizeAgentSession);
+            const total = Number(response.total || 0);
+            setConversations((previous) => updateConversationTree(previous, parentId, (parent) => {
+                const kept = append ? parent.children || [] : (parent.children || []).filter((child) => selectedPathRef.current.includes(child.conversationId));
+                const children = mergeConversationNodes(kept, incoming).sort((left, right) => right.updateDate - left.updateDate);
+                return {...parent, children, childrenLoaded: true, childCount: total, hasChildren: total > 0};
+            }));
+            setChildPage(parentId, {
+                loading: false, error: '', offset: currentOffset + incoming.length,
+                hasMore: response.hasMore ?? (currentOffset + incoming.length < total),
+            });
+        } catch (error) {
+            if (!mountedRef.current || !currentScope(scope) || controller.signal.aborted) return;
+            setChildPage(parentId, {...previousPage, loading: false, error: error?.message || '子智能体加载失败'});
+        } finally {
+            if (childRequests.current.get(parentId) === entry) {
+                childRequests.current.delete(parentId);
+                if (mountedRef.current && !controller.signal.aborted && !currentScope(scope)) {
+                    setChildPage(parentId, {...previousPage, loading: false, error: '连接或身份已更新，请重试'});
+                }
+            }
+        } })();
+        childRequests.current.set(parentId, entry);
+        return entry.promise;
+    }, [limit, selectionOnly, setChildPage]);
+
+    const toggleChildren = useCallback((node, isExpanded) => {
+        setExpandedNodes((previous) => ({...previous, [node.conversationId]: !isExpanded}));
+        if (!isExpanded && node.childrenLoaded === false) void loadChildren(node.conversationId);
+    }, [loadChildren]);
 
     const changeQuery = useCallback((value) => {
         const next = value.slice(0, 200).trim();
@@ -622,29 +727,105 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         if (queryRef.current) void loadSearch(true);
     }, [loadConversations, loadSearch]);
 
+    reloadLoader.current = () => Promise.all([loadConversations(true), queryRef.current ? loadSearch(true) : null]);
+    const reloadConversations = useCallback(() => {
+        if (selectionOnly) return Promise.resolve();
+        if (!imperativeRefreshQueue.current) imperativeRefreshQueue.current = createConversationRefreshQueue(() => reloadLoader.current());
+        return imperativeRefreshQueue.current.refresh();
+    }, [selectionOnly]);
+
     useImperativeHandle(ref, () => ({
-        reload: () => Promise.all([loadConversations(true), queryRef.current ? loadSearch(true) : null]),
+        reload: reloadConversations,
         updateDate: (conversationId, newDate) => {
             handleConversationChange(conversationId, {updateDate: newDate || new Date()});
         },
         updateTitle: (conversationId, newTitle) => {
             handleConversationChange(conversationId, {title: newTitle, name: newTitle});
         },
-    }), [handleConversationChange, loadConversations, loadSearch]);
+    }), [handleConversationChange, reloadConversations]);
 
     useEffect(() => {
+        mountedRef.current = true;
         loadConversations(true);
         const normal = normalRequest.current;
         const search = searchRequest.current;
+        const childRequestMap = childRequests.current;
         return () => {
+            mountedRef.current = false;
             normal.generation += 1;
             normal.controller?.abort();
+            normal.inFlight = null;
             search.generation += 1;
             search.controller?.abort();
+            ancestryRequest.current?.abort();
+            for (const request of childRequestMap.values()) request.controller.abort();
+            childRequestMap.clear();
+            normalRefreshQueue.current?.dispose();
+            normalRefreshQueue.current = null;
+            imperativeRefreshQueue.current?.dispose();
+            imperativeRefreshQueue.current = null;
         };
         // 初始请求只运行一次；后续由 reload 明确触发。
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => subscribeBackend(() => {
+        normalRequest.current.generation += 1;
+        normalRequest.current.controller?.abort();
+        normalRequest.current.inFlight = null;
+        searchRequest.current.generation += 1;
+        searchRequest.current.controller?.abort();
+        ancestryRequest.current?.abort();
+        for (const request of childRequests.current.values()) request.controller.abort();
+        childRequests.current.clear();
+        selectedPathRef.current = []; selectedRowsRef.current = []; ancestryAttempt.current = '';
+        initialListLoaded.current = false;
+        childPagesRef.current = {}; setChildPages({}); setExpandedNodes({});
+        setConversations([]); setOffset(0); setHasMore(false);
+        setSearchState({items: [], total: 0, offset: 0, hasMore: false, loading: false, error: false});
+        normalRefreshQueue.current?.dispose(); normalRefreshQueue.current = null;
+        imperativeRefreshQueue.current?.dispose(); imperativeRefreshQueue.current = null;
+        void loadConversations(true);
+    }), [loadConversations]);
+
+    useEffect(() => {
+        ancestryRequest.current?.abort();
+        ancestryAttempt.current = '';
+        selectedPathRef.current = [];
+        selectedRowsRef.current = [];
+    }, [selectedConversationId]);
+
+    useEffect(() => {
+        if (selectionOnly || normalizedQuery || isLoading || !initialListLoaded.current || !selectedConversationId) return;
+        if (findConversationNode(conversations, selectedConversationId) || ancestryAttempt.current === selectedConversationId) return;
+        ancestryAttempt.current = selectedConversationId;
+        const controller = new AbortController();
+        const scope = requestScope();
+        ancestryRequest.current?.abort(); ancestryRequest.current = controller;
+        void apiClient.get(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${encodeURIComponent(selectedConversationId)}/ancestry`, {
+            signal: controller.signal, timeout: 15000,
+        }).then((response) => {
+            if (!mountedRef.current || controller.signal.aborted || !currentScope(scope) || ancestryAttempt.current !== selectedConversationId || selectedIdRef.current !== selectedConversationId) return;
+            const rows = (response.data || []).map(toConversation);
+            if (rows.at(-1)?.conversationId !== selectedConversationId) return;
+            selectedRowsRef.current = rows;
+            selectedPathRef.current = rows.map((row) => row.conversationId);
+            setConversations((previous) => mergeConversationPath(previous, rows));
+            setExpandedNodes((previous) => ({...previous, ...Object.fromEntries(rows.slice(0, -1).map((row) => [row.conversationId, true]))}));
+        }).catch(() => {});
+    }, [conversations, isLoading, normalizedQuery, selectedConversationId, selectionOnly]);
+
+    useEffect(() => {
+        if (selectionOnly || normalizedQuery) return;
+        const visit = (nodes) => {
+            for (const node of nodes || []) {
+                const page = childPages[node.conversationId];
+                if (expandedNodes[node.conversationId] && node.childrenLoaded === false && !page?.loading && !page?.error) void loadChildren(node.conversationId);
+                visit(node.children);
+            }
+        };
+        visit(conversations);
+    }, [childPages, conversations, expandedNodes, loadChildren, normalizedQuery, selectionOnly]);
 
     useEffect(() => {
         if (!normalizedQuery) return;
@@ -657,8 +838,10 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
         for (const conversation of displayedConversations) {
             const path = findAgentPath(conversation.children, selectedConversationId);
             if (!path) continue;
+            selectedPathRef.current = [conversation.conversationId, ...path];
             const toExpand = [conversation.conversationId, ...path.slice(0, -1)];
             setExpandedNodes((previous) => {
+                if (toExpand.every((identifier) => previous[identifier])) return previous;
                 const next = {...previous};
                 toExpand.forEach((conversationId) => {
                     next[conversationId] = true;
@@ -706,15 +889,14 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
     }, [filteredConversations, selectionOnly]);
 
     const handleDeleteConversation = (deletedConversationId) => {
-        setConversations((previous) => previous
-            .filter((conversation) => conversation.conversationId !== deletedConversationId)
-            .map((conversation) => ({
-                ...conversation,
-                children: removeAgentNode(conversation.children, deletedConversationId),
-            })));
+        if (selectedPathRef.current.includes(deletedConversationId)) {
+            selectedPathRef.current = []; selectedRowsRef.current = []; ancestryAttempt.current = '';
+            ancestryRequest.current?.abort();
+        }
+        childRequests.current.get(deletedConversationId)?.controller.abort();
+        setConversations((previous) => removeConversationNode(previous, deletedConversationId));
         setSearchState((previous) => ({...previous,
-            items: previous.items.filter((conversation) => conversation.conversationId !== deletedConversationId)
-                .map((conversation) => ({...conversation, children: removeAgentNode(conversation.children, deletedConversationId)})),
+            items: removeConversationNode(previous.items, deletedConversationId),
         }));
         onDelete?.(deletedConversationId);
         if (queryRef.current) void loadSearch(true);
@@ -722,9 +904,9 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
 
     const renderConversation = (conversation) => {
         const isSelected = conversation.conversationId === selectedConversationId;
-        const hasChildren = conversation.children.length > 0;
+        const hasChildren = hasConversationChildren(conversation);
         const isExpanded = Boolean(normalizedQuery) || expandedNodes[conversation.conversationId] === true;
-        const descendantCount = countAgentDescendants(conversation.children);
+        const descendantCount = conversation.childCount ?? countAgentDescendants(conversation.children);
         const displayTitle = conversationDisplayTitle(conversation, t('untitled_conversation'));
 
         return (
@@ -738,10 +920,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                                 type="button"
                                 variant="ghost"
                                 size="icon-sm"
-                                onClick={() => setExpandedNodes((previous) => ({
-                                    ...previous,
-                                    [conversation.conversationId]: !isExpanded,
-                                }))}
+                                onClick={() => toggleChildren(conversation, isExpanded)}
                                 className="mr-0.5 h-6 w-6 text-muted-foreground"
                                 aria-label={isExpanded ? '收起子智能体' : '展开子智能体'}
                             >
@@ -790,7 +969,7 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                     </div>
                 </li>
                 {hasChildren && isExpanded && (
-                    <ul className="ml-3 space-y-0.5 border-l border-border pl-1">
+                    <ul className="ml-3 animate-in fade-in slide-in-from-top-1 space-y-0.5 border-l border-border pl-1 duration-150 motion-reduce:animate-none">
                         {conversation.children.map((child) => (
                             <AgentSessionRow
                                 key={child.conversationId}
@@ -802,12 +981,16 @@ const ConversationsList = forwardRef(({onSelect, onDelete, selectedConversationI
                                 onFork={handleFork}
                                 expandedNodes={expandedNodes}
                                 setExpandedNodes={setExpandedNodes}
+                                onToggle={toggleChildren}
+                                childPages={childPages}
+                                onLoadChildren={loadChildren}
                                 forceExpanded={Boolean(normalizedQuery)}
                                 compact={compact}
                                 showTimestamps={showTimestamps}
                                 locale={i18n.language}
                             />
                         ))}
+                        <ChildPageControls parentId={conversation.conversationId} page={childPages[conversation.conversationId]} onLoad={loadChildren}/>
                     </ul>
                 )}
             </React.Fragment>

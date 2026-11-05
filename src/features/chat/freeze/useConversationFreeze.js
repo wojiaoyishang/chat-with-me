@@ -12,12 +12,12 @@ export default function useConversationFreeze(conversationId) {
         setSnapshot({conversationId, state: null, loading: true, error: ''});
         const controller = createConversationFreezeController({
             conversationId,
-            fetchState: signal => apiClient.get(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${encodeURIComponent(conversationId)}/freeze-state`, {signal}),
+            fetchState: signal => apiClient.get(`${apiEndpoint.CHAT_CONVERSATIONS_ENDPOINT}/${encodeURIComponent(conversationId)}/freeze-state`, {signal, timeout: 10000}),
             subscribe: (event, callback) => onEvent({event}).then(callback),
             notify: next => setSnapshot({conversationId, ...next}),
         });
         controllerRef.current = controller;
-        const refreshWhenVisible = () => { if (!document.hidden) void controller.refresh(); };
+        const refreshWhenVisible = () => { if (!document.hidden) void controller.refreshIfStale(); };
         window.addEventListener('focus', refreshWhenVisible);
         document.addEventListener('visibilitychange', refreshWhenVisible);
         return () => {

@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 
 import { toast } from 'sonner';
 import { apiEndpoint } from '@/config.js';
-import apiClient from '@/lib/apiClient';
 import { getLocalSetting, setLocalSetting, useIsMobile } from '@/lib/tools.jsx';
 import { emitEvent, onEvent } from '@/context/useEventStore.jsx';
 import { backendStorageKey } from '../../../runtime/backend/connection.js';
+import { chatboxResources, chatboxResourceScope } from './chatbox/chatboxResources.js';
+import { chatboxConfigurationFingerprint } from './chatbox/chatboxResource.js';
 
 import ChatBoxHeader from './ChatBoxHeader';
 import {useConversationMutationGuard} from '../freeze/ConversationFreezeContext.jsx';
@@ -187,6 +188,7 @@ function ChatBox({
     onVoiceRecordingStart,
     onVoiceRecordingCancel,
     onRealtimeVoiceStart,
+    settingsRefreshRevision = '',
     turnSubmissionPhase = '',
     selectedWorkspaceIds = [],
     onWorkspaceChange,
@@ -236,6 +238,9 @@ function ChatBox({
     const [toolsStatus, setToolsStatus] = useState({});
     const [toolCatalogRevision, setToolCatalogRevision] = useState(0);
     const configuredToolsConversationRef = useRef(null);
+    const toolConfigurationRequestRef = useRef(null);
+    const toolConfigurationFingerprintRef = useRef(null);
+    const settingsRefreshRevisionRef = useRef(settingsRefreshRevision);
     const [runtimeToolPermissions, setRuntimeToolPermissions] = useState({});
     const [conversationToolDefaults, setConversationToolDefaults] = useState({});
     const [conversationToolsDialogOpen, setConversationToolsDialogOpen] = useState(false);
@@ -619,7 +624,8 @@ function ChatBox({
             builtinTools[tool.name] = normalizeBuiltinToolValue(tool, activeBuiltinToolStatus[tool.name]);
         });
         const localPermissions = collectToolPermissions(extraTools, toolsStatus.extra_tools || {});
-        const authoritativePermissions = conversationId ? conversationToolPermissionsRef.current : localPermissions;
+        const authoritativePermissions = conversationId || Object.keys(localPermissions).length === 0
+            ? conversationToolPermissionsRef.current : localPermissions;
         return {
             ...toolsStatus,
             builtin_tools: builtinTools,
@@ -697,6 +703,23 @@ function ChatBox({
         await toolPermissionSyncQueueRef.current.catch(() => undefined);
     }, []);
 
+    const waitForToolConfiguration = useCallback(async () => {
+        if (!apiEndpoint.CHATBOX_ENDPOINT.trim()) return;
+        const key = `${chatboxResourceScope()}:${conversationId || '__new_conversation__'}`;
+        const request = toolConfigurationRequestRef.current;
+        try {
+            if (!request || request.key !== key) throw new Error(t('tool_load_failed'));
+            const data = await request.promise;
+            if (request !== toolConfigurationRequestRef.current || key !== `${chatboxResourceScope()}:${conversationId || '__new_conversation__'}`) {
+                throw new Error(t('tool_load_failed'));
+            }
+            if (data.readOnly) throw new Error(t('conversation_read_only', '当前会话为只读模式。'));
+        } catch (error) {
+            toast.error(error?.message || t('tool_load_failed'));
+            throw error;
+        }
+    }, [conversationId, t]);
+
     const runWorkspaceSelectionMutation = useCallback((operation) => {
         const runPromise = workspaceSelectionSyncQueueRef.current.catch(() => undefined).then(() => operation());
         workspaceSelectionSyncQueueRef.current = runPromise.then(
@@ -715,6 +738,8 @@ function ChatBox({
             const isBusy = () => Boolean(!canMutateConversation() || turnSubmissionRef.current || turnSubmissionPhaseRef.current || sendButtonStatusRef.current !== 'normal');
             if (isBusy()) return;
             const targetConversationId = draftConversationIdRef.current;
+            await waitForToolConfiguration();
+            await waitForConversationToolSync();
             await waitForWorkspaceSelectionSync();
             if (isBusy() || targetConversationId !== draftConversationIdRef.current) return;
             if (typeof onRealtimeVoiceStart === 'function') {
@@ -722,7 +747,7 @@ function ChatBox({
             }
             return undefined;
         },
-        [onRealtimeVoiceStart, waitForWorkspaceSelectionSync, canMutateConversation],
+        [onRealtimeVoiceStart, waitForWorkspaceSelectionSync, waitForToolConfiguration, waitForConversationToolSync, canMutateConversation],
     );
 
     const restoreAuthoritativeToolPermissions = useCallback(
@@ -867,6 +892,7 @@ function ChatBox({
     const handleSendMessage = useCallback(async (options = {}) => {
         if (!canMutateConversation()) return;
         if (turnSubmissionRef.current || ['saving', 'pending', 'recovering'].includes(turnSubmissionPhaseRef.current)) return;
+        const submittedRoleName = currentRoleRef.current?.name;
         const activeEditDraft = editDraftRef.current;
         const wasEditing = isEditMessageRef.current;
         const retry = options?.retryGuidance === true ? uncertainGuidanceRef.current.get(conversationId) : null;
@@ -897,11 +923,15 @@ function ChatBox({
             turnSubmissionRef.current = submission;
             // Manual system/assistant messages and forks only persist a message.
             // Keep the submission lock, but reserve the spinner for model generation.
-            const generatesReply = !isForkMode && (currentRole?.name || 'user') === 'user';
+            const generatesReply = !isForkMode && (submittedRoleName || 'user') === 'user';
             setIsMessageSaving(!generatesReply);
             setIsTurnSubmitting(generatesReply);
         }
         try {
+
+            if (!wasEditing && !isForkMode && (submittedRoleName || 'user') === 'user') {
+                await waitForToolConfiguration();
+            }
 
             // Conversation tool permissions are server-authoritative.  Do not race a
             // new Turn ahead of a pending permission mutation; the UI remains optimistic
@@ -1045,7 +1075,7 @@ function ChatBox({
                         admissionPolicy: 'auto',
                         inputSource: 'chat',
                         isRegenerate: false,
-                        role: currentRole?.name,
+                        role: submittedRoleName ?? currentRoleRef.current?.name,
                         isFork: false,
                     }),
                 );
@@ -1103,7 +1133,7 @@ function ChatBox({
                     admissionPolicy: 'auto',
                     inputSource: 'chat',
                     isRegenerate: false,
-                    role: currentRole?.name,
+                    role: submittedRoleName ?? currentRoleRef.current?.name,
                     isFork: isForkMode,
                 }),
             );
@@ -1169,13 +1199,13 @@ function ChatBox({
         buildOutboundToolsStatus,
         editMessageId,
         attachmentsMeta,
-        currentRole,
         isForkMode,
         leaveEditMode,
         conversationId,
         persistActiveDraft,
         t,
         waitForConversationToolSync,
+        waitForToolConfiguration,
         waitForWorkspaceSelectionSync,
         commitAcceptedGuidanceDraft,
         uploadFiles.length,
@@ -1625,7 +1655,7 @@ function ChatBox({
     // ========== 聊天框配置函数 ==========
 
     const chatboxSetup = useCallback(
-        (data) => {
+        (data, { preserveLocalPermissions = false } = {}) => {
             const newBuiltinStatus = {};
 
             // 默认附件工具配置
@@ -1685,7 +1715,10 @@ function ChatBox({
                 allExtraTools,
             );
 
-            const serverToolPermissions = data.toolPermissions?.values || {};
+            const incomingPermissionRevision = Number(data.toolPermissions?.revision) || 0;
+            const serverToolPermissions = incomingPermissionRevision < toolPermissionRevisionRef.current
+                ? conversationToolPermissionsRef.current
+                : data.toolPermissions?.values || {};
             const permissionSource = data.toolPermissions?.source || 'default';
             const pendingMatchesConversation = Boolean(
                 conversationId &&
@@ -1704,7 +1737,7 @@ function ChatBox({
                     mergedExtraStatus,
                     effectiveToolPermissions,
                 );
-                toolPermissionRevisionRef.current = Number(data.toolPermissions?.revision) || 0;
+                toolPermissionRevisionRef.current = Math.max(toolPermissionRevisionRef.current, incomingPermissionRevision);
                 conversationToolPermissionsRef.current = { ...effectiveToolPermissions };
             }
             if (pendingMatchesConversation && permissionSource === 'conversation') {
@@ -1719,11 +1752,23 @@ function ChatBox({
                 setTools(data.builtin_tools);
             }
 
-            setToolsStatus((prev) => ({
-                ...prev,
-                builtin_tools: { ...prev.builtin_tools, ...newBuiltinStatus },
-                extra_tools: mergedExtraStatus,
-            }));
+            setToolsStatus((prev) => {
+                let nextExtraStatus = mergedExtraStatus;
+                if (preserveLocalPermissions) {
+                    const local = collectToolPermissions(configuredExtraTools, prev.extra_tools || {});
+                    const pending = {};
+                    if (!conversationId) Object.assign(pending, local);
+                    else toolPermissionPendingCountsRef.current.forEach((count, name) => {
+                        if (count > 0 && local[name] !== undefined) pending[name] = local[name];
+                    });
+                    nextExtraStatus = applyToolPermissionsToStatus(configuredExtraTools, nextExtraStatus, pending);
+                }
+                return {
+                    ...prev,
+                    builtin_tools: { ...prev.builtin_tools, ...newBuiltinStatus },
+                    extra_tools: nextExtraStatus,
+                };
+            });
 
             setExtraTools(configuredExtraTools);
             setAttachmentTools(defaultAttachmentTools);
@@ -1826,6 +1871,8 @@ function ChatBox({
                     break;
                 case 'composer.setup':
                     // 原子替换工具配置，保持上一帧工具栏高度，避免发送瞬间出现额外一行。
+                    chatboxResources.invalidate({ catalog: Boolean(payload.value?.extra_tools) });
+                    toolConfigurationFingerprintRef.current = null;
                     chatboxSetup(payload.value);
                     setToolsLoadedStatus(2);
                     break;
@@ -2256,12 +2303,39 @@ function ChatBox({
         };
     }, [conversationId]);
 
-    useEffect(() => {
-        const refresh = () => setToolCatalogRevision((value) => value + 1);
-        const unsubscribe = onEvent({ event: 'tool.catalog.changed' }).then(refresh);
-        window.addEventListener('focus', refresh);
-        return () => { unsubscribe(); window.removeEventListener('focus', refresh); };
+    const reloadTools = useCallback(() => {
+        chatboxResources.invalidate({ catalog: true });
+        setToolsLoadedStatus(0);
+        setToolCatalogRevision((value) => value + 1);
     }, []);
+
+    useEffect(() => {
+        if (settingsRefreshRevisionRef.current === settingsRefreshRevision) return;
+        settingsRefreshRevisionRef.current = settingsRefreshRevision;
+        chatboxResources.invalidate({ setup: true });
+        setToolCatalogRevision((value) => value + 1);
+    }, [settingsRefreshRevision]);
+
+    useEffect(() => {
+        let timer = null;
+        const scheduleRefresh = () => {
+            if (timer !== null) return;
+            timer = window.setTimeout(() => {
+                timer = null;
+                setToolCatalogRevision((value) => value + 1);
+            }, 100);
+        };
+        const changed = () => { chatboxResources.invalidate({ catalog: true }); scheduleRefresh(); };
+        const focused = () => {
+            if (!document.hidden && !chatboxResources.isFresh(conversationId)) {
+                chatboxResources.invalidate({ setup: true });
+                scheduleRefresh();
+            }
+        };
+        const unsubscribe = onEvent({ event: ['tool.catalog.changed', 'tool.default_permissions.changed'] }).then(changed);
+        window.addEventListener('focus', focused);
+        return () => { unsubscribe(); clearTimeout(timer); window.removeEventListener('focus', focused); };
+    }, [conversationId]);
 
     // 加载工具配置。conversationId 变化时重新读取服务器权威的会话工具权限；
     // 新对话尚无 conversationId 时读取用户级默认权限。
@@ -2272,31 +2346,47 @@ function ChatBox({
         }
 
         let cancelled = false;
-        const conversationKey = conversationId || '__new_conversation__';
+        const conversationKey = `${chatboxResourceScope()}:${conversationId || '__new_conversation__'}`;
         const catalogOnly = configuredToolsConversationRef.current === conversationKey;
         if (!catalogOnly) setToolsLoadedStatus(0);
-        apiClient
-            .get(apiEndpoint.CHATBOX_ENDPOINT, {
-                params: conversationId ? { conversationId } : undefined,
-            })
+        const request = chatboxResources.acquire({ conversationId });
+        const configurationPromise = request.promise
             .then((data) => {
-                if (cancelled) return;
-                chatboxSetup(catalogOnly ? {
-                    extra_tools: data.extra_tools,
-                    toolPermissions: data.toolPermissions,
-                    ignoreAttachmentTools: data.ignoreAttachmentTools,
-                } : data);
+                if (cancelled || conversationKey !== `${chatboxResourceScope()}:${conversationId || '__new_conversation__'}`) {
+                    throw new DOMException('ChatBox request retired', 'AbortError');
+                }
+                const fingerprint = chatboxConfigurationFingerprint(data);
+                const previous = toolConfigurationFingerprintRef.current;
+                if (!catalogOnly || previous?.value !== fingerprint) {
+                    const sameCatalog = catalogOnly && data.catalogRevision && previous?.catalogRevision === data.catalogRevision;
+                    if (sameCatalog && !data.setupChanged) {
+                        if (conversationId) applyConversationToolPermissions(data.toolPermissions?.values || {}, data.toolPermissions?.revision);
+                        setConversationToolDefaults((current) => JSON.stringify(current) === JSON.stringify(data.toolPermissions?.defaultValues || {})
+                            ? current : { ...(data.toolPermissions?.defaultValues || {}) });
+                        if (data.ignoreAttachmentTools !== undefined) setIgnoreAttachmentTools(Boolean(data.ignoreAttachmentTools));
+                        if (data.readOnly !== undefined) setIsReadOnly(Boolean(data.readOnly));
+                    } else {
+                        chatboxSetup(data, { preserveLocalPermissions: catalogOnly });
+                    }
+                    toolConfigurationFingerprintRef.current = { key: conversationKey, value: fingerprint, catalogRevision: data.catalogRevision };
+                }
                 configuredToolsConversationRef.current = conversationKey;
                 setToolsLoadedStatus(2);
+                return data;
             })
-            .catch(() => {
-                if (!cancelled && !catalogOnly) setToolsLoadedStatus(3);
+            .catch((error) => {
+                if (!cancelled) setToolsLoadedStatus(catalogOnly ? 4 : 3);
+                throw error;
             });
+        // Sending awaits this exact applying promise; input and draft editing remain usable.
+        toolConfigurationRequestRef.current = { key: conversationKey, promise: configurationPromise };
+        void configurationPromise.catch(() => undefined);
 
         return () => {
             cancelled = true;
+            request.release();
         };
-    }, [chatboxSetup, conversationId, toolCatalogRevision]);
+    }, [applyConversationToolPermissions, chatboxSetup, conversationId, toolCatalogRevision]);
 
     // 监听事件广播
     useEffect(() => {
@@ -2542,7 +2632,7 @@ function ChatBox({
             toolsStatus: activeToolsStatus,
             setToolsStatus,
             onBuiltinToolToggle: handleBuiltinToolToggle,
-            setToolsLoadedStatus,
+            onReloadTools: reloadTools,
             renderMenuItems, // 传递函数
             t,
             isWindowMode,
@@ -2566,7 +2656,7 @@ function ChatBox({
             activeToolsStatus,
             setToolsStatus,
             handleBuiltinToolToggle,
-            setToolsLoadedStatus,
+            reloadTools,
             renderMenuItems,
             t,
             isWindowMode,
@@ -2883,6 +2973,7 @@ export default memo(ChatBox, (prevProps, nextProps) => {
     // 检查其他 props
     return (
         prevProps.readOnly === nextProps.readOnly &&
+        prevProps.settingsRefreshRevision === nextProps.settingsRefreshRevision &&
         prevProps.conversationId === nextProps.conversationId &&
         prevProps.turnSubmissionPhase === nextProps.turnSubmissionPhase &&
         prevProps.uploadFiles === nextProps.uploadFiles &&

@@ -10,6 +10,15 @@ export const setRealtimeTransport = (transport) => {
     transportScope = transport ? getBackendConnection() : null;
 };
 
+export const resetRealtimeAuthentication = () => {
+    const previous = activeTransport;
+    activeTransport = null;
+    transportScope = null;
+    pendingEvents.length = 0;
+    previous?.setHandlers?.({});
+    previous?.close(1000, 'Authentication changed');
+};
+
 subscribeBackend(() => {
     if (transportScope && !isCurrentConnection(transportScope)) {
         activeTransport?.close(1000, 'Backend changed');

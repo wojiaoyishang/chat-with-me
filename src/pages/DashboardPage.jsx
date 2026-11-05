@@ -3,7 +3,7 @@ import React, { lazy, Suspense, useEffect, useState, useRef, useCallback } from 
 import Sidebar from '@/components/sidebar/Sidebar.jsx';
 import ChatPage from '@/pages/ChatPage.jsx';
 import { UnifiedErrorScreen, UnifiedLoadingScreen } from '@/lib/tools.jsx';
-import apiClient, { isAuthRedirectError } from '@/lib/apiClient.js';
+import { isAuthRedirectError } from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import { useTranslation } from 'react-i18next';
 import DocEditorHome from '@/pages/DocEditorHome.jsx';
@@ -17,6 +17,7 @@ import { ArrowLeft } from 'lucide-react';
 import NotificationHost from '@/features/notification/NotificationHost.jsx';
 import { notificationFocusSearch } from '@/features/notification/notificationTarget.js';
 import BackendManagementPage from '@/features/tasks/BackendManagementPage.jsx';
+import { startDashboardLoad } from '@/runtime/backend/bootstrapRequests.js';
 
 const StoriesPage = lazy(() => import('@/features/story/StoriesPage.jsx'));
 
@@ -159,48 +160,37 @@ const DashboardPage = ({ type = 'chat', standaloneChat = false }) => {
 
     // 页面加载动画层
     useEffect(() => {
-        const loadDashboard = async () => {
-            setIsLoading(true);
-            setIsLoadingError(false);
-            const settings = await apiClient.get(apiEndpoint.DASHBOARD_ENDPOINT);
-            if (settings.sidebar) {
-                setSidebarSettings(settings.sidebar);
+        setIsLoading(true);
+        setIsLoadingError(false);
+        const failed = (error) => {
+            if (isAuthRedirectError(error)) {
+                setIsAuthRedirecting(true);
+            } else {
+                toast.error(t('load_page_error', { message: error?.message || t('unknown_error') }));
+                setIsLoadingError(true);
             }
         };
-
-        const loadUserInfo = async () => {
-            const user = await apiClient.get(apiEndpoint.USER_INFO_ENDPOINT);
-
-            if (!user.username) {
-                user.username = 'User';
-                console.warn('UserInfo is missing username.');
-            }
-
-            // 设置默认内容
-            if (!user.nickname) user.nickname = user.username;
-
-            // 全局共享
-            setUser(user);
-        };
-
-        const loadAll = async () => {
-            try {
-                await loadDashboard();
-                await loadUserInfo();
-            } catch (error) {
+        return startDashboardLoad({
+            userEndpoint: apiEndpoint.USER_INFO_ENDPOINT,
+            displayEndpoint: apiEndpoint.DASHBOARD_ENDPOINT,
+            onUser: (user) => {
+                const username = user.username || 'User';
+                setUser({ ...user, username, nickname: user.nickname || username });
+            },
+            onDisplay: (settings) => {
+                if (settings.sidebar) setSidebarSettings(settings.sidebar);
+            },
+            onUserError: failed,
+            onDisplayError: (error) => {
                 if (isAuthRedirectError(error)) {
                     setIsAuthRedirecting(true);
                 } else {
-                    toast.error(t('load_page_error', { message: error?.message || t('unknown_error') }));
-                    setIsLoadingError(true);
+                    console.warn('Failed to load dashboard presentation:', error.message);
                 }
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadAll();
-    }, []);
+            },
+            onReady: () => setIsLoading(false),
+        });
+    }, [setUser, t]);
 
     const LoadingScreen = () => <UnifiedLoadingScreen text={t('loading_dashboard')} />;
 

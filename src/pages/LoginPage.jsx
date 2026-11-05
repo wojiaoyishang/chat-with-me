@@ -6,13 +6,17 @@ import { Input } from '@/components/ui/input.tsx';
 import { Label } from '@/components/ui/label.tsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
 import CryptoJS from 'crypto-js';
+import { useNavigate } from 'react-router-dom';
+import { retryWebSocketConnection } from '@/context/WebSocketContext.jsx';
+import { loginRedirectTarget } from '@/runtime/backend/bootstrapRequests.js';
 
 const LoginPage = () => {
+    const navigate = useNavigate();
     const { t } = useTranslation();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -43,14 +47,11 @@ const LoginPage = () => {
             // 如果登录成功，重置加载状态并设置成功状态
             setIsLoading(false);
             setIsSuccess(true);
-            // 读取 URL 参数中的 redirect，如果没有则默认为 '/'
-            const urlParams = new URLSearchParams(window.location.search);
-            const redirectParam = urlParams.get('redirect') || '/';
-            const redirectUrl = redirectParam.startsWith('/') && !redirectParam.startsWith('//') ? redirectParam : '/';
-            // 延迟 1 秒后跳转，以展示成功图标
-            setTimeout(() => {
-                window.location.href = redirectUrl;
-            }, 1000);
+            const redirectUrl = loginRedirectTarget(window.location.search, window.location.origin);
+            navigate(redirectUrl, { replace: true });
+            // The shared provider survives a route change and may have stopped
+            // automatic reconnect after the previous session expired.
+            void Promise.resolve().then(retryWebSocketConnection).catch(() => {});
         } catch (error) {
             toast.error(t('login_error', { message: error.message }));
             // 设置错误状态并重置加载状态
@@ -65,7 +66,7 @@ const LoginPage = () => {
 
     return (
         <div className="full-screen-min-height flex items-center justify-center bg-gray-100 p-4">
-            <motion.div
+            <Motion.div
                 initial={{ opacity: 0, y: 50 }} // 初始状态：透明，从下方50px位置
                 animate={{ opacity: 1, y: 0 }} // 动画到：不透明，正常位置
                 transition={{ duration: 0.6, ease: 'easeOut' }} // 过渡：0.6秒，自然缓出
@@ -80,7 +81,7 @@ const LoginPage = () => {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <AnimatePresence mode="wait">
                                 {!isLoading && !isSuccess && !isError ? (
-                                    <motion.div
+                                    <Motion.div
                                         key="form"
                                         initial={{ opacity: 0, scale: 0.95 }} // 初始：略微缩小并透明
                                         animate={{ opacity: 1, scale: 1 }} // 动画到：正常大小不透明
@@ -117,9 +118,9 @@ const LoginPage = () => {
                                             />
                                             {t('accountSecurity.remember')}
                                         </label>
-                                    </motion.div>
+                                    </Motion.div>
                                 ) : isLoading ? (
-                                    <motion.div
+                                    <Motion.div
                                         key="loading"
                                         initial={{ opacity: 0 }} // 初始透明
                                         animate={{ opacity: 1 }} // 淡入
@@ -130,9 +131,9 @@ const LoginPage = () => {
                                         <Loader2 className="h-8 w-8 animate-spin text-primary" />{' '}
                                         {/* 增大图标，添加颜色 */}
                                         <p className="text-primary font-medium">{t('logging_in')}</p>
-                                    </motion.div>
+                                    </Motion.div>
                                 ) : isSuccess ? (
-                                    <motion.div
+                                    <Motion.div
                                         key="success"
                                         initial={{ opacity: 0, scale: 0.8 }} // 初始：缩小并透明
                                         animate={{ opacity: 1, scale: 1 }} // 弹入效果
@@ -140,9 +141,9 @@ const LoginPage = () => {
                                         className="flex justify-center items-center h-32" // 调整为单图标居中
                                     >
                                         <CheckCircle className="h-10 w-10 text-green-500" /> {/* 只显示绿色打钩图标 */}
-                                    </motion.div>
+                                    </Motion.div>
                                 ) : isError ? (
-                                    <motion.div
+                                    <Motion.div
                                         key="error"
                                         initial={{ opacity: 0, scale: 0.8 }} // 初始：缩小并透明
                                         animate={{ opacity: 1, scale: 1 }} // 弹入效果
@@ -150,7 +151,7 @@ const LoginPage = () => {
                                         className="flex justify-center items-center h-32" // 调整为单图标居中
                                     >
                                         <XCircle className="h-10 w-10 text-red-500" /> {/* 只显示红色错误图标 */}
-                                    </motion.div>
+                                    </Motion.div>
                                 ) : null}
                             </AnimatePresence>
                             {/* 只有在表单显示时才显示按钮，加载/成功/错误时按钮消失 */}
@@ -165,7 +166,7 @@ const LoginPage = () => {
                         </form>
                     </CardContent>
                 </Card>
-            </motion.div>
+            </Motion.div>
         </div>
     );
 };

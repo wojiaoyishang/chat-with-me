@@ -15,10 +15,15 @@ const normalizeNotification = (notification) => ({
 });
 
 export const useNotificationStore = create((set, get) => ({
+    ownerKey: '',
     types: [],
     notifications: {},
     resolvedRevisions: {},
     subscriptions: readSubscriptions(),
+
+    bindOwner: (ownerKey) => set((state) => state.ownerKey === ownerKey ? state : {
+        ownerKey, types: [], notifications: {}, resolvedRevisions: {}, subscriptions: readSubscriptions(),
+    }),
 
     setTypes: (types) => set({types: Array.isArray(types) ? types : []}),
 

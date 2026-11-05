@@ -15,17 +15,27 @@ export const acceptFreezeEvent = (previous, next) => {
     return true;
 };
 
-export function createConversationFreezeController({conversationId, fetchState, subscribe, notify, pollMs = 5000}) {
+export function createConversationFreezeController({conversationId, fetchState, subscribe, notify, pollMs = 30000}) {
     let disposed = false;
     let sequence = 0;
     let request = null;
     let state = null;
     let inFlight = null;
+    let lastRefresh = 0;
+    let lastError = '';
+    const equal = (previous, next) => previous && Object.keys(next).every(key => previous[key] === next[key]);
+    const publish = (value) => {
+        const changed = !equal(state, value) || Boolean(lastError);
+        state = value;
+        lastError = '';
+        if (changed) notify({state, loading: false, error: ''});
+    };
     const refresh = () => {
         if (disposed) return Promise.resolve();
         // Polling never cancels a slow authoritative request. WebSocket snapshots
         // invalidate it separately, so an older GET cannot undo a newer event.
         if (inFlight) return inFlight;
+        lastRefresh = Date.now();
         const controller = new AbortController();
         request = controller;
         const version = ++sequence;
@@ -34,10 +44,12 @@ export function createConversationFreezeController({conversationId, fetchState, 
             if (disposed || controller.signal.aborted || version !== sequence) return;
             if (!value) throw new Error('Invalid conversation freeze state');
             if (!acceptFreezeEvent(state, value)) return;
-            state = value;
-            notify({state, loading: false, error: ''});
+            publish(value);
         } catch (error) {
-            if (!disposed && !controller.signal.aborted && version === sequence) notify({state, loading: false, error: error?.message || 'Request failed'});
+            if (!disposed && !controller.signal.aborted && version === sequence) {
+                lastError = error?.message || 'Request failed';
+                notify({state, loading: false, error: lastError});
+            }
         } finally { if (request === controller) { request = null; inFlight = null; } } })();
         return inFlight;
     };
@@ -49,11 +61,22 @@ export function createConversationFreezeController({conversationId, fetchState, 
         request?.abort();
         request = null;
         inFlight = null;
-        state = value;
-        notify({state, loading: false, error: ''});
+        lastRefresh = Date.now();
+        publish(value);
     });
     const connected = subscribe('transport.connected', () => void refresh());
-    const timer = setInterval(() => void refresh(), pollMs);
+    const timer = setInterval(() => {
+        if (globalThis.document?.hidden) return;
+        const interval = state?.frozen ? Math.min(pollMs, 5000) : pollMs;
+        if (Date.now() - lastRefresh >= interval) void refresh();
+    }, Math.min(pollMs, 5000));
     void refresh();
-    return {refresh, dispose() { disposed = true; ++sequence; request?.abort(); clearInterval(timer); changed(); connected(); }};
+    return {
+        refresh,
+        refreshIfStale() {
+            if (lastError || Date.now() - lastRefresh >= Math.min(pollMs, 5000)) return refresh();
+            return inFlight || Promise.resolve();
+        },
+        dispose() { disposed = true; ++sequence; request?.abort(); clearInterval(timer); changed(); connected(); },
+    };
 }

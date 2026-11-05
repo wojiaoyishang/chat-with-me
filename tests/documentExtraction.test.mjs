@@ -19,6 +19,7 @@ async function bundled(entry, outfile) {
       {
         name: "extraction-test",
         setup(builder) {
+          builder.onResolve({filter: /useTaskStore\.js$/}, () => ({path: "@/features/tasks/useTaskStore.js", namespace: "mock"}));
           builder.onResolve({ filter: /^react(?:\/|$)/ }, (args) => ({
             path: args.path,
             external: true,
@@ -65,7 +66,9 @@ async function bundled(entry, outfile) {
                         : path === "@/components/ui/dropdown-menu"
                           ? 'import {createContext,useContext,cloneElement} from "react";const Context=createContext({});export const DropdownMenu=({open,onOpenChange,children})=><Context.Provider value={{open,onOpenChange}}>{children}</Context.Provider>;export const DropdownMenuTrigger=({children})=>{const context=useContext(Context);return cloneElement(children,{onClick:()=>context.onOpenChange(!context.open)});};export const DropdownMenuContent=({children})=>useContext(Context).open?<section role="menu">{children}</section>:null;export const DropdownMenuItem=({children,onSelect,...props})=><button role="menuitem" onClick={onSelect} {...props}>{children}</button>;export const DropdownMenuLabel=({children})=><p>{children}</p>;export const DropdownMenuSeparator=()=>null;'
                           : path === "@/features/tasks/useTaskStore.js"
-                            ? "export const useTaskStore=(selector)=>selector?selector(globalThis.extractionTest.taskState):globalThis.extractionTest.taskState; useTaskStore.getState=()=>({merge:()=>{}});"
+                            ? "const snapshot=()=>{const state=globalThis.extractionTest.taskState??={tasks:{},open:false,selectedId:null,merge:()=>{},show:()=>{},setOpen:()=>{}};state.ownerKey??='test';state.statusEpoch??=0;state.bindOwner=()=>{};state.setSummary=()=>true;return state;};export const useTaskStore=(selector)=>selector?selector(snapshot()):snapshot();useTaskStore.getState=snapshot;useTaskStore.subscribe=()=>()=>{};"
+                            : path === "@/runtime/backend/bootstrapRequests.js"
+                              ? "export const backendAccountKey=()=>'test';export const loadBootstrapResource=(...args)=>globalThis.extractionTest.get(...args);"
                             : path === "react-router-dom"
                               ? 'export const useNavigate=()=>globalThis.extractionTest.navigate;export const useLocation=()=>({pathname:"/knowledge",search:""});'
                               : path === "@/config.js"
@@ -620,6 +623,37 @@ test("task popup honors server capabilities and does not offer unsafe cleanup re
     });
     assert.match(document.body.textContent, /部分完成/);
     assert.ok(![...document.querySelectorAll("button")].some((node) => /retry|重试/i.test(node.textContent)));
+  } finally {
+    await act(async () => root.unmount());
+    dom.window.close();
+  }
+});
+
+test("closed task popup loads only its badge summary and defers full data until opened", async () => {
+  const dom = environment(), calls = [];
+  globalThis.extractionTest = {
+    navigate: () => {},
+    get: async (url) => {
+      calls.push(url);
+      return url.endsWith('/summary') ? {activeCount: 5, counts: {running: 5}}
+        : url.endsWith('/definitions') ? {definitions: []} : {tasks: []};
+    },
+    taskState: {tasks: {}, open: false, selectedId: null, setOpen: () => {}, show: () => {}, merge: () => {}},
+  };
+  const Component = await bundled('src/features/tasks/TaskCenter.jsx', 'temp/task-lazy-popup-test.mjs');
+  const root = createRoot(document.getElementById('root'));
+  try {
+    await act(async () => {
+      root.render(React.createElement(Component));
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+    assert.deepEqual(calls, ['/tasks/summary']);
+    globalThis.extractionTest.taskState.open = true;
+    await act(async () => {
+      root.render(React.createElement(Component));
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+    assert.deepEqual(calls, ['/tasks/summary', '/tasks', '/tasks/definitions']);
   } finally {
     await act(async () => root.unmount());
     dom.window.close();

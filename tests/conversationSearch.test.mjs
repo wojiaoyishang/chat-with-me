@@ -397,3 +397,118 @@ test("untitled conversations remain visible and selectable in normal and search 
     await fixture.close();
   }
 });
+
+test('lazy subagents load only on expansion, paginate and expose retry after failure', async () => {
+  let firstAttempt = true;
+  const lazy = {...row('lazy-root'), hasChildren:true, childCount:2, childrenLoaded:false};
+  const fixture = await page((url, options) => {
+    if (url.endsWith('/lazy-root/children')) {
+      if (firstAttempt) { firstAttempt = false; throw Error('暂时不可用'); }
+      return options.params.offset === 0
+        ? {data:[{...row('child-one'),name:'第一个子智能体',hasChildren:true,childCount:1,childrenLoaded:false}],total:2,hasMore:true}
+        : {data:[{...row('child-two'),name:'第二个子智能体',childrenLoaded:false}],total:2,hasMore:false};
+    }
+    if (url.endsWith('/child-one/children')) return {data:[{...row('nested'),name:'嵌套子智能体'}],total:1,hasMore:false};
+    return {data:[lazy],total:1,hasMore:false};
+  });
+  try {
+    assert.equal(fixture.calls.length, 1);
+    assert.equal(fixture.document.querySelector('[data-conversation-id="child-one"]'), null);
+    await click(fixture.document.querySelector('[aria-label="展开子智能体"]'));
+    assert.match(fixture.document.body.textContent, /暂时不可用/);
+    await click([...fixture.document.querySelectorAll('button')].find(button => button.textContent === '重试加载子智能体'));
+    assert.ok(fixture.document.querySelector('[data-conversation-id="child-one"]'));
+    await click([...fixture.document.querySelectorAll('button')].find(button => button.textContent === '加载更多子智能体'));
+    assert.ok(fixture.document.querySelector('[data-conversation-id="child-two"]'));
+    assert.equal(fixture.calls.filter(call => call.url.endsWith('/lazy-root/children')).at(-1).params.offset, 1);
+    await click(fixture.document.querySelector('[aria-label="展开下级子智能体"]'));
+    assert.ok(fixture.document.querySelector('[data-conversation-id="nested"]'));
+    const count = fixture.calls.length;
+    await click(fixture.document.querySelector('[aria-label="收起子智能体"]'));
+    await click(fixture.document.querySelector('[aria-label="展开子智能体"]'));
+    assert.equal(fixture.calls.length, count);
+  } finally { await fixture.close(); }
+});
+
+test('selected deep subagent reveals only its ancestry and keeps target outside the first child page', async () => {
+  const root = {...row('path-root'),hasChildren:true,childCount:40,childrenLoaded:false};
+  const parent = {...row('path-parent'),hasChildren:true,childCount:40,childrenLoaded:false};
+  const target = {...row('path-target'),name:'选中的深层会话',childrenLoaded:false};
+  const fixture = await page((url) => {
+    if (url.endsWith('/path-target/ancestry')) return {data:[root,parent,target]};
+    if (url.endsWith('/path-root/children')) return {data:[row('recent-sibling')],total:40,hasMore:true};
+    if (url.endsWith('/path-parent/children')) return {data:[row('recent-nested-sibling')],total:40,hasMore:true};
+    return {data:[root],total:1,hasMore:false};
+  }, {selectedConversationId:'path-target'});
+  try {
+    assert.ok(fixture.document.querySelector('[data-conversation-id="path-target"]'));
+    assert.ok(fixture.document.querySelector('[data-conversation-id="recent-sibling"]'));
+    assert.ok(fixture.document.querySelector('[data-conversation-id="recent-nested-sibling"]'));
+    assert.equal(fixture.calls.filter(call => call.url.endsWith('/ancestry')).length, 1);
+    assert.equal(fixture.calls.filter(call => call.url.endsWith('/children')).length, 2);
+  } finally { await fixture.close(); }
+});
+
+test('burst sidebar reloads share one in-flight request and one trailing refresh without abort storms', async () => {
+  let requests = 0, release;
+  const fixture = await page(() => {
+    requests += 1;
+    if (requests === 2) return new Promise(resolve => { release = resolve; });
+    return {data:[row('current')],total:1,hasMore:false};
+  });
+  try {
+    let pending;
+    await act(async () => { pending = fixture.ref.current.reload(); await Promise.resolve(); });
+    assert.equal(requests, 2);
+    const active = fixture.calls.at(-1);
+    await act(async () => {
+      for (let i = 0; i < 8; i++) void fixture.ref.current.reload();
+      await Promise.resolve();
+    });
+    assert.equal(requests, 2);
+    assert.equal(active.signal.aborted, false);
+    await act(async () => { release({data:[row('updated')],total:1,hasMore:false}); await pending; });
+    assert.equal(requests, 3);
+    assert.equal(active.signal.aborted, false);
+  } finally { await fixture.close(); }
+});
+
+test('unmounted lazy child requests are aborted and their late responses are ignored', async () => {
+  let release;
+  const fixture = await page((url) => url.endsWith('/children')
+    ? new Promise(resolve => { release = resolve; })
+    : {data:[{...row('pending-root'),hasChildren:true,childCount:1,childrenLoaded:false}],total:1,hasMore:false});
+  await click(fixture.document.querySelector('[aria-label="展开子智能体"]'));
+  const active = fixture.calls.at(-1);
+  assert.match(fixture.document.body.textContent, /正在加载子智能体/);
+  await fixture.close();
+  assert.equal(active.signal.aborted, true);
+  await act(async () => release({data:[row('late-child')],total:1,hasMore:false}));
+});
+
+test('initial user metadata hydration does not discard the authenticated conversation page', async () => {
+  const fixture = await page(() => {
+    window.sessionStorage.setItem('cwm:backend-user:default', 'known-user');
+    return {data:[row('first-authenticated-page')],total:1,hasMore:false};
+  });
+  try {
+    assert.ok(fixture.document.querySelector('[data-conversation-id="first-authenticated-page"]'));
+    assert.equal(fixture.calls.length, 1);
+  } finally { await fixture.close(); }
+});
+
+test('late child responses cannot cross known actor changes and leave a retry instead of a spinner', async () => {
+  let release;
+  const fixture = await page((url) => url.endsWith('/children')
+    ? new Promise(resolve => { release = resolve; })
+    : {data:[{...row('actor-root'),hasChildren:true,childCount:1,childrenLoaded:false}],total:1,hasMore:false});
+  try {
+    window.sessionStorage.setItem('cwm:backend-user:default', 'actor-one');
+    await click(fixture.document.querySelector('[aria-label="展开子智能体"]'));
+    window.sessionStorage.setItem('cwm:backend-user:default', 'actor-two');
+    await act(async () => release({data:[row('private-old-actor-child')],total:1,hasMore:false}));
+    assert.equal(fixture.document.querySelector('[data-conversation-id="private-old-actor-child"]'), null);
+    assert.match(fixture.document.body.textContent, /连接或身份已更新/);
+    assert.equal(fixture.document.querySelector('[role="status"]'), null);
+  } finally { await fixture.close(); }
+});

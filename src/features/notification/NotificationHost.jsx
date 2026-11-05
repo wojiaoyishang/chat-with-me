@@ -13,6 +13,7 @@ import { emitEvent } from '@/context/useEventStore.jsx';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import apiClient, { isAuthRedirectError } from '@/lib/apiClient.js';
+import { backendAccountKey, loadBootstrapResource } from '@/runtime/backend/bootstrapRequests.js';
 import { apiEndpoint } from '@/config.js';
 import { onEvent } from '@/context/useEventStore.jsx';
 import { useIsMobile } from '@/lib/tools.jsx';
@@ -24,6 +25,7 @@ registerNotificationRenderer('tool.approval.required', NotificationToast);
 registerNotificationRenderer('task.finished', NotificationToast);
 registerNotificationRenderer('widget.available', NotificationToast);
 
+const EMPTY_NOTIFICATIONS = Object.freeze({});
 const toastIdFor = (notificationId, mobile) => `notification:${notificationId}:${mobile ? 'mobile' : 'desktop'}`;
 
 const toastIdsFor = (notificationId) => [toastIdFor(notificationId, false), toastIdFor(notificationId, true)];
@@ -38,9 +40,10 @@ const notificationTimestamp = (notification) =>
     );
 
 const NotificationHost = ({ currentConversationId, isConversationVisible = true, isTaskPageVisible = false, onOpenConversation }) => {
+    const ownerKey = backendAccountKey();
     const taskCenterOpen = useTaskStore((state) => state.open);
     const types = useNotificationStore((state) => state.types);
-    const notificationsMap = useNotificationStore((state) => state.notifications);
+    const notificationsMap = useNotificationStore((state) => state.ownerKey === ownerKey ? state.notifications : EMPTY_NOTIFICATIONS);
     const subscriptions = useNotificationStore((state) => state.subscriptions);
     const setTypes = useNotificationStore((state) => state.setTypes);
     const replaceNotifications = useNotificationStore((state) => state.replaceNotifications);
@@ -92,6 +95,7 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     const hiddenBaselineRef = useRef(new Map());
     const baseTitleRef = useRef(document.title.replace(/^\(\d+\)\s*/, ''));
     const syncPromiseRef = useRef(null);
+    useEffect(() => { useNotificationStore.getState().bindOwner(ownerKey); }, [ownerKey]);
 
     const notifications = useMemo(() => Object.values(notificationsMap), [notificationsMap]);
 
@@ -195,16 +199,12 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     useEffect(() => {
         let active = true;
         Promise.all([
-            apiClient.get(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT),
-            apiClient.get(apiEndpoint.NOTIFICATION_PENDING_ENDPOINT),
+            loadBootstrapResource(apiEndpoint.NOTIFICATION_TYPES_ENDPOINT),
+            syncPendingNotifications({ backgroundSince: document.hidden ? hiddenSinceRef.current : null }),
         ])
-            .then(([typeResponse, pendingResponse]) => {
+            .then(([typeResponse]) => {
                 if (!active) return;
                 setTypes(typeResponse?.types || []);
-                const pending = pendingResponse?.notifications || [];
-                rememberBackgroundNotifications(pending, document.hidden ? hiddenSinceRef.current : null);
-                // Do not clear an upsert that arrived after the HTTP snapshot was taken.
-                mergeNotifications(pending);
             })
             .catch((error) => {
                 if (!isAuthRedirectError(error)) {
@@ -214,7 +214,7 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
         return () => {
             active = false;
         };
-    }, [mergeNotifications, rememberBackgroundNotifications, setTypes]);
+    }, [setTypes, syncPendingNotifications]);
 
     useEffect(() => {
         const unsubscribe = onEvent({ event: 'notification.*' }).then(({ event, payload }) => {

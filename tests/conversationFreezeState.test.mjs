@@ -80,6 +80,37 @@ test('GET responses also respect monotonic revisions', async t => {
     assert.equal(acceptFreezeEvent(snapshot({revision: 6}), snapshot({revision: 5})), false);
 });
 
+test('unchanged authoritative snapshots do not repaint and focus reuses fresh state', async t => {
+    let calls = 0;
+    const ui = setup(t, async () => { calls++; return snapshot(); });
+    await settle();
+    await ui.controller.refresh();
+    await ui.controller.refreshIfStale();
+    assert.equal(calls, 2);
+    assert.equal(ui.changes.length, 1);
+});
+
+test('hidden documents pause fallback polling and errors clear on the next valid snapshot', async t => {
+    const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
+    const doc = {hidden: true};
+    Object.defineProperty(globalThis, 'document', {value: doc, configurable: true});
+    t.after(() => previous ? Object.defineProperty(globalThis, 'document', previous) : delete globalThis.document);
+    let calls = 0, fail = false;
+    const ui = setup(t, async () => { calls++; if (fail) throw new Error('offline'); return snapshot(); }, 5);
+    await settle();
+    await new Promise(resolve => setTimeout(resolve, 20));
+    assert.equal(calls, 1);
+    fail = true;
+    await ui.controller.refresh();
+    assert.equal(ui.changes.at(-1).error, 'offline');
+    fail = false;
+    await ui.controller.refreshIfStale();
+    assert.equal(ui.changes.at(-1).error, '');
+    doc.hidden = false;
+    await new Promise(resolve => setTimeout(resolve, 15));
+    assert.ok(calls >= 4);
+});
+
 test('disposal aborts work and drops late updates', async t => {
     const pending = deferred(); let signal;
     const ui = setup(t, input => { signal = input; return pending.promise; });

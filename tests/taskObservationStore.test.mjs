@@ -17,3 +17,20 @@ test("summary task events preserve the last observation; stale snapshots cannot 
   useTaskStore.getState().merge([{ taskId: "run", revision: 5, observation: null }]);
   assert.equal(useTaskStore.getState().tasks.run.observation, null);
 });
+
+test("task badge snapshots stay scoped to the actor and cannot undo a newer status event", (t) => {
+  const before = useTaskStore.getState();
+  t.after(() => useTaskStore.setState(before, true));
+  useTaskStore.getState().bindOwner('account-a');
+  const epoch = useTaskStore.getState().statusEpoch;
+  useTaskStore.getState().merge([{taskId: 'run', revision: 1, status: 'queued'}]);
+  assert.equal(useTaskStore.getState().setSummary({activeCount: 0}, 'account-a', epoch), false);
+  const current = useTaskStore.getState().statusEpoch;
+  assert.equal(useTaskStore.getState().setSummary({activeCount: 1}, 'account-a', current), true);
+  useTaskStore.getState().merge([{taskId: 'run', revision: 2, observation: null}]);
+  assert.equal(useTaskStore.getState().statusEpoch, current);
+  useTaskStore.getState().bindOwner('account-b');
+  assert.deepEqual(useTaskStore.getState().tasks, {});
+  assert.equal(useTaskStore.getState().summary, null);
+  assert.equal(useTaskStore.getState().setSummary({activeCount: 9}, 'account-a', 0), false);
+});

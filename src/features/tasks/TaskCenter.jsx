@@ -2,7 +2,7 @@ import { workflowArtifacts } from "../workflows/workflowProducts.js";
 import { formatLocalTimestamp } from '@/lib/clientText.js';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ClipboardList, Download, RefreshCw, X, ArrowUpRight, Play, CalendarClock } from 'lucide-react';
+import { ClipboardList, Download, RefreshCw, X, ArrowUpRight, Play, CalendarClock, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { useTaskStore } from './useTaskStore.js';
 import { downloadAttachmentResource } from '@/lib/resourceDownload.js';
 import RunObservation from './RunObservation.jsx';
 import { toast } from 'sonner';
+import { backendAccountKey, loadBootstrapResource } from '@/runtime/backend/bootstrapRequests.js';
 
 const taskStatusNames = { queued: '排队中', pending: '等待中', running: '运行中', completed: '已完成', failed: '失败', cancelled: '已取消', cancel_requested: '取消中', pause_requested: '等待阶段暂停', paused: '已暂停' };
 
@@ -20,7 +21,9 @@ export function TaskCenterTrigger({ listItem = false } = {}) {
     const { t } = useTranslation();
     const show = useTaskStore((s) => s.show);
     const tasks = useTaskStore((s) => s.tasks);
-    const count = Object.values(tasks).filter((task) =>
+    const ownerKey = useTaskStore((s) => s.ownerKey);
+    const summary = useTaskStore((s) => s.summary);
+    const count = ownerKey !== backendAccountKey() ? 0 : summary?.activeCount ?? Object.values(tasks).filter((task) =>
         ['queued', 'pending', 'running', 'cancel_requested', 'pause_requested'].includes(task.status),
     ).length;
     return (
@@ -47,12 +50,49 @@ export function TaskCenterTrigger({ listItem = false } = {}) {
 export default function TaskCenter() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { tasks, open, selectedId, setOpen, show, merge } = useTaskStore();
+    const { tasks: storedTasks, open: storedOpen, ownerKey: taskOwner, selectedId, setOpen, show, merge } = useTaskStore();
+    const ownerKey = backendAccountKey();
+    const tasks = taskOwner === ownerKey ? storedTasks : {};
+    const open = taskOwner === ownerKey && storedOpen;
     const [busy, setBusy] = useState(null);
     const selected = useRef(null);
     const selectedTaskId = tasks[selectedId]?.taskId;
     const [loadError, setLoadError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [definitions, setDefinitions] = useState({});
+    useEffect(() => {
+        useTaskStore.getState().bindOwner(ownerKey);
+        let disposed = false;
+        let inFlight = null;
+        let timer = null;
+        const schedule = () => {
+            if (disposed || timer !== null) return;
+            timer = window.setTimeout(() => { timer = null; void refresh(); }, 200);
+        };
+        const refresh = () => {
+            if (disposed || inFlight) return inFlight;
+            const statusEpoch = useTaskStore.getState().statusEpoch;
+            const request = loadBootstrapResource(`${apiEndpoint.TASKS_ENDPOINT}/summary`)
+                .then((data) => {
+                    if (!disposed && !useTaskStore.getState().setSummary(data, ownerKey, statusEpoch)) schedule();
+                })
+                .catch(() => undefined)
+                .finally(() => { if (inFlight === request) inFlight = null; });
+            inFlight = request;
+            return request;
+        };
+        const statusChanged = useTaskStore.subscribe((state, previous) => {
+            if (state.ownerKey === ownerKey && state.statusEpoch !== previous.statusEpoch) schedule();
+        });
+        const reconnect = onEvent({ event: 'transport.connected' }).then(() => void refresh());
+        void refresh();
+        return () => {
+            disposed = true;
+            if (timer !== null) window.clearTimeout(timer);
+            statusChanged();
+            reconnect();
+        };
+    }, [ownerKey]);
     const stageName = (task, stage) => definitions[task.kind]?.stages?.find((item) => item.key === stage)?.name ||
         t(`taskCenter.${stage}`, { defaultValue: taskStatusNames[stage] || stage || '等待执行' });
     const openManagement = (taskId) => {
@@ -60,10 +100,18 @@ export default function TaskCenter() {
         navigate(`/tasks${taskId ? `?taskId=${encodeURIComponent(taskId)}` : ''}`);
     };
     useEffect(() => {
+        const changed = onEvent({ event: 'task.changed' }).then(({ payload }) => merge([payload]));
+        const openTasks = onEvent({ event: 'task.center.open' }).then(({ payload }) => show(payload?.taskId));
+        return () => { changed(); openTasks(); };
+    }, [merge, show]);
+    useEffect(() => {
+        if (!open) return undefined;
         let disposed = false;
-        const load = () =>
-            apiClient
-                .get(apiEndpoint.TASKS_ENDPOINT)
+        let inFlight = null;
+        const load = () => {
+            if (inFlight) return inFlight;
+            setLoading(true);
+            const tasksRequest = loadBootstrapResource(apiEndpoint.TASKS_ENDPOINT)
                 .then((data) => {
                     if (!disposed) {
                         merge(data.tasks || []);
@@ -73,27 +121,34 @@ export default function TaskCenter() {
                 .catch((error) => {
                     if (!disposed) setLoadError(error.message);
                 });
+            const definitionsRequest = loadBootstrapResource(`${apiEndpoint.TASKS_ENDPOINT}/definitions`)
+                .then((data) => {
+                    if (!disposed) setDefinitions(Object.fromEntries((data.definitions || []).map((item) => [item.kind, item])));
+                })
+                .catch(() => undefined);
+            const request = Promise.all([tasksRequest, definitionsRequest]).finally(() => {
+                if (inFlight === request) inFlight = null;
+                if (!disposed) setLoading(false);
+            });
+            inFlight = request;
+            return request;
+        };
         void load();
-        apiClient.get(`${apiEndpoint.TASKS_ENDPOINT}/definitions`).then((data) => {
-            if (!disposed) setDefinitions(Object.fromEntries((data.definitions || []).map((item) => [item.kind, item])));
-        }).catch(() => undefined);
-        const changed = onEvent({ event: 'task.changed' }).then(({ payload }) => merge([payload]));
         const reconnect = onEvent({ event: 'transport.connected' }).then(() => void load());
-        const openTasks = onEvent({ event: 'task.center.open' }).then(({ payload }) => show(payload.taskId));
         return () => {
             disposed = true;
-            changed();
             reconnect();
-            openTasks();
         };
-    }, [merge, show]);
+    }, [merge, open]);
     useEffect(() => {
+        const controller = new AbortController();
         if (open && selectedId) {
             apiClient
-                .get(`${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(selectedId)}`)
+                .get(`${apiEndpoint.TASKS_ENDPOINT}/${encodeURIComponent(selectedId)}`, { signal: controller.signal, timeout: 10000 })
                 .then((task) => merge([task]))
-                .catch((error) => toast.error(error.message));
+                .catch((error) => { if (!controller.signal.aborted) toast.error(error.message); });
         }
+        return () => controller.abort();
     }, [open, selectedId, merge]);
     useEffect(() => {
         if (open) selected.current?.scrollIntoView({ block: 'nearest' });
@@ -134,7 +189,8 @@ export default function TaskCenter() {
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-3 p-4">
                     {loadError && <p className="text-sm text-destructive">{loadError}</p>}
-                    {!list.length && !loadError && (
+                    {loading && !list.length && <div role="status" className="flex items-center gap-2 py-8 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t('taskCenter.loading', { defaultValue: '正在加载任务' })}</div>}
+                    {!list.length && !loadError && !loading && (
                         <p className="py-12 text-center text-muted-foreground">{t('taskCenter.empty')}</p>
                     )}
                     {list.map((task) => (

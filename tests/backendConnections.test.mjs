@@ -143,3 +143,40 @@ test('unsynchronized state can block a switch before persistence or navigation c
     await runtime.switchBackend('b');
     assert.deepEqual(navigations, ['/chat']);
 });
+
+test('an old account response cannot overwrite credentials after SPA login', async () => {
+    const previousToken = runtime.getConnectionToken(), previousUser = runtime.getConnectionUserId();
+    const before = navigations.length;
+    let finish;
+    runtime.setConnectionToken('old-account-token');
+    runtime.api.defaults.adapter = config => config.url.endsWith('/user/login')
+        ? Promise.resolve({status: 200, headers: {}, config, data: {success: true, data: {accessToken: 'new-account-token', userId: 'new-user'}}})
+        : new Promise(resolve => { finish = () => resolve({status: 200, headers: {}, config, data: {success: true, data: {accessToken: 'old-account-token', userId: 'old-user'}}}); });
+    try {
+        const old = runtime.api.post('/client/session');
+        await new Promise(resolve => setImmediate(resolve));
+        await runtime.api.post('/user/login', {});
+        finish();
+        await assert.rejects(old, /changed|canceled/i);
+        assert.equal(runtime.getConnectionToken(), 'new-account-token');
+        assert.equal(runtime.getConnectionUserId(), 'new-user');
+        assert.equal(navigations.length, before);
+    } finally {
+        runtime.setConnectionToken(previousToken); runtime.setConnectionUserId(previousUser);
+    }
+});
+
+test('a successful SPA login restores future unauthorized redirects', async () => {
+    const previousToken = runtime.getConnectionToken(), previousUser = runtime.getConnectionUserId();
+    const before = navigations.length;
+    runtime.api.defaults.adapter = async config => ({status: 200, headers: {}, config, data: config.url.endsWith('/user/login')
+        ? {success: true, data: {accessToken: 'renewed-token'}} : {success: false, code: 401, msg: 'expired'}});
+    try {
+        await assert.rejects(runtime.api.get('/user/info'), /Authentication required/);
+        await runtime.api.post('/user/login', {});
+        await assert.rejects(runtime.api.get('/user/info'), /Authentication required/);
+        assert.equal(navigations.length - before, 2);
+    } finally {
+        runtime.setConnectionToken(previousToken); runtime.setConnectionUserId(previousUser);
+    }
+});

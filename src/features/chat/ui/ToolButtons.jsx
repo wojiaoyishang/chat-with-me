@@ -208,7 +208,7 @@ const ToolButtons = memo(
         extraTools,
         attachmentTools = [],
         renderMenuItems,
-        setToolsLoadedStatus,
+        onReloadTools,
         tools,
         toolsStatus,
         setToolsStatus,
@@ -484,7 +484,7 @@ const ToolButtons = memo(
                         <div className="mb-1 text-red-500">{t('tool_load_failed')}</div>
                         <button
                             type="button"
-                            onClick={() => setToolsLoadedStatus(0)}
+                            onClick={onReloadTools}
                             className="inline-flex items-center text-blue-500 hover:text-blue-700 cursor-pointer"
                             aria-label={t('reload_tools')}
                         >
@@ -500,7 +500,7 @@ const ToolButtons = memo(
             }
 
             return <div className="px-2.5 py-2 text-sm text-gray-500">{t('no_tools_available')}</div>;
-        }, [hasBuiltinTools, isMobileMenu, mobileBuiltinToolMenuItems, setToolsLoadedStatus, t, toolsLoadedStatus]);
+        }, [hasBuiltinTools, isMobileMenu, mobileBuiltinToolMenuItems, onReloadTools, t, toolsLoadedStatus]);
 
         // ==================== 宽度判断逻辑 ====================
         const MAX_INLINE_TOOLS = 4;
@@ -705,7 +705,7 @@ const ToolButtons = memo(
                                 <span className="truncate text-sm text-red-500">{t('tool_load_failed')}</span>
                                 <button
                                     type="button"
-                                    onClick={() => setToolsLoadedStatus(0)}
+                                    onClick={onReloadTools}
                                     className="inline-flex shrink-0 cursor-pointer items-center text-sm text-blue-500 hover:text-blue-700"
                                     aria-label={t('reload_tools')}
                                 >
