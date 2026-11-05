@@ -69,12 +69,44 @@ test('run transitions flush independently and missing messages cannot be resurre
     assert.deepEqual(applyMessageStreamOperations({}, [{ event: 'message.content.delta', value: { old: 'stale' } }]), {});
 });
 
-test('long bursts have a bounded pending operation count and preserve all content', () => {
+test('long bursts merge text rather than forcing token-count-driven renders', () => {
     const f = fixture();
     for (let i = 0; i < 2000; i += 1) f.enqueue('message.content.delta', { a: 'x' });
     f.batch.flush();
     assert.equal(f.messages.a.content, 'x'.repeat(2000));
-    assert.equal(f.commits, 8);
+    assert.equal(f.commits, 1);
+});
+
+test('large bursts stay bounded by text size, and slow commits adapt then recover without delaying terminal states', () => {
+    const f = fixture();
+    for (let index = 0; index < 160; index++) f.enqueue('message.content.delta', {a: 'x'.repeat(1024)});
+    f.batch.flush();
+    assert.equal(f.messages.a.content.length, 160 * 1024);
+    assert.equal(f.commits, 3);
+    let clock = 0;
+    let cost = 80;
+    let scheduled;
+    const delays = [];
+    let messages = {a: {content: ''}};
+    const batch = createMessageStreamBatch({getMessages: () => messages, now: () => clock,
+        commit: (value) => {messages = value; clock += cost;},
+        schedule: (callback, delay) => {scheduled = callback; delays.push(delay); return delays.length;}, cancel: () => {}});
+    const delta = () => batch.enqueue({event: 'message.content.delta', runId: 'run', value: {a: '🙂'}});
+    delta();
+    clock += delays.at(-1);
+    scheduled();
+    delta();
+    assert.equal(delays.at(-1), 120);
+    cost = 0;
+    for (let index = 0; index < 8; index++) {
+        clock += delays.at(-1);
+        scheduled();
+        delta();
+    }
+    assert.equal(delays.at(-1), 32);
+    batch.enqueue({event: 'message.replacement.set', runId: 'run', value: {a: {tool: '[DONE]'}}});
+    assert.equal(messages.a.content, '🙂'.repeat(10));
+    assert.equal(messages.a.extraInfo.replace.tool, '[DONE]');
 });
 
 test('flushing before a durable snapshot prevents replaying a prefix twice', () => {

@@ -16,7 +16,7 @@ const mocks = new Map([
                 : type === 'executionStatus' ? <Status content={content} {...props}/> : null;
         }`],
     ['ReplacementContextBadge.jsx', 'export default ()=>null;'],
-    ['ExecutionGuidanceBubble.jsx', 'export default ()=>null;'],
+    ['ExecutionGuidanceBubble.jsx', 'export default ({activity})=><div data-test-guidance={activity.id}>{activity.content}</div>;'],
     ['universalModal.js', 'export const isUniversalModalLink=()=>false; export const openUniversalModalLink=()=>{};'],
     ['useImageViewer.js', 'export const openImageViewer=()=>{};'],
 ]);
@@ -396,6 +396,37 @@ test('supplements split streamed work immediately and repeatedly without remount
     }
     await ui.render(source, structuredClone(replacement), false);
     assert.equal(ui.host.querySelectorAll('[data-work-process]').length, 4, 'persisted metadata retains the same supplement boundaries');
+});
+
+test('repeated status anchors cannot repeat a received supplement or completed process', async (t) => {
+    const ui = await setup(t);
+    const guidance = {id: 'same-note', anchorStatusId: 'read', kind: 'guidance', source: 'user_guidance',
+        state: 'consumed', content: '请补充来源'};
+    const replacement = {read: status('read', {activities: [guidance]}),
+        next: continuation('next'), video: {type: 'markdown', content: '![录像](https://example.com/a.mp4){type=video}'}};
+    const original = token('read', 'executionStatus') + token('next', 'executionStatus') + token('video');
+    await ui.render(original, replacement);
+    const process = ui.host.querySelector('[data-work-process="read"]');
+    const video = ui.host.querySelector('video');
+    video.currentTime = 8;
+
+    // The old script dispatcher emitted the same outer call token for each child.
+    // Each copy split the process at the same guidance ID and rendered it again.
+    const duplicated = original + token('read', 'executionStatus') + token('next', 'executionStatus');
+    await ui.render(duplicated, replacement);
+    assert.equal(ui.host.querySelectorAll('[data-test-guidance="same-note"]').length, 1);
+    assert.equal(ui.host.querySelectorAll('[data-work-process="read"]').length, 1);
+    assert.equal(ui.host.querySelectorAll('[data-work-process="next"]').length, 1);
+    assert.equal(ui.host.querySelector('[data-work-process="read"]'), process);
+    assert.equal(ui.host.querySelector('video'), video);
+    assert.equal(video.currentTime, 8);
+    await ui.render(duplicated, structuredClone(replacement), false);
+    assert.equal(ui.host.querySelectorAll('[data-test-guidance="same-note"]').length, 1, 'history must also render one receipt');
+    await ui.render(duplicated, {...replacement, next: continuation('next', {updatedAt: 11, activities: [guidance,
+        {...guidance, id: 'another-note', anchorStatusId: 'next'},
+    ]})}, false);
+    assert.deepEqual([...ui.host.querySelectorAll('[data-test-guidance]')].map((node) => node.dataset.testGuidance),
+        ['same-note', 'another-note'], 'distinct supplements with identical text must both remain visible');
 });
 
 test('real execution stream with absent backend-only results stays grouped before and after history hydration', async (t) => {

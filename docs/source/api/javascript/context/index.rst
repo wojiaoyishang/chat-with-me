@@ -34,9 +34,9 @@
      - 0
      - ``src/context/MyToaster.jsx``
    * - :doc:`src/context/WebSocketContext </api/javascript/context/WebSocketContext>`
-     - 4
+     - 5
      - 0
-     - 32
+     - 35
      - ``src/context/WebSocketContext.jsx``
    * - :doc:`src/context/WebSocketReconnectPrompt </api/javascript/context/WebSocketReconnectPrompt>`
      - 1

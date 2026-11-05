@@ -26,7 +26,7 @@
    * - :doc:`src/pages/DashboardPage </api/javascript/pages/DashboardPage>`
      - 2
      - 0
-     - 33
+     - 35
      - ``src/pages/DashboardPage.jsx``
    * - :doc:`src/pages/DocEditorHome </api/javascript/pages/DocEditorHome>`
      - 3
@@ -36,7 +36,7 @@
    * - :doc:`src/pages/LoginPage </api/javascript/pages/LoginPage>`
      - 1
      - 0
-     - 6
+     - 8
      - ``src/pages/LoginPage.jsx``
    * - :doc:`src/pages/SettingPage </api/javascript/pages/SettingPage>`
      - 3

@@ -27,7 +27,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:282:2362:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:282:2385:FUNCTION
 
 .. js:function:: useConversationFreeze(conversationId)
 
@@ -59,7 +59,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:524:1670:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:524:1693:FUNCTION
 
 .. rubric:: ``useEffect callback @ 10``
 
@@ -89,7 +89,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:796:927:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:796:943:FUNCTION
 
 .. rubric:: ``fetchState``
 
@@ -116,7 +116,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 **主要协作调用**：``apiClient.get``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:951:1004:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:967:1020:FUNCTION
 
 .. rubric:: ``subscribe``
 
@@ -146,7 +146,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 **主要协作调用**：``onEvent({event}).then``、``onEvent``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:1025:1072:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:1041:1088:FUNCTION
 
 .. rubric:: ``notify``
 
@@ -169,7 +169,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 **主要协作调用**：``setSnapshot``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:1164:1223:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:1180:1246:FUNCTION
 
 .. rubric:: ``refreshWhenVisible``
 
@@ -193,9 +193,9 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``controller.refresh``。
+**主要协作调用**：``controller.refreshIfStale``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:1376:1663:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:1399:1686:FUNCTION
 
 .. rubric:: ``returned callback @ 23``
 
@@ -221,7 +221,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 **主要协作调用**：``controller.dispose``、``window.removeEventListener``、``document.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:2174:2199:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:2197:2222:FUNCTION
 
 .. rubric:: ``useCallback callback @ 36``
 
@@ -241,7 +241,7 @@ src/features/chat/freeze/useConversationFreeze 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:2238:2276:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/useConversationFreeze.js:2261:2299:FUNCTION
 
 .. rubric:: ``useCallback callback @ 37``
 

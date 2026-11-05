@@ -44,7 +44,7 @@ export function executionGroupingKey(content, replacement, process = false) {
         if (process) {
             const meta = replacement?.[id]?.workProcess;
             return [id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot,
-                entry.content.trim().length === 0, status?.executionId, status?.runId, status?.conversationId,
+                entry.content.trim().length === 0, status?.executionId, status?.runId, status?.conversationId, status?.statusId,
                 status?.inlineKind === 'feedback', hasExecutionGuidanceBoundary(status), meta?.executionId, meta?.runId, meta?.conversationId];
         }
         return [id, entry.exists, entry.type, Boolean(entry.contextStatus), entry.snapshot,

@@ -17,7 +17,7 @@ src/features/notification/useNotificationStore 模块
 * **模块标识**：``src/features/notification/useNotificationStore``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：17
+* **局部函数与匿名回调**：19
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ src/features/notification/useNotificationStore 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:617:4746:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:617:4964:FUNCTION
 
 .. rubric:: ``create callback @ 17``
 
@@ -79,7 +79,7 @@ src/features/notification/useNotificationStore 模块
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``17``—``116`` 行。
+**性质**：同步局部函数；源码第 ``17``—``121`` 行。
 
 **参数**
 
@@ -100,9 +100,61 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``readSubscriptions``。
 
-**内部回调数量**：9。这些回调也会在本页逐项说明。
+**内部回调数量**：10。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:753:812:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:772:955:FUNCTION
+
+.. rubric:: ``bindOwner``
+
+.. code-block:: javascript
+
+   bindOwner(ownerKey)
+
+实现 ``bindOwner`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``24``—``26`` 行；所属函数 ``create callback @ 17``。
+
+**参数**
+
+``ownerKey``
+   调用方传入的 ``ownerKey`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 更新 React 或全局 Store 状态。
+
+**主要协作调用**：``set``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:791:954:FUNCTION
+
+.. rubric:: ``set callback @ 24``
+
+.. code-block:: javascript
+
+   set callback @ 24(state)
+
+设置与 ``set`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``24``—``26`` 行；所属函数 ``bindOwner``。
+
+**参数**
+
+``state``
+   调用方传入的 ``state`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``readSubscriptions``。
+
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:971:1030:FUNCTION
 
 .. rubric:: ``setTypes``
 
@@ -112,7 +164,7 @@ src/features/notification/useNotificationStore 模块
 
 设置与 ``Types`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``28``—``28`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -125,7 +177,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``set``、``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:840:1359:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:1058:1577:FUNCTION
 
 .. rubric:: ``replaceNotifications``
 
@@ -135,7 +187,7 @@ src/features/notification/useNotificationStore 模块
 
 替换与 ``Notifications`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``25``—``35`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``30``—``40`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -154,17 +206,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:864:1358:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:1082:1576:FUNCTION
 
-.. rubric:: ``set callback @ 25``
+.. rubric:: ``set callback @ 30``
 
 .. code-block:: javascript
 
-   set callback @ 25(state)
+   set callback @ 30(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``25``—``35`` 行；所属函数 ``replaceNotifications``。
+**性质**：同步局部函数；源码第 ``30``—``40`` 行；所属函数 ``replaceNotifications``。
 
 **参数**
 
@@ -177,7 +229,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``normalizeNotification``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:1385:2043:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:1603:2261:FUNCTION
 
 .. rubric:: ``mergeNotifications``
 
@@ -187,7 +239,7 @@ src/features/notification/useNotificationStore 模块
 
 合并与 ``Notifications`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``37``—``48`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``42``—``53`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -206,17 +258,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:1409:2042:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:1627:2260:FUNCTION
 
-.. rubric:: ``set callback @ 37``
+.. rubric:: ``set callback @ 42``
 
 .. code-block:: javascript
 
-   set callback @ 37(state)
+   set callback @ 42(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``37``—``48`` 行；所属函数 ``mergeNotifications``。
+**性质**：同步局部函数；源码第 ``42``—``53`` 行；所属函数 ``mergeNotifications``。
 
 **参数**
 
@@ -229,7 +281,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``normalizeNotification``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2069:2604:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2287:2822:FUNCTION
 
 .. rubric:: ``upsertNotification``
 
@@ -239,7 +291,7 @@ src/features/notification/useNotificationStore 模块
 
 实现 ``upsertNotification`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``50``—``58`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``55``—``63`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -258,17 +310,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2092:2603:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2310:2821:FUNCTION
 
-.. rubric:: ``set callback @ 50``
+.. rubric:: ``set callback @ 55``
 
 .. code-block:: javascript
 
-   set callback @ 50(state)
+   set callback @ 55(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``50``—``58`` 行；所属函数 ``upsertNotification``。
+**性质**：同步局部函数；源码第 ``55``—``63`` 行；所属函数 ``upsertNotification``。
 
 **参数**
 
@@ -281,7 +333,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``normalizeNotification``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2631:3344:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2849:3562:FUNCTION
 
 .. rubric:: ``resolveNotification``
 
@@ -291,7 +343,7 @@ src/features/notification/useNotificationStore 模块
 
 解析并确定与 ``Notification`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``60``—``77`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``65``—``82`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -313,17 +365,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2670:3343:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:2888:3561:FUNCTION
 
-.. rubric:: ``set callback @ 60``
+.. rubric:: ``set callback @ 65``
 
 .. code-block:: javascript
 
-   set callback @ 60(state)
+   set callback @ 65(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``60``—``77`` 行；所属函数 ``resolveNotification``。
+**性质**：同步局部函数；源码第 ``65``—``82`` 行；所属函数 ``resolveNotification``。
 
 **参数**
 
@@ -336,7 +388,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``Number``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:3370:3845:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:3588:4063:FUNCTION
 
 .. rubric:: ``removeNotification``
 
@@ -346,7 +398,7 @@ src/features/notification/useNotificationStore 模块
 
 移除与 ``Notification`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``79``—``92`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``84``—``97`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -368,17 +420,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:3409:3844:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:3627:4062:FUNCTION
 
-.. rubric:: ``set callback @ 79``
+.. rubric:: ``set callback @ 84``
 
 .. code-block:: javascript
 
-   set callback @ 79(state)
+   set callback @ 84(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``79``—``92`` 行；所属函数 ``removeNotification``。
+**性质**：同步局部函数；源码第 ``84``—``97`` 行；所属函数 ``removeNotification``。
 
 **参数**
 
@@ -391,7 +443,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``Math.max``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:3868:4352:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4086:4570:FUNCTION
 
 .. rubric:: ``setSubscription``
 
@@ -401,7 +453,7 @@ src/features/notification/useNotificationStore 模块
 
 设置与 ``Subscription`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``94``—``105`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``99``—``110`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -424,17 +476,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:3892:4351:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4110:4569:FUNCTION
 
-.. rubric:: ``set callback @ 94``
+.. rubric:: ``set callback @ 99``
 
 .. code-block:: javascript
 
-   set callback @ 94(state)
+   set callback @ 99(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``94``—``105`` 行；所属函数 ``setSubscription``。
+**性质**：同步局部函数；源码第 ``99``—``110`` 行；所属函数 ``setSubscription``。
 
 **参数**
 
@@ -451,7 +503,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``setLocalSetting``、``backendStorageKey``、``window.dispatchEvent``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4379:4427:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4597:4645:FUNCTION
 
 .. rubric:: ``reloadSubscriptions``
 
@@ -461,7 +513,7 @@ src/features/notification/useNotificationStore 模块
 
 实现 ``reloadSubscriptions`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -473,7 +525,7 @@ src/features/notification/useNotificationStore 模块
 
 **主要协作调用**：``set``、``readSubscriptions``。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4449:4742:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4667:4960:FUNCTION
 
 .. rubric:: ``isToastEnabled``
 
@@ -483,7 +535,7 @@ src/features/notification/useNotificationStore 模块
 
 判断与 ``Toast Enabled`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``109``—``115`` 行；所属函数 ``create callback @ 17``。
+**性质**：同步局部函数；源码第 ``114``—``120`` 行；所属函数 ``create callback @ 17``。
 
 **参数**
 
@@ -498,17 +550,17 @@ src/features/notification/useNotificationStore 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4652:4684:FUNCTION
+.. CWM-AST-FUNCTION src/features/notification/useNotificationStore.js:4870:4902:FUNCTION
 
-.. rubric:: ``state.types.find callback @ 113``
+.. rubric:: ``state.types.find callback @ 118``
 
 .. code-block:: javascript
 
-   state.types.find callback @ 113(item)
+   state.types.find callback @ 118(item)
 
 作为 ``state.types.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``isToastEnabled``。
+**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``isToastEnabled``。
 
 **参数**
 

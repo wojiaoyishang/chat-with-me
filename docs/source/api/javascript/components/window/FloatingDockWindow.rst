@@ -134,7 +134,7 @@ src/components/window/FloatingDockWindow 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/window/FloatingDockWindow.jsx:2507:16780:FUNCTION
+.. CWM-AST-FUNCTION src/components/window/FloatingDockWindow.jsx:2507:16788:FUNCTION
 
 .. rubric:: ``memo callback @ 66``
 

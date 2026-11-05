@@ -125,6 +125,25 @@ test('queued, withdrawn and agent messages do not create visible work boundaries
     }
 });
 
+test('duplicate status references keep the first nested host without splitting later work', () => {
+    const replacement = {a: status('a'), b: status('b')};
+    const tree = parse(`> ${token('a')}\n\n${token('a')}\n\n${token('b')}`, replacement);
+    const first = tree.children[0].children[0];
+    assert.equal(first.data.hProperties.processHidden, undefined);
+    assert.equal(tree.children[1].data.hProperties.processHidden, 'true');
+    assert.deepEqual(JSON.parse(tree.children[2].data.hProperties.processEntries).map((entry) => entry.id), ['b']);
+});
+
+test('deduplication respects execution identity and leaves frozen cards and ordinary repeats alone', () => {
+    const replacement = {a: status('same'), other: status('same', {runId: 'other-run'}),
+        frozen: {...status('same'), snapshot: true}, text: {type: 'markdown', content: '可重复的正文'}};
+    const tree = parse(['a', 'other', 'frozen', 'frozen', 'text', 'text'].map((id) => token(id)).join('\n\n'), replacement);
+    assert.ok(tree.children.every((node) => node.data.hProperties.processHidden !== 'true'));
+    assert.equal(parse(token('a') + '\n\n' + token('a'), replacement, {snapshot: true}).children.length, 2);
+    assert.notEqual(executionGroupingKey(token('a'), replacement, true),
+        executionGroupingKey(token('a'), {...replacement, a: status('new-status')}, true));
+});
+
 test('parallel running calls, failures and user pause retain distinct outcomes', () => {
     const r = {a: status('a', {inlineState: 'running'}), b: status('b', {inlineState: 'failed'}), c: status('c', {inlineState: 'running'})};
     const records = Object.keys(r).map((id) => workProcessEntry(r, id));

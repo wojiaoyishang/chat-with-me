@@ -14,7 +14,7 @@
      - 局部/回调
      - 源码
    * - :doc:`src/lib/apiClient </api/javascript/lib/apiClient>`
-     - 3
+     - 4
      - 1
      - 7
      - ``src/lib/apiClient.js``

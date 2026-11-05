@@ -22,18 +22,18 @@ src/features/execution/SubAgentPanel 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``react-router-dom``、``@/components/ui/sheet``、``@/components/ui/button``、``@/lib/apiClient.js``、``@/config.js``、``sonner``。
+``react``、``lucide-react``、``react-router-dom``、``@/components/ui/sheet``、``@/components/ui/button``、``@/lib/apiClient.js``、``@/config.js``、``sonner``、``./ExecutionErrorMessage.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:688:9506:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:753:9765:FUNCTION
 
 .. js:function:: SubAgentPanel({ conversationId })
 
    渲染 ``SubAgentPanel`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``21``—``202`` 行。
+   **性质**：同步函数；导出 API；源码第 ``22``—``207`` 行。
 
    **参数**
 
@@ -58,17 +58,17 @@ src/features/execution/SubAgentPanel 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:1127:1969:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:1192:2034:FUNCTION
 
-.. rubric:: ``useEffect callback @ 30``
+.. rubric:: ``useEffect callback @ 31``
 
 .. code-block:: javascript
 
-   useEffect callback @ 30()
+   useEffect callback @ 31()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``30``—``55`` 行；所属函数 ``SubAgentPanel``。
+**性质**：同步局部函数；源码第 ``31``—``56`` 行；所属函数 ``SubAgentPanel``。
 
 **参数**
 
@@ -86,7 +86,7 @@ src/features/execution/SubAgentPanel 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:1254:1791:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:1319:1856:FUNCTION
 
 .. rubric:: ``refresh``
 
@@ -96,7 +96,7 @@ src/features/execution/SubAgentPanel 模块
 
 实现 ``refresh`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``34``—``47`` 行；所属函数 ``useEffect callback @ 30``。
+**性质**：异步局部函数；源码第 ``35``—``48`` 行；所属函数 ``useEffect callback @ 31``。
 
 **参数**
 
@@ -112,17 +112,17 @@ src/features/execution/SubAgentPanel 模块
 
 **主要协作调用**：``apiClient.get``、``setSessions``、``setLimits``、``setError``、``setTimeout``。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:1881:1962:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:1946:2027:FUNCTION
 
-.. rubric:: ``returned callback @ 51``
+.. rubric:: ``returned callback @ 52``
 
 .. code-block:: javascript
 
-   returned callback @ 51()
+   returned callback @ 52()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``51``—``54`` 行；所属函数 ``useEffect callback @ 30``。
+**性质**：同步局部函数；源码第 ``52``—``55`` 行；所属函数 ``useEffect callback @ 31``。
 
 **参数**
 
@@ -134,7 +134,7 @@ src/features/execution/SubAgentPanel 模块
 
 **主要协作调用**：``clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2022:2492:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2087:2557:FUNCTION
 
 .. rubric:: ``stop``
 
@@ -144,7 +144,7 @@ src/features/execution/SubAgentPanel 模块
 
 停止与 ``stop`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``56``—``70`` 行；所属函数 ``SubAgentPanel``。
+**性质**：异步局部函数；源码第 ``57``—``71`` 行；所属函数 ``SubAgentPanel``。
 
 **参数**
 
@@ -163,17 +163,17 @@ src/features/execution/SubAgentPanel 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2341:2361:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2406:2426:FUNCTION
 
-.. rubric:: ``setRevision callback @ 64``
+.. rubric:: ``setRevision callback @ 65``
 
 .. code-block:: javascript
 
-   setRevision callback @ 64(value)
+   setRevision callback @ 65(value)
 
 设置与 ``Revision`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``64``—``64`` 行；所属函数 ``stop``。
+**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``stop``。
 
 **参数**
 
@@ -184,7 +184,7 @@ src/features/execution/SubAgentPanel 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2510:3221:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2575:3286:FUNCTION
 
 .. rubric:: ``read``
 
@@ -194,7 +194,7 @@ src/features/execution/SubAgentPanel 模块
 
 实现 ``read`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``71``—``90`` 行；所属函数 ``SubAgentPanel``。
+**性质**：异步局部函数；源码第 ``72``—``91`` 行；所属函数 ``SubAgentPanel``。
 
 **参数**
 
@@ -216,17 +216,17 @@ src/features/execution/SubAgentPanel 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2839:3090:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:2904:3155:FUNCTION
 
-.. rubric:: ``setResult callback @ 78``
+.. rubric:: ``setResult callback @ 79``
 
 .. code-block:: javascript
 
-   setResult callback @ 78(previous)
+   setResult callback @ 79(previous)
 
 设置与 ``Result`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``78``—``84`` 行；所属函数 ``read``。
+**性质**：同步局部函数；源码第 ``79``—``85`` 行；所属函数 ``read``。
 
 **参数**
 
@@ -237,17 +237,17 @@ src/features/execution/SubAgentPanel 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:3458:3477:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:3523:3542:FUNCTION
 
-.. rubric:: ``onClick callback @ 99``
+.. rubric:: ``onClick callback @ 100``
 
 .. code-block:: javascript
 
-   onClick callback @ 99()
+   onClick callback @ 100()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``99``—``99`` 行；所属函数 ``SubAgentPanel``。
+**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``SubAgentPanel``。
 
 **参数**
 
@@ -259,17 +259,17 @@ src/features/execution/SubAgentPanel 模块
 
 **主要协作调用**：``setOpen``。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:3973:4012:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:4038:4077:FUNCTION
 
-.. rubric:: ``onClick callback @ 109``
+.. rubric:: ``onClick callback @ 110``
 
 .. code-block:: javascript
 
-   onClick callback @ 109()
+   onClick callback @ 110()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``SubAgentPanel``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``SubAgentPanel``。
 
 **参数**
 
@@ -283,17 +283,17 @@ src/features/execution/SubAgentPanel 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:3991:4011:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:4056:4076:FUNCTION
 
-.. rubric:: ``setRevision callback @ 109``
+.. rubric:: ``setRevision callback @ 110``
 
 .. code-block:: javascript
 
-   setRevision callback @ 109(value)
+   setRevision callback @ 110(value)
 
 设置与 ``Revision`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``onClick callback @ 109``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``onClick callback @ 110``。
 
 **参数**
 
@@ -304,17 +304,17 @@ src/features/execution/SubAgentPanel 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:4703:9403:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:4768:9662:FUNCTION
 
-.. rubric:: ``sessions.map callback @ 122``
+.. rubric:: ``sessions.map callback @ 123``
 
 .. code-block:: javascript
 
-   sessions.map callback @ 122(session)
+   sessions.map callback @ 123(session)
 
 作为 ``sessions.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``122``—``196`` 行；所属函数 ``SubAgentPanel``。
+**性质**：同步局部函数；源码第 ``123``—``201`` 行；所属函数 ``SubAgentPanel``。
 
 **参数**
 
@@ -333,17 +333,17 @@ src/features/execution/SubAgentPanel 模块
 
 **内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:6839:7057:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:7098:7316:FUNCTION
 
-.. rubric:: ``onClick callback @ 152``
+.. rubric:: ``onClick callback @ 157``
 
 .. code-block:: javascript
 
-   onClick callback @ 152()
+   onClick callback @ 157()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``152``—``155`` 行；所属函数 ``sessions.map callback @ 122``。
+**性质**：同步局部函数；源码第 ``157``—``160`` 行；所属函数 ``sessions.map callback @ 123``。
 
 **参数**
 
@@ -359,17 +359,17 @@ src/features/execution/SubAgentPanel 模块
 
 **主要协作调用**：``setOpen``、``navigate``、``encodeURIComponent``。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:7454:7473:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:7713:7732:FUNCTION
 
-.. rubric:: ``onClick callback @ 163``
+.. rubric:: ``onClick callback @ 168``
 
 .. code-block:: javascript
 
-   onClick callback @ 163()
+   onClick callback @ 168()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``163``—``163`` 行；所属函数 ``sessions.map callback @ 122``。
+**性质**：同步局部函数；源码第 ``168``—``168`` 行；所属函数 ``sessions.map callback @ 123``。
 
 **参数**
 
@@ -381,17 +381,17 @@ src/features/execution/SubAgentPanel 模块
 
 **主要协作调用**：``read``。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:7970:7989:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:8229:8248:FUNCTION
 
-.. rubric:: ``onClick callback @ 172``
+.. rubric:: ``onClick callback @ 177``
 
 .. code-block:: javascript
 
-   onClick callback @ 172()
+   onClick callback @ 177()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``172``—``172`` 行；所属函数 ``sessions.map callback @ 122``。
+**性质**：同步局部函数；源码第 ``177``—``177`` 行；所属函数 ``sessions.map callback @ 123``。
 
 **参数**
 
@@ -403,17 +403,17 @@ src/features/execution/SubAgentPanel 模块
 
 **主要协作调用**：``stop``。
 
-.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:9025:9063:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/SubAgentPanel.jsx:9284:9322:FUNCTION
 
-.. rubric:: ``onClick callback @ 188``
+.. rubric:: ``onClick callback @ 193``
 
 .. code-block:: javascript
 
-   onClick callback @ 188()
+   onClick callback @ 193()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``188``—``188`` 行；所属函数 ``sessions.map callback @ 122``。
+**性质**：同步局部函数；源码第 ``193``—``193`` 行；所属函数 ``sessions.map callback @ 123``。
 
 **参数**
 

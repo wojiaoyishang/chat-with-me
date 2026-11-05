@@ -18,6 +18,11 @@
      - 0
      - 10
      - ``src/runtime/backend/BackendBootstrapGate.jsx``
+   * - :doc:`src/runtime/backend/bootstrapRequests </api/javascript/runtime/backend/bootstrapRequests>`
+     - 4
+     - 0
+     - 7
+     - ``src/runtime/backend/bootstrapRequests.js``
    * - :doc:`src/runtime/backend/clientAdapter </api/javascript/runtime/backend/clientAdapter>`
      - 1
      - 0
@@ -34,7 +39,7 @@
      - 16
      - ``src/runtime/backend/connectionProbes.js``
    * - :doc:`src/runtime/backend/session </api/javascript/runtime/backend/session>`
-     - 2
+     - 3
      - 0
      - 2
      - ``src/runtime/backend/session.js``
@@ -48,6 +53,11 @@
      - 0
      - 1
      - ``src/runtime/protocol/frame.js``
+   * - :doc:`src/runtime/protocol/messageDeltas </api/javascript/runtime/protocol/messageDeltas>`
+     - 4
+     - 0
+     - 4
+     - ``src/runtime/protocol/messageDeltas.js``
    * - :doc:`src/runtime/protocol/msgpack </api/javascript/runtime/protocol/msgpack>`
      - 4
      - 14
@@ -69,7 +79,7 @@
      - 10
      - ``src/runtime/transport/WebSocketTransport.js``
    * - :doc:`src/runtime/transport/channel </api/javascript/runtime/transport/channel>`
-     - 5
+     - 6
      - 0
      - 1
      - ``src/runtime/transport/channel.js``
@@ -84,12 +94,14 @@
    :maxdepth: 1
 
    /api/javascript/runtime/backend/BackendBootstrapGate
+   /api/javascript/runtime/backend/bootstrapRequests
    /api/javascript/runtime/backend/clientAdapter
    /api/javascript/runtime/backend/connection
    /api/javascript/runtime/backend/connectionProbes
    /api/javascript/runtime/backend/session
    /api/javascript/runtime/protocol/events
    /api/javascript/runtime/protocol/frame
+   /api/javascript/runtime/protocol/messageDeltas
    /api/javascript/runtime/protocol/msgpack
    /api/javascript/runtime/protocol/subscriptions
    /api/javascript/runtime/transport/EventDispatchScheduler

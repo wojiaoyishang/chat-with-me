@@ -17,7 +17,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 * **模块标识**：``src/components/markdown/remarkWorkProcess``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：4
+* **局部函数与匿名回调**：5
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,13 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:311:3723:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:311:4831:FUNCTION
 
 .. js:function:: remarkWorkProcess({replacement = {}, renderSurface = 'conversation', snapshot = false})
 
    Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs in place.
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``64`` 行。
+   **性质**：同步函数；导出 API；源码第 ``7``—``84`` 行。
 
    **参数**
 
@@ -42,7 +42,11 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``(tree) => { if (snapshot || renderSurface !== 'conversation') return; visit(tree, (node) => Array.isArray(node.children), (parent) => { let group = null; const output = []; const…``。
+   根据执行分支返回结果；代表性返回表达式为 ``(tree) => { if (snapshot || renderSurface !== 'conversation') return; const entries = new WeakMap(); const seenStatuses = new Set(); // Old transcripts can contain the same outer-…``。
+
+   **副作用**
+
+   * 发起 HTTP 请求或访问外部服务。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
@@ -51,7 +55,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:532:3720:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:532:4828:FUNCTION
 
 .. rubric:: ``returned callback @ 8``
 
@@ -61,7 +65,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``8``—``63`` 行；所属函数 ``remarkWorkProcess``。
+**性质**：同步局部函数；源码第 ``8``—``83`` 行；所属函数 ``remarkWorkProcess``。
 
 **参数**
 
@@ -72,21 +76,48 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
+**副作用**
+
+* 发起 HTTP 请求或访问外部服务。
+
 **主要协作调用**：``visit``。
 
-**内部回调数量**：2。这些回调也会在本页逐项说明。
+**内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:630:669:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:969:1539:FUNCTION
 
-.. rubric:: ``visit callback @ 10``
+.. rubric:: ``visit callback @ 15``
 
 .. code-block:: javascript
 
-   visit callback @ 10(node)
+   visit callback @ 15(node)
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``10``—``10`` 行；所属函数 ``returned callback @ 8``。
+**性质**：同步局部函数；源码第 ``15``—``24`` 行；所属函数 ``returned callback @ 8``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+**主要协作调用**：``workProcessEntry``、``String``、``entries.set``、``JSON.stringify``、``seenStatuses.has``、``seenStatuses.add``。
+
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:1561:1600:FUNCTION
+
+.. rubric:: ``visit callback @ 25``
+
+.. code-block:: javascript
+
+   visit callback @ 25(node)
+
+实现 ``visit`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``25``—``25`` 行；所属函数 ``returned callback @ 8``。
 
 **参数**
 
@@ -99,17 +130,17 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:670:3712:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:1601:4820:FUNCTION
 
-.. rubric:: ``visit callback @ 10``
+.. rubric:: ``visit callback @ 25``
 
 .. code-block:: javascript
 
-   visit callback @ 10(parent)
+   visit callback @ 25(parent)
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``10``—``62`` 行；所属函数 ``returned callback @ 8``。
+**性质**：同步局部函数；源码第 ``25``—``82`` 行；所属函数 ``returned callback @ 8``。
 
 **参数**
 
@@ -120,11 +151,15 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``String``、``workProcessEntry``、``processIdentity``、``sameProcess``、``flush``、``Object.keys``、``group.nodes.push``、``group.allNodes.push``、``group.entries.push``、``hasExecutionGuidanceBoundary``、``normalizeReplacementEntry``、``['markdown', 'executionStatus'].includes``。
+**副作用**
+
+* 发起 HTTP 请求或访问外部服务。
+
+**主要协作调用**：``String``、``group.allNodes.push``、``output.push``、``entries.get``、``processIdentity``、``sameProcess``、``flush``、``Object.keys``、``group.nodes.push``、``group.entries.push``、``hasExecutionGuidanceBoundary``、``normalizeReplacementEntry``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:771:1479:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/remarkWorkProcess.js:1702:2410:FUNCTION
 
 .. rubric:: ``flush``
 
@@ -134,7 +169,7 @@ Group adjacent reasoning/tool traces, leaving prose, results and interaction UIs
 
 实现 ``flush`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``13``—``25`` 行；所属函数 ``visit callback @ 10``。
+**性质**：同步局部函数；源码第 ``28``—``40`` 行；所属函数 ``visit callback @ 25``。
 
 **参数**
 

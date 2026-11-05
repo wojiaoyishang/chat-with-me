@@ -17,7 +17,7 @@ src/features/chat/freeze/conversationFreezeState 模块
 * **模块标识**：``src/features/chat/freeze/conversationFreezeState``
 * **顶层函数/组件/Hook**：3
 * **类**：0
-* **局部函数与匿名回调**：6
+* **局部函数与匿名回调**：10
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
@@ -64,22 +64,22 @@ src/features/chat/freeze/conversationFreezeState 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``false``、``true``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:970:3201:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:970:4023:FUNCTION
 
-.. js:function:: createConversationFreezeController({conversationId, fetchState, subscribe, notify, pollMs = 5000})
+.. js:function:: createConversationFreezeController({conversationId, fetchState, subscribe, notify, pollMs = 30000})
 
    创建与 ``Conversation Freeze Controller`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``18``—``59`` 行。
+   **性质**：同步函数；导出 API；源码第 ``18``—``82`` 行。
 
    **参数**
 
-   ``{conversationId, fetchState, subscribe, notify, pollMs = 5000}``
-      调用方传入的 ``conversationId, fetchState, subscribe, notify, pollMs = 5000`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{conversationId, fetchState, subscribe, notify, pollMs = 30000}``
+      调用方传入的 ``conversationId, fetchState, subscribe, notify, pollMs = 30000`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{refresh, dispose() { disposed = true; ++sequence; request?.abort(); clearInterval(timer); changed(); connected(); }}``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ refresh, refreshIfStale() { if (lastError || Date.now() - lastRefresh >= Math.min(pollMs, 5000)) return refresh(); return inFlight || Promise.resolve(); }, dispose() { disposed…``。
 
    **副作用**
 
@@ -87,16 +87,88 @@ src/features/chat/freeze/conversationFreezeState 模块
    * 注册事件、DOM 或运行时订阅。
    * 创建或控制浏览器实时媒体资源。
 
-   **主要协作调用**：``subscribe``、``setInterval``、``refresh``。
+   **主要协作调用**：``subscribe``、``setInterval``、``Math.min``、``refresh``。
 
-   **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：8。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:1227:2362:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:1275:1367:FUNCTION
+
+.. rubric:: ``equal``
+
+.. code-block:: javascript
+
+   equal(previous, next)
+
+实现 ``equal`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``createConversationFreezeController``。
+
+**参数**
+
+``previous``
+   调用方传入的 ``previous`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``next``
+   调用方传入的 ``next`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``Object.keys(next).every``、``Object.keys``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:1332:1366:FUNCTION
+
+.. rubric:: ``Object.keys(next).every callback @ 26``
+
+.. code-block:: javascript
+
+   Object.keys(next).every callback @ 26(key)
+
+作为 ``Object.keys(next).every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``equal``。
+
+**参数**
+
+``key``
+   调用方传入的 ``key`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:1388:1587:FUNCTION
+
+.. rubric:: ``publish``
+
+.. code-block:: javascript
+
+   publish(value)
+
+实现 ``publish`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``27``—``32`` 行；所属函数 ``createConversationFreezeController``。
+
+**参数**
+
+``value``
+   待读取、转换或校验的值。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``equal``、``Boolean``、``notify``。
+
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:1608:2793:FUNCTION
 
 .. rubric:: ``refresh``
 
@@ -106,7 +178,7 @@ src/features/chat/freeze/conversationFreezeState 模块
 
 实现 ``refresh`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``24``—``43`` 行；所属函数 ``createConversationFreezeController``。
+**性质**：同步局部函数；源码第 ``33``—``55`` 行；所属函数 ``createConversationFreezeController``。
 
 **参数**
 
@@ -121,21 +193,21 @@ src/features/chat/freeze/conversationFreezeState 模块
 * 发起 HTTP 请求或访问外部服务。
 * 创建或控制浏览器实时媒体资源。
 
-**主要协作调用**：``Promise.resolve``、``(async () => { try { const value = normalizeConversationFreeze(await fetchState(controller.signal), conversationId); if…``。
+**主要协作调用**：``Promise.resolve``、``Date.now``、``(async () => { try { const value = normalizeConversationFreeze(await fetchState(controller.signal), conversationId); if…``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:1622:2327:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:2037:2758:FUNCTION
 
-.. rubric:: ``anonymous callback @ 32``
+.. rubric:: ``anonymous callback @ 42``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 32()
+   async anonymous callback @ 42()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``32``—``41`` 行；所属函数 ``refresh``。
+**性质**：异步局部函数；源码第 ``42``—``53`` 行；所属函数 ``refresh``。
 
 **参数**
 
@@ -151,19 +223,19 @@ src/features/chat/freeze/conversationFreezeState 模块
 
 **显式抛出**：``new Error('Invalid conversation freeze state')``。
 
-**主要协作调用**：``normalizeConversationFreeze``、``fetchState``、``acceptFreezeEvent``、``notify``。
+**主要协作调用**：``normalizeConversationFreeze``、``fetchState``、``acceptFreezeEvent``、``publish``、``notify``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:2424:2908:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:2855:3322:FUNCTION
 
-.. rubric:: ``subscribe callback @ 44``
+.. rubric:: ``subscribe callback @ 56``
 
 .. code-block:: javascript
 
-   subscribe callback @ 44({payload, eventConversationId})
+   subscribe callback @ 56({payload, eventConversationId})
 
 订阅与 ``subscribe`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``44``—``54`` 行；所属函数 ``createConversationFreezeController``。
+**性质**：同步局部函数；源码第 ``56``—``66`` 行；所属函数 ``createConversationFreezeController``。
 
 **参数**
 
@@ -174,19 +246,19 @@ src/features/chat/freeze/conversationFreezeState 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``normalizeConversationFreeze``、``acceptFreezeEvent``、``refresh``、``request?.abort``、``notify``。
+**主要协作调用**：``normalizeConversationFreeze``、``acceptFreezeEvent``、``refresh``、``request?.abort``、``Date.now``、``publish``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:2965:2986:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:3379:3400:FUNCTION
 
-.. rubric:: ``subscribe callback @ 55``
+.. rubric:: ``subscribe callback @ 67``
 
 .. code-block:: javascript
 
-   subscribe callback @ 55()
+   subscribe callback @ 67()
 
 订阅与 ``subscribe`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``55``—``55`` 行；所属函数 ``createConversationFreezeController``。
+**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``createConversationFreezeController``。
 
 **参数**
 
@@ -198,17 +270,17 @@ src/features/chat/freeze/conversationFreezeState 模块
 
 **主要协作调用**：``refresh``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:3019:3039:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:3433:3635:FUNCTION
 
-.. rubric:: ``setInterval callback @ 56``
+.. rubric:: ``setInterval callback @ 68``
 
 .. code-block:: javascript
 
-   setInterval callback @ 56()
+   setInterval callback @ 68()
 
 设置与 ``Interval`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``56``—``56`` 行；所属函数 ``createConversationFreezeController``。
+**性质**：同步局部函数；源码第 ``68``—``72`` 行；所属函数 ``createConversationFreezeController``。
 
 **参数**
 
@@ -216,11 +288,33 @@ src/features/chat/freeze/conversationFreezeState 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``refresh``。
+**主要协作调用**：``Math.min``、``Date.now``、``refresh``。
 
-.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:3090:3197:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:3711:3897:FUNCTION
+
+.. rubric:: ``refreshIfStale``
+
+.. code-block:: javascript
+
+   refreshIfStale()
+
+实现 ``refreshIfStale`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``76``—``79`` 行；所属函数 ``createConversationFreezeController``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``refresh()``、``inFlight || Promise.resolve()``。
+
+**主要协作调用**：``Date.now``、``Math.min``、``refresh``、``Promise.resolve``。
+
+.. CWM-AST-FUNCTION src/features/chat/freeze/conversationFreezeState.js:3898:4013:FUNCTION
 
 .. rubric:: ``dispose``
 
@@ -230,7 +324,7 @@ src/features/chat/freeze/conversationFreezeState 模块
 
 实现 ``dispose`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``createConversationFreezeController``。
+**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``createConversationFreezeController``。
 
 **参数**
 

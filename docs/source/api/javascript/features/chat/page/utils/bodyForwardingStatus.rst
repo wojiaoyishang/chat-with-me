@@ -85,13 +85,13 @@ Durable delivery facts, also available when optional model audit tips are disabl
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/bodyForwardingStatus.js:925:1509:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/bodyForwardingStatus.js:925:1612:FUNCTION
 
 .. js:function:: bodyForwardingDetails(status)
 
    实现 ``bodyForwardingDetails`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``18``—``30`` 行。
+   **性质**：同步函数；导出 API；源码第 ``18``—``31`` 行。
 
    **参数**
 

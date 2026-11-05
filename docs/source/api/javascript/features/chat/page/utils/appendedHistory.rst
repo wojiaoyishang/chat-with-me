@@ -72,13 +72,13 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:355:2984:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:355:3326:FUNCTION
 
 .. js:function:: reconcileAppendedHistory({snapshot, currentMessages, currentOrder, liveMessageIds = new Set()})
 
    Extend only an unchanged active history window; never resurrect a deleted branch. Old bodies and component registries keep their identity, including playing media. The included anchor updates child pointers without downloading older bodies.
 
-   **性质**：同步函数；导出 API；源码第 ``12``—``51`` 行。
+   **性质**：同步函数；导出 API；源码第 ``12``—``56`` 行。
 
    **参数**
 
@@ -97,13 +97,13 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:2984:5044:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3326:5386:FUNCTION
 
 .. js:function:: createAppendSynchronizer({read, load, apply, complete, mismatch, error, isCurrent = () => true})
 
    Coalesce bursty append/reconnect events and page forward without a global loader. Invalidating a pending request prevents stale replies after navigation/deletion.
 
-   **性质**：同步函数；导出 API；源码第 ``56``—``97`` 行。
+   **性质**：同步函数；导出 API；源码第 ``61``—``102`` 行。
 
    **参数**
 
@@ -166,17 +166,17 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:2513:2588:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:2855:2930:FUNCTION
 
-.. rubric:: ``['messages', 'nextMessage', 'prevMessage'] .filter callback @ 43``
+.. rubric:: ``['messages', 'nextMessage', 'prevMessage'] .filter callback @ 48``
 
 .. code-block:: javascript
 
-   ['messages', 'nextMessage', 'prevMessage'] .filter callback @ 43(key)
+   ['messages', 'nextMessage', 'prevMessage'] .filter callback @ 48(key)
 
 作为 ``['messages', 'nextMessage', 'prevMessage'] .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``reconcileAppendedHistory``。
+**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``reconcileAppendedHistory``。
 
 **参数**
 
@@ -189,17 +189,17 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 **主要协作调用**：``Object.hasOwn``、``same``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:2611:2640:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:2953:2982:FUNCTION
 
-.. rubric:: ``['messages', 'nextMessage', 'prevMessage'] .filter((key) => Object.hasOwn(incoming, key) && !same(current[key], incomin… callback @ 44``
+.. rubric:: ``['messages', 'nextMessage', 'prevMessage'] .filter((key) => Object.hasOwn(incoming, key) && !same(current[key], incomin… callback @ 49``
 
 .. code-block:: javascript
 
-   ['messages', 'nextMessage', 'prevMessage'] .filter((key) => Object.hasOwn(incoming, key) && !same(current[key], incomin… callback @ 44(key)
+   ['messages', 'nextMessage', 'prevMessage'] .filter((key) => Object.hasOwn(incoming, key) && !same(current[key], incomin… callback @ 49(key)
 
 实现 ``['messages', 'nextMessage', 'prevMessage'] .filter((key) => Object.hasOwn(incoming, key) && !same(current[key], incomin…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``reconcileAppendedHistory``。
+**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``reconcileAppendedHistory``。
 
 **参数**
 
@@ -210,17 +210,17 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:2775:2796:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3117:3138:FUNCTION
 
-.. rubric:: ``nextVisible.some callback @ 48``
+.. rubric:: ``nextVisible.some callback @ 53``
 
 .. code-block:: javascript
 
-   nextVisible.some callback @ 48(id)
+   nextVisible.some callback @ 53(id)
 
 作为 ``nextVisible.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``48``—``48`` 行；所属函数 ``reconcileAppendedHistory``。
+**性质**：同步局部函数；源码第 ``53``—``53`` 行；所属函数 ``reconcileAppendedHistory``。
 
 **参数**
 
@@ -231,17 +231,17 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3259:3270:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3601:3612:FUNCTION
 
-.. rubric:: ``anonymous callback @ 56``
+.. rubric:: ``anonymous callback @ 61``
 
 .. code-block:: javascript
 
-   anonymous callback @ 56()
+   anonymous callback @ 61()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``56``—``56`` 行；所属函数 ``createAppendSynchronizer``。
+**性质**：同步局部函数；源码第 ``61``—``61`` 行；所属函数 ``createAppendSynchronizer``。
 
 **参数**
 
@@ -251,7 +251,7 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3366:3406:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3708:3748:FUNCTION
 
 .. rubric:: ``invalidate``
 
@@ -261,7 +261,7 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 实现 ``invalidate`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``createAppendSynchronizer``。
+**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``createAppendSynchronizer``。
 
 **参数**
 
@@ -271,7 +271,7 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3427:5007:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3769:5349:FUNCTION
 
 .. rubric:: ``request``
 
@@ -281,7 +281,7 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 实现 ``request`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``61``—``95`` 行；所属函数 ``createAppendSynchronizer``。
+**性质**：同步局部函数；源码第 ``66``—``100`` 行；所属函数 ``createAppendSynchronizer``。
 
 **参数**
 
@@ -295,17 +295,17 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3514:4938:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:3856:5280:FUNCTION
 
-.. rubric:: ``anonymous callback @ 64``
+.. rubric:: ``anonymous callback @ 69``
 
 .. code-block:: javascript
 
-   async anonymous callback @ 64()
+   async anonymous callback @ 69()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``64``—``93`` 行；所属函数 ``request``。
+**性质**：异步局部函数；源码第 ``69``—``98`` 行；所属函数 ``request``。
 
 **参数**
 
@@ -319,17 +319,17 @@ Extend only an unchanged active history window; never resurrect a deleted branch
 
 **主要协作调用**：``isCurrent``、``read``、``ids(before?.order).at``、``ids``、``load``、``reconcileAppendedHistory``、``invalidate``、``mismatch``、``apply``、``ids(next.order).at``、``error``、``complete``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:4950:4975:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/appendedHistory.js:5292:5317:FUNCTION
 
-.. rubric:: ``(async () => { let appliedRevision = null; while (dirty && isCurrent()) { dirty = false; const before = read(); const a… callback @ 93``
+.. rubric:: ``(async () => { let appliedRevision = null; while (dirty && isCurrent()) { dirty = false; const before = read(); const a… callback @ 98``
 
 .. code-block:: javascript
 
-   (async () => { let appliedRevision = null; while (dirty && isCurrent()) { dirty = false; const before = read(); const a… callback @ 93()
+   (async () => { let appliedRevision = null; while (dirty && isCurrent()) { dirty = false; const before = read(); const a… callback @ 98()
 
 实现 ``(async () => { let appliedRevision = null; while (dirty && isCurrent()) { dirty = false; const before = read(); const a…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``93``—``93`` 行；所属函数 ``request``。
+**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``request``。
 
 **参数**
 

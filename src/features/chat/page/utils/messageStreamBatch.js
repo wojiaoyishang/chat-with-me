@@ -1,4 +1,5 @@
 import { produce } from 'immer';
+import {MAX_MESSAGE_DELTA_CHARACTERS, mergeMessageDeltaValues} from '../../../../runtime/protocol/messageDeltas.js';
 
 export const MESSAGE_STREAM_EVENTS = new Set([
     'message.content.set', 'message.content.delta',
@@ -38,30 +39,55 @@ export function applyMessageStreamOperations(messages, operations) {
  * replies flush it before reading or mutating the canonical messagesRef.
  * A timer also works in background tabs where animation frames are suspended.
  */
-export function createMessageStreamBatch({ getMessages, commit, delay = 32, schedule = setTimeout, cancel = clearTimeout }) {
+export function createMessageStreamBatch({ getMessages, commit, delay = 32, maxDelay = 120,
+    schedule = setTimeout, cancel = clearTimeout, now = () => globalThis.performance?.now?.() ?? Date.now() }) {
     let pending = [];
+    let pendingCharacters = 0;
     let timer = null;
+    let deadline = 0;
+    let batchDelay = delay;
     let runId = null;
     const flush = () => {
+        const lateness = timer === null ? 0 : Math.max(0, now() - deadline);
         if (timer !== null) cancel(timer);
         timer = null;
         if (!pending.length) return;
         const operations = pending;
         pending = [];
+        pendingCharacters = 0;
+        const started = now();
         commit(applyMessageStreamOperations(getMessages(), operations), [...new Set(operations.flatMap(({ value }) => Object.keys(value)))]);
+        // Busy main threads need fewer, larger commits instead of replaying each
+        // token. Recover toward the normal cadence once catch-up becomes cheap.
+        batchDelay = Math.min(Math.max(delay, maxDelay), Math.max(delay,
+            Math.ceil(Math.max(now() - started, lateness) * 2), Math.ceil(batchDelay * 0.75)));
     };
     return {
         flush,
         enqueue(operation) {
             if (pending.length && operation.runId !== runId) flush();
             runId = operation.runId;
-            pending.push(operation);
+            const previous = pending.at(-1);
+            const merged = previous?.event === operation.event
+                ? mergeMessageDeltaValues(operation.event, previous.value, operation.value) : null;
+            if (merged) previous.value = merged;
+            else pending.push({...operation});
+            for (const patch of Object.values(operation.value)) {
+                if (typeof patch === 'string') pendingCharacters += patch.length;
+                else for (const value of Object.values(patch || {})) {
+                    const text = typeof value === 'string' ? value : value?.content ?? value?.frontend ?? value?.value;
+                    if (typeof text === 'string') pendingCharacters += text.length;
+                }
+            }
             // Explicit full text and terminal tool states are display barriers.
             const terminal = operation.event === 'message.content.set'
                 || Object.values(operation.value).some((patch) => patch && typeof patch === 'object'
                     && Object.values(patch).some((value) => /\[(?:DONE|FAILED)(?::[^\]]*)?\]/i.test(typeof value === 'string' ? value : value?.content ?? value?.frontend ?? value?.value ?? '')));
-            if (terminal || pending.length >= 256) flush();
-            else if (timer === null) timer = schedule(flush, delay);
+            if (terminal || pending.length >= 256 || pendingCharacters >= MAX_MESSAGE_DELTA_CHARACTERS) flush();
+            else if (timer === null) {
+                deadline = now() + batchDelay;
+                timer = schedule(flush, batchDelay);
+            }
         },
     };
 }

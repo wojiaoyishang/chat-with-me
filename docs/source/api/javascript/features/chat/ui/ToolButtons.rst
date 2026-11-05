@@ -17,7 +17,7 @@ src/features/chat/ui/ToolButtons 模块
 * **模块标识**：``src/features/chat/ui/ToolButtons``
 * **顶层函数/组件/Hook**：6
 * **类**：0
-* **局部函数与匿名回调**：47
+* **局部函数与匿名回调**：45
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -329,13 +329,13 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``onToggle``、``releaseFocusAfterActivation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:7028:37143:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:7028:37097:FUNCTION
 
 .. rubric:: ``memo callback @ 206``
 
 .. code-block:: javascript
 
-   memo callback @ 206({ toolsLoadedStatus, extraTools, attachmentTools = [], renderMenuItems, setToolsLoadedStatus, tools…)
+   memo callback @ 206({ toolsLoadedStatus, extraTools, attachmentTools = [], renderMenuItems, onReloadTools, tools, tools…)
 
 实现 ``memo`` 对应的前端处理。
 
@@ -343,8 +343,8 @@ src/features/chat/ui/ToolButtons 模块
 
 **参数**
 
-``{ toolsLoadedStatus, extraTools, attachmentTools = [], renderMenuItems, setToolsLoadedStatus, tools…``
-   调用方传入的 ``toolsLoadedStatus, extraTools, attachmentTools = , renderMenuItems, setToolsLoadedStatus, tools…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ toolsLoadedStatus, extraTools, attachmentTools = [], renderMenuItems, onReloadTools, tools, tools…``
+   调用方传入的 ``toolsLoadedStatus, extraTools, attachmentTools = , renderMenuItems, onReloadTools, tools, tools…`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -352,9 +352,9 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``useRef``、``useState``、``useLayoutEffect``、``useMemo``、``extraTools.find``、``extraTools.filter``、``useCallback``、``t``、``renderMenuItems``。
 
-**内部回调数量**：23。这些回调也会在本页逐项说明。
+**内部回调数量**：22。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:7942:8579:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:7935:8572:FUNCTION
 
 .. rubric:: ``useLayoutEffect callback @ 232``
 
@@ -378,7 +378,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:8136:8336:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:8129:8329:FUNCTION
 
 .. rubric:: ``measure``
 
@@ -400,7 +400,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``setAvailableWidth``、``row.getBoundingClientRect``、``setAuditTriggerWidth``、``auditTrigger.getBoundingClientRect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:8539:8567:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:8532:8560:FUNCTION
 
 .. rubric:: ``returned callback @ 244``
 
@@ -422,7 +422,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``observer.disconnect``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:8802:8917:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:8795:8910:FUNCTION
 
 .. rubric:: ``useState callback @ 248``
 
@@ -444,7 +444,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``normalizeVoiceRecognitionEngine``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10311:10380:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10304:10373:FUNCTION
 
 .. rubric:: ``useMemo callback @ 264``
 
@@ -468,7 +468,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10333:10371:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10326:10364:FUNCTION
 
 .. rubric:: ``extraTools.find callback @ 264``
 
@@ -489,7 +489,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10443:10485:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10436:10478:FUNCTION
 
 .. rubric:: ``extraTools.find callback @ 265``
 
@@ -510,7 +510,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10529:10655:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10522:10648:FUNCTION
 
 .. rubric:: ``useMemo callback @ 267``
 
@@ -534,7 +534,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10622:10653:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10615:10646:FUNCTION
 
 .. rubric:: ``extraTools.filter callback @ 267``
 
@@ -555,7 +555,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10803:10857:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10796:10850:FUNCTION
 
 .. rubric:: ``extraTools.filter callback @ 271``
 
@@ -576,7 +576,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10922:11343:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:10915:11336:FUNCTION
 
 .. rubric:: ``useCallback callback @ 275``
 
@@ -604,7 +604,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11176:11326:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11169:11319:FUNCTION
 
 .. rubric:: ``setToolsStatus callback @ 280``
 
@@ -625,7 +625,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11475:11722:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11468:11715:FUNCTION
 
 .. rubric:: ``useCallback callback @ 288``
 
@@ -648,7 +648,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``normalizeVoiceRecognitionEngine``、``setVoiceRecognitionEngine``、``setLocalSetting``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11939:12419:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11932:12412:FUNCTION
 
 .. rubric:: ``useCallback callback @ 297``
 
@@ -672,7 +672,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11982:12406:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:11975:12399:FUNCTION
 
 .. rubric:: ``setMobileOpenSections callback @ 298``
 
@@ -693,7 +693,7 @@ src/features/chat/ui/ToolButtons 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``{ ...currentSections, [MOBILE_ACCORDION_ROOT_SCOPE]: currentSections[MOBILE_ACCORDION_ROOT_SCOPE] === VOICE_ENGINE_MOBILE_SECTION_KEY ? null : VOICE_ENGINE_MOBILE_SECTION_KEY, }``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:12504:12701:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:12497:12694:FUNCTION
 
 .. rubric:: ``useCallback callback @ 311``
 
@@ -716,7 +716,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``setOpen``、``setMobileOpenSections``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:12824:13311:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:12817:13304:FUNCTION
 
 .. rubric:: ``useMemo callback @ 321``
 
@@ -736,7 +736,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13396:17941:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13389:17934:FUNCTION
 
 .. rubric:: ``useMemo callback @ 336``
 
@@ -760,7 +760,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13467:14739:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13460:14732:FUNCTION
 
 .. rubric:: ``voiceRecognitionEngineOptions.map callback @ 337``
 
@@ -785,7 +785,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13702:13735:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13695:13728:FUNCTION
 
 .. rubric:: ``onSelect callback @ 342``
 
@@ -808,7 +808,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13771:13825:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:13764:13818:FUNCTION
 
 .. rubric:: ``onClick callback @ 343``
 
@@ -830,7 +830,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``handleVoiceRecognitionEngineChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18325:18879:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18318:18872:FUNCTION
 
 .. rubric:: ``useMemo callback @ 428``
 
@@ -854,7 +854,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18425:18866:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18418:18859:FUNCTION
 
 .. rubric:: ``tools.map callback @ 431``
 
@@ -877,7 +877,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18745:18806:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18738:18799:FUNCTION
 
 .. rubric:: ``onToggle callback @ 438``
 
@@ -903,7 +903,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``handleToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18972:19559:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:18965:19552:FUNCTION
 
 .. rubric:: ``useMemo callback @ 444``
 
@@ -927,7 +927,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:19072:19546:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:19065:19539:FUNCTION
 
 .. rubric:: ``tools.map callback @ 447``
 
@@ -950,7 +950,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:19425:19486:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:19418:19479:FUNCTION
 
 .. rubric:: ``onToggle callback @ 455``
 
@@ -976,7 +976,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``handleToggle``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:20027:21475:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:20020:21452:FUNCTION
 
 .. rubric:: ``useMemo callback @ 470``
 
@@ -994,35 +994,11 @@ src/features/chat/ui/ToolButtons 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="flex items-center px-2.5 py-2"> <ThreeDotLoading /> </div> )``、``( <div className="rounded-lg px-2.5 py-2 text-sm text-gray-500"> <div className="mb-1 text-red-500">{t('tool_load_failed')}</div> <button type="button" onClick={() => setToolsLoad…``、``<div className="space-y-0.5">{mobileBuiltinToolMenuItems}</div>``。
+根据执行分支返回结果；代表性返回表达式为 ``null``、``( <div className="flex items-center px-2.5 py-2"> <ThreeDotLoading /> </div> )``、``( <div className="rounded-lg px-2.5 py-2 text-sm text-gray-500"> <div className="mb-1 text-red-500">{t('tool_load_failed')}</div> <button type="button" onClick={onReloadTools} cla…``、``<div className="space-y-0.5">{mobileBuiltinToolMenuItems}</div>``。
 
 **主要协作调用**：``t``。
 
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:20743:20772:FUNCTION
-
-.. rubric:: ``onClick callback @ 487``
-
-.. code-block:: javascript
-
-   onClick callback @ 487()
-
-处理 ``Click`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``487``—``487`` 行；所属函数 ``useMemo callback @ 470``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setToolsLoadedStatus``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:26600:27031:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:26570:27001:FUNCTION
 
 .. rubric:: ``onClick callback @ 586``
 
@@ -1045,7 +1021,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``setOpen``、``onManageWorkspace``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:27901:28340:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:27871:28310:FUNCTION
 
 .. rubric:: ``onClick callback @ 602``
 
@@ -1068,7 +1044,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``、``event.stopPropagation``、``setOpen``、``onManageConversationTools``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30658:30995:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30628:30965:FUNCTION
 
 .. rubric:: ``onChange callback @ 649``
 
@@ -1093,7 +1069,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30786:30966:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:30756:30936:FUNCTION
 
 .. rubric:: ``setToolsStatus callback @ 651``
 
@@ -1114,7 +1090,7 @@ src/features/chat/ui/ToolButtons 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:31761:31794:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:31731:31764:FUNCTION
 
 .. rubric:: ``onMouseDown callback @ 666``
 
@@ -1137,7 +1113,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:31838:31897:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:31808:31867:FUNCTION
 
 .. rubric:: ``onClick callback @ 667``
 
@@ -1160,29 +1136,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``releaseFocusAfterActivation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:34264:34293:FUNCTION
-
-.. rubric:: ``onClick callback @ 708``
-
-.. code-block:: javascript
-
-   onClick callback @ 708()
-
-处理 ``Click`` 用户交互或运行时事件。
-
-**性质**：同步局部函数；源码第 ``708``—``708`` 行；所属函数 ``memo callback @ 206``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setToolsLoadedStatus``。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:35604:35637:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:35558:35591:FUNCTION
 
 .. rubric:: ``onMouseDown callback @ 726``
 
@@ -1205,7 +1159,7 @@ src/features/chat/ui/ToolButtons 模块
 
 **主要协作调用**：``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:35693:35752:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/ToolButtons.jsx:35647:35706:FUNCTION
 
 .. rubric:: ``onClick callback @ 727``
 

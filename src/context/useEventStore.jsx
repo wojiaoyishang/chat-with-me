@@ -1,3 +1,4 @@
+/* global DEBUG_MODE */
 import {create} from 'zustand';
 
 import {generateUUID} from '@/lib/tools.jsx';
@@ -5,6 +6,7 @@ import {sendRealtimeEvent} from '@/runtime/transport/channel.js';
 import {eventMatchesPattern, normalizeEventName, normalizeEventPattern} from '@/runtime/protocol/events.js';
 import {normalizeEventDirections, shouldDeliverEventToListener} from '@/runtime/protocol/subscriptions.js';
 import {getIncomingEventSchedulerStats, scheduleIncomingEventCallback} from '@/runtime/transport/EventDispatchScheduler.js';
+import {messageDeltaBatchKey, mergeMessageDeltaEnvelopes} from '@/runtime/protocol/messageDeltas.js';
 import { getBackendConnection, isCurrentConnection } from '../runtime/backend/connection.js';
 
 const listeners = new Map();
@@ -105,7 +107,8 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
     // Resolve listeners when the queued event is delivered, not when it arrives.
     // React can clean up and re-register a subscription between these tasks;
     // capturing the old registration silently dropped deltas in that gap.
-    const invokeEnvelopeListeners = () => {
+    const receivedEnvelope = envelope;
+    const invokeEnvelopeListeners = (envelope = receivedEnvelope) => {
         if (!isCurrentConnection(scope)) return;
         for (const registration of [...listeners.values()]) {
             if (!registration.active || !matchesEvent(registration.events, envelope.event)) continue;
@@ -176,10 +179,13 @@ const dispatchEnvelope = (envelope, {direction = 'local', localOnly = false} = {
     };
 
     if (direction === 'incoming') {
+        const deltaKey = messageDeltaBatchKey(envelope);
         scheduleIncomingEventCallback({
             event: envelope.event,
             replyTo: envelope.reply_to,
             callback: invokeEnvelopeListeners,
+            coalesce: deltaKey ? {key: JSON.stringify([scope.id, scope.epoch, deltaKey]),
+                value: envelope, merge: mergeMessageDeltaEnvelopes} : null,
         });
     } else {
         Promise.resolve().then(invokeEnvelopeListeners);

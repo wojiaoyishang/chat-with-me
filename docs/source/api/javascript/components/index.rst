@@ -306,7 +306,7 @@
    * - :doc:`src/components/markdown/remarkWorkProcess </api/javascript/components/markdown/remarkWorkProcess>`
      - 1
      - 0
-     - 4
+     - 5
      - ``src/components/markdown/remarkWorkProcess.js``
    * - :doc:`src/components/markdown/replacementProjection </api/javascript/components/markdown/replacementProjection>`
      - 3
@@ -364,15 +364,20 @@
      - 8
      - ``src/components/sidebar/ConversationForkDialog.jsx``
    * - :doc:`src/components/sidebar/ConversationsList </api/javascript/components/sidebar/ConversationsList>`
-     - 11
+     - 13
      - 0
-     - 78
+     - 103
      - ``src/components/sidebar/ConversationsList.jsx``
    * - :doc:`src/components/sidebar/Sidebar </api/javascript/components/sidebar/Sidebar>`
      - 1
      - 0
      - 33
      - ``src/components/sidebar/Sidebar.jsx``
+   * - :doc:`src/components/sidebar/conversationTree </api/javascript/components/sidebar/conversationTree>`
+     - 7
+     - 0
+     - 14
+     - ``src/components/sidebar/conversationTree.js``
    * - :doc:`src/components/sidebar/sidebarRegistry </api/javascript/components/sidebar/sidebarRegistry>`
      - 2
      - 0
@@ -615,6 +620,7 @@
    /api/javascript/components/sidebar/ConversationForkDialog
    /api/javascript/components/sidebar/ConversationsList
    /api/javascript/components/sidebar/Sidebar
+   /api/javascript/components/sidebar/conversationTree
    /api/javascript/components/sidebar/sidebarRegistry
    /api/javascript/components/sidebar/useConversationFork
    /api/javascript/components/ui/ButtonContentWrapper

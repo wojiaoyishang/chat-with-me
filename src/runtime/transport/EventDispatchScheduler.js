@@ -25,6 +25,7 @@ let scheduleIndex = 0;
 let scheduled = false;
 let pendingCount = 0;
 let backlogWarned = false;
+let lastQueuedJob = null;
 
 const now = () => globalThis.performance?.now?.() ?? Date.now();
 
@@ -46,7 +47,9 @@ const popNext = () => {
         if (queue?.length) {
             scheduleIndex = (index + 1) % FAIR_SCHEDULE.length;
             pendingCount -= 1;
-            return queue.shift();
+            const job = queue.shift();
+            if (job === lastQueuedJob) lastQueuedJob = null;
+            return job;
         }
     }
     return null;
@@ -80,7 +83,7 @@ function flush() {
         if (!job) break;
         processed += 1;
         try {
-            job();
+            job.callback(job.coalesce?.value);
         } catch (error) {
             console.error('[CWM inbound event job failed]', error);
         }
@@ -94,10 +97,19 @@ function flush() {
  * FIFO is preserved inside each lane; fair scheduling prevents stream deltas from
  * starving user interactions or control replies.
  */
-export const scheduleIncomingEventCallback = ({event, replyTo = null, callback}) => {
+export const scheduleIncomingEventCallback = ({event, replyTo = null, callback, coalesce = null}) => {
     if (typeof callback !== 'function') return;
     const lane = classifyEvent(event, replyTo);
-    queues.get(lane).push(callback);
+    if (coalesce?.key && lastQueuedJob?.lane === lane && lastQueuedJob.coalesce?.key === coalesce.key) {
+        const merged = coalesce.merge(lastQueuedJob.coalesce.value, coalesce.value);
+        if (merged !== null) {
+            lastQueuedJob.coalesce.value = merged;
+            return;
+        }
+    }
+    const job = {callback, lane, coalesce};
+    lastQueuedJob = job;
+    queues.get(lane).push(job);
     pendingCount += 1;
     if (pendingCount >= 500 && !backlogWarned) {
         backlogWarned = true;

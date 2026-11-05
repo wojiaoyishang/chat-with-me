@@ -78,7 +78,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2322:3445:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2322:3463:FUNCTION
 
 .. js:function:: executionGroupingKey(content, replacement, process)
 
@@ -201,7 +201,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2532:3440:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2532:3458:FUNCTION
 
 .. rubric:: ``references(content).map callback @ 41``
 

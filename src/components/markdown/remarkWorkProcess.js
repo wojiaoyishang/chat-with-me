@@ -7,6 +7,21 @@ import {hasExecutionGuidanceBoundary} from '../../features/execution/executionSt
 export function remarkWorkProcess({replacement = {}, renderSurface = 'conversation', snapshot = false} = {}) {
     return (tree) => {
         if (snapshot || renderSurface !== 'conversation') return;
+        const entries = new WeakMap();
+        const seenStatuses = new Set();
+        // Old transcripts can contain the same outer-call token once per script
+        // child. Retain the first host in document order, including nested blocks;
+        // repeated tokens must not create another process/supplement boundary.
+        visit(tree, 'cardReplace', (node) => {
+            const props = node.data?.hProperties;
+            const entry = workProcessEntry(replacement, String(props?.id || ''), String(props?.type || ''));
+            entries.set(node, entry);
+            if (!entry?.execution) return;
+            const {conversationId, executionId, runId, statusId} = entry.execution;
+            const identity = JSON.stringify([conversationId || '', executionId, runId || '', statusId]);
+            if (seenStatuses.has(identity)) props.processHidden = 'true';
+            else seenStatuses.add(identity);
+        });
         visit(tree, (node) => Array.isArray(node.children), (parent) => {
             let group = null;
             const output = [];
@@ -27,7 +42,12 @@ export function remarkWorkProcess({replacement = {}, renderSurface = 'conversati
                 const props = node.type === 'cardReplace' ? node.data?.hProperties : null;
                 const id = String(props?.id || '');
                 const type = String(props?.type || '');
-                const entry = id && workProcessEntry(replacement, id, type);
+                if (props?.processHidden === 'true') {
+                    if (group) group.allNodes.push(node);
+                    else output.push(node);
+                    continue;
+                }
+                const entry = entries.get(node);
                 if (entry) {
                     const identity = processIdentity(entry);
                     if (group && !sameProcess(group.identity, identity)) flush();

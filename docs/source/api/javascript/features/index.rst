@@ -86,7 +86,7 @@
    * - :doc:`src/features/chat/freeze/conversationFreezeState </api/javascript/features/chat/freeze/conversationFreezeState>`
      - 3
      - 0
-     - 6
+     - 10
      - ``src/features/chat/freeze/conversationFreezeState.js``
    * - :doc:`src/features/chat/freeze/useConversationFreeze </api/javascript/features/chat/freeze/useConversationFreeze>`
      - 1
@@ -281,7 +281,7 @@
    * - :doc:`src/features/chat/page/utils/messageStreamBatch </api/javascript/features/chat/page/utils/messageStreamBatch>`
      - 2
      - 0
-     - 6
+     - 7
      - ``src/features/chat/page/utils/messageStreamBatch.js``
    * - :doc:`src/features/chat/page/utils/messageSummaries </api/javascript/features/chat/page/utils/messageSummaries>`
      - 4
@@ -366,7 +366,7 @@
    * - :doc:`src/features/chat/ui/ChatBox </api/javascript/features/chat/ui/ChatBox>`
      - 6
      - 0
-     - 193
+     - 204
      - ``src/features/chat/ui/ChatBox.jsx``
    * - :doc:`src/features/chat/ui/ChatBoxHeader </api/javascript/features/chat/ui/ChatBoxHeader>`
      - 0
@@ -416,13 +416,23 @@
    * - :doc:`src/features/chat/ui/ToolButtons </api/javascript/features/chat/ui/ToolButtons>`
      - 6
      - 0
-     - 47
+     - 45
      - ``src/features/chat/ui/ToolButtons.jsx``
    * - :doc:`src/features/chat/ui/builtinToolValue </api/javascript/features/chat/ui/builtinToolValue>`
      - 1
      - 0
      - 4
      - ``src/features/chat/ui/builtinToolValue.js``
+   * - :doc:`src/features/chat/ui/chatbox/chatboxResource </api/javascript/features/chat/ui/chatbox/chatboxResource>`
+     - 3
+     - 0
+     - 11
+     - ``src/features/chat/ui/chatbox/chatboxResource.js``
+   * - :doc:`src/features/chat/ui/chatbox/chatboxResources </api/javascript/features/chat/ui/chatbox/chatboxResources>`
+     - 1
+     - 0
+     - 2
+     - ``src/features/chat/ui/chatbox/chatboxResources.js``
    * - :doc:`src/features/chat/ui/chatbox/components/ChatBoxInteractionHost </api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost>`
      - 8
      - 0
@@ -813,6 +823,11 @@
      - 0
      - 0
      - ``src/features/execution/AgentMessageRecord.jsx``
+   * - :doc:`src/features/execution/ExecutionErrorMessage </api/javascript/features/execution/ExecutionErrorMessage>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/execution/ExecutionErrorMessage.jsx``
    * - :doc:`src/features/execution/ExecutionGuidanceAction </api/javascript/features/execution/ExecutionGuidanceAction>`
      - 1
      - 0
@@ -888,6 +903,11 @@
      - 0
      - 24
      - ``src/features/execution/WorkProcessGroup.jsx``
+   * - :doc:`src/features/execution/executionErrorPresentation </api/javascript/features/execution/executionErrorPresentation>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/execution/executionErrorPresentation.js``
    * - :doc:`src/features/execution/executionStatusModel </api/javascript/features/execution/executionStatusModel>`
      - 13
      - 0
@@ -996,7 +1016,7 @@
    * - :doc:`src/features/notification/NotificationHost </api/javascript/features/notification/NotificationHost>`
      - 4
      - 0
-     - 68
+     - 69
      - ``src/features/notification/NotificationHost.jsx``
    * - :doc:`src/features/notification/NotificationToast </api/javascript/features/notification/NotificationToast>`
      - 1
@@ -1021,7 +1041,7 @@
    * - :doc:`src/features/notification/useNotificationStore </api/javascript/features/notification/useNotificationStore>`
      - 2
      - 0
-     - 17
+     - 19
      - ``src/features/notification/useNotificationStore.js``
    * - :doc:`src/features/notification/widgetNotificationPolicy </api/javascript/features/notification/widgetNotificationPolicy>`
      - 1
@@ -1241,7 +1261,7 @@
    * - :doc:`src/features/tasks/TaskCenter </api/javascript/features/tasks/TaskCenter>`
      - 2
      - 0
-     - 40
+     - 56
      - ``src/features/tasks/TaskCenter.jsx``
    * - :doc:`src/features/tasks/observation-components </api/javascript/features/tasks/observation-components>`
      - 0
@@ -1251,7 +1271,7 @@
    * - :doc:`src/features/tasks/useTaskStore </api/javascript/features/tasks/useTaskStore>`
      - 0
      - 0
-     - 5
+     - 9
      - ``src/features/tasks/useTaskStore.js``
    * - :doc:`src/features/tools/components/ConversationToolsDialog </api/javascript/features/tools/components/ConversationToolsDialog>`
      - 5
@@ -1610,6 +1630,8 @@
    /api/javascript/features/chat/ui/ToolAuditModeSwitch
    /api/javascript/features/chat/ui/ToolButtons
    /api/javascript/features/chat/ui/builtinToolValue
+   /api/javascript/features/chat/ui/chatbox/chatboxResource
+   /api/javascript/features/chat/ui/chatbox/chatboxResources
    /api/javascript/features/chat/ui/chatbox/components/ChatBoxInteractionHost
    /api/javascript/features/chat/ui/chatbox/components/ComposerPrimaryAction
    /api/javascript/features/chat/ui/chatbox/components/EditMessageIndicator
@@ -1688,6 +1710,7 @@
    /api/javascript/features/documents/sync
    /api/javascript/features/documents/useCollaborativeDocument
    /api/javascript/features/execution/AgentMessageRecord
+   /api/javascript/features/execution/ExecutionErrorMessage
    /api/javascript/features/execution/ExecutionGuidanceAction
    /api/javascript/features/execution/ExecutionGuidanceAttachments
    /api/javascript/features/execution/ExecutionGuidanceBubble
@@ -1703,6 +1726,7 @@
    /api/javascript/features/execution/SubAgentPanel
    /api/javascript/features/execution/WidgetResponseDetails
    /api/javascript/features/execution/WorkProcessGroup
+   /api/javascript/features/execution/executionErrorPresentation
    /api/javascript/features/execution/executionStatusModel
    /api/javascript/features/execution/guidanceEditorSubmission
    /api/javascript/features/execution/index

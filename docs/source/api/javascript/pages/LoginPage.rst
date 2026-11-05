@@ -17,23 +17,23 @@ src/pages/LoginPage 模块
 * **模块标识**：``src/pages/LoginPage``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：6
+* **局部函数与匿名回调**：8
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/components/ui/checkbox``、``react``、``react-i18next``、``@/components/ui/button.tsx``、``@/components/ui/input.tsx``、``@/components/ui/label.tsx``、``@/components/ui/card.tsx``、``lucide-react``、``framer-motion``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``crypto-js``。
+``@/components/ui/checkbox``、``react``、``react-i18next``、``@/components/ui/button.tsx``、``@/components/ui/input.tsx``、``@/components/ui/label.tsx``、``@/components/ui/card.tsx``、``lucide-react``、``framer-motion``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``crypto-js``、``react-router-dom``、``@/context/WebSocketContext.jsx``、``@/runtime/backend/bootstrapRequests.js``、``@/runtime/backend/connection.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:682:9179:FUNCTION
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:1059:11190:FUNCTION
 
 .. js:function:: LoginPage()
 
    渲染 ``LoginPage`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``15``—``171`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``19``—``198`` 行。
 
    **参数**
 
@@ -41,23 +41,76 @@ src/pages/LoginPage 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <div className="full-screen-min-height flex items-center justify-center bg-gray-100 p-4"> <motion.div initial={{ opacity: 0, y: 50 }} // 初始状态：透明，从下方50px位置 animate={{ opacity: 1,…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <div className="full-screen-min-height flex items-center justify-center bg-gray-100 p-4"> <Motion.div initial={{ opacity: 0, y: 50 }} // 初始状态：透明，从下方50px位置 animate={{ opacity: 1,…``。
 
    **副作用**
 
    * 发起 HTTP 请求或访问外部服务。
+   * 注册事件、DOM 或运行时订阅。
+   * 创建或控制浏览器实时媒体资源。
    * 读取或修改浏览器全局对象、页面或历史状态。
+   * 改变前端路由或浏览器历史。
 
-   **主要协作调用**：``useTranslation``、``useState``、``t``。
+   **主要协作调用**：``useNavigate``、``useTranslation``、``useState``、``useEffect``、``t``。
 
-   **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:1070:2550:FUNCTION
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:1556:1623:FUNCTION
+
+.. rubric:: ``useEffect callback @ 30``
+
+.. code-block:: javascript
+
+   useEffect callback @ 30()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``30``—``30`` 行；所属函数 ``LoginPage``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**副作用**
+
+* 注册事件、DOM 或运行时订阅。
+
+**主要协作调用**：``subscribeBackend``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:1579:1622:FUNCTION
+
+.. rubric:: ``subscribeBackend callback @ 30``
+
+.. code-block:: javascript
+
+   subscribeBackend callback @ 30()
+
+订阅与 ``Backend`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``30``—``30`` 行；所属函数 ``useEffect callback @ 30``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setConnection``、``getBackendConnection``。
+
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:1657:3113:FUNCTION
 
 .. rubric:: ``handleSubmit``
 
@@ -67,7 +120,7 @@ src/pages/LoginPage 模块
 
 处理 ``Submit`` 用户交互或运行时事件。
 
-**性质**：异步局部函数；源码第 ``24``—``64`` 行；所属函数 ``LoginPage``。
+**性质**：异步局部函数；源码第 ``32``—``69`` 行；所属函数 ``LoginPage``。
 
 **参数**
 
@@ -81,23 +134,25 @@ src/pages/LoginPage 模块
 **副作用**
 
 * 发起 HTTP 请求或访问外部服务。
+* 创建或控制浏览器实时媒体资源。
 * 读取或修改浏览器全局对象、页面或历史状态。
+* 改变前端路由或浏览器历史。
 
-**主要协作调用**：``e.preventDefault``、``setIsLoading``、``apiClient.post``、``CryptoJS.SHA256(password).toString``、``CryptoJS.SHA256``、``setIsSuccess``、``urlParams.get``、``redirectParam.startsWith``、``setTimeout``、``toast.error``、``t``、``setIsError``。
+**主要协作调用**：``e.preventDefault``、``setIsLoading``、``apiClient.post``、``CryptoJS.SHA256(password).toString``、``CryptoJS.SHA256``、``setIsSuccess``、``loginRedirectTarget``、``navigate``、``Promise.resolve().then(retryWebSocketConnection).catch``、``Promise.resolve().then``、``Promise.resolve``、``toast.error``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:2149:2222:FUNCTION
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:2772:2780:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 51``
+.. rubric:: ``Promise.resolve().then(retryWebSocketConnection).catch callback @ 58``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 51()
+   Promise.resolve().then(retryWebSocketConnection).catch callback @ 58()
 
-设置与 ``Timeout`` 相关的数据或状态。
+处理 ``Promise.resolve().then(retryWebSocketConnection).catch callback`` 对应的事件或订阅结果。
 
-**性质**：同步局部函数；源码第 ``51``—``53`` 行；所属函数 ``handleSubmit``。
+**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``handleSubmit``。
 
 **参数**
 
@@ -107,21 +162,17 @@ src/pages/LoginPage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**副作用**
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:3029:3087:FUNCTION
 
-* 读取或修改浏览器全局对象、页面或历史状态。
-
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:2470:2526:FUNCTION
-
-.. rubric:: ``setTimeout callback @ 60``
+.. rubric:: ``setTimeout callback @ 65``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 60()
+   setTimeout callback @ 65()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``60``—``62`` 行；所属函数 ``handleSubmit``。
+**性质**：同步局部函数；源码第 ``65``—``67`` 行；所属函数 ``handleSubmit``。
 
 **参数**
 
@@ -133,17 +184,17 @@ src/pages/LoginPage 模块
 
 **主要协作调用**：``setIsError``。
 
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:4616:4650:FUNCTION
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:5213:5247:FUNCTION
 
-.. rubric:: ``onChange callback @ 98``
+.. rubric:: ``onChange callback @ 103``
 
 .. code-block:: javascript
 
-   onChange callback @ 98(e)
+   onChange callback @ 103(e)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``LoginPage``。
+**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``LoginPage``。
 
 **参数**
 
@@ -156,17 +207,17 @@ src/pages/LoginPage 模块
 
 **主要协作调用**：``setUsername``。
 
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:5347:5381:FUNCTION
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:5955:5989:FUNCTION
 
-.. rubric:: ``onChange callback @ 109``
+.. rubric:: ``onChange callback @ 114``
 
 .. code-block:: javascript
 
-   onChange callback @ 109(e)
+   onChange callback @ 114(e)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``LoginPage``。
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``LoginPage``。
 
 **参数**
 
@@ -179,17 +230,17 @@ src/pages/LoginPage 模块
 
 **主要协作调用**：``setPassword``。
 
-.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:5829:5869:FUNCTION
+.. CWM-AST-FUNCTION src/pages/LoginPage.jsx:6444:6484:FUNCTION
 
-.. rubric:: ``onCheckedChange callback @ 116``
+.. rubric:: ``onCheckedChange callback @ 121``
 
 .. code-block:: javascript
 
-   onCheckedChange callback @ 116(value)
+   onCheckedChange callback @ 121(value)
 
 处理 ``Checked Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``LoginPage``。
+**性质**：同步局部函数；源码第 ``121``—``121`` 行；所属函数 ``LoginPage``。
 
 **参数**
 

@@ -3,7 +3,7 @@ src/features/chat/page/utils/liveMessageReconcile 模块
 
 .. js:module:: src/features/chat/page/utils/liveMessageReconcile
 
-Merge a persisted HTTP message snapshot into the browser's live stream state without regressing content that has already arrived over WebSocket. The persisted snapshot remains authoritative for structural/message metadata. For the active live message(s), however, stream content and replacement payloads are monotonic. A shorter persisted prefix must never er…
+Merge an HTTP snapshot or message.created patch into the browser's state without regressing content that has already arrived over WebSocket. The persisted snapshot remains authoritative for structural/message metadata. For the active live message(s), however, stream content and replacement payloads are monotonic. A shorter persisted prefix must never erase…
 
 .. note::
 
@@ -89,13 +89,13 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:942:1825:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:942:1867:FUNCTION
 
-.. js:function:: mergeReplacementEntry(snapshotEntry, liveEntry)
+.. js:function:: mergeReplacementEntry(snapshotEntry, liveEntry, preserveStream)
 
    合并与 ``Replacement Entry`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``17``—``37`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``17``—``38`` 行。
 
    **参数**
 
@@ -105,19 +105,22 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
    ``liveEntry``
       调用方传入的 ``liveEntry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
+   ``preserveStream``
+      调用方传入的 ``preserveStream`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``liveEntry ?? snapshotEntry``、``snapshotEntry``、``{ ...liveEntry, ...snapshotEntry, ...(canKeepLiveContent ? {[field]: liveContent} : {}), }``。
 
    **主要协作调用**：``Object.hasOwn``、``liveContent.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:2284:4328:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:2404:4520:FUNCTION
 
-.. js:function:: mergeLiveMessageWithSnapshot(snapshotMessage, liveMessage)
+.. js:function:: mergeLiveMessageWithSnapshot(snapshotMessage, liveMessage, {preserveStream = true})
 
    合并与 ``Live Message With Snapshot`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``47``—``91`` 行。
+   **性质**：同步函数；导出 API；源码第 ``49``—``94`` 行。
 
    **参数**
 
@@ -127,19 +130,22 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
    ``liveMessage``
       调用方传入的 ``liveMessage`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
+   ``{preserveStream = true}`` （默认值 ``{}``）
+      调用方传入的 ``preserveStream = true`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``liveMessage ?? snapshotMessage``、``snapshotMessage``、``merged``。
 
    **主要协作调用**：``preserveMessageSettings``、``mergeNetworkData``、``liveContent.startsWith``、``mergeBodyForwardingStatus``、``Object.entries``、``mergeReplacementEntry``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:4625:5767:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:4817:5959:FUNCTION
 
 .. js:function:: mergeSnapshotOrderWithLiveTail(snapshotOrder, currentOrder, messages)
 
    合并与 ``Snapshot Order With Live Tail`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``98``—``128`` 行。
+   **性质**：同步函数；导出 API；源码第 ``101``—``131`` 行。
 
    **参数**
 
@@ -160,13 +166,13 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:6060:7229:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:6252:7421:FUNCTION
 
 .. js:function:: restoreMissingStreamTail(order, messages, targetMessageId)
 
    实现 ``restoreMissingStreamTail`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``135``—``166`` 行。
+   **性质**：同步函数；导出 API；源码第 ``138``—``169`` 行。
 
    **参数**
 
@@ -187,13 +193,13 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7284:8432:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7476:8624:FUNCTION
 
 .. js:function:: reconcileHistorySnapshotWithLiveState({ snapshotMessages = {}, snapshotOrder = [], currentMessages = {}, currentOrder = [], liveMessageId…)
 
    实现 ``reconcileHistorySnapshotWithLiveState`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``168``—``192`` 行。
+   **性质**：同步函数；导出 API；源码第 ``171``—``195`` 行。
 
    **参数**
 
@@ -234,17 +240,17 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:5607:5744:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:5799:5936:FUNCTION
 
-.. rubric:: ``suffix.forEach callback @ 121``
+.. rubric:: ``suffix.forEach callback @ 124``
 
 .. code-block:: javascript
 
-   suffix.forEach callback @ 121(messageId)
+   suffix.forEach callback @ 124(messageId)
 
 作为 ``suffix.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``121``—``126`` 行；所属函数 ``mergeSnapshotOrderWithLiveTail``。
+**性质**：同步局部函数；源码第 ``124``—``129`` 行；所属函数 ``mergeSnapshotOrderWithLiveTail``。
 
 **参数**
 
@@ -257,17 +263,17 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
 **主要协作调用**：``seen.has``、``result.push``、``seen.add``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7183:7224:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7375:7416:FUNCTION
 
-.. rubric:: ``missingChain.filter callback @ 165``
+.. rubric:: ``missingChain.filter callback @ 168``
 
 .. code-block:: javascript
 
-   missingChain.filter callback @ 165(messageId)
+   missingChain.filter callback @ 168(messageId)
 
 作为 ``missingChain.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``165``—``165`` 行；所属函数 ``restoreMissingStreamTail``。
+**性质**：同步局部函数；源码第 ``168``—``168`` 行；所属函数 ``restoreMissingStreamTail``。
 
 **参数**
 
@@ -280,17 +286,17 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
 **主要协作调用**：``visibleSet.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7593:7652:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7785:7844:FUNCTION
 
-.. rubric:: ``withoutHistorySentinel(order).filter callback @ 176``
+.. rubric:: ``withoutHistorySentinel(order).filter callback @ 179``
 
 .. code-block:: javascript
 
-   withoutHistorySentinel(order).filter callback @ 176(id)
+   withoutHistorySentinel(order).filter callback @ 179(id)
 
 作为 ``withoutHistorySentinel(order).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``176``—``176`` 行；所属函数 ``reconcileHistorySnapshotWithLiveState``。
+**性质**：同步局部函数；源码第 ``179``—``179`` 行；所属函数 ``reconcileHistorySnapshotWithLiveState``。
 
 **参数**
 
@@ -303,17 +309,17 @@ Merge a persisted HTTP message snapshot into the browser's live stream state wit
 
 **主要协作调用**：``withoutHistorySentinel(snapshotOrder).includes``、``withoutHistorySentinel``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:8153:8383:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:8345:8575:FUNCTION
 
-.. rubric:: ``protectedIds.forEach callback @ 185``
+.. rubric:: ``protectedIds.forEach callback @ 188``
 
 .. code-block:: javascript
 
-   protectedIds.forEach callback @ 185(messageId)
+   protectedIds.forEach callback @ 188(messageId)
 
 作为 ``protectedIds.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``185``—``189`` 行；所属函数 ``reconcileHistorySnapshotWithLiveState``。
+**性质**：同步局部函数；源码第 ``188``—``192`` 行；所属函数 ``reconcileHistorySnapshotWithLiveState``。
 
 **参数**
 
