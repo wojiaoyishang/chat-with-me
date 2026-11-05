@@ -15,6 +15,7 @@ let stateIndex=0, refIndex=0, states=[], refs=[], effects=[];
 const useState = value => { const index=stateIndex++; if(!(index in states))states[index]=value;return [states[index], value=>{states[index]=typeof value==='function'?value(states[index]):value;}]; };
 const useRef = value => { const index=refIndex++; return refs[index] ||= {current:value}; };
 const useEffect = effect => effects.push(effect);
+const useSyncExternalStore = (_subscribe, getSnapshot) => getSnapshot();
 const useTranslation = () => ({t:key=>key});
 const toast = {promise:()=>{}};
 const EventName = {TRANSPORT_CONNECTED:'transport.connected',TRANSPORT_DISCONNECTED:'transport.disconnected',TRANSPORT_ERROR:'transport.error'};
@@ -43,7 +44,10 @@ class WebSocketTransport {
  close(code=1000,reason=''){this.isOpen=false;this.options.onClose?.({code,reason});}
 }
 ${source}
-exports.render=()=>{stateIndex=0;refIndex=0;effects=[];return WebSocketProvider({children:null})};
+let routePathname='/chat';
+const router={subscribe:()=>()=>{},get state(){return {location:{pathname:routePathname}}}};
+exports.render=()=>{stateIndex=0;refIndex=0;effects=[];return WebSocketProvider({children:null,router})};
+exports.navigate=pathname=>{routePathname=pathname};
 exports.initialize=()=>effects[0]();
 exports.retry=()=>retryWebSocketConnection();
 exports.transports=transports;
@@ -243,5 +247,26 @@ test('backend changes invalidate delayed retries and pending ticket preparation'
         await app.tick(60000);
         assert.equal(app.transports.length, 1);
         assert.equal(app.timers(), 0);
+    } finally { cleanup(); }
+});
+
+test('login routes hide reconnect UI while preserving retry state and successful recovery', async () => {
+    const app = harness();
+    app.navigate('/login');
+    app.fail(2);
+    const cleanup = await app.start();
+    try {
+        assert.equal(app.prompt().open, false);
+        assert.equal(app.view().isConnected, false);
+        await app.tick(1000);
+        assert.equal(app.prompt().open, false);
+        app.navigate('/chat/current');
+        assert.equal(app.prompt().open, true);
+        app.navigate('/LOGIN/');
+        assert.equal(app.prompt().open, false);
+        await app.retry();
+        assert.equal(app.view().isConnected, true);
+        app.navigate('/chat');
+        assert.equal(app.prompt().open, false);
     } finally { cleanup(); }
 });

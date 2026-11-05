@@ -1,6 +1,6 @@
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import WebSocketReconnectPrompt from '@/context/WebSocketReconnectPrompt.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
@@ -15,6 +15,7 @@ const RECONNECT_BASE_DELAY_MS = 1000;
 const RECONNECT_MAX_DELAY_MS = 30000;
 let currentRetryFunction = null;
 const WebSocketContext = createContext(null);
+const subscribeWithoutRouter = () => () => {};
 
 /** Send a complete CWM Protocol v1 event envelope. */
 // eslint-disable-next-line react-refresh/only-export-components -- Keep the existing public Context helpers; the owning effect disposes transports on refresh.
@@ -31,7 +32,15 @@ export const retryWebSocketConnection = () => {
     return Promise.reject(new Error('No active realtime retry handler is available'));
 };
 
-export const WebSocketProvider = ({ children }) => {
+export const WebSocketProvider = ({ children, router = null }) => {
+    // The provider owns a socket outside RouterProvider. Subscribe to the public
+    // router store so SPA login navigation updates only the reconnect surface.
+    const pathname = useSyncExternalStore(
+        router?.subscribe || subscribeWithoutRouter,
+        () => router?.state?.location?.pathname || globalThis.window?.location?.pathname || '/',
+        () => '/',
+    );
+    const isLoginPage = pathname.replace(/\/+$/, '').toLowerCase() === '/login';
     const transportRef = useRef(null);
     const [showReconnectPrompt, setShowReconnectPrompt] = useState(false);
     const [isConnecting, setIsConnecting] = useState(false);
@@ -270,7 +279,7 @@ export const WebSocketProvider = ({ children }) => {
             sendMessage: sendWebSocketMessage, retry: retryWebSocketConnection,
         }}>
             {children}
-            <WebSocketReconnectPrompt open={showReconnectPrompt} connecting={isConnecting}
+            <WebSocketReconnectPrompt open={showReconnectPrompt && !isLoginPage} connecting={isConnecting}
                 automatic={automaticReconnect} onRetry={retryWebSocketConnection} />
         </WebSocketContext.Provider>
     );

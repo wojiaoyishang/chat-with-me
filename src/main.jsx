@@ -90,7 +90,7 @@ ReactDOM.createRoot(root).render(
         <FatalErrorPopoverElement /> {/* 错误提示 */}
         <UniversalModalHost /> {/* 后端驱动的通用弹窗 */}
         <ImageViewer />
-        <WebSocketProvider>
+        <WebSocketProvider router={router}>
             <HistorySynchronizedRouter />
         </WebSocketProvider>
         </BackendBootstrapGate>

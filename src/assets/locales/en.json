@@ -111,6 +111,8 @@
     "load_conversation_error": "Load Conversation Error: {{message}}",
     "new_conversion": "New Conversation",
     "login": "Login",
+    "login_backend_service": "Backend service",
+    "login_backend_switch": "Switch backend",
     "enter_credentials": "Enter your credentials to access your account.",
     "email": "Email",
     "enter_email": "Enter your email",

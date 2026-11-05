@@ -1,11 +1,11 @@
 import { Checkbox } from '@/components/ui/checkbox';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button.tsx';
 import { Input } from '@/components/ui/input.tsx';
 import { Label } from '@/components/ui/label.tsx';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Server, ArrowLeftRight } from 'lucide-react';
 import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import apiClient from '@/lib/apiClient.js';
@@ -14,6 +14,7 @@ import CryptoJS from 'crypto-js';
 import { useNavigate } from 'react-router-dom';
 import { retryWebSocketConnection } from '@/context/WebSocketContext.jsx';
 import { loginRedirectTarget } from '@/runtime/backend/bootstrapRequests.js';
+import { getBackendConnection, requestBackendManager, subscribeBackend } from '@/runtime/backend/connection.js';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -24,6 +25,9 @@ const LoginPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [isError, setIsError] = useState(false);
+    const [connection, setConnection] = useState(getBackendConnection);
+
+    useEffect(() => subscribeBackend(() => setConnection(getBackendConnection())), []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -164,6 +168,28 @@ const LoginPage = () => {
                                 </Button>
                             )}
                         </form>
+                        <div className="mt-6 flex min-w-0 items-center gap-3 border-t pt-4">
+                            <Server className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-medium text-muted-foreground">
+                                    {t('login_backend_service')} · {connection.title}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground" title={connection.url}>
+                                    {connection.url}
+                                </p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={isLoading}
+                                onClick={requestBackendManager}
+                                className="shrink-0 gap-1.5"
+                            >
+                                <ArrowLeftRight className="size-3.5" aria-hidden="true" />
+                                {t('login_backend_switch')}
+                            </Button>
+                        </div>
                     </CardContent>
                 </Card>
             </Motion.div>
