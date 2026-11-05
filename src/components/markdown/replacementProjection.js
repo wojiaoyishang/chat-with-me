@@ -11,12 +11,18 @@ const references = (content) => [...String(content || '').matchAll(REFERENCES)].
 
 /** Keep only the referenced card tree; reuse a prior projection when unchanged. */
 export function projectReplacements(content, replacement, previous = null, maxDepth = 10) {
+    return projectReplacementRefs(references(content), replacement, previous, maxDepth);
+}
+
+/** Select one card/group's dependencies so unrelated replacements cannot invalidate it. */
+export function projectReplacementRefs(roots, replacement, previous = null, maxDepth = 10) {
     replacement = replacement && typeof replacement === 'object' ? replacement : {};
     const selected = Object.create(null);
     const seen = new Set();
-    const walk = (source, depth) => {
+    const walk = (items, depth) => {
         if (depth > maxDepth) return;
-        for (const { id, type } of references(source)) {
+        for (const { id, type } of items) {
+            if (typeof id !== 'string' || !id) continue;
             if (seen.has(id)) continue;
             seen.add(id);
             if (Object.hasOwn(replacement, id)) selected[id] = replacement[id];
@@ -27,10 +33,10 @@ export function projectReplacements(content, replacement, previous = null, maxDe
             if (Object.hasOwn(replacement, resultId)) selected[resultId] = replacement[resultId];
             // Reasoning is displayed as lazy plain text, never as nested control
             // Markdown. Don't rescan its growing body on every streamed token.
-            if (entry.exists && entry.type !== 'thinking') walk(entry.content, depth + 1);
+            if (entry.exists && entry.type !== 'thinking') walk(references(entry.content), depth + 1);
         }
     };
-    walk(content, 0);
+    walk(roots, 0);
     const ids = Object.keys(selected);
     return previous && ids.length === Object.keys(previous).length && ids.every((id) => previous[id] === selected[id])
         ? previous : selected;

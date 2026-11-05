@@ -38,7 +38,11 @@ import ResourceImage from './ResourceImage.jsx';
 import ResourceVideo from './ResourceVideo.jsx';
 import ResourceAudio from './ResourceAudio.jsx';
 import { createMarkdownCopyContentComponent, resolveMarkdownCopyContent } from './markdownCopy.js';
-import { executionGroupingKey, projectReplacements } from './replacementProjection.js';
+import { executionGroupingKey, projectReplacements, projectReplacementRefs } from './replacementProjection.js';
+import {rehypeReuseMarkdownNodes, sameMarkdownNodeProps} from './markdownNodeReuse.js';
+import StreamingText from './StreamingText.jsx';
+import {StreamingTextContext} from './streamingTextContext.js';
+import {rehypeStreamingText} from './rehypeStreamingText.js';
 import { toast } from 'sonner';
 import { isUniversalModalLink, openUniversalModalLink } from '@/components/modal/universalModal.js';
 
@@ -104,13 +108,39 @@ const MarkdownCode = ({ className, children, isCodeBlock, ...props }) => {
 // context. Changing readonly at stream completion must not remount a video (or
 // an ancestor paragraph/list/card) with the same source.
 const MarkdownRenderersContext = createContext(null);
+const MarkdownCommonRenderersContext = createContext(null);
+const MemoCardRenderer = memo(({render, props}) => render(props), (previous, next) =>
+    previous.options === next.options && previous.selection === next.selection && sameMarkdownNodeProps(previous.props, next.props));
+const CardRendererHost = (props) => {
+    const renderers = useContext(MarkdownRenderersContext);
+    const options = useContext(MarkdownCommonRenderersContext);
+    const previous = useRef(null);
+    const roots = [{id: String(props.id || props.node?.properties?.id || ''), type: String(props.type || '')}];
+    for (const key of ['processEntries', 'groupedIds']) {
+        try {
+            const items = JSON.parse(String(props.node?.properties?.[key] || '[]'));
+            if (Array.isArray(items)) roots.push(...items.map((item) => typeof item === 'string'
+                ? {id: item, type: 'executionStatus'} : item));
+        } catch { /* Incomplete group metadata retains its normal card fallback. */ }
+    }
+    const continuation = props.node?.properties?.continuationId;
+    if (continuation) roots.push({id: continuation, type: 'executionStatus'});
+    const selection = projectReplacementRefs(roots.filter((item) => item?.id), renderers.replacement, previous.current, renderers.maxDepth);
+    previous.current = selection;
+    // Retain only this card's dependency slice. An unchanged old card must not
+    // pin a full, outdated snapshot of every other growing tool result.
+    const render = useMemo(() => createElementRenderers({...renderers.options, replacement: selection})['card-replace'],
+        [renderers.options, selection]);
+    return <MemoCardRenderer render={render} options={options} selection={selection} props={props} />;
+};
 const stableRendererHosts = new Map();
 const getStableRendererHost = (name) => {
     if (!stableRendererHosts.has(name)) {
-        const RendererHost = (props) => {
-            const renderers = useContext(MarkdownRenderersContext);
+        const StaticRendererHost = (props) => {
+            const renderers = useContext(MarkdownCommonRenderersContext);
             return renderers?.[name]?.(props) ?? null;
         };
+        const RendererHost = memo(name === 'card-replace' ? CardRendererHost : StaticRendererHost, sameMarkdownNodeProps);
         RendererHost.displayName = `Markdown(${name})`;
         stableRendererHosts.set(name, RendererHost);
     }
@@ -165,6 +195,7 @@ const createElementRenderers = ({
     ])) : {};
 
     return {
+        'cwm-stream-text': ({children}) => <StreamingText text={String(children || '')} />,
         ...(cardSpec ? { 'study-outline': (props) => <StudyOutline {...props} />, ...cardComponents } : {}),
         p: ({ children }) => <p className="my-2">{children}</p>,
 
@@ -434,7 +465,7 @@ const createElementRenderers = ({
 // source/configuration or grouping topology changes require another syntax pass.
 const MarkdownSyntax = memo(({ processedContent, replacement,
     renderSurface, snapshot, studyDirectivesEnabled, studyIdPrefix, cardSpec,
-    extraRehypePlugins, editableTasks, taskSourceContent, components, resourceBaseUrl }) => (
+    extraRehypePlugins, editableTasks, taskSourceContent, components, resourceBaseUrl, nodeReuse }) => (
     <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath,
             ...(studyDirectivesEnabled ? [remarkDirective, [remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
@@ -442,7 +473,9 @@ const MarkdownSyntax = memo(({ processedContent, replacement,
             [renderSurface === 'conversation' ? remarkWorkProcess : remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}],
             remarkVideoDirective, remarkAudioDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
         rehypePlugins={[rehypeKatex, ...extraRehypePlugins,
-            ...(editableTasks ? [[rehypeDocumentTasks, { sourceContent: taskSourceContent, normalizeLine: preprocessContent }]] : [])]}
+            ...(editableTasks ? [[rehypeDocumentTasks, { sourceContent: taskSourceContent, normalizeLine: preprocessContent }]] : []),
+            [rehypeStreamingText, {enabled: renderSurface === 'conversation'}],
+            [rehypeReuseMarkdownNodes, {cache: nodeReuse}]]}
         components={components}
         urlTransform={(uri, key, node) => {
             const safe = allowCustomScheme(uri, key, node);
@@ -479,6 +512,12 @@ function MarkdownRendererInner({
     onTaskToggle = null,
 }) {
     const studyIdPrefix = useId();
+    const priorText = useRef({mounted: false, content: '', contextId});
+    const animateMount = priorText.current.mounted && priorText.current.contextId === contextId
+        && String(content || '').startsWith(String(priorText.current.content || ''));
+    const textAnimation = useMemo(() => ({enabled: renderSurface === 'conversation' && !snapshot && Boolean(isStreamingProp ?? msg?.readonly === true),
+        animateMount}), [renderSurface, snapshot, isStreamingProp, msg?.readonly, animateMount]);
+    useEffect(() => {priorText.current = {mounted: true, content, contextId};}, [content, contextId]);
     const documentSurface = ['document', 'document-preview', 'record'].includes(renderSurface);
     const { spec: cardSpec, loading: cardsLoading, error: cardsError } = useDocumentCardSpec(documentSurface);
     const projectionRef = useRef(null);
@@ -501,11 +540,10 @@ function MarkdownRendererInner({
     const visitedKey = getVisitedKey(visitedIds);
     const stableVisitedIds = useMemo(() => visitedKey ? JSON.parse(visitedKey) : [], [visitedKey]);
 
-    const elementRenderers = useMemo(() => {
-        return createElementRenderers({
+    const renderOptions = useMemo(() => {
+        return {
             contextId,
             conversationId,
-            replacement,
             depth,
             maxDepth,
             visitedIds: stableVisitedIds,
@@ -518,11 +556,10 @@ function MarkdownRendererInner({
             onTaskToggle,
             sourceContent: taskSourceContent,
             cardSpec,
-        });
+        };
     }, [
         contextId,
         conversationId,
-        replacement,
         depth,
         maxDepth,
         stableVisitedIds,
@@ -537,7 +574,12 @@ function MarkdownRendererInner({
         cardSpec,
     ]);
 
-    const rendererNames = Object.keys(elementRenderers).join('|');
+    const commonRenderers = useMemo(() => createElementRenderers({...renderOptions, replacement: EMPTY_REPLACEMENTS}), [renderOptions]);
+    const elementRenderers = useMemo(() => ({options: renderOptions, replacement, maxDepth}), [renderOptions, replacement, maxDepth]);
+    const nodeReuse = useMemo(() => ({current: null, scope: {resourceBaseUrl, extraRehypePlugins, renderSurface, cardSpec}}),
+        [resourceBaseUrl, extraRehypePlugins, renderSurface, cardSpec]);
+
+    const rendererNames = Object.keys(commonRenderers).join('|');
     const components = useMemo(() => Object.fromEntries(
         rendererNames.split('|').map((name) => [name, getStableRendererHost(name)]),
     ), [rendererNames]);
@@ -596,14 +638,18 @@ function MarkdownRendererInner({
         return <div className="cwm-document-card-surface" aria-busy="true">正在加载文档卡片…</div>;
     }
     const markdown = (
+        <StreamingTextContext.Provider value={textAnimation}>
+        <MarkdownCommonRenderersContext.Provider value={commonRenderers}>
         <MarkdownRenderersContext.Provider value={elementRenderers}>
             <MarkdownSyntax processedContent={processedContent} replacement={replacement}
                 groupingKey={executionGroupingKey(processedContent, replacement, renderSurface === 'conversation')}
                 renderSurface={renderSurface} snapshot={snapshot} studyDirectivesEnabled={Boolean(studyDirectivesEnabled)}
                 studyIdPrefix={studyIdPrefix} cardSpec={cardSpec} extraRehypePlugins={extraRehypePlugins}
                 editableTasks={Boolean(renderSurface === 'document' && onTaskToggle)} taskSourceContent={taskSourceContent}
-                components={components} resourceBaseUrl={resourceBaseUrl} />
+                components={components} resourceBaseUrl={resourceBaseUrl} nodeReuse={nodeReuse} />
         </MarkdownRenderersContext.Provider>
+        </MarkdownCommonRenderersContext.Provider>
+        </StreamingTextContext.Provider>
     );
     return documentSurface ? (
         <div className="cwm-document-card-surface">

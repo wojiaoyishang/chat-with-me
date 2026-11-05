@@ -15,7 +15,7 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 * **源码文件**：``src/components/markdown/replacementProjection.js``
 * **模块标识**：``src/components/markdown/replacementProjection``
-* **顶层函数/组件/Hook**：3
+* **顶层函数/组件/Hook**：4
 * **类**：0
 * **局部函数与匿名回调**：5
 
@@ -48,18 +48,46 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:841:2322:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:841:1109:FUNCTION
 
 .. js:function:: projectReplacements(content, replacement, previous, maxDepth)
 
    Keep only the referenced card tree; reuse a prior projection when unchanged.
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``37`` 行。
+   **性质**：同步函数；导出 API；源码第 ``13``—``15`` 行。
 
    **参数**
 
    ``content``
       消息、文档或模型输出内容。
+
+   ``replacement``
+      调用方传入的 ``replacement`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``previous`` （默认值 ``null``）
+      调用方传入的 ``previous`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``maxDepth`` （默认值 ``10``）
+      调用方传入的 ``maxDepth`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``projectReplacementRefs(references(content), replacement, previous, maxDepth)``。
+
+   **主要协作调用**：``projectReplacementRefs``、``references``。
+
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1109:2652:FUNCTION
+
+.. js:function:: projectReplacementRefs(roots, replacement, previous, maxDepth)
+
+   Select one card/group's dependencies so unrelated replacements cannot invalidate it.
+
+   **性质**：同步函数；导出 API；源码第 ``18``—``43`` 行。
+
+   **参数**
+
+   ``roots``
+      调用方传入的 ``roots`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    ``replacement``
       调用方传入的 ``replacement`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
@@ -78,13 +106,13 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2322:3463:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2652:3793:FUNCTION
 
 .. js:function:: executionGroupingKey(content, replacement, process)
 
    Only facts that affect grouping invalidate the Markdown syntax pipeline.
 
-   **性质**：同步函数；导出 API；源码第 ``40``—``54`` 行。
+   **性质**：同步函数；导出 API；源码第 ``46``—``60`` 行。
 
    **参数**
 
@@ -154,22 +182,22 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1190:2108:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:1467:2440:FUNCTION
 
 .. rubric:: ``walk``
 
 .. code-block:: javascript
 
-   walk(source, depth)
+   walk(items, depth)
 
 实现 ``walk`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``17``—``32`` 行；所属函数 ``projectReplacements``。
+**性质**：同步局部函数；源码第 ``22``—``38`` 行；所属函数 ``projectReplacementRefs``。
 
 **参数**
 
-``source``
-   调用方传入的 ``source`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``items``
+   待渲染、筛选或合并的数据项数组。
 
 ``depth``
    调用方传入的 ``depth`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
@@ -178,19 +206,19 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``references``、``seen.has``、``seen.add``、``Object.hasOwn``、``normalizeReplacementEntry``、``id.replace``、``walk``。
+**主要协作调用**：``seen.has``、``seen.add``、``Object.hasOwn``、``normalizeReplacementEntry``、``id.replace``、``walk``、``references``。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2251:2288:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2581:2618:FUNCTION
 
-.. rubric:: ``ids.every callback @ 35``
+.. rubric:: ``ids.every callback @ 41``
 
 .. code-block:: javascript
 
-   ids.every callback @ 35(id)
+   ids.every callback @ 41(id)
 
 作为 ``ids.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``35``—``35`` 行；所属函数 ``projectReplacements``。
+**性质**：同步局部函数；源码第 ``41``—``41`` 行；所属函数 ``projectReplacementRefs``。
 
 **参数**
 
@@ -201,17 +229,17 @@ Keep only the referenced card tree; reuse a prior projection when unchanged.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2532:3458:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/replacementProjection.js:2862:3788:FUNCTION
 
-.. rubric:: ``references(content).map callback @ 41``
+.. rubric:: ``references(content).map callback @ 47``
 
 .. code-block:: javascript
 
-   references(content).map callback @ 41({ id, type })
+   references(content).map callback @ 47({ id, type })
 
 作为 ``references(content).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``41``—``53`` 行；所属函数 ``executionGroupingKey``。
+**性质**：同步局部函数；源码第 ``47``—``59`` 行；所属函数 ``executionGroupingKey``。
 
 **参数**
 

@@ -59,9 +59,9 @@
      - 1
      - ``src/components/markdown/DocumentTaskControls.jsx``
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
-     - 9
+     - 10
      - 0
-     - 56
+     - 67
      - ``src/components/markdown/MarkdownRenderer.jsx``
    * - :doc:`src/components/markdown/ResourceAudio </api/javascript/components/markdown/ResourceAudio>`
      - 2
@@ -78,6 +78,11 @@
      - 0
      - 7
      - ``src/components/markdown/ResourceVideo.jsx``
+   * - :doc:`src/components/markdown/StreamingText </api/javascript/components/markdown/StreamingText>`
+     - 2
+     - 0
+     - 10
+     - ``src/components/markdown/StreamingText.jsx``
    * - :doc:`src/components/markdown/StudyVisuals </api/javascript/components/markdown/StudyVisuals>`
      - 5
      - 0
@@ -263,11 +268,21 @@
      - 0
      - 1
      - ``src/components/markdown/markdownMediaUrl.js``
+   * - :doc:`src/components/markdown/markdownNodeReuse </api/javascript/components/markdown/markdownNodeReuse>`
+     - 5
+     - 0
+     - 9
+     - ``src/components/markdown/markdownNodeReuse.js``
    * - :doc:`src/components/markdown/rehypeDocumentTasks </api/javascript/components/markdown/rehypeDocumentTasks>`
      - 5
      - 0
      - 7
      - ``src/components/markdown/rehypeDocumentTasks.js``
+   * - :doc:`src/components/markdown/rehypeStreamingText </api/javascript/components/markdown/rehypeStreamingText>`
+     - 1
+     - 0
+     - 4
+     - ``src/components/markdown/rehypeStreamingText.js``
    * - :doc:`src/components/markdown/remarkAudioDirective </api/javascript/components/markdown/remarkAudioDirective>`
      - 0
      - 0
@@ -309,7 +324,7 @@
      - 5
      - ``src/components/markdown/remarkWorkProcess.js``
    * - :doc:`src/components/markdown/replacementProjection </api/javascript/components/markdown/replacementProjection>`
-     - 3
+     - 4
      - 0
      - 5
      - ``src/components/markdown/replacementProjection.js``
@@ -318,6 +333,11 @@
      - 0
      - 3
      - ``src/components/markdown/replacementProtocol.js``
+   * - :doc:`src/components/markdown/streamingTextContext </api/javascript/components/markdown/streamingTextContext>`
+     - 0
+     - 0
+     - 0
+     - ``src/components/markdown/streamingTextContext.js``
    * - :doc:`src/components/message/MessageOrigin </api/javascript/components/message/MessageOrigin>`
      - 0
      - 0
@@ -561,6 +581,7 @@
    /api/javascript/components/markdown/ResourceAudio
    /api/javascript/components/markdown/ResourceImage
    /api/javascript/components/markdown/ResourceVideo
+   /api/javascript/components/markdown/StreamingText
    /api/javascript/components/markdown/StudyVisuals
    /api/javascript/components/markdown/card-block/CardBlock
    /api/javascript/components/markdown/card-block/agent/AgentBody
@@ -598,7 +619,9 @@
    /api/javascript/components/markdown/documentCardSpec
    /api/javascript/components/markdown/markdownCopy
    /api/javascript/components/markdown/markdownMediaUrl
+   /api/javascript/components/markdown/markdownNodeReuse
    /api/javascript/components/markdown/rehypeDocumentTasks
+   /api/javascript/components/markdown/rehypeStreamingText
    /api/javascript/components/markdown/remarkAudioDirective
    /api/javascript/components/markdown/remarkCollapseExecutionStatuses
    /api/javascript/components/markdown/remarkCwmLinks
@@ -609,6 +632,7 @@
    /api/javascript/components/markdown/remarkWorkProcess
    /api/javascript/components/markdown/replacementProjection
    /api/javascript/components/markdown/replacementProtocol
+   /api/javascript/components/markdown/streamingTextContext
    /api/javascript/components/message/MessageOrigin
    /api/javascript/components/message/messageOriginModel
    /api/javascript/components/modal/UniversalModalHost

@@ -116,6 +116,19 @@ img.cwm-md-image {
     display: none;
 }
 
+@keyframes cwm-stream-token-in {
+    from { opacity: 0.35; }
+    to { opacity: 1; }
+}
+
+.cwm-stream-token {
+    animation: cwm-stream-token-in 180ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cwm-stream-token { animation: none; }
+}
+
 @media (max-width: 640px) {
     .cwm-md-table th,
     .cwm-md-table td {
