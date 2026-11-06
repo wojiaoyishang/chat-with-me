@@ -1,6 +1,6 @@
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
-import React, { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import WebSocketReconnectPrompt from '@/context/WebSocketReconnectPrompt.jsx';
 import globalMessageCallback from '@/hooks/messageCallback.jsx';
@@ -10,6 +10,8 @@ import { WebSocketTransport } from '@/runtime/transport/WebSocketTransport.js';
 import { flushRealtimeEvents, getRealtimeTransport, setRealtimeTransport } from '@/runtime/transport/channel.js';
 import { authenticatedSocketUrl } from '../runtime/backend/session.js';
 import { getBackendConnection, isCurrentConnection, subscribeBackend } from '../runtime/backend/connection.js';
+import {hasRealtimeDemand, subscribeRealtimeDemand, realtimeSubscriptions} from '../runtime/transport/subscriptionDemand.js';
+import {generateUUID} from '../lib/tools.jsx';
 
 const RECONNECT_BASE_DELAY_MS = 1000;
 const RECONNECT_MAX_DELAY_MS = 30000;
@@ -47,13 +49,13 @@ export const WebSocketProvider = ({ children, router = null }) => {
     const [automaticReconnect, setAutomaticReconnect] = useState(true);
     const [isConnected, setIsConnected] = useState(false);
     const [connectionId, setConnectionId] = useState(null);
-    const [messages, setMessages] = useState([]);
 
     useEffect(() => {
+        if (isLoginPage) return undefined;
         // A Provider lifetime owns its socket, pending attempt and retry timer.
         // StrictMode/HMR cleanup retires that lifetime, including delayed tickets.
         const scope = getBackendConnection();
-        let disposed = false, attempt = null, reconnectTimer = null, failures = 0, automatic = true;
+        let disposed = false, attempt = null, reconnectTimer = null, idleTimer = null, failures = 0, automatic = true;
         const isActive = () => !disposed && isCurrentConnection(scope);
         const isCurrentTransport = (transport) => isActive() && transportRef.current === transport;
         const isOnline = () => window.navigator?.onLine !== false;
@@ -77,6 +79,7 @@ export const WebSocketProvider = ({ children, router = null }) => {
             if (window.location.pathname !== '/login') window.location.replace('/login');
         };
         const scheduleReconnect = () => {
+            if (!hasRealtimeDemand()) return;
             if (!isActive() || !automatic || transportRef.current?.isOpen) return;
             setShowReconnectPrompt(true);
             if (!isOnline() || reconnectTimer !== null) return;
@@ -94,7 +97,8 @@ export const WebSocketProvider = ({ children, router = null }) => {
             retireTransport();
             // Tickets are single use. Every retry prepares a fresh one; failures
             // here must follow the same recovery path as a failed WS handshake.
-            const url = await authenticatedSocketUrl();
+            const preparedUrl = await authenticatedSocketUrl();
+            const url = preparedUrl + (preparedUrl.includes('?') ? '&' : '?') + 'subscriptions=1';
             if (!isActive()) throw new Error('Backend changed or realtime provider disposed');
             const transport = new WebSocketTransport(url, {
                 onOpen: () => {
@@ -104,14 +108,16 @@ export const WebSocketProvider = ({ children, router = null }) => {
                     setRealtimeTransport(transport);
                     setIsConnected(true);
                     setShowReconnectPrompt(false);
-                    flushRealtimeEvents();
                 },
                 onEvent: (envelope) => {
                     if (!isCurrentTransport(transport)) return;
-                    if (envelope.event === EventName.TRANSPORT_CONNECTED && envelope.payload?.connectionId)
+                    if (envelope.event === EventName.TRANSPORT_CONNECTED && envelope.payload?.connectionId) {
                         setConnectionId(envelope.payload.connectionId);
+                        transport.subscriptionsSupported = envelope.payload.subscriptionsSupported === true;
+                        publishSubscriptions();
+                        flushRealtimeEvents();
+                    }
                     globalMessageCallback(envelope);
-                    setMessages((current) => [...current.slice(-99), envelope]);
                 },
                 onMedia: (header, body) => {
                     if (!isCurrentTransport(transport)) return;
@@ -213,15 +219,37 @@ export const WebSocketProvider = ({ children, router = null }) => {
             return createConnection();
         };
         const resume = () => {
-            if (isActive() && automatic && isOnline() && !transportRef.current?.isOpen)
+            if (isActive() && automatic && hasRealtimeDemand() && isOnline() && !transportRef.current?.isOpen)
                 void createConnection().catch(() => {});
+        };
+        function publishSubscriptions() {
+            const transport = transportRef.current;
+            if (!transport?.isOpen || !transport.subscriptionsSupported) return;
+            transport.sendEvent({version: 1, event_id: generateUUID(),
+                trace_id: generateUUID(), event: 'transport.subscriptions.set',
+                timestamp_ms: Date.now(), sequence: 0, payload: {subscriptions: realtimeSubscriptions()}});
+        }
+        const demandChanged = () => {
+            publishSubscriptions();
+            if (hasRealtimeDemand()) {
+                clearTimeout(idleTimer); idleTimer = null;
+                resume();
+            } else if (idleTimer === null) {
+                clearReconnectTimer();
+                idleTimer = setTimeout(() => {
+                    idleTimer = null;
+                    if (hasRealtimeDemand() || !isActive()) return;
+                    retireTransport(); setIsConnected(false); setConnectionId(null); setShowReconnectPrompt(false);
+                }, 10000);
+            }
         };
         const onVisibilityChange = () => {
             if (document.visibilityState === 'visible') resume();
         };
         currentRetryFunction = retry;
         setAutomaticReconnect(true);
-        void createConnection().catch(() => {});
+        const retireDemand = subscribeRealtimeDemand(demandChanged);
+        demandChanged();
         window.addEventListener('online', resume);
         window.addEventListener('offline', clearReconnectTimer);
         window.addEventListener('focus', resume);
@@ -237,6 +265,8 @@ export const WebSocketProvider = ({ children, router = null }) => {
         return () => {
             disposed = true;
             clearReconnectTimer();
+            clearTimeout(idleTimer);
+            retireDemand();
             window.removeEventListener('online', resume);
             window.removeEventListener('offline', clearReconnectTimer);
             window.removeEventListener('focus', resume);
@@ -244,8 +274,10 @@ export const WebSocketProvider = ({ children, router = null }) => {
             unsubscribe();
             if (currentRetryFunction === retry) currentRetryFunction = null;
             retireTransport();
+            setIsConnected(false);
+            setConnectionId(null);
         };
-    }, []);
+    }, [isLoginPage]);
 
     useEffect(() => {
         if (!isConnected) return undefined;
@@ -273,11 +305,12 @@ export const WebSocketProvider = ({ children, router = null }) => {
         };
     }, [isConnected]);
 
-    return (
-        <WebSocketContext.Provider value={{
-            isConnected, connectionId, messages, transport: transportRef.current,
+    const connectionState = useMemo(() => ({
+            isConnected, connectionId, transport: transportRef.current,
             sendMessage: sendWebSocketMessage, retry: retryWebSocketConnection,
-        }}>
+    }), [isConnected, connectionId]);
+    return (
+        <WebSocketContext.Provider value={connectionState}>
             {children}
             <WebSocketReconnectPrompt open={showReconnectPrompt && !isLoginPage} connecting={isConnecting}
                 automatic={automaticReconnect} onRetry={retryWebSocketConnection} />

@@ -3,7 +3,7 @@ src/features/chat/composer/draftStore 模块
 
 .. js:module:: src/features/chat/composer/draftStore
 
-A pending delivery receipt belongs to the draft, never to the server queue.
+Flush captured backend keys, including drafts from a view just left.
 
 .. note::
 
@@ -15,9 +15,9 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 * **源码文件**：``src/features/chat/composer/draftStore.js``
 * **模块标识**：``src/features/chat/composer/draftStore``
-* **顶层函数/组件/Hook**：23
+* **顶层函数/组件/Hook**：25
 * **类**：0
-* **局部函数与匿名回调**：6
+* **局部函数与匿名回调**：8
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,69 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:284:301:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:433:739:FUNCTION
+
+.. js:function:: flushComposerDrafts()
+
+   实现 ``flushComposerDrafts`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``11``—``20`` 行。
+
+   **参数**
+
+   无。
+
+   **返回值**
+
+   无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+   **副作用**
+
+   * 读取或修改浏览器持久化状态。
+   * 读取或修改浏览器全局对象、页面或历史状态。
+
+   **主要协作调用**：``clearTimeout``、``window.localStorage.setItem``、``JSON.stringify``、``pendingWrites.clear``、``retireLifecycle``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:762:1602:FUNCTION
+
+.. js:function:: queueWrite(key, entry, defer)
+
+   实现 ``queueWrite`` 对应的前端处理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``22``—``41`` 行。
+
+   **参数**
+
+   ``key``
+      调用方传入的 ``key`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``entry``
+      调用方传入的 ``entry`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``defer``
+      调用方传入的 ``defer`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+
+   **副作用**
+
+   * 注册事件、DOM 或运行时订阅。
+   * 读取或修改浏览器持久化状态。
+   * 读取或修改浏览器全局对象、页面或历史状态。
+
+   **主要协作调用**：``pendingWrites.set``、``window.localStorage.setItem``、``JSON.stringify``、``pendingWrites.delete``、``clearTimeout``、``setTimeout``、``view.addEventListener``、``view.document?.addEventListener``。
+
+   **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1708:1725:FUNCTION
 
 .. js:function:: now()
 
    实现 ``now`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``8``—``8`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``45``—``45`` 行。
 
    **参数**
 
@@ -45,13 +101,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``Date.now``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:329:422:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1753:1846:FUNCTION
 
 .. js:function:: conversationKey(conversationId)
 
    实现 ``conversationKey`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``10``—``12`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``47``—``49`` 行。
 
    **参数**
 
@@ -64,13 +120,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:451:559:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1875:1983:FUNCTION
 
 .. js:function:: legacyStorageKey(conversationId)
 
    实现 ``legacyStorageKey`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``14``—``16`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``51``—``53`` 行。
 
    **参数**
 
@@ -83,13 +139,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``encodeURIComponent``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:581:635:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2005:2059:FUNCTION
 
 .. js:function:: emptyRoot()
 
    实现 ``emptyRoot`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``18``—``18`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``55``—``55`` 行。
 
    **参数**
 
@@ -99,60 +155,60 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:656:1248:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2080:3522:FUNCTION
 
-.. js:function:: readRoot()
+.. js:function:: readRoot(...conversationIds)
 
    实现 ``readRoot`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``20``—``36`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``57``—``86`` 行。
 
    **参数**
 
-   无。
+   ``...conversationIds`` （剩余参数）
+      调用方传入的 ``conversationIds`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``emptyRoot()``、``{ version: STORAGE_VERSION, conversations: parsed.conversations && typeof parsed.conversations === 'object' ? parsed.conversations : {}, }``。
+   根据执行分支返回结果；代表性返回表达式为 ``emptyRoot()``、``root``。
 
    **副作用**
 
+   * 发起 HTTP 请求或访问外部服务。
    * 读取或修改浏览器持久化状态。
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-   **主要协作调用**：``emptyRoot``、``window.localStorage.getItem``、``backendStorageKey``、``JSON.parse``。
+   **主要协作调用**：``emptyRoot``、``conversationIds.map``、``backendStorageKey``、``encodeURIComponent``、``loadedKeys.set``、``pendingWrites.has``、``pendingWrites.get``、``window.localStorage.getItem``、``JSON.parse``、``queueWrite``、``Object.defineProperty``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1270:1536:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3544:3748:FUNCTION
 
-.. js:function:: writeRoot(root)
+.. js:function:: writeRoot(root, defer)
 
    实现 ``writeRoot`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``38``—``45`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``88``—``93`` 行。
 
    **参数**
 
    ``root``
       调用方传入的 ``root`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
+   ``defer`` （默认值 ``false``）
+      调用方传入的 ``defer`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-   **副作用**
+   **主要协作调用**：``queueWrite``。
 
-   * 读取或修改浏览器持久化状态。
-   * 读取或修改浏览器全局对象、页面或历史状态。
-
-   **主要协作调用**：``window.localStorage.setItem``、``backendStorageKey``、``JSON.stringify``。
-
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1562:1689:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3774:3901:FUNCTION
 
 .. js:function:: cloneJsonSafe(value)
 
    实现 ``cloneJsonSafe`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``47``—``53`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``95``—``101`` 行。
 
    **参数**
 
@@ -165,13 +221,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``JSON.parse``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1721:2523:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3933:4735:FUNCTION
 
 .. js:function:: sanitizeAttachments(attachments)
 
    实现 ``sanitizeAttachments`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``55``—``74`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``103``—``122`` 行。
 
    **参数**
 
@@ -186,13 +242,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2550:2873:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4762:5085:FUNCTION
 
 .. js:function:: normalizeDraft(draft)
 
    规范化与 ``Draft`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``76``—``84`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``124``—``132`` 行。
 
    **参数**
 
@@ -205,13 +261,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``String``、``sanitizeAttachments``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2904:3139:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:5116:5351:FUNCTION
 
 .. js:function:: draftsEquivalent(left, right)
 
    实现 ``draftsEquivalent`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``87``—``93`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``135``—``141`` 行。
 
    **参数**
 
@@ -227,13 +283,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``Boolean``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3172:3462:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:5384:5674:FUNCTION
 
 .. js:function:: getConversationEntry(root, conversationId, create)
 
    读取与 ``Conversation Entry`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``95``—``103`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``143``—``151`` 行。
 
    **参数**
 
@@ -252,13 +308,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``conversationKey``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:3496:3966:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:5708:6178:FUNCTION
 
 .. js:function:: readLegacyNormalDraft(conversationId)
 
    实现 ``readLegacyNormalDraft`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``105``—``117`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``153``—``165`` 行。
 
    **参数**
 
@@ -276,13 +332,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``getBackendConnection``、``legacyStorageKey``、``window.localStorage.getItem``、``window.localStorage.removeItem``、``now``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4003:4705:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:6215:6931:FUNCTION
 
 .. js:function:: readComposerDraft({conversationId, mode = 'normal', messageId = null})
 
    实现 ``readComposerDraft`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``119``—``139`` 行。
+   **性质**：同步函数；导出 API；源码第 ``167``—``187`` 行。
 
    **参数**
 
@@ -295,18 +351,18 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``readRoot``、``getConversationEntry``、``normalizeDraft``、``readLegacyNormalDraft``、``writeComposerDraft``、``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4743:5957:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:6969:8219:FUNCTION
 
-.. js:function:: writeComposerDraft({conversationId, mode = 'normal', messageId = null, draft})
+.. js:function:: writeComposerDraft({conversationId, mode = 'normal', messageId = null, draft, defer = false})
 
    实现 ``writeComposerDraft`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``141``—``172`` 行。
+   **性质**：同步函数；导出 API；源码第 ``189``—``220`` 行。
 
    **参数**
 
-   ``{conversationId, mode = 'normal', messageId = null, draft}``
-      调用方传入的 ``conversationId, mode = 'normal', messageId = null, draft`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+   ``{conversationId, mode = 'normal', messageId = null, draft, defer = false}``
+      调用方传入的 ``conversationId, mode = 'normal', messageId = null, draft, defer = false`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
    **返回值**
 
@@ -314,13 +370,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``normalizeDraft``、``now``、``readRoot``、``getConversationEntry``、``String``、``draftsEquivalent``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:5995:6776:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:8257:9052:FUNCTION
 
 .. js:function:: clearComposerDraft({conversationId, mode = 'normal', messageId = null})
 
    清空与 ``Composer Draft`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``174``—``191`` 行。
+   **性质**：同步函数；导出 API；源码第 ``222``—``239`` 行。
 
    **参数**
 
@@ -333,13 +389,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``readRoot``、``getConversationEntry``、``String``、``Object.keys``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:6910:7347:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:9186:9637:FUNCTION
 
 .. js:function:: readComposerGuidanceSubmission(conversationId)
 
    实现 ``readComposerGuidanceSubmission`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``194``—``202`` 行。
+   **性质**：同步函数；导出 API；源码第 ``242``—``250`` 行。
 
    **参数**
 
@@ -352,13 +408,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``getConversationEntry``、``readRoot``、``String``、``normalizeDraft``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:7397:8224:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:9687:10528:FUNCTION
 
 .. js:function:: saveComposerGuidanceSubmission(conversationId, value)
 
    保存与 ``Composer Guidance Submission`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``204``—``222`` 行。
+   **性质**：同步函数；导出 API；源码第 ``252``—``270`` 行。
 
    **参数**
 
@@ -374,13 +430,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``normalizeDraft``、``readRoot``、``getConversationEntry``、``String``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:8275:8724:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:10579:11042:FUNCTION
 
 .. js:function:: clearComposerGuidanceSubmission(conversationId, guidanceId)
 
    清空与 ``Composer Guidance Submission`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``224``—``231`` 行。
+   **性质**：同步函数；导出 API；源码第 ``272``—``279`` 行。
 
    **参数**
 
@@ -396,13 +452,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``readRoot``、``getConversationEntry``、``Object.keys``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:8855:9168:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11173:11500:FUNCTION
 
 .. js:function:: readComposerGuidanceEdits(conversationId)
 
    实现 ``readComposerGuidanceEdits`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``234``—``238`` 行。
+   **性质**：同步函数；导出 API；源码第 ``282``—``286`` 行。
 
    **参数**
 
@@ -417,13 +473,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:9212:10368:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11544:12714:FUNCTION
 
 .. js:function:: saveComposerGuidanceEdit(conversationId, execution, guidance)
 
    保存与 ``Composer Guidance Edit`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``240``—``261`` 行。
+   **性质**：同步函数；导出 API；源码第 ``288``—``309`` 行。
 
    **参数**
 
@@ -442,13 +498,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``String``、``readRoot``、``getConversationEntry``、``sanitizeAttachments``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:10413:10975:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:12759:13335:FUNCTION
 
 .. js:function:: clearComposerGuidanceEdit(conversationId, executionId, guidanceId)
 
    清空与 ``Composer Guidance Edit`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``263``—``272`` 行。
+   **性质**：同步函数；导出 API；源码第 ``311``—``320`` 行。
 
    **参数**
 
@@ -467,13 +523,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``readRoot``、``getConversationEntry``、``Object.keys``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11025:11648:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:13385:14044:FUNCTION
 
 .. js:function:: moveComposerConversationDrafts(fromConversationId, toConversationId)
 
    实现 ``moveComposerConversationDrafts`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``274``—``289`` 行。
+   **性质**：同步函数；导出 API；源码第 ``322``—``337`` 行。
 
    **参数**
 
@@ -489,13 +545,13 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
    **主要协作调用**：``conversationKey``、``readRoot``、``writeRoot``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11688:11947:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:14084:14375:FUNCTION
 
 .. js:function:: saveComposerSnapshot({ conversationId, mode = 'normal', messageId = null, content = '', attachments = [], roleName = nul…)
 
    保存与 ``Composer Snapshot`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``291``—``303`` 行。
+   **性质**：同步函数；导出 API；源码第 ``339``—``353`` 行。
 
    **参数**
 
@@ -513,17 +569,61 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2063:2127:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1200:1260:FUNCTION
 
-.. rubric:: ``attachments .filter callback @ 63``
+.. rubric:: ``hidden``
 
 .. code-block:: javascript
 
-   attachments .filter callback @ 63(item)
+   hidden()
+
+实现 ``hidden`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``33``—``33`` 行；所属函数 ``queueWrite``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``flushComposerDrafts``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:1423:1591:FUNCTION
+
+.. rubric:: ``anonymous callback @ 36``
+
+.. code-block:: javascript
+
+   anonymous callback @ 36()
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``36``—``39`` 行；所属函数 ``queueWrite``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``view.removeEventListener``、``view.document?.removeEventListener``。
+
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4275:4339:FUNCTION
+
+.. rubric:: ``attachments .filter callback @ 111``
+
+.. code-block:: javascript
+
+   attachments .filter callback @ 111(item)
 
 作为 ``attachments .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``sanitizeAttachments``。
+**性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``sanitizeAttachments``。
 
 **参数**
 
@@ -536,17 +636,17 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 **主要协作调用**：``Array.isArray``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2143:2459:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4355:4671:FUNCTION
 
-.. rubric:: ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 64``
+.. rubric:: ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 112``
 
 .. code-block:: javascript
 
-   attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 64(item)
+   attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 112(item)
 
 作为 ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``64``—``72`` 行；所属函数 ``sanitizeAttachments``。
+**性质**：同步局部函数；源码第 ``112``—``120`` 行；所属函数 ``sanitizeAttachments``。
 
 **参数**
 
@@ -561,17 +661,17 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2211:2420:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4423:4632:FUNCTION
 
-.. rubric:: ``keys.forEach callback @ 66``
+.. rubric:: ``keys.forEach callback @ 114``
 
 .. code-block:: javascript
 
-   keys.forEach callback @ 66(key)
+   keys.forEach callback @ 114(key)
 
 作为 ``keys.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``66``—``70`` 行；所属函数 ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 64``。
+**性质**：同步局部函数；源码第 ``114``—``118`` 行；所属函数 ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map callback @ 112``。
 
 **参数**
 
@@ -584,17 +684,17 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 **主要协作调用**：``cloneJsonSafe``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:2478:2518:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:4690:4730:FUNCTION
 
-.. rubric:: ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map((item) => { const next = {};… callback @ 73``
+.. rubric:: ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map((item) => { const next = {};… callback @ 121``
 
 .. code-block:: javascript
 
-   attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map((item) => { const next = {};… callback @ 73(item)
+   attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map((item) => { const next = {};… callback @ 121(item)
 
 实现 ``attachments .filter(item => item && typeof item === 'object' && !Array.isArray(item)) .map((item) => { const next = {};…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``73``—``73`` 行；所属函数 ``sanitizeAttachments``。
+**性质**：同步局部函数；源码第 ``121``—``121`` 行；所属函数 ``sanitizeAttachments``。
 
 **参数**
 
@@ -605,17 +705,17 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:9012:9163:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11344:11495:FUNCTION
 
-.. rubric:: ``Object.values(entry?.guidanceEdits || {}).filter callback @ 236``
+.. rubric:: ``Object.values(entry?.guidanceEdits || {}).filter callback @ 284``
 
 .. code-block:: javascript
 
-   Object.values(entry?.guidanceEdits || {}).filter callback @ 236(value)
+   Object.values(entry?.guidanceEdits || {}).filter callback @ 284(value)
 
 作为 ``Object.values(entry?.guidanceEdits || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``236``—``237`` 行；所属函数 ``readComposerGuidanceEdits``。
+**性质**：同步局部函数；源码第 ``284``—``285`` 行；所属函数 ``readComposerGuidanceEdits``。
 
 **参数**
 
@@ -628,7 +728,7 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:11993:12058:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/composer/draftStore.js:14421:14486:FUNCTION
 
 .. rubric:: ``storageKey``
 
@@ -638,7 +738,7 @@ A pending delivery receipt belongs to the draft, never to the server queue.
 
 实现 ``storageKey`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``306``—``306`` 行。
+**性质**：同步局部函数；源码第 ``356``—``356`` 行。
 
 **参数**
 

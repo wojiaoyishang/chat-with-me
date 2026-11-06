@@ -83,6 +83,11 @@
      - 0
      - 1
      - ``src/runtime/transport/channel.js``
+   * - :doc:`src/runtime/transport/subscriptionDemand </api/javascript/runtime/transport/subscriptionDemand>`
+     - 6
+     - 0
+     - 8
+     - ``src/runtime/transport/subscriptionDemand.js``
    * - :doc:`src/runtime/voice/RealtimeVoiceTransport </api/javascript/runtime/voice/RealtimeVoiceTransport>`
      - 3
      - 12
@@ -107,5 +112,6 @@
    /api/javascript/runtime/transport/EventDispatchScheduler
    /api/javascript/runtime/transport/WebSocketTransport
    /api/javascript/runtime/transport/channel
+   /api/javascript/runtime/transport/subscriptionDemand
    /api/javascript/runtime/voice/RealtimeVoiceTransport
 

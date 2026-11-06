@@ -27,7 +27,7 @@ export default function ResourceImage({ src, alt, galleryId, ...props }) {
         const images = peers.length ? peers.map((img) => ({ src: img.currentSrc || img.src, alt: img.alt })) : [{ src, alt }];
         openImageViewer(images, Math.max(0, peers.indexOf(event.currentTarget)));
     };
-    return <img {...props} src={src} alt={alt} onError={() => setFailed(true)}
+    return <img {...props} src={src} alt={alt} loading={props.loading || 'lazy'} decoding={props.decoding || 'async'} onError={() => setFailed(true)}
         data-image-viewer data-image-gallery={galleryId} role="button" tabIndex={0} aria-label={alt || '查看图片'}
         className={`${props.className || ''} cursor-zoom-in`}
         onClick={open} onKeyDown={(event) => {

@@ -17,7 +17,7 @@ const mocks = new Map([
     ['universalModal.js', 'export const isUniversalModalLink=()=>false;export const openUniversalModalLink=()=>{};'],
     ['useImageViewer.js', 'export const openImageViewer=()=>{};'],
 ]);
-await build({stdin: {contents: "export {default as Renderer} from './src/components/markdown/MarkdownRenderer.jsx'", resolveDir: process.cwd()},
+await build({stdin: {contents: "export {default as Renderer} from './src/components/markdown/MarkdownRenderer.jsx';export {parseMarkdownSyntax} from './src/components/markdown/markdownParser.js';", resolveDir: process.cwd()},
     bundle: true, platform: 'node', format: 'esm', packages: 'external', jsx: 'automatic', alias: {'@': path.resolve('src')},
     outfile: 'temp/markdown-render-work-test.mjs', loader: {'.css': 'empty', '.woff': 'empty', '.woff2': 'empty', '.ttf': 'empty'},
     plugins: [{name: 'render-work', setup(builder) {
@@ -29,7 +29,7 @@ await build({stdin: {contents: "export {default as Renderer} from './src/compone
         });
         builder.onLoad({filter: /.*/, namespace: 'fixture'}, ({path: name}) => ({contents: mocks.get(name), loader: 'jsx', resolveDir: process.cwd()}));
     }}]});
-const {Renderer} = await import('../temp/markdown-render-work-test.mjs');
+const {Renderer, parseMarkdownSyntax} = await import('../temp/markdown-render-work-test.mjs');
 
 async function setup(t) {
     const dom = new JSDOM('<div id="root"></div>', {url: 'http://localhost/chat', pretendToBeVisual: true});
@@ -127,4 +127,28 @@ test('reused blocks still resolve late Markdown definitions and real resource UR
     assert.equal(ui.host.querySelector('img').src, 'https://example.com/first/a.png');
     await ui.render('![图片](assets/a.png)', {}, {resourceBaseUrl: 'https://example.com/next/'});
     assert.equal(ui.host.querySelector('img').src, 'https://example.com/next/a.png');
+});
+
+test('off-thread catch-up preserves existing image hosts, streams completed prefixes and falls back on failure', async t => {
+    const ui=await setup(t), pending=[];
+    const before=Object.getOwnPropertyDescriptor(globalThis,'Worker');
+    globalThis.Worker=class {
+        postMessage(input){pending.push({worker:this,input});}
+        terminate(){}
+    };
+    t.after(()=>before?Object.defineProperty(globalThis,'Worker',before):delete globalThis.Worker);
+    const finish=async()=>{const {worker,input}=pending.shift();await act(async()=>worker.onmessage({data:{id:input.id,
+        tree:parseMarkdownSyntax(input.content,input.options)}}));};
+    const prefix='![image](https://example.com/a.png)\n\n正文';
+    await ui.render(prefix);const image=ui.host.querySelector('img');
+    const long=prefix+'内容'.repeat(5000);
+    await ui.render(long);assert.equal(ui.host.querySelector('img'),image);
+    await finish();assert.ok(ui.host.textContent.includes('内容'.repeat(5000)));
+    await ui.render(long+'A');await ui.render(long+'AB');
+    await finish();assert.ok(ui.host.textContent.endsWith('A'));
+    await finish();assert.ok(ui.host.textContent.endsWith('AB'));
+    assert.equal(ui.host.querySelector('img'),image);
+    await ui.render(long+'ABC');
+    await act(async()=>pending.shift().worker.onerror(new Error('worker unavailable')));
+    assert.ok(ui.host.textContent.endsWith('ABC'));
 });

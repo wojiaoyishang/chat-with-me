@@ -17,7 +17,7 @@ Apply received operations in order in a single Immer transaction.
 * **模块标识**：``src/features/chat/page/utils/messageStreamBatch``
 * **顶层函数/组件/Hook**：2
 * **类**：0
-* **局部函数与匿名回调**：7
+* **局部函数与匿名回调**：8
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -51,13 +51,13 @@ Apply received operations in order in a single Immer transaction.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:1831:4968:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:1831:5197:FUNCTION
 
 .. js:function:: createMessageStreamBatch({ getMessages, commit, delay = 32, maxDelay = 120, schedule = setTimeout, cancel = clearTimeout, no…)
 
    A short lived projection queue owned by one ChatPage subscription. It holds received operations, never a second message/run state. Non-stream events and replies flush it before reading or mutating the canonical messagesRef. A timer also works in background tabs where animation frames are suspended.
 
-   **性质**：同步函数；导出 API；源码第 ``42``—``93`` 行。
+   **性质**：同步函数；导出 API；源码第 ``42``—``97`` 行。
 
    **参数**
 
@@ -66,9 +66,9 @@ Apply received operations in order in a single Immer transaction.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{ flush, enqueue(operation) { if (pending.length && operation.runId !== runId) flush(); runId = operation.runId; const previous = pending.at(-1); const merged = previous?.event ==…``。
+   根据执行分支返回结果；代表性返回表达式为 ``{ flush, observeRenderCost(durationMs) { if (Number.isFinite(durationMs) && durationMs > 0) batchDelay = Math.min(Math.max(delay, maxDelay), Math.max(batchDelay, Math.ceil(duratio…``。
 
-   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
@@ -167,7 +167,30 @@ Apply received operations in order in a single Immer transaction.
 
 **主要协作调用**：``Object.keys``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:3338:4958:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:3338:3566:FUNCTION
+
+.. rubric:: ``observeRenderCost``
+
+.. code-block:: javascript
+
+   observeRenderCost(durationMs)
+
+实现 ``observeRenderCost`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``67``—``70`` 行；所属函数 ``createMessageStreamBatch``。
+
+**参数**
+
+``durationMs``
+   调用方传入的 ``durationMs`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``Number.isFinite``、``Math.min``、``Math.max``、``Math.ceil``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:3567:5187:FUNCTION
 
 .. rubric:: ``enqueue``
 
@@ -177,7 +200,7 @@ Apply received operations in order in a single Immer transaction.
 
 实现 ``enqueue`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``67``—``91`` 行；所属函数 ``createMessageStreamBatch``。
+**性质**：同步局部函数；源码第 ``71``—``95`` 行；所属函数 ``createMessageStreamBatch``。
 
 **参数**
 
@@ -192,17 +215,17 @@ Apply received operations in order in a single Immer transaction.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:4441:4680:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:4670:4909:FUNCTION
 
-.. rubric:: ``Object.values(operation.value).some callback @ 84``
+.. rubric:: ``Object.values(operation.value).some callback @ 88``
 
 .. code-block:: javascript
 
-   Object.values(operation.value).some callback @ 84(patch)
+   Object.values(operation.value).some callback @ 88(patch)
 
 作为 ``Object.values(operation.value).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``84``—``85`` 行；所属函数 ``enqueue``。
+**性质**：同步局部函数；源码第 ``88``—``89`` 行；所属函数 ``enqueue``。
 
 **参数**
 
@@ -217,17 +240,17 @@ Apply received operations in order in a single Immer transaction.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:4536:4679:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageStreamBatch.js:4765:4908:FUNCTION
 
-.. rubric:: ``Object.values(patch).some callback @ 85``
+.. rubric:: ``Object.values(patch).some callback @ 89``
 
 .. code-block:: javascript
 
-   Object.values(patch).some callback @ 85(value)
+   Object.values(patch).some callback @ 89(value)
 
 作为 ``Object.values(patch).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``Object.values(operation.value).some callback @ 84``。
+**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``Object.values(operation.value).some callback @ 88``。
 
 **参数**
 

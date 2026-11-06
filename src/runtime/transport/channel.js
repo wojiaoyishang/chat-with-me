@@ -1,4 +1,5 @@
 import { getBackendConnection, isCurrentConnection, subscribeBackend } from '../backend/connection.js';
+import {requestRealtimeConnection} from './subscriptionDemand.js';
 
 let activeTransport = null;
 let transportScope = null;
@@ -42,6 +43,7 @@ export const flushRealtimeEvents = () => {
 };
 
 export const sendRealtimeEvent = (envelope, {queue = true} = {}) => {
+    requestRealtimeConnection();
     if (activeTransport?.isOpen && isCurrentConnection(transportScope)) {
         activeTransport.sendEvent(envelope);
         return true;

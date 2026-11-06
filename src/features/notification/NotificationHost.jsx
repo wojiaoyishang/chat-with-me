@@ -3,6 +3,8 @@ import {
     isNotificationConversationOpen,
     requestSystemNotificationPermission,
     updateNotificationPresence,
+    hasForegroundNotificationTab,
+    systemNotificationState,
     removeNotificationPresence,
     showWidgetSystemNotification,
 } from './systemNotifications.js';
@@ -54,6 +56,7 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     const reloadSubscriptions = useNotificationStore((state) => state.reloadSubscriptions);
     const isMobile = useIsMobile();
     const [presenceRevision, setPresenceRevision] = useState(0);
+    const previousPresenceRef = useRef('');
     const [focused, setFocused] = useState(() => document.hasFocus());
     const [visibilityState, setVisibilityState] = useState(() => document.visibilityState);
 
@@ -64,13 +67,17 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
         const update = () => {
             const focus = document.hasFocus();
             setFocused(focus);
-            setPresenceRevision((revision) => revision + 1);
             updateNotificationPresence({
                 visible: document.visibilityState === 'visible',
                 focused: focus,
                 conversationId: currentConversationId,
                 conversationVisible: isConversationVisible && isNotificationConversationOpen(currentConversationId),
             });
+            const key = JSON.stringify([focus, document.visibilityState, hasForegroundNotificationTab(), systemNotificationState()]);
+            if (previousPresenceRef.current !== key) {
+                previousPresenceRef.current = key;
+                setPresenceRevision((revision) => revision + 1);
+            }
         };
         update();
         const timer = setInterval(update, 2000);
@@ -89,6 +96,7 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     }, [currentConversationId, isConversationVisible]);
 
     const shownRef = useRef(new Map());
+    const shownContentRef = useRef(new Map());
     const hiddenRevisionRef = useRef(new Map());
     const backgroundRevisionRef = useRef(new Map());
     const hiddenSinceRef = useRef(document.hidden ? Date.now() / 1000 : null);
@@ -112,6 +120,7 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     const hideToast = useCallback((notificationId) => {
         toastIdsFor(notificationId).forEach((toastId) => toast.dismiss(toastId));
         shownRef.current.delete(notificationId);
+        shownContentRef.current.delete(notificationId);
     }, []);
 
     const dismissToast = useCallback(
@@ -217,7 +226,7 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
     }, [setTypes, syncPendingNotifications]);
 
     useEffect(() => {
-        const unsubscribe = onEvent({ event: 'notification.*' }).then(({ event, payload }) => {
+        const unsubscribe = onEvent({ event: 'notification.*', keepAlive: true }).then(({ event, payload }) => {
             switch (event) {
                 case 'notification.upsert':
                     rememberBackgroundNotifications([payload.notification], hiddenSinceRef.current);
@@ -388,6 +397,11 @@ const NotificationHost = ({ currentConversationId, isConversationVisible = true,
             if (previousMode && previousMode !== mode) hideToast(notification.id);
 
             const Renderer = getNotificationRenderer(notification.typeId) || NotificationToast;
+            const previousContent = shownContentRef.current.get(notification.id);
+            if (shownRef.current.get(notification.id) === mode && previousContent?.notification === notification
+                && previousContent.Renderer === Renderer && previousContent.onOpen === openNotification
+                && previousContent.onRead === markRead) continue;
+            shownContentRef.current.set(notification.id, {notification, Renderer, onOpen: openNotification, onRead: markRead});
             shownRef.current.set(notification.id, mode);
             toast.custom(
                 () => (

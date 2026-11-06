@@ -403,6 +403,7 @@ function ChatBox({
                 content: overrides.content ?? messageContentRef.current,
                 attachments: overrides.attachments ?? attachmentsMetaRef.current,
                 roleName: overrides.roleName ?? currentRoleRef.current?.name ?? null,
+                defer: overrides.defer === true,
             });
 
             // Edit/Fork drafts have two browser-only layers:
@@ -444,7 +445,7 @@ function ChatBox({
             messageContentRef.current = normalizedValue;
             setMessageContent(normalizedValue);
 
-            if (persist) persistActiveDraft({ content: normalizedValue });
+            if (persist) persistActiveDraft({ content: normalizedValue, defer: true });
             return normalizedValue;
         },
         [persistActiveDraft],

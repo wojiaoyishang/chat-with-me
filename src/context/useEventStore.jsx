@@ -8,6 +8,7 @@ import {normalizeEventDirections, shouldDeliverEventToListener} from '@/runtime/
 import {getIncomingEventSchedulerStats, scheduleIncomingEventCallback} from '@/runtime/transport/EventDispatchScheduler.js';
 import {messageDeltaBatchKey, mergeMessageDeltaEnvelopes} from '@/runtime/protocol/messageDeltas.js';
 import { getBackendConnection, isCurrentConnection } from '../runtime/backend/connection.js';
+import {registerRealtimeSubscription} from '../runtime/transport/subscriptionDemand.js';
 
 const listeners = new Map();
 const uniqueListeners = new Set();
@@ -266,6 +267,7 @@ export const onEvent = ({
     directions = null,
     includeReplies = false,
     unique = null,
+    keepAlive = Boolean(conversationId || documentId),
 }) => ({
     then: (callback) => {
         const normalizedEvents = (Array.isArray(event) ? event : [event]).map((item) => (
@@ -292,10 +294,12 @@ export const onEvent = ({
             unique,
         };
         listeners.set(id, registration);
+        const retireSubscription = registerRealtimeSubscription(id, registration, keepAlive);
         if (unique) uniqueListeners.add(unique);
         return () => {
             registration.active = false;
             listeners.delete(id);
+            retireSubscription();
             if (unique) uniqueListeners.delete(unique);
         };
     },

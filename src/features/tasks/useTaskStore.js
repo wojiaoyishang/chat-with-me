@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import {shareJsonData} from '../../lib/structuralShare.js';
 export const useTaskStore = create((set) => ({
     ownerKey: '',
     summary: null,
@@ -17,28 +18,32 @@ export const useTaskStore = create((set) => ({
             if (state.ownerKey !== ownerKey || state.statusEpoch !== statusEpoch ||
                 !Number.isInteger(summary?.activeCount) || summary.activeCount < 0) return state;
             accepted = true;
-            return { summary };
+            return state.summary === shareJsonData(state.summary, summary) ? state : { summary };
         });
         return accepted;
     },
     merge: (items) =>
         set((state) => {
-            const tasks = { ...state.tasks };
+            let tasks = state.tasks;
             let statusEpoch = state.statusEpoch;
             for (const item of items) {
                 if (!item || typeof item.taskId !== 'string' || !item.taskId || !Number.isInteger(item.revision))
                     continue;
                 if (!tasks[item.taskId] || tasks[item.taskId].revision <= item.revision) {
                     const previous = tasks[item.taskId];
-                    tasks[item.taskId] = { ...previous, ...item };
-                    if (typeof item.status === 'string' && (!previous || previous.status !== item.status)) statusEpoch += 1;
+                    const next = { ...previous, ...item };
                     if (!Object.hasOwn(item, 'observation') && previous?.observation)
-                        tasks[item.taskId].observation = previous.observation;
+                        next.observation = previous.observation;
                     if (item.observation?.version === 1 && previous?.observation?.version === 1 &&
                         item.observation.revision < previous.observation.revision)
-                        tasks[item.taskId].observation = previous.observation;
+                        next.observation = previous.observation;
+                    const shared = shareJsonData(previous, next);
+                    if (shared === previous) continue;
+                    if (tasks === state.tasks) tasks = {...tasks};
+                    tasks[item.taskId] = shared;
+                    if (typeof item.status === 'string' && (!previous || previous.status !== item.status)) statusEpoch += 1;
                 }
             }
-            return { tasks, statusEpoch };
+            return tasks === state.tasks ? state : { tasks, statusEpoch };
         }),
 }));

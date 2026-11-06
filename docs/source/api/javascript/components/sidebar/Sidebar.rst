@@ -27,7 +27,7 @@ src/components/sidebar/Sidebar 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:1476:19024:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:1476:19041:FUNCTION
 
 .. js:function:: Sidebar({ conversationId, setConversationId, pageType, setPageType, settings, onConversationIdSelect, onSet…)
 
@@ -324,7 +324,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``handleSetIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3846:4732:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3846:4749:FUNCTION
 
 .. rubric:: ``useEffect callback @ 118``
 
@@ -348,19 +348,19 @@ src/components/sidebar/Sidebar 模块
 
 * 注册事件、DOM 或运行时订阅。
 
-**主要协作调用**：``onEvent({ event: 'sidebar.*' }).then``、``onEvent``。
+**主要协作调用**：``onEvent({ event: 'sidebar.*', keepAlive: true }).then``、``onEvent``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3919:4688:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:3936:4705:FUNCTION
 
-.. rubric:: ``onEvent({ event: 'sidebar.*' }).then callback @ 119``
+.. rubric:: ``onEvent({ event: 'sidebar.*', keepAlive: true }).then callback @ 119``
 
 .. code-block:: javascript
 
-   onEvent({ event: 'sidebar.*' }).then callback @ 119({ event, payload, eventConversationId })
+   onEvent({ event: 'sidebar.*', keepAlive: true }).then callback @ 119({ event, payload, eventConversationId })
 
-处理 ``onEvent({ event: 'sidebar.*' }).then callback`` 对应的事件或订阅结果。
+处理 ``onEvent({ event: 'sidebar.*', keepAlive: true }).then callback`` 对应的事件或订阅结果。
 
 **性质**：同步局部函数；源码第 ``119``—``136`` 行；所属函数 ``useEffect callback @ 118``。
 
@@ -375,7 +375,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``conversationsListRef.current?.reload``、``conversationsListRef.current?.updateDate``、``conversationsListRef.current?.updateTitle``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4705:4725:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4722:4742:FUNCTION
 
 .. rubric:: ``returned callback @ 137``
 
@@ -401,7 +401,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``unsubscribe``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4776:4978:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:4793:4995:FUNCTION
 
 .. rubric:: ``handleDeleteConversation``
 
@@ -429,7 +429,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setConversationId``、``setPageType``、``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5005:5337:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5022:5354:FUNCTION
 
 .. rubric:: ``handleLogout``
 
@@ -456,7 +456,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``apiClient.get``、``toast.success``、``t``、``clearUser``、``navigate``、``toast.error``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5982:6010:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:5999:6027:FUNCTION
 
 .. rubric:: ``onClose callback @ 173``
 
@@ -478,7 +478,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setSettingsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:6941:6969:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:6958:6986:FUNCTION
 
 .. rubric:: ``onClick callback @ 193``
 
@@ -500,7 +500,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``handleSetIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:7493:7600:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:7510:7617:FUNCTION
 
 .. rubric:: ``onClick callback @ 205``
 
@@ -522,7 +522,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``onConversationIdSelect``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:8090:9298:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:8107:9315:FUNCTION
 
 .. rubric:: ``registeredButtons.map callback @ 215``
 
@@ -543,7 +543,7 @@ src/components/sidebar/Sidebar 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:9686:10178:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:9703:10195:FUNCTION
 
 .. rubric:: ``onClick callback @ 246``
 
@@ -570,7 +570,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``onOpenPage``、``handleSetIsOpen``、``setConversationId``、``navigate``、``setPageType``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:10956:11445:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:10973:11462:FUNCTION
 
 .. rubric:: ``onClick callback @ 268``
 
@@ -597,7 +597,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``onOpenPage``、``handleSetIsOpen``、``navigate``、``setPageType``、``setConversationId``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12131:12335:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12148:12352:FUNCTION
 
 .. rubric:: ``onClick callback @ 288``
 
@@ -625,7 +625,7 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12191:12215:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12208:12232:FUNCTION
 
 .. rubric:: ``anonymous callback @ 289``
 
@@ -651,7 +651,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12871:13083:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12888:13100:FUNCTION
 
 .. rubric:: ``onClick callback @ 299``
 
@@ -679,7 +679,7 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12931:12959:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:12948:12976:FUNCTION
 
 .. rubric:: ``anonymous callback @ 300``
 
@@ -705,7 +705,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13598:13710:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13615:13727:FUNCTION
 
 .. rubric:: ``onClick callback @ 309``
 
@@ -733,7 +733,7 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13622:13652:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:13639:13669:FUNCTION
 
 .. rubric:: ``anonymous callback @ 309``
 
@@ -759,7 +759,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:14163:14267:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:14180:14284:FUNCTION
 
 .. rubric:: ``onClick callback @ 314``
 
@@ -787,7 +787,7 @@ src/components/sidebar/Sidebar 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:14187:14213:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:14204:14230:FUNCTION
 
 .. rubric:: ``anonymous callback @ 314``
 
@@ -813,7 +813,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``navigate``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:16729:16756:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:16746:16773:FUNCTION
 
 .. rubric:: ``onClick callback @ 352``
 
@@ -835,7 +835,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``setSettingsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18114:18142:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18131:18159:FUNCTION
 
 .. rubric:: ``onClick callback @ 381``
 
@@ -857,7 +857,7 @@ src/components/sidebar/Sidebar 模块
 
 **主要协作调用**：``handleSetIsOpen``。
 
-.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18559:18586:FUNCTION
+.. CWM-AST-FUNCTION src/components/sidebar/Sidebar.jsx:18576:18603:FUNCTION
 
 .. rubric:: ``onClick callback @ 393``
 

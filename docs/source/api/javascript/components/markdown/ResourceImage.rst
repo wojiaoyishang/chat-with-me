@@ -27,7 +27,7 @@ src/components/markdown/ResourceImage 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/ResourceImage.jsx:193:1754:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/ResourceImage.jsx:193:1825:FUNCTION
 
 .. js:function:: ResourceImage({ src, alt, galleryId, ...props })
 
@@ -42,7 +42,7 @@ src/components/markdown/ResourceImage 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``( <span role="status" className="inline-flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground" > <ImageOff className="size-4" /> {t('resour…``、``<img {...props} src={src} alt={alt} onError={() => setFailed(true)} data-image-viewer data-image-gallery={galleryId} role="button" tabIndex={0} aria-label={alt || '查看图片'} classNam…``。
+   根据执行分支返回结果；代表性返回表达式为 ``( <span role="status" className="inline-flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm text-muted-foreground" > <ImageOff className="size-4" /> {t('resour…``、``<img {...props} src={src} alt={alt} loading={props.loading || 'lazy'} decoding={props.decoding || 'async'} onError={() => setFailed(true)} data-image-viewer data-image-gallery={ga…``。
 
    **副作用**
 
@@ -130,7 +130,7 @@ src/components/markdown/ResourceImage 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/ResourceImage.jsx:1422:1443:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/ResourceImage.jsx:1493:1514:FUNCTION
 
 .. rubric:: ``onError callback @ 30``
 
@@ -152,7 +152,7 @@ src/components/markdown/ResourceImage 模块
 
 **主要协作调用**：``setFailed``。
 
-.. CWM-AST-FUNCTION src/components/markdown/ResourceImage.jsx:1652:1747:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/ResourceImage.jsx:1723:1818:FUNCTION
 
 .. rubric:: ``onKeyDown callback @ 33``
 

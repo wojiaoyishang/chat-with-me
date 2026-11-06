@@ -2,6 +2,43 @@ import { backendStorageKey, getBackendConnection } from '../../../runtime/backen
 
 const STORAGE_KEY = 'cwm:chat-composer-drafts:v2';
 const STORAGE_VERSION = 2;
+const ENTRY_PREFIX = 'cwm:chat-composer-entry:v3:';
+const pendingWrites = new Map();
+let saveTimer = null;
+let retireLifecycle = null;
+
+/** Flush captured backend keys, including drafts from a view just left. */
+export const flushComposerDrafts = () => {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    for (const [key, entry] of pendingWrites) {
+        try { window.localStorage.setItem(key, JSON.stringify(entry)); } catch { /* Best effort. */ }
+    }
+    pendingWrites.clear();
+    retireLifecycle?.();
+    retireLifecycle = null;
+};
+
+const queueWrite = (key, entry, defer) => {
+    pendingWrites.set(key, entry);
+    if (!defer) {
+        try { window.localStorage.setItem(key, JSON.stringify(entry)); } catch { /* Best effort. */ }
+        pendingWrites.delete(key);
+        return;
+    }
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(flushComposerDrafts, 300);
+    if (!retireLifecycle && window.addEventListener) {
+        const view = window;
+        const hidden = () => { if (view.document?.hidden) flushComposerDrafts(); };
+        view.addEventListener('pagehide', flushComposerDrafts);
+        view.document?.addEventListener('visibilitychange', hidden);
+        retireLifecycle = () => {
+            view.removeEventListener('pagehide', flushComposerDrafts);
+            view.document?.removeEventListener('visibilitychange', hidden);
+        };
+    }
+};
 const NEW_CONVERSATION_KEY = '__new__';
 const LEGACY_PREFIX = 'chatbox-input-draft-v1';
 
@@ -17,30 +54,41 @@ const legacyStorageKey = (conversationId) => (
 
 const emptyRoot = () => ({version: STORAGE_VERSION, conversations: {}});
 
-const readRoot = () => {
+const readRoot = (...conversationIds) => {
     if (typeof window === 'undefined') return emptyRoot();
-    try {
-        const raw = window.localStorage.getItem(backendStorageKey(STORAGE_KEY));
-        if (!raw) return emptyRoot();
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object') return emptyRoot();
-        return {
-            version: STORAGE_VERSION,
-            conversations: parsed.conversations && typeof parsed.conversations === 'object'
-                ? parsed.conversations
-                : {},
-        };
-    } catch {
-        return emptyRoot();
+    const root = emptyRoot();
+    const loadedKeys = new Map();
+    let legacy;
+    for (const id of new Set(conversationIds.map(conversationKey))) {
+        const key = backendStorageKey(ENTRY_PREFIX + encodeURIComponent(id));
+        loadedKeys.set(id, key);
+        try {
+            if (pendingWrites.has(key)) {
+                if (pendingWrites.get(key)) root.conversations[id] = pendingWrites.get(key);
+                continue;
+            }
+            const raw = window.localStorage.getItem(key);
+            if (raw !== null) {
+                const entry = JSON.parse(raw);
+                if (entry && typeof entry === 'object') root.conversations[id] = entry;
+                continue;
+            }
+            // Migrate lazily. A null entry is a tombstone so deleting a migrated
+            // draft cannot resurrect the retained legacy root on the next read.
+            legacy ??= JSON.parse(window.localStorage.getItem(backendStorageKey(STORAGE_KEY)) || 'null') || {};
+            const entry = legacy.conversations?.[id] || null;
+            queueWrite(key, entry, false);
+            if (entry) root.conversations[id] = entry;
+        } catch { /* Unavailable/malformed storage must not block the composer. */ }
     }
+    Object.defineProperty(root, 'loadedKeys', {value: loadedKeys});
+    return root;
 };
 
-const writeRoot = (root) => {
+const writeRoot = (root, defer = false) => {
     if (typeof window === 'undefined') return;
-    try {
-        window.localStorage.setItem(backendStorageKey(STORAGE_KEY), JSON.stringify(root));
-    } catch {
-        // Draft persistence is best-effort and must never block chat input.
+    for (const [id, key] of root.loadedKeys || []) {
+        queueWrite(key, root.conversations[id] || null, defer);
     }
 };
 
@@ -117,7 +165,7 @@ const readLegacyNormalDraft = (conversationId) => {
 };
 
 export const readComposerDraft = ({conversationId, mode = 'normal', messageId = null}) => {
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const {entry} = getConversationEntry(root, conversationId);
     let draft = null;
 
@@ -138,11 +186,11 @@ export const readComposerDraft = ({conversationId, mode = 'normal', messageId = 
     return draft;
 };
 
-export const writeComposerDraft = ({conversationId, mode = 'normal', messageId = null, draft}) => {
+export const writeComposerDraft = ({conversationId, mode = 'normal', messageId = null, draft, defer = false}) => {
     const normalized = normalizeDraft({...draft, updatedAt: now()});
     if (!normalized) return null;
 
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const {entry} = getConversationEntry(root, conversationId, true);
     let existing = null;
     if (mode === 'normal') {
@@ -167,12 +215,12 @@ export const writeComposerDraft = ({conversationId, mode = 'normal', messageId =
         entry.messages[id] ||= {};
         entry.messages[id][mode] = normalized;
     }
-    writeRoot(root);
+    writeRoot(root, defer);
     return normalized;
 };
 
 export const clearComposerDraft = ({conversationId, mode = 'normal', messageId = null}) => {
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const {key, entry} = getConversationEntry(root, conversationId);
     if (!entry) return;
 
@@ -192,7 +240,7 @@ export const clearComposerDraft = ({conversationId, mode = 'normal', messageId =
 
 /** A pending delivery receipt belongs to the draft, never to the server queue. */
 export const readComposerGuidanceSubmission = (conversationId) => {
-    const { entry } = getConversationEntry(readRoot(), conversationId);
+    const { entry } = getConversationEntry(readRoot(conversationId), conversationId);
     const value = entry?.guidanceSubmission;
     if (!value?.guidanceId || !value?.execution?.executionId
         || String(value.execution.conversationId || '') !== String(conversationId || '')) return null;
@@ -205,7 +253,7 @@ export const saveComposerGuidanceSubmission = (conversationId, value) => {
     if (!conversationId || !value?.guidanceId || !value?.execution?.executionId) return null;
     const submitted = normalizeDraft(value.submitted);
     if (!submitted) return null;
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const { entry } = getConversationEntry(root, conversationId, true);
     const receipt = {
         guidanceId: String(value.guidanceId), conversationId: String(conversationId),
@@ -222,7 +270,7 @@ export const saveComposerGuidanceSubmission = (conversationId, value) => {
 };
 
 export const clearComposerGuidanceSubmission = (conversationId, guidanceId) => {
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const { key, entry } = getConversationEntry(root, conversationId);
     if (!entry?.guidanceSubmission || entry.guidanceSubmission.guidanceId !== guidanceId) return;
     delete entry.guidanceSubmission;
@@ -232,7 +280,7 @@ export const clearComposerGuidanceSubmission = (conversationId, guidanceId) => {
 
 /** Unknown edit delivery keeps an operation receipt, never a local pending item. */
 export const readComposerGuidanceEdits = (conversationId) => {
-    const { entry } = getConversationEntry(readRoot(), conversationId);
+    const { entry } = getConversationEntry(readRoot(conversationId), conversationId);
     return Object.values(entry?.guidanceEdits || {}).filter((value) => value?.guidanceId && value?.execution?.executionId
         && String(value.execution.conversationId || '') === String(conversationId || ''));
 };
@@ -240,7 +288,7 @@ export const readComposerGuidanceEdits = (conversationId) => {
 export const saveComposerGuidanceEdit = (conversationId, execution, guidance) => {
     if (!conversationId || !execution?.executionId || !guidance?.id
         || String(execution.conversationId || '') !== String(conversationId)) return null;
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const { entry } = getConversationEntry(root, conversationId, true);
     entry.guidanceEdits ||= {};
     const key = `${execution.executionId}:${guidance.id}`;
@@ -261,7 +309,7 @@ export const saveComposerGuidanceEdit = (conversationId, execution, guidance) =>
 };
 
 export const clearComposerGuidanceEdit = (conversationId, executionId, guidanceId) => {
-    const root = readRoot();
+    const root = readRoot(conversationId);
     const { key, entry } = getConversationEntry(root, conversationId);
     const receiptKey = `${executionId}:${guidanceId}`;
     if (!entry?.guidanceEdits?.[receiptKey]) return;
@@ -276,7 +324,7 @@ export const moveComposerConversationDrafts = (fromConversationId, toConversatio
     const toKey = conversationKey(toConversationId);
     if (fromKey === toKey) return;
 
-    const root = readRoot();
+    const root = readRoot(fromConversationId, toConversationId);
     const source = root.conversations[fromKey];
     if (!source) return;
     const target = root.conversations[toKey] || {normal: null, messages: {}};
@@ -295,11 +343,13 @@ export const saveComposerSnapshot = ({
     content = '',
     attachments = [],
     roleName = null,
+    defer = false,
 }) => writeComposerDraft({
     conversationId,
     mode,
     messageId,
     draft: {content, attachments, roleName},
+    defer,
 });
 
 export const composerDraftStorageInfo = {

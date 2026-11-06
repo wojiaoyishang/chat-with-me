@@ -61,8 +61,13 @@
    * - :doc:`src/components/markdown/MarkdownRenderer </api/javascript/components/markdown/MarkdownRenderer>`
      - 10
      - 0
-     - 67
+     - 64
      - ``src/components/markdown/MarkdownRenderer.jsx``
+   * - :doc:`src/components/markdown/MarkdownSyntax </api/javascript/components/markdown/MarkdownSyntax>`
+     - 0
+     - 0
+     - 14
+     - ``src/components/markdown/MarkdownSyntax.jsx``
    * - :doc:`src/components/markdown/ResourceAudio </api/javascript/components/markdown/ResourceAudio>`
      - 2
      - 0
@@ -273,6 +278,26 @@
      - 0
      - 9
      - ``src/components/markdown/markdownNodeReuse.js``
+   * - :doc:`src/components/markdown/markdownParser </api/javascript/components/markdown/markdownParser>`
+     - 1
+     - 0
+     - 1
+     - ``src/components/markdown/markdownParser.js``
+   * - :doc:`src/components/markdown/markdownRenderBudget </api/javascript/components/markdown/markdownRenderBudget>`
+     - 0
+     - 0
+     - 0
+     - ``src/components/markdown/markdownRenderBudget.js``
+   * - :doc:`src/components/markdown/markdownSyntax.worker </api/javascript/components/markdown/markdownSyntax.worker>`
+     - 0
+     - 0
+     - 1
+     - ``src/components/markdown/markdownSyntax.worker.js``
+   * - :doc:`src/components/markdown/markdownWorkerQueue </api/javascript/components/markdown/markdownWorkerQueue>`
+     - 1
+     - 0
+     - 8
+     - ``src/components/markdown/markdownWorkerQueue.js``
    * - :doc:`src/components/markdown/rehypeDocumentTasks </api/javascript/components/markdown/rehypeDocumentTasks>`
      - 5
      - 0
@@ -578,6 +603,7 @@
    /api/javascript/components/markdown/CodeBlock
    /api/javascript/components/markdown/DocumentTaskControls
    /api/javascript/components/markdown/MarkdownRenderer
+   /api/javascript/components/markdown/MarkdownSyntax
    /api/javascript/components/markdown/ResourceAudio
    /api/javascript/components/markdown/ResourceImage
    /api/javascript/components/markdown/ResourceVideo
@@ -620,6 +646,10 @@
    /api/javascript/components/markdown/markdownCopy
    /api/javascript/components/markdown/markdownMediaUrl
    /api/javascript/components/markdown/markdownNodeReuse
+   /api/javascript/components/markdown/markdownParser
+   /api/javascript/components/markdown/markdownRenderBudget
+   /api/javascript/components/markdown/markdownSyntax.worker
+   /api/javascript/components/markdown/markdownWorkerQueue
    /api/javascript/components/markdown/rehypeDocumentTasks
    /api/javascript/components/markdown/rehypeStreamingText
    /api/javascript/components/markdown/remarkAudioDirective

@@ -1,20 +1,9 @@
-import React, { createContext, memo, useContext, useEffect, useId, useMemo, useRef } from 'react';
-import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import remarkDirective from 'remark-directive';
-import rehypeKatex from 'rehype-katex';
+import React, { createContext, memo, useContext, useEffect, useId, useMemo, useRef, useCallback } from 'react';
+import { defaultUrlTransform } from 'react-markdown';
+import MarkdownSyntax from './MarkdownSyntax.jsx';
 
-import { rehypeInlineCodeProperty, remarkCardReplace } from './remarkDirectiveToComponent.js';
-import { remarkCollapseExecutionStatuses } from './remarkCollapseExecutionStatuses.js';
-import {remarkWorkProcess} from './remarkWorkProcess.js';
 import WorkProcessGroup from '@/features/execution/WorkProcessGroup.jsx';
 import {workProcessEntry} from '@/features/execution/workProcessModel.js';
-import remarkCwmLinks from './remarkCwmLinks.js';
-import remarkVideoDirective from './remarkVideoDirective.js';
-import remarkAudioDirective from './remarkAudioDirective.js';
-import remarkStudyDirectives from './remarkStudyDirectives.js';
-import rehypeDocumentTasks from './rehypeDocumentTasks.js';
 import { DocumentTaskInput, DocumentTaskListItem } from './DocumentTaskControls.jsx';
 import { StudyCard, StudyOutline, StudySection, StudySession } from './StudyVisuals.jsx';
 import { useDocumentCardSpec } from './documentCardSpec.js';
@@ -39,10 +28,9 @@ import ResourceVideo from './ResourceVideo.jsx';
 import ResourceAudio from './ResourceAudio.jsx';
 import { createMarkdownCopyContentComponent, resolveMarkdownCopyContent } from './markdownCopy.js';
 import { executionGroupingKey, projectReplacements, projectReplacementRefs } from './replacementProjection.js';
-import {rehypeReuseMarkdownNodes, sameMarkdownNodeProps} from './markdownNodeReuse.js';
+import {sameMarkdownNodeProps} from './markdownNodeReuse.js';
 import StreamingText from './StreamingText.jsx';
 import {StreamingTextContext} from './streamingTextContext.js';
-import {rehypeStreamingText} from './rehypeStreamingText.js';
 import { toast } from 'sonner';
 import { isUniversalModalLink, openUniversalModalLink } from '@/components/modal/universalModal.js';
 
@@ -461,34 +449,6 @@ const createElementRenderers = ({
     };
 };
 
-// Replacement content and readonly belong to the live component context. Only
-// source/configuration or grouping topology changes require another syntax pass.
-const MarkdownSyntax = memo(({ processedContent, replacement,
-    renderSurface, snapshot, studyDirectivesEnabled, studyIdPrefix, cardSpec,
-    extraRehypePlugins, editableTasks, taskSourceContent, components, resourceBaseUrl, nodeReuse }) => (
-    <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath,
-            ...(studyDirectivesEnabled ? [remarkDirective, [remarkStudyDirectives, { idPrefix: studyIdPrefix, spec: cardSpec }]] : []),
-            remarkCardReplace,
-            [renderSurface === 'conversation' ? remarkWorkProcess : remarkCollapseExecutionStatuses, {replacement, renderSurface, snapshot}],
-            remarkVideoDirective, remarkAudioDirective, remarkCwmLinks, rehypeInlineCodeProperty]}
-        rehypePlugins={[rehypeKatex, ...extraRehypePlugins,
-            ...(editableTasks ? [[rehypeDocumentTasks, { sourceContent: taskSourceContent, normalizeLine: preprocessContent }]] : []),
-            [rehypeStreamingText, {enabled: renderSurface === 'conversation'}],
-            [rehypeReuseMarkdownNodes, {cache: nodeReuse}]]}
-        components={components}
-        urlTransform={(uri, key, node) => {
-            const safe = allowCustomScheme(uri, key, node);
-            if (resourceBaseUrl && safe?.startsWith('assets/')) {
-                const relative = safe.slice('assets/'.length);
-                if (relative.split('/').some((part) => part === '..' || part === '.')) return '';
-                return authorizedResourceUrl(resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/'));
-            }
-            return authorizedResourceUrl(safe);
-        }}
-    >{processedContent}</ReactMarkdown>
-), (prev, next) => Object.keys(next).every((key) => key === 'replacement' || prev[key] === next[key]));
-
 const EMPTY_PLUGINS = [];
 const EMPTY_REPLACEMENTS = {};
 
@@ -512,6 +472,15 @@ function MarkdownRendererInner({
     onTaskToggle = null,
 }) {
     const studyIdPrefix = useId();
+    const transformUrl = useCallback((uri, key, node) => {
+        const safe = allowCustomScheme(uri, key, node);
+        if (resourceBaseUrl && safe?.startsWith('assets/')) {
+            const relative = safe.slice('assets/'.length);
+            if (relative.split('/').some(part => part === '..' || part === '.')) return '';
+            return authorizedResourceUrl(resourceBaseUrl + relative.split('/').map(encodeURIComponent).join('/'));
+        }
+        return authorizedResourceUrl(safe);
+    }, [resourceBaseUrl]);
     const priorText = useRef({mounted: false, content: '', contextId});
     const animateMount = priorText.current.mounted && priorText.current.contextId === contextId
         && String(content || '').startsWith(String(priorText.current.content || ''));
@@ -646,7 +615,7 @@ function MarkdownRendererInner({
                 renderSurface={renderSurface} snapshot={snapshot} studyDirectivesEnabled={Boolean(studyDirectivesEnabled)}
                 studyIdPrefix={studyIdPrefix} cardSpec={cardSpec} extraRehypePlugins={extraRehypePlugins}
                 editableTasks={Boolean(renderSurface === 'document' && onTaskToggle)} taskSourceContent={taskSourceContent}
-                components={components} resourceBaseUrl={resourceBaseUrl} nodeReuse={nodeReuse} />
+                components={components} resourceBaseUrl={resourceBaseUrl} nodeReuse={nodeReuse} transformUrl={transformUrl} normalizeLine={preprocessContent} />
         </MarkdownRenderersContext.Provider>
         </MarkdownCommonRenderersContext.Provider>
         </StreamingTextContext.Provider>

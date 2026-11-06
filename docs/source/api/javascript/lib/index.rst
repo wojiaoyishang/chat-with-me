@@ -38,15 +38,25 @@
      - 0
      - 2
      - ``src/lib/idleWork.js``
+   * - :doc:`src/lib/mobileViewport </api/javascript/lib/mobileViewport>`
+     - 3
+     - 0
+     - 4
+     - ``src/lib/mobileViewport.js``
    * - :doc:`src/lib/resourceDownload </api/javascript/lib/resourceDownload>`
      - 4
      - 0
      - 1
      - ``src/lib/resourceDownload.js``
+   * - :doc:`src/lib/structuralShare </api/javascript/lib/structuralShare>`
+     - 1
+     - 0
+     - 0
+     - ``src/lib/structuralShare.js``
    * - :doc:`src/lib/tools </api/javascript/lib/tools>`
      - 18
      - 0
-     - 20
+     - 17
      - ``src/lib/tools.jsx``
    * - :doc:`src/lib/utils </api/javascript/lib/utils>`
      - 1
@@ -73,7 +83,9 @@
    /api/javascript/lib/clientText
    /api/javascript/lib/horizontalWheel
    /api/javascript/lib/idleWork
+   /api/javascript/lib/mobileViewport
    /api/javascript/lib/resourceDownload
+   /api/javascript/lib/structuralShare
    /api/javascript/lib/tools
    /api/javascript/lib/utils
    /api/javascript/lib/virtualUrl

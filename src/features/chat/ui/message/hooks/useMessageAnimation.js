@@ -6,29 +6,28 @@ const useMessageAnimation = (messagesOrder) => {
     const [fadeMessages, setFadeMessages] = useState(new Set());
     const prevMessagesOrderRef = useRef([]);
     const animationFrameRef = useRef(null);
+    const animationTimerRef = useRef(null);
 
     useEffect(() => {
         const prevOrder = prevMessagesOrderRef.current;
         const newOrder = messagesOrder;
+        const previousIds = new Set(prevOrder);
+        const nextIds = new Set(newOrder);
 
         const normalNewMessages = newOrder.filter(msgId =>
-            !prevOrder.includes(msgId) &&
+            !previousIds.has(msgId) &&
             msgId !== '<PREV_MORE>' &&
             !fadeMessages.has(msgId)
         );
 
-        normalNewMessages.forEach(msgId => {
-            setEnteringMessages(prev => new Set([...prev, msgId]));
-        });
+        if (normalNewMessages.length) setEnteringMessages(prev => new Set([...prev, ...normalNewMessages]));
 
-        const removedMessages = prevOrder.filter(msgId => !newOrder.includes(msgId));
-        removedMessages.forEach(msgId => {
-            setLeavingMessages(prev => new Set([...prev, msgId]));
-        });
+        const removedMessages = prevOrder.filter(msgId => !nextIds.has(msgId));
+        if (removedMessages.length) setLeavingMessages(prev => new Set([...prev, ...removedMessages]));
 
         if (normalNewMessages.length > 0 || removedMessages.length > 0 || fadeMessages.size > 0) {
             animationFrameRef.current = requestAnimationFrame(() => {
-                setTimeout(() => {
+                animationTimerRef.current = setTimeout(() => {
                     setEnteringMessages(new Set());
                     setLeavingMessages(new Set());
                     setFadeMessages(new Set());
@@ -39,6 +38,7 @@ const useMessageAnimation = (messagesOrder) => {
         prevMessagesOrderRef.current = newOrder;
 
         return () => {
+            clearTimeout(animationTimerRef.current);
             if (animationFrameRef.current) {
                 cancelAnimationFrame(animationFrameRef.current);
             }

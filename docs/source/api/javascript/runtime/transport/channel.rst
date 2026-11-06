@@ -22,18 +22,18 @@ src/runtime/transport/channel 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``../backend/connection.js``。
+``../backend/connection.js``、``./subscriptionDemand.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:254:378:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:321:445:FUNCTION
 
 .. js:function:: setRealtimeTransport(transport)
 
    设置与 ``Realtime Transport`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``8``—``11`` 行。
+   **性质**：同步函数；导出 API；源码第 ``9``—``12`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/runtime/transport/channel 模块
 
    **主要协作调用**：``getBackendConnection``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:423:642:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:490:709:FUNCTION
 
 .. js:function:: resetRealtimeAuthentication()
 
    重置与 ``Realtime Authentication`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``20`` 行。
+   **性质**：同步函数；导出 API；源码第 ``14``—``21`` 行。
 
    **参数**
 
@@ -64,13 +64,13 @@ src/runtime/transport/channel 模块
 
    **主要协作调用**：``previous?.setHandlers``、``previous?.close``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1067:1134:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1134:1201:FUNCTION
 
 .. js:function:: getRealtimeTransport()
 
    读取与 ``Realtime Transport`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``32``—``32`` 行。
+   **性质**：同步函数；导出 API；源码第 ``33``—``33`` 行。
 
    **参数**
 
@@ -82,13 +82,13 @@ src/runtime/transport/channel 模块
 
    **主要协作调用**：``isCurrentConnection``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1171:1487:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1238:1554:FUNCTION
 
 .. js:function:: flushRealtimeEvents()
 
    实现 ``flushRealtimeEvents`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``34``—``42`` 行。
+   **性质**：同步函数；导出 API；源码第 ``35``—``43`` 行。
 
    **参数**
 
@@ -104,13 +104,13 @@ src/runtime/transport/channel 模块
 
    **主要协作调用**：``isCurrentConnection``、``pendingEvents.shift``、``activeTransport.sendEvent``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1522:1899:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1589:1999:FUNCTION
 
 .. js:function:: sendRealtimeEvent(envelope, {queue = true})
 
    发送与 ``Realtime Event`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``44``—``54`` 行。
+   **性质**：同步函数；导出 API；源码第 ``45``—``56`` 行。
 
    **参数**
 
@@ -128,15 +128,15 @@ src/runtime/transport/channel 模块
 
    * 发送本地或远程 CWM 事件/媒体帧。
 
-   **主要协作调用**：``isCurrentConnection``、``activeTransport.sendEvent``、``pendingEvents.push``、``getBackendConnection``、``pendingEvents.shift``。
+   **主要协作调用**：``requestRealtimeConnection``、``isCurrentConnection``、``activeTransport.sendEvent``、``pendingEvents.push``、``getBackendConnection``、``pendingEvents.shift``。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:1934:2106:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:2034:2206:FUNCTION
 
 .. js:function:: sendRealtimeMedia(header, body)
 
    发送与 ``Realtime Media`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``56``—``60`` 行。
+   **性质**：同步函数；导出 API；源码第 ``58``—``62`` 行。
 
    **参数**
 
@@ -161,17 +161,17 @@ src/runtime/transport/channel 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/runtime/transport/channel.js:662:1028:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/transport/channel.js:729:1095:FUNCTION
 
-.. rubric:: ``subscribeBackend callback @ 22``
+.. rubric:: ``subscribeBackend callback @ 23``
 
 .. code-block:: javascript
 
-   subscribeBackend callback @ 22()
+   subscribeBackend callback @ 23()
 
 订阅与 ``Backend`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``22``—``30`` 行。
+**性质**：同步局部函数；源码第 ``23``—``31`` 行。
 
 **参数**
 

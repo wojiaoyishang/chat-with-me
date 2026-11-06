@@ -21,7 +21,7 @@
    * - :doc:`src/main </api/javascript/main>`
      - 1
      - 0
-     - 3
+     - 5
      - ``src/main.jsx``
 
 .. toctree::

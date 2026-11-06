@@ -22,18 +22,18 @@ Active execution ownership overrides a stale persisted message editability flag.
 主要依赖
 --------------------------------------------------------------------------------
 
-``zustand``、``./executionStatusModel.js``。
+``zustand``、``../../lib/structuralShare.js``、``./executionStatusModel.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:126:164:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:187:225:FUNCTION
 
 .. js:function:: normalizeId(value)
 
    规范化与 ``Id`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``4``—``4`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``5``—``5`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``String(value || '').trim``、``String``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:297:771:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:358:832:FUNCTION
 
 .. js:function:: isMessageExecutionActive(state, conversationIdValue, messageIdValue)
 
    判断与 ``Message Execution Active`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``14`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``15`` 行。
 
    **参数**
 
@@ -73,13 +73,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:796:960:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:857:1021:FUNCTION
 
 .. js:function:: emptySession()
 
    实现 ``emptySession`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``16``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``17``—``24`` 行。
 
    **参数**
 
@@ -89,13 +89,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:986:1480:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1047:1541:FUNCTION
 
 .. js:function:: mergeActivity(activities, incoming)
 
    合并与 ``Activity`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``25``—``34`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``26``—``35`` 行。
 
    **参数**
 
@@ -113,13 +113,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1527:1909:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1588:1970:FUNCTION
 
 .. js:function:: shouldIgnoreExecutionUpdate(previous, incoming)
 
    实现 ``shouldIgnoreExecutionUpdate`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``36``—``41`` 行。
+   **性质**：同步函数；导出 API；源码第 ``37``—``42`` 行。
 
    **参数**
 
@@ -135,13 +135,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``Number``、``terminal.includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1936:2260:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1997:2344:FUNCTION
 
 .. js:function:: mergeExecution(previous, incoming)
 
    合并与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``43``—``50`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``44``—``51`` 行。
 
    **参数**
 
@@ -155,15 +155,15 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``shouldIgnoreExecutionUpdate``、``Number``。
+   **主要协作调用**：``shouldIgnoreExecutionUpdate``、``shareJsonData``、``Number``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2291:3341:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:2375:3425:FUNCTION
 
 .. js:function:: normalizeExecution(incoming)
 
    规范化与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``52``—``70`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``53``—``71`` 行。
 
    **参数**
 
@@ -176,13 +176,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``normalizeId``、``Array.isArray``、``Object.prototype.hasOwnProperty.call``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3374:4379:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3458:4711:FUNCTION
 
 .. js:function:: sessionWithExecution(session, incoming)
 
    实现 ``sessionWithExecution`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``72``—``87`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``73``—``91`` 行。
 
    **参数**
 
@@ -194,19 +194,19 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``{...session, guidanceDrafts: drafts, guidanceEditor, executions: {...session.executions, [execution.executionId]: execution}}``。
+   根据执行分支返回结果；代表性返回表达式为 ``session``、``{...session, guidanceDrafts: draftsChanged ? drafts : session.guidanceDrafts, guidanceEditor, executions: {...session.executions, [execution.executionId]: execution}}``。
 
    **主要协作调用**：``mergeExecution``、``Object.entries``、``execution.pendingGuidance?.find``、``execution.activities?.find``。
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15176:15247:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15610:15681:FUNCTION
 
 .. js:function:: upsertExecution(execution)
 
    实现 ``upsertExecution`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``304``—``304`` 行。
+   **性质**：同步函数；导出 API；源码第 ``310``—``310`` 行。
 
    **参数**
 
@@ -219,13 +219,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().upsertExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15278:15363:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15712:15797:FUNCTION
 
 .. js:function:: openExecution(execution, target)
 
    打开与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``305``—``305`` 行。
+   **性质**：同步函数；导出 API；源码第 ``311``—``311`` 行。
 
    **参数**
 
@@ -241,13 +241,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().openExecution``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15406:15515:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15840:15949:FUNCTION
 
 .. js:function:: consumeExecutionNavigation(conversationId, requestId)
 
    实现 ``consumeExecutionNavigation`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``306``—``307`` 行。
+   **性质**：同步函数；导出 API；源码第 ``312``—``313`` 行。
 
    **参数**
 
@@ -263,13 +263,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().consumeNavigation``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15549:15654:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15983:16088:FUNCTION
 
 .. js:function:: openExecutionById(conversationId, executionId)
 
    打开与 ``Execution By Id`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``308``—``309`` 行。
+   **性质**：同步函数；导出 API；源码第 ``314``—``315`` 行。
 
    **参数**
 
@@ -285,13 +285,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().openById``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15695:15790:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16129:16224:FUNCTION
 
 .. js:function:: upsertExecutionActivity(execution, activity)
 
    实现 ``upsertExecutionActivity`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``310``—``311`` 行。
+   **性质**：同步函数；导出 API；源码第 ``316``—``317`` 行。
 
    **参数**
 
@@ -307,13 +307,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().upsertActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:15830:15978:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16264:16412:FUNCTION
 
 .. js:function:: patchExecutionActivity(conversationId, executionId, activityId, patch)
 
    实现 ``patchExecutionActivity`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``312``—``313`` 行。
+   **性质**：同步函数；导出 API；源码第 ``318``—``319`` 行。
 
    **参数**
 
@@ -335,13 +335,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().patchActivity``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16010:16081:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16444:16515:FUNCTION
 
 .. js:function:: closeExecution(conversationId)
 
    关闭与 ``Execution`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``314``—``314`` 行。
+   **性质**：同步函数；导出 API；源码第 ``320``—``320`` 行。
 
    **参数**
 
@@ -354,13 +354,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().close``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16125:16213:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16559:16647:FUNCTION
 
 .. js:function:: clearExecutionConversation(conversationId)
 
    清空与 ``Execution Conversation`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``315``—``316`` 行。
+   **性质**：同步函数；导出 API；源码第 ``321``—``322`` 行。
 
    **参数**
 
@@ -373,13 +373,13 @@ Active execution ownership overrides a stale persisted message editability flag.
 
    **主要协作调用**：``useExecutionStore.getState().clearConversation``、``useExecutionStore.getState``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16249:16339:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:16683:16773:FUNCTION
 
 .. js:function:: openGuidanceEditor(execution, target)
 
    打开与 ``Guidance Editor`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``317``—``317`` 行。
+   **性质**：同步函数；导出 API；源码第 ``323``—``323`` 行。
 
    **参数**
 
@@ -400,17 +400,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:635:766:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:696:827:FUNCTION
 
-.. rubric:: ``Object.values(executions).some callback @ 12``
+.. rubric:: ``Object.values(executions).some callback @ 13``
 
 .. code-block:: javascript
 
-   Object.values(executions).some callback @ 12(execution)
+   Object.values(executions).some callback @ 13(execution)
 
 作为 ``Object.values(executions).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``12``—``13`` 行；所属函数 ``isMessageExecutionActive``。
+**性质**：同步局部函数；源码第 ``13``—``14`` 行；所属函数 ``isMessageExecutionActive``。
 
 **参数**
 
@@ -423,17 +423,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1251:1297:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:1312:1358:FUNCTION
 
-.. rubric:: ``source.findIndex callback @ 29``
+.. rubric:: ``source.findIndex callback @ 30``
 
 .. code-block:: javascript
 
-   source.findIndex callback @ 29(item)
+   source.findIndex callback @ 30(item)
 
 实现 ``source.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``29``—``29`` 行；所属函数 ``mergeActivity``。
+**性质**：同步局部函数；源码第 ``30``—``30`` 行；所属函数 ``mergeActivity``。
 
 **参数**
 
@@ -446,17 +446,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3837:3877:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3953:3993:FUNCTION
 
-.. rubric:: ``execution.pendingGuidance?.find callback @ 78``
+.. rubric:: ``execution.pendingGuidance?.find callback @ 80``
 
 .. code-block:: javascript
 
-   execution.pendingGuidance?.find callback @ 78(item)
+   execution.pendingGuidance?.find callback @ 80(item)
 
 作为 ``execution.pendingGuidance?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``sessionWithExecution``。
+**性质**：同步局部函数；源码第 ``80``—``80`` 行；所属函数 ``sessionWithExecution``。
 
 **参数**
 
@@ -467,17 +467,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:3922:4054:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4038:4170:FUNCTION
 
-.. rubric:: ``execution.activities?.find callback @ 79``
+.. rubric:: ``execution.activities?.find callback @ 81``
 
 .. code-block:: javascript
 
-   execution.activities?.find callback @ 79(activity)
+   execution.activities?.find callback @ 81(activity)
 
 作为 ``execution.activities?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``79``—``80`` 行；所属函数 ``sessionWithExecution``。
+**性质**：同步局部函数；源码第 ``81``—``82`` 行；所属函数 ``sessionWithExecution``。
 
 **参数**
 
@@ -488,17 +488,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4424:15140:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4756:15574:FUNCTION
 
-.. rubric:: ``create callback @ 89``
+.. rubric:: ``create callback @ 93``
 
 .. code-block:: javascript
 
-   create callback @ 89(set)
+   create callback @ 93(set)
 
 创建与 ``create`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``89``—``302`` 行。
+**性质**：同步局部函数；源码第 ``93``—``308`` 行。
 
 **参数**
 
@@ -515,7 +515,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：13。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4478:5080:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4810:5514:FUNCTION
 
 .. rubric:: ``upsertExecution``
 
@@ -525,7 +525,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 实现 ``upsertExecution`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``92``—``106`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``96``—``112`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -544,17 +544,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4506:5079:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:4838:5513:FUNCTION
 
-.. rubric:: ``set callback @ 93``
+.. rubric:: ``set callback @ 97``
 
 .. code-block:: javascript
 
-   set callback @ 93(state)
+   set callback @ 97(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``93``—``106`` 行；所属函数 ``upsertExecution``。
+**性质**：同步局部函数；源码第 ``97``—``112`` 行；所属函数 ``upsertExecution``。
 
 **参数**
 
@@ -563,11 +563,11 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``state``、``{ sessions: { ...state.sessions, [conversationId]: { ...sessionWithExecution(session, execution), }, }, }``。
+根据执行分支返回结果；代表性返回表达式为 ``state``、``{ sessions: { ...state.sessions, [conversationId]: { ...nextSession, }, }, }``。
 
 **主要协作调用**：``normalizeExecution``、``emptySession``、``sessionWithExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5103:6031:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5537:6465:FUNCTION
 
 .. rubric:: ``openExecution``
 
@@ -577,7 +577,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 打开与 ``Execution`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``108``—``126`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``114``—``132`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -599,17 +599,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5145:6030:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:5579:6464:FUNCTION
 
-.. rubric:: ``set callback @ 109``
+.. rubric:: ``set callback @ 115``
 
 .. code-block:: javascript
 
-   set callback @ 109(state)
+   set callback @ 115(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``109``—``126`` 行；所属函数 ``openExecution``。
+**性质**：同步局部函数；源码第 ``115``—``132`` 行；所属函数 ``openExecution``。
 
 **参数**
 
@@ -622,7 +622,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeExecution``、``emptySession``、``sessionWithExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6049:6801:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6483:7235:FUNCTION
 
 .. rubric:: ``openById``
 
@@ -632,7 +632,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 打开与 ``By Id`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``128``—``145`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``134``—``151`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -654,17 +654,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6106:6800:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6540:7234:FUNCTION
 
-.. rubric:: ``set callback @ 129``
+.. rubric:: ``set callback @ 135``
 
 .. code-block:: javascript
 
-   set callback @ 129(state)
+   set callback @ 135(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``129``—``145`` 行；所属函数 ``openById``。
+**性质**：同步局部函数；源码第 ``135``—``151`` 行；所属函数 ``openById``。
 
 **参数**
 
@@ -677,7 +677,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6828:7227:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7262:7661:FUNCTION
 
 .. rubric:: ``consumeNavigation``
 
@@ -687,7 +687,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 实现 ``consumeNavigation`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``147``—``153`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``153``—``159`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -709,17 +709,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:6877:7226:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7311:7660:FUNCTION
 
-.. rubric:: ``set callback @ 148``
+.. rubric:: ``set callback @ 154``
 
 .. code-block:: javascript
 
-   set callback @ 148(state)
+   set callback @ 154(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``148``—``153`` 行；所属函数 ``consumeNavigation``。
+**性质**：同步局部函数；源码第 ``154``—``159`` 行；所属函数 ``consumeNavigation``。
 
 **参数**
 
@@ -732,7 +732,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7249:8309:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7683:8743:FUNCTION
 
 .. rubric:: ``upsertActivity``
 
@@ -742,7 +742,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 实现 ``upsertActivity`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``155``—``176`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``161``—``182`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -764,17 +764,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7300:8308:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:7734:8742:FUNCTION
 
-.. rubric:: ``set callback @ 156``
+.. rubric:: ``set callback @ 162``
 
 .. code-block:: javascript
 
-   set callback @ 156(state)
+   set callback @ 162(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``156``—``176`` 行；所属函数 ``upsertActivity``。
+**性质**：同步局部函数；源码第 ``162``—``182`` 行；所属函数 ``upsertActivity``。
 
 **参数**
 
@@ -787,7 +787,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``、``emptySession``、``normalizeExecution``、``mergeExecution``、``mergeActivity``、``sessionWithExecution``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8332:9827:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8766:10261:FUNCTION
 
 .. rubric:: ``patchActivity``
 
@@ -797,7 +797,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 实现 ``patchActivity`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``178``—``206`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``184``—``212`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -825,17 +825,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8418:9826:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8852:10260:FUNCTION
 
-.. rubric:: ``set callback @ 179``
+.. rubric:: ``set callback @ 185``
 
 .. code-block:: javascript
 
-   set callback @ 179(state)
+   set callback @ 185(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``179``—``206`` 行；所属函数 ``patchActivity``。
+**性质**：同步局部函数；源码第 ``185``—``212`` 行；所属函数 ``patchActivity``。
 
 **参数**
 
@@ -850,17 +850,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:8913:9391:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9347:9825:FUNCTION
 
-.. rubric:: ``(execution.activities || []).map callback @ 186``
+.. rubric:: ``(execution.activities || []).map callback @ 192``
 
 .. code-block:: javascript
 
-   (execution.activities || []).map callback @ 186(item)
+   (execution.activities || []).map callback @ 192(item)
 
 作为 ``(execution.activities || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``186``—``193`` 行；所属函数 ``set callback @ 179``。
+**性质**：同步局部函数；源码第 ``192``—``199`` 行；所属函数 ``set callback @ 185``。
 
 **参数**
 
@@ -873,7 +873,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``、``['pending', 'failed'].includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9842:10306:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10276:10740:FUNCTION
 
 .. rubric:: ``close``
 
@@ -883,7 +883,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 关闭与 ``close`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``208``—``219`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``214``—``225`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -902,17 +902,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:9881:10305:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10315:10739:FUNCTION
 
-.. rubric:: ``set callback @ 209``
+.. rubric:: ``set callback @ 215``
 
 .. code-block:: javascript
 
-   set callback @ 209(state)
+   set callback @ 215(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``209``—``219`` 行；所属函数 ``close``。
+**性质**：同步局部函数；源码第 ``215``—``225`` 行；所属函数 ``close``。
 
 **参数**
 
@@ -925,7 +925,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10333:10682:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10767:11116:FUNCTION
 
 .. rubric:: ``clearConversation``
 
@@ -935,7 +935,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 清空与 ``Conversation`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``221``—``228`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``227``—``234`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -954,17 +954,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10372:10681:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10806:11115:FUNCTION
 
-.. rubric:: ``set callback @ 222``
+.. rubric:: ``set callback @ 228``
 
 .. code-block:: javascript
 
-   set callback @ 222(state)
+   set callback @ 228(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``222``—``228`` 行；所属函数 ``clearConversation``。
+**性质**：同步局部函数；源码第 ``228``—``234`` 行；所属函数 ``clearConversation``。
 
 **参数**
 
@@ -977,7 +977,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``normalizeId``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10710:12949:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11144:13383:FUNCTION
 
 .. rubric:: ``openGuidanceEditor``
 
@@ -987,7 +987,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 打开与 ``Guidance Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``230``—``263`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``236``—``269`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -1009,17 +1009,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:10806:12916:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11240:13350:FUNCTION
 
-.. rubric:: ``set callback @ 232``
+.. rubric:: ``set callback @ 238``
 
 .. code-block:: javascript
 
-   set callback @ 232(state)
+   set callback @ 238(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``232``—``261`` 行；所属函数 ``openGuidanceEditor``。
+**性质**：同步局部函数；源码第 ``238``—``267`` 行；所属函数 ``openGuidanceEditor``。
 
 **参数**
 
@@ -1034,17 +1034,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11228:11268:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:11662:11702:FUNCTION
 
-.. rubric:: ``current.activities?.find callback @ 239``
+.. rubric:: ``current.activities?.find callback @ 245``
 
 .. code-block:: javascript
 
-   current.activities?.find callback @ 239(activity)
+   current.activities?.find callback @ 245(activity)
 
 作为 ``current.activities?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``239``—``239`` 行；所属函数 ``set callback @ 232``。
+**性质**：同步局部函数；源码第 ``245``—``245`` 行；所属函数 ``set callback @ 238``。
 
 **参数**
 
@@ -1055,17 +1055,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12135:12156:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12569:12590:FUNCTION
 
-.. rubric:: ``source.attachments.map callback @ 249``
+.. rubric:: ``source.attachments.map callback @ 255``
 
 .. code-block:: javascript
 
-   source.attachments.map callback @ 249(item)
+   source.attachments.map callback @ 255(item)
 
 作为 ``source.attachments.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``249``—``249`` 行；所属函数 ``set callback @ 232``。
+**性质**：同步局部函数；源码第 ``255``—``255`` 行；所属函数 ``set callback @ 238``。
 
 **参数**
 
@@ -1076,7 +1076,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:12978:13496:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13412:13930:FUNCTION
 
 .. rubric:: ``updateGuidanceDraft``
 
@@ -1086,7 +1086,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 更新与 ``Guidance Draft`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``265``—``273`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``271``—``279`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -1111,17 +1111,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13011:13495:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13445:13929:FUNCTION
 
-.. rubric:: ``set callback @ 265``
+.. rubric:: ``set callback @ 271``
 
 .. code-block:: javascript
 
-   set callback @ 265(state)
+   set callback @ 271(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``265``—``273`` 行；所属函数 ``updateGuidanceDraft``。
+**性质**：同步局部函数；源码第 ``271``—``279`` 行；所属函数 ``updateGuidanceDraft``。
 
 **参数**
 
@@ -1134,7 +1134,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **主要协作调用**：``['submitting', 'uncertain', 'sent'].includes``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13524:14193:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13958:14627:FUNCTION
 
 .. rubric:: ``patchGuidanceDraft``
 
@@ -1144,7 +1144,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 实现 ``patchGuidanceDraft`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``275``—``284`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``281``—``290`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -1172,17 +1172,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:13584:14192:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14018:14626:FUNCTION
 
-.. rubric:: ``set callback @ 275``
+.. rubric:: ``set callback @ 281``
 
 .. code-block:: javascript
 
-   set callback @ 275(state)
+   set callback @ 281(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``275``—``284`` 行；所属函数 ``patchGuidanceDraft``。
+**性质**：同步局部函数；源码第 ``281``—``290`` 行；所属函数 ``patchGuidanceDraft``。
 
 **参数**
 
@@ -1193,7 +1193,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, guidanceDrafts: { ...session.guidanceDrafts, [draftKey]: {...draft, ...patch}, }, guidanceEditor: patch.state === 'sent' && sess…``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14222:14488:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14656:14922:FUNCTION
 
 .. rubric:: ``closeGuidanceEditor``
 
@@ -1203,7 +1203,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 关闭与 ``Guidance Editor`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``286``—``290`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``292``—``296`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -1225,17 +1225,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14249:14487:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14683:14921:FUNCTION
 
-.. rubric:: ``set callback @ 286``
+.. rubric:: ``set callback @ 292``
 
 .. code-block:: javascript
 
-   set callback @ 286(state)
+   set callback @ 292(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``286``—``290`` 行；所属函数 ``closeGuidanceEditor``。
+**性质**：同步局部函数；源码第 ``292``—``296`` 行；所属函数 ``closeGuidanceEditor``。
 
 **参数**
 
@@ -1246,7 +1246,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 根据执行分支返回结果；代表性返回表达式为 ``state``、``{sessions: {...state.sessions, [cid]: {...session, guidanceEditor: null}}}``。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14517:15135:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14951:15569:FUNCTION
 
 .. rubric:: ``reopenGuidanceDraft``
 
@@ -1256,7 +1256,7 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 实现 ``reopenGuidanceDraft`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``292``—``301`` 行；所属函数 ``create callback @ 89``。
+**性质**：同步局部函数；源码第 ``298``—``307`` 行；所属函数 ``create callback @ 93``。
 
 **参数**
 
@@ -1281,17 +1281,17 @@ Active execution ownership overrides a stale persisted message editability flag.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14554:15134:FUNCTION
+.. CWM-AST-FUNCTION src/features/execution/useExecutionStore.js:14988:15568:FUNCTION
 
-.. rubric:: ``set callback @ 292``
+.. rubric:: ``set callback @ 298``
 
 .. code-block:: javascript
 
-   set callback @ 292(state)
+   set callback @ 298(state)
 
 设置与 ``set`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``292``—``301`` 行；所属函数 ``reopenGuidanceDraft``。
+**性质**：同步局部函数；源码第 ``298``—``307`` 行；所属函数 ``reopenGuidanceDraft``。
 
 **参数**
 

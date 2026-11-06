@@ -17,23 +17,23 @@ src/main 模块
 * **模块标识**：``src/main``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：3
+* **局部函数与匿名回调**：5
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``./assets/js/i18n.js``、``./assets/css/index.css``、``react-router-dom``、``react-dom/client``、``./context/WebSocketContext.jsx``、``@/context/MyToaster.jsx``、``@/context/FatalErrorPopover.jsx``、``@/context/ContextEvent.jsx``、``@/pages/DashboardPage.jsx``、``./pages/LoginPage.jsx``、``@/features/message-map/MessageHistoryMapPage.jsx``、``@/components/modal/UniversalModalHost.jsx``、``@/lib/browserHistoryLayers.js``、``@/features/images/ImageViewer.jsx``、``@/runtime/backend/BackendBootstrapGate.jsx``。
+``react``、``./assets/js/i18n.js``、``./assets/css/index.css``、``react-router-dom``、``react-dom/client``、``./context/WebSocketContext.jsx``、``@/context/MyToaster.jsx``、``@/context/FatalErrorPopover.jsx``、``@/context/ContextEvent.jsx``、``./pages/LoginPage.jsx``、``@/components/modal/UniversalModalHost.jsx``、``@/lib/browserHistoryLayers.js``、``@/features/images/ImageViewer.jsx``、``@/runtime/backend/BackendBootstrapGate.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/main.jsx:2219:3406:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:2263:3593:FUNCTION
 
 .. js:function:: HistorySynchronizedRouter()
 
    渲染 ``HistorySynchronizedRouter`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；模块内部入口；源码第 ``59``—``83`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``59``—``85`` 行。
 
    **参数**
 
@@ -41,7 +41,7 @@ src/main 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<RouterProvider router={router} />``。
+   根据执行分支返回结果；代表性返回表达式为 ``<React.Suspense fallback={<div role="status" className="animate-pulse p-6 text-muted-foreground">正在加载页面…</div>}> <RouterProvider router={router} /> </React.Suspense>``。
 
    **副作用**
 
@@ -58,7 +58,51 @@ src/main 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/main.jsx:2248:3336:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:873:914:FUNCTION
+
+.. rubric:: ``React.lazy callback @ 18``
+
+.. code-block:: javascript
+
+   React.lazy callback @ 18()
+
+实现 ``React.lazy`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``18``—``18`` 行。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``import``。
+
+.. CWM-AST-FUNCTION src/main.jsx:958:1022:FUNCTION
+
+.. rubric:: ``React.lazy callback @ 19``
+
+.. code-block:: javascript
+
+   React.lazy callback @ 19()
+
+实现 ``React.lazy`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``19``—``19`` 行。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``import``。
+
+.. CWM-AST-FUNCTION src/main.jsx:2292:3380:FUNCTION
 
 .. rubric:: ``React.useEffect callback @ 61``
 
@@ -88,7 +132,7 @@ src/main 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/main.jsx:2300:3335:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:2344:3379:FUNCTION
 
 .. rubric:: ``subscribeBrowserRoutePop callback @ 62``
 
@@ -118,7 +162,7 @@ src/main 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/main.jsx:3171:3279:FUNCTION
+.. CWM-AST-FUNCTION src/main.jsx:3215:3323:FUNCTION
 
 .. rubric:: ``Promise.resolve(router.navigate(target, { replace: true })).catch callback @ 74``
 

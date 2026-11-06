@@ -64,6 +64,10 @@ export function createMessageStreamBatch({ getMessages, commit, delay = 32, maxD
     };
     return {
         flush,
+        observeRenderCost(durationMs) {
+            if (Number.isFinite(durationMs) && durationMs > 0)
+                batchDelay = Math.min(Math.max(delay, maxDelay), Math.max(batchDelay, Math.ceil(durationMs * 2)));
+        },
         enqueue(operation) {
             if (pending.length && operation.runId !== runId) flush();
             runId = operation.runId;

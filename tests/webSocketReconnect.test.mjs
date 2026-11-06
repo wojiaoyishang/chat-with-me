@@ -15,6 +15,13 @@ let stateIndex=0, refIndex=0, states=[], refs=[], effects=[];
 const useState = value => { const index=stateIndex++; if(!(index in states))states[index]=value;return [states[index], value=>{states[index]=typeof value==='function'?value(states[index]):value;}]; };
 const useRef = value => { const index=refIndex++; return refs[index] ||= {current:value}; };
 const useEffect = effect => effects.push(effect);
+const useMemo = factory => factory();
+const generateUUID=()=> '00000000-0000-4000-8000-000000000001';
+let demand=true;
+const demandListeners=new Set();
+const hasRealtimeDemand=()=>demand;
+const subscribeRealtimeDemand=fn=>{demandListeners.add(fn);return()=>demandListeners.delete(fn)};
+const realtimeSubscriptions=()=>[];
 const useSyncExternalStore = (_subscribe, getSnapshot) => getSnapshot();
 const useTranslation = () => ({t:key=>key});
 const toast = {promise:()=>{}};
@@ -40,6 +47,7 @@ let failures=0, transports=[];
 class WebSocketTransport {
  constructor(url,options){this.url=url;this.options=options;this.isOpen=false;transports.push(this);}
  setHandlers(options){this.options=options;return this;}
+ sendEvent(){}
  async connect(){if(failures){failures--;this.options.onError?.(new Error('offline'));this.options.onClose?.({code:1006});throw new Error('offline');}this.isOpen=true;this.options.onOpen?.();this.options.onEvent?.({event:EventName.TRANSPORT_CONNECTED,payload:{connectionId:'connection-'+transports.length}});return this;}
  close(code=1000,reason=''){this.isOpen=false;this.options.onClose?.({code,reason});}
 }
@@ -57,6 +65,7 @@ exports.preparations=()=>ticketPreparations;
 exports.channel=()=>channel;
 exports.flushes=()=>flushes;
 exports.received=received;
+exports.demand=value=>{demand=value;for(const listener of demandListeners)listener();};
 exports.changeBackend=()=>{backendEpoch++;for(const fn of backendListeners)fn();};
 exports.deferTicket=()=>{let release;pendingTicket=new Promise(resolve=>{release=resolve;});return ()=>{pendingTicket=null;release();};};
 `, { loader: 'jsx', format: 'cjs', jsx: 'automatic' }).code;
@@ -71,7 +80,7 @@ function harness() {
     document.visibilityState = 'visible';
     window.setTimeout = (fn, ms) => { const id = ++nextId; timers.set(id, { at: now + ms, fn }); return id; };
     window.clearTimeout = id => timers.delete(id);
-    const context = { require: createRequire(import.meta.url), exports: {}, console: { error() {} }, window, document,
+    const context = { require: createRequire(import.meta.url), exports: {}, crypto:{randomUUID:()=> '00000000-0000-4000-8000-000000000001'}, console: { error() {} }, window, document,
         navigator: window.navigator, setTimeout: window.setTimeout, clearTimeout: window.clearTimeout };
     vm.runInNewContext(script, context);
     const app = context.exports;
@@ -250,23 +259,29 @@ test('backend changes invalidate delayed retries and pending ticket preparation'
     } finally { cleanup(); }
 });
 
-test('login routes hide reconnect UI while preserving retry state and successful recovery', async () => {
+test('login routes never prepare tickets or open a realtime connection', async () => {
     const app = harness();
     app.navigate('/login');
-    app.fail(2);
+    const cleanup = await app.start();
+    assert.equal(app.transports.length, 0);
+    await app.tick(60000);
+    assert.equal(app.preparations(), 0);
+    assert.equal(app.prompt().open, false);
+    cleanup?.();
+});
+
+test('a consumer opens the transport and the last consumer releases it after the idle grace', async () => {
+    const app = harness(); app.demand(false);
     const cleanup = await app.start();
     try {
-        assert.equal(app.prompt().open, false);
-        assert.equal(app.view().isConnected, false);
-        await app.tick(1000);
-        assert.equal(app.prompt().open, false);
-        app.navigate('/chat/current');
-        assert.equal(app.prompt().open, true);
-        app.navigate('/LOGIN/');
-        assert.equal(app.prompt().open, false);
-        await app.retry();
+        assert.equal(app.transports.length, 0);
+        app.demand(true); await settle();
         assert.equal(app.view().isConnected, true);
-        app.navigate('/chat');
-        assert.equal(app.prompt().open, false);
+        app.demand(false); await app.tick(9999);
+        assert.equal(app.view().isConnected, true);
+        await app.tick(1);
+        assert.equal(app.view().isConnected, false);
+        app.demand(true); await settle();
+        assert.equal(app.transports.length, 2);
     } finally { cleanup(); }
 });

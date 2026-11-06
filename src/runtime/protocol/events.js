@@ -39,6 +39,7 @@ export const EventName = Object.freeze({
     PROTOCOL_REPLY: 'protocol.reply',
     PROTOCOL_ERROR: 'protocol.error',
     TRANSPORT_CONNECTED: 'transport.connected',
+    TRANSPORT_SUBSCRIPTIONS_SET: 'transport.subscriptions.set',
     TRANSPORT_DISCONNECTED: 'transport.disconnected',
     TRANSPORT_ERROR: 'transport.error',
 

@@ -10,13 +10,13 @@ import { WebSocketProvider } from './context/WebSocketContext.jsx';
 import MyToaster from '@/context/MyToaster.jsx';
 import FatalErrorPopoverElement from '@/context/FatalErrorPopover.jsx';
 import ContextEvent from '@/context/ContextEvent.jsx';
-import DashboardPage from '@/pages/DashboardPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
-import MessageHistoryMapPage from '@/features/message-map/MessageHistoryMapPage.jsx';
 import UniversalModalHost from '@/components/modal/UniversalModalHost.jsx';
 import { subscribeBrowserRoutePop } from '@/lib/browserHistoryLayers.js';
 import ImageViewer from '@/features/images/ImageViewer.jsx';
 import BackendBootstrapGate from '@/runtime/backend/BackendBootstrapGate.jsx';
+const DashboardPage = React.lazy(() => import('@/pages/DashboardPage.jsx'));
+const MessageHistoryMapPage = React.lazy(() => import('@/features/message-map/MessageHistoryMapPage.jsx'));
 
 const router = createBrowserRouter([
     {
@@ -79,7 +79,9 @@ const HistorySynchronizedRouter = () => {
         [],
     );
 
-    return <RouterProvider router={router} />;
+    return <React.Suspense fallback={<div role="status" className="animate-pulse p-6 text-muted-foreground">正在加载页面…</div>}>
+        <RouterProvider router={router} />
+    </React.Suspense>;
 };
 
 ReactDOM.createRoot(root).render(

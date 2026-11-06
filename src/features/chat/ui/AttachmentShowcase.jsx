@@ -115,6 +115,8 @@ const AttachmentItem = memo(
                         ) : (
                             <img
                                 src={resolvedPreviewUrl}
+                                loading="lazy"
+                                decoding="async"
                                 alt={t('attachment_preview')}
                                 className={
                                     usesDefaultIcon

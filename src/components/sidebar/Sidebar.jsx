@@ -116,7 +116,7 @@ const Sidebar = ({
 
     // 事件监听（保持不变）
     useEffect(() => {
-        const unsubscribe = onEvent({ event: 'sidebar.*' }).then(({ event, payload, eventConversationId }) => {
+        const unsubscribe = onEvent({ event: 'sidebar.*', keepAlive: true }).then(({ event, payload, eventConversationId }) => {
             switch (event) {
                 case 'sidebar.conversations.reload':
                     conversationsListRef.current?.reload();

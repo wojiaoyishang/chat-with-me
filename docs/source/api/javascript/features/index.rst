@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 299
+     - 301
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -59,9 +59,9 @@
      - 1
      - ``src/features/chat/attachmentVision.js``
    * - :doc:`src/features/chat/composer/draftStore </api/javascript/features/chat/composer/draftStore>`
-     - 23
+     - 25
      - 0
-     - 6
+     - 8
      - ``src/features/chat/composer/draftStore.js``
    * - :doc:`src/features/chat/composer/messageDraftMount </api/javascript/features/chat/composer/messageDraftMount>`
      - 6
@@ -281,7 +281,7 @@
    * - :doc:`src/features/chat/page/utils/messageStreamBatch </api/javascript/features/chat/page/utils/messageStreamBatch>`
      - 2
      - 0
-     - 7
+     - 8
      - ``src/features/chat/page/utils/messageStreamBatch.js``
    * - :doc:`src/features/chat/page/utils/messageSummaries </api/javascript/features/chat/page/utils/messageSummaries>`
      - 4
@@ -616,7 +616,7 @@
    * - :doc:`src/features/chat/ui/message/hooks/useMessageAnimation </api/javascript/features/chat/ui/message/hooks/useMessageAnimation>`
      - 1
      - 0
-     - 11
+     - 9
      - ``src/features/chat/ui/message/hooks/useMessageAnimation.js``
    * - :doc:`src/features/chat/ui/message/hooks/useMessageConfigCatalog </api/javascript/features/chat/ui/message/hooks/useMessageConfigCatalog>`
      - 5

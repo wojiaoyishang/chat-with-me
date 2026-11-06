@@ -19,6 +19,15 @@ function fixture() {
     return { batch, enqueue, tick, timers, get messages() { return messages; }, get commits() { return commits; } };
 }
 
+test('committed Markdown render cost increases batching even when state scheduling was cheap', () => {
+    const scheduled=[];
+    const batch=createMessageStreamBatch({getMessages:()=>({a:{content:''}}),commit:()=>{},
+        schedule:(callback,delay)=>{scheduled.push(delay);return 1;},cancel:()=>{}});
+    batch.observeRenderCost(50);
+    batch.enqueue({event:'message.content.delta',value:{a:'text'}});
+    assert.equal(scheduled[0],100);batch.flush();
+});
+
 test('a high-rate body and 12 concurrent card streams commit once without losing order or text', () => {
     const f = fixture();
     for (let i = 0; i < 200; i += 1) f.enqueue('message.content.delta', { a: `片段${i}🙂` });

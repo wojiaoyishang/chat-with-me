@@ -1,7 +1,8 @@
 /* global DEBUG_MODE */
 import { apiEndpoint } from '@/config.js';
 import apiClient from '@/lib/apiClient';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import {subscribeMobile, mobileSnapshot, mobileServerSnapshot} from './mobileViewport.js';
 import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
 
 export const LOCAL_SETTING_CHANGE_EVENT = 'chat-local-setting-change';
@@ -398,15 +399,7 @@ export function isMobile() {
 
 // 是不是手机设备
 export function useIsMobile() {
-    const [isMobile_, setIsMobile] = useState(isMobile()); // Assuming md breakpoint is 768px, adjust if needed
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(isMobile());
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    return isMobile_;
+    return useSyncExternalStore(subscribeMobile, mobileSnapshot, mobileServerSnapshot);
 }
 
 /**

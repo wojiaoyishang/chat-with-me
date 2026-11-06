@@ -1,4 +1,5 @@
 import { createMessageStreamBatch, MESSAGE_STREAM_EVENTS } from './page/utils/messageStreamBatch.js';
+import {MarkdownRenderBudgetContext} from '@/components/markdown/markdownRenderBudget.js';
 import { createAppendSynchronizer } from './page/utils/appendedHistory.js';
 import { projectMessageDeletion } from './page/utils/messageDeletion.js';
 import { ConversationOptionsWriter } from './page/utils/conversationOptions.js';
@@ -211,6 +212,7 @@ function ChatPage({
     const forwardingPending = useMemo(() => pendingBodyForwarding(messages, messagesOrder), [messages, messagesOrder]);
     const messagesRef = useRef({});
     const streamBatchRef = useRef(null);
+    const reportMessageRenderCost = useCallback(duration => streamBatchRef.current?.observeRenderCost(duration), []);
     const messagesOrderRef = useRef([]);
     // HTTP history snapshots are durable but can lag behind the WebSocket stream.
     // Keep an explicit record of message ids touched by a live Run so history
@@ -3351,6 +3353,7 @@ function ChatPage({
         const controller = new AbortController();
         const isCurrent = () => !controller.signal.aborted && activeConversationIdRef.current === conversationId;
         let modelsData = [];
+        let loadedConversation = null;
         const requestConversation = async () => {
             if (!isCurrent()) return;
             loadingStageRef.current = 'conversation';
@@ -3362,6 +3365,7 @@ function ChatPage({
                 });
                 if (!isCurrent()) return;
                 setConversationMeta(data);
+                loadedConversation = data;
                 applyContextCompactionState(data?.contextCompactionState || {});
                 const foundModel = modelsData.find((item) => item.id === data.model);
                 if (foundModel) setSelectedModel(foundModel);
@@ -3387,6 +3391,11 @@ function ChatPage({
                 signal: controller.signal,
                 isCurrent,
             });
+            if (isCurrent() && loadedConversation) {
+                const selected = modelsData.find((item) => item.id === loadedConversation.model);
+                if (selected) { selectedModelRef.current = selected; setSelectedModel(selected); }
+                if (loadedConversation.options) setAdvancedSettings(loadedConversation.options);
+            }
         };
         const requestMessages = async () => {
             if (!isCurrent()) return;
@@ -3488,11 +3497,7 @@ function ChatPage({
             setIsLoading(true);
             const startedAt = performance.now();
             try {
-                await requestModels();
-                if (!isCurrent()) return;
-                await requestConversation();
-                if (!isCurrent()) return;
-                await requestMessages();
+                await Promise.all([requestModels(), requestConversation(), requestMessages()]);
             } catch (error) {
                 if (!isCurrent()) return;
                 console.error('[Chat bootstrap] unexpected failure', {
@@ -3710,6 +3715,7 @@ function ChatPage({
                                     className="h-full overflow-y-auto pb-20 pretty-scrollbar"
                                     style={{ maxHeight: 'calc(120vh - 256px)' }}
                                 >
+                                    <MarkdownRenderBudgetContext.Provider value={reportMessageRenderCost}>
                                     <MessageContainer
                                         key={conversationId}
                                         active={isViewportActive}
@@ -3723,6 +3729,7 @@ function ChatPage({
                                         onSpeechTextClick={handleSpeechTextClick}
                                         highlightedMessageId={highlightedMessageId}
                                     />
+                                    </MarkdownRenderBudgetContext.Provider>
                                 </div>
                             </ChatHistoryViewport>
 

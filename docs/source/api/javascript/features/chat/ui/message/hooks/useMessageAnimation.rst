@@ -17,7 +17,7 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 * **模块标识**：``src/features/chat/ui/message/hooks/useMessageAnimation``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：11
+* **局部函数与匿名回调**：9
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:92:2334:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:92:2507:FUNCTION
 
 .. js:function:: useMessageAnimation(messagesOrder)
 
@@ -53,17 +53,17 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:427:1676:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:471:1849:FUNCTION
 
-.. rubric:: ``useEffect callback @ 10``
+.. rubric:: ``useEffect callback @ 11``
 
 .. code-block:: javascript
 
-   useEffect callback @ 10()
+   useEffect callback @ 11()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``10``—``46`` 行；所属函数 ``useMessageAnimation``。
+**性质**：同步局部函数；源码第 ``11``—``46`` 行；所属函数 ``useMessageAnimation``。
 
 **参数**
 
@@ -71,23 +71,23 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``() => { if (animationFrameRef.current) { cancelAnimationFrame(animationFrameRef.current); } }``。
+根据执行分支返回结果；代表性返回表达式为 ``() => { clearTimeout(animationTimerRef.current); if (animationFrameRef.current) { cancelAnimationFrame(animationFrameRef.current); } }``。
 
-**主要协作调用**：``newOrder.filter``、``normalNewMessages.forEach``、``prevOrder.filter``、``removedMessages.forEach``、``requestAnimationFrame``。
+**主要协作调用**：``newOrder.filter``、``setEnteringMessages``、``prevOrder.filter``、``setLeavingMessages``、``requestAnimationFrame``。
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:582:708:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:717:840:FUNCTION
 
-.. rubric:: ``newOrder.filter callback @ 14``
+.. rubric:: ``newOrder.filter callback @ 17``
 
 .. code-block:: javascript
 
-   newOrder.filter callback @ 14(msgId)
+   newOrder.filter callback @ 17(msgId)
 
 作为 ``newOrder.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``14``—``17`` 行；所属函数 ``useEffect callback @ 10``。
+**性质**：同步局部函数；源码第 ``17``—``20`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -98,44 +98,19 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``prevOrder.includes``、``fadeMessages.has``。
+**主要协作调用**：``previousIds.has``、``fadeMessages.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:755:843:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:911:959:FUNCTION
 
-.. rubric:: ``normalNewMessages.forEach callback @ 20``
-
-.. code-block:: javascript
-
-   normalNewMessages.forEach callback @ 20(msgId)
-
-作为 ``normalNewMessages.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``20``—``22`` 行；所属函数 ``useEffect callback @ 10``。
-
-**参数**
-
-``msgId``
-   目标对象的公共或运行时标识。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setEnteringMessages``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:798:831:FUNCTION
-
-.. rubric:: ``setEnteringMessages callback @ 21``
+.. rubric:: ``setEnteringMessages callback @ 23``
 
 .. code-block:: javascript
 
-   setEnteringMessages callback @ 21(prev)
+   setEnteringMessages callback @ 23(prev)
 
 设置与 ``Entering Messages`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``21``—``21`` 行；所属函数 ``normalNewMessages.forEach callback @ 20``。
+**性质**：同步局部函数；源码第 ``23``—``23`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -146,17 +121,17 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:896:930:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1012:1040:FUNCTION
 
-.. rubric:: ``prevOrder.filter callback @ 24``
+.. rubric:: ``prevOrder.filter callback @ 25``
 
 .. code-block:: javascript
 
-   prevOrder.filter callback @ 24(msgId)
+   prevOrder.filter callback @ 25(msgId)
 
 作为 ``prevOrder.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``24``—``24`` 行；所属函数 ``useEffect callback @ 10``。
+**性质**：同步局部函数；源码第 ``25``—``25`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -167,34 +142,9 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``newOrder.includes``。
+**主要协作调用**：``nextIds.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:965:1052:FUNCTION
-
-.. rubric:: ``removedMessages.forEach callback @ 25``
-
-.. code-block:: javascript
-
-   removedMessages.forEach callback @ 25(msgId)
-
-作为 ``removedMessages.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``25``—``27`` 行；所属函数 ``useEffect callback @ 10``。
-
-**参数**
-
-``msgId``
-   目标对象的公共或运行时标识。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``setLeavingMessages``。
-
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1007:1040:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1098:1144:FUNCTION
 
 .. rubric:: ``setLeavingMessages callback @ 26``
 
@@ -204,7 +154,7 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 设置与 ``Leaving Messages`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``removedMessages.forEach callback @ 25``。
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -215,17 +165,17 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1217:1449:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1309:1569:FUNCTION
 
-.. rubric:: ``requestAnimationFrame callback @ 30``
+.. rubric:: ``requestAnimationFrame callback @ 29``
 
 .. code-block:: javascript
 
-   requestAnimationFrame callback @ 30()
+   requestAnimationFrame callback @ 29()
 
 实现 ``requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``30``—``36`` 行；所属函数 ``useEffect callback @ 10``。
+**性质**：同步局部函数；源码第 ``29``—``35`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -239,17 +189,17 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1252:1428:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1372:1548:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 31``
+.. rubric:: ``setTimeout callback @ 30``
 
 .. code-block:: javascript
 
-   setTimeout callback @ 31()
+   setTimeout callback @ 30()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``31``—``35`` 行；所属函数 ``requestAnimationFrame callback @ 30``。
+**性质**：同步局部函数；源码第 ``30``—``34`` 行；所属函数 ``requestAnimationFrame callback @ 29``。
 
 **参数**
 
@@ -261,17 +211,17 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 **主要协作调用**：``setEnteringMessages``、``setLeavingMessages``、``setFadeMessages``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1527:1669:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1647:1842:FUNCTION
 
-.. rubric:: ``returned callback @ 41``
+.. rubric:: ``returned callback @ 40``
 
 .. code-block:: javascript
 
-   returned callback @ 41()
+   returned callback @ 40()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``41``—``45`` 行；所属函数 ``useEffect callback @ 10``。
+**性质**：同步局部函数；源码第 ``40``—``45`` 行；所属函数 ``useEffect callback @ 11``。
 
 **参数**
 
@@ -281,9 +231,9 @@ src/features/chat/ui/message/hooks/useMessageAnimation 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``cancelAnimationFrame``。
+**主要协作调用**：``clearTimeout``、``cancelAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1760:2141:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageAnimation.js:1933:2314:FUNCTION
 
 .. rubric:: ``useCallback callback @ 48``
 

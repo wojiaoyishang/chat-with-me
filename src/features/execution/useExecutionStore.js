@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import {shareJsonData} from '../../lib/structuralShare.js';
 import { isUserExecutionGuidance } from './executionStatusModel.js';
 
 const normalizeId = (value) => String(value || '').trim();
@@ -40,7 +41,7 @@ export const shouldIgnoreExecutionUpdate = (previous = {}, incoming = {}) => {
     return terminal.includes(previous.status) && incoming.active === true && previous.runId === incoming.runId;
 };
 
-const mergeExecution = (previous, incoming) => shouldIgnoreExecutionUpdate(previous, incoming) ? previous : ({
+const mergeExecution = (previous, incoming) => shouldIgnoreExecutionUpdate(previous, incoming) ? previous : shareJsonData(previous, {
     ...previous,
     ...incoming,
     thinking:
@@ -72,6 +73,7 @@ const normalizeExecution = (incoming = {}) => {
 const sessionWithExecution = (session, incoming) => {
     const execution = mergeExecution(session.executions[incoming.executionId] || {}, incoming);
     const drafts = {...session.guidanceDrafts};
+    let draftsChanged = false;
     let guidanceEditor = session.guidanceEditor || null;
     for (const [key, draft] of Object.entries(drafts)) {
         if (draft.executionId !== execution.executionId || !draft.submissionId || draft.state === 'sent') continue;
@@ -79,10 +81,12 @@ const sessionWithExecution = (session, incoming) => {
             || execution.activities?.find((activity) => activity.id === draft.submissionId
                 && activity.kind === 'guidance' && activity.state !== 'submitting');
         if (!received) continue;
+        draftsChanged = true;
         drafts[key] = {...draft, state: 'sent', error: ''};
         if (guidanceEditor?.draftKey === key) guidanceEditor = null;
     }
-    return {...session, guidanceDrafts: drafts, guidanceEditor,
+    if (execution === session.executions[incoming.executionId] && !draftsChanged && guidanceEditor === session.guidanceEditor) return session;
+    return {...session, guidanceDrafts: draftsChanged ? drafts : session.guidanceDrafts, guidanceEditor,
         executions: {...session.executions, [execution.executionId]: execution}};
 };
 
@@ -95,11 +99,13 @@ export const useExecutionStore = create((set) => ({
             if (!execution?.executionId || !execution?.conversationId) return state;
             const conversationId = execution.conversationId;
             const session = state.sessions[conversationId] || emptySession();
+            const nextSession = sessionWithExecution(session, execution);
+            if (nextSession === session) return state;
             return {
                 sessions: {
                     ...state.sessions,
                     [conversationId]: {
-                        ...sessionWithExecution(session, execution),
+                        ...nextSession,
                     },
                 },
             };
