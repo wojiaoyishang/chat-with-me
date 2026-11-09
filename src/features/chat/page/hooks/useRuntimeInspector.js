@@ -98,9 +98,11 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_RUNTIME_TIMELINE_ENDPOINT, {
                     signal: controller.signal,
+                    timeout: 30000,
                     params: {
                         conversationId,
                         action: section,
+                        ...(section === 'timeline' ? { callOffset: 0, callLimit: 30 } : {}),
                         ...(eventId ? { eventId } : {}),
                         ...(query ? { query } : {}),
                         ...(focusMessageId ? { focusMessageId } : {}),
@@ -294,13 +296,26 @@ export default function useRuntimeInspector(conversationId, branchKey = '') {
     const previousBranchRef = useRef(branchKey);
     useEffect(() => {
         if (previousBranchRef.current === branchKey) return undefined;
+        const previous = previousBranchRef.current;
         previousBranchRef.current = branchKey;
+        if (previous && branchKey.startsWith(`${previous}|`)) {
+            // An append retains the same historical prefix. Keep the mounted view,
+            // selected event and detail cache; revalidate just its active section.
+            setStale(true);
+            updateDocument((current) => current && ({ ...current, tabs: current.tabs.map((tab) =>
+                tab.id === activeTabRef.current ? tab : { ...tab, section: { ...tab.section, loaded: false } }) }));
+            if (!isOpenRef.current) return undefined;
+            const timer = window.setTimeout(() => {
+                void loadTab(activeTabRef.current, { force: true, silent: true });
+            }, 200);
+            return () => window.clearTimeout(timer);
+        }
         abortRequest();
         updateDocument(null);
         if (!isOpenRef.current) return undefined;
         const timer = window.setTimeout(() => { void refresh(); }, 150);
         return () => window.clearTimeout(timer);
-    }, [branchKey, abortRequest, updateDocument, refresh]);
+    }, [branchKey, abortRequest, updateDocument, refresh, loadTab]);
 
     useEffect(
         () => () => {

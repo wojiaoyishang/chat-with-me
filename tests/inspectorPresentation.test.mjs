@@ -11,7 +11,7 @@ const root = '../src/features/chat/page/components/';
 const highlight = fs.readFileSync(new URL(`${root}InspectorHighlight.jsx`, import.meta.url), 'utf8').replace('export default function', 'function');
 const layout = fs.readFileSync(new URL(`${root}inspectorTimelineLayout.js`, import.meta.url), 'utf8').replace(/export function/g, 'function');
 const timeline = fs.readFileSync(new URL(`${root}InspectorEventTimeline.jsx`, import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export default function', 'function');
-const code = transformSync(`const {useRef,useEffect,useMemo,useState} = require('react'); const createInspectorReadCache=()=>({read:async()=>({})}); const attachHorizontalWheel=()=>{}; const ArrowLeft=()=>null; const ChevronDown=()=>null; const ChevronLeft=()=>null; const ChevronRight=()=>null; const Loader2=()=>null; const Search=()=>null; const formatLocalTimestamp=value=>value; const InspectorMediaBadges=()=>null; const InspectorAttachments=()=>null;
+const code = transformSync(`const {useRef,useEffect,useMemo,useState} = require('react'); const {Virtuoso} = require('react-virtuoso'); const createInspectorReadCache=()=>({read:async()=>({})}); const attachHorizontalWheel=()=>{}; const ArrowLeft=()=>null; const ChevronDown=()=>null; const ChevronLeft=()=>null; const ChevronRight=()=>null; const Loader2=()=>null; const Search=()=>null; const formatLocalTimestamp=value=>value; const InspectorMediaBadges=()=>null; const InspectorAttachments=()=>null;
 ${highlight}
 ${layout}
 ${timeline}
@@ -61,12 +61,13 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
         ArrowLeft: () => null, ChevronDown: () => null, ChevronLeft: () => null, ChevronRight: () => null,
         Search: () => null, Loader2: () => null, formatLocalTimestamp: (value) => value,
         InspectorMediaBadges: () => null, InspectorAttachments: () => null,
+        Virtuoso: 'virtual-list',
     };
     vm.runInNewContext(transformSync(`${highlight}\n${layout}\n${timeline}\nexports.Timeline=InspectorEventTimeline;`, { loader: 'jsx', jsx: 'automatic', format: 'cjs' }).code, sandbox);
     const props = { section: { events: [{ eventId: 'user-1', kind: 'user', title: 'Question', order: 1 }, { eventId: 'user-2', kind: 'user', title: 'Next', order: 2 }] }, renderCall: () => null, renderReplacements: () => null };
     const render = () => { cursor = 0; return sandbox.exports.Timeline(props); };
     let tree = render();
-    const desktop = () => tree.props.children[0];
+    const desktop = () => tree.props.children[1];
     const panel = () => desktop().props.children[1];
     assert.equal(panel().props.inert, true);
     desktop().props.onPointerEnter({ pointerType: 'touch' });
@@ -128,14 +129,14 @@ test('desktop hover opens an overlay, while mobile selection and back switch bet
     assert.equal(scrolls.length, beforeManual + 1, 'expanded card hover highlights without scrolling');
     desktop().props.onPointerLeave({ pointerType: 'mouse', currentTarget: { querySelector: () => null } });
     tree = render();
-    find(tree.props.children[1], (node) => node.type === 'button' && node.props.title === 'user-1').props.onClick({ detail: 1 });
+    find(find(tree.props.children[2], (node) => node.type === 'virtual-list').props.itemContent(0, props.section.events[0]), (node) => node.type === 'button').props.onClick({ detail: 1 });
     tree = render();
-    assert.match(tree.props.children[1].props.className, /^hidden/);
-    assert.match(tree.props.children[2].props.className, /^block/);
-    find(tree.props.children[2], (node) => node.type === 'button' && node.props.className.includes('sm:hidden')).props.onClick();
-    tree = render();
-    assert.match(tree.props.children[1].props.className, /^flex/);
     assert.match(tree.props.children[2].props.className, /^hidden/);
+    assert.match(tree.props.children[3].props.className, /^block/);
+    find(tree.props.children[3], (node) => node.type === 'button' && node.props.className.includes('sm:hidden')).props.onClick();
+    tree = render();
+    assert.match(tree.props.children[2].props.className, /^flex/);
+    assert.match(tree.props.children[3].props.className, /^hidden/);
     const compact = find(desktop(), (node) => node.type === 'nav' && node.props['aria-label'] === '简洁事件时间线');
     const dots = find(compact, (node) => node.props?.['data-lane'] === 'messages').props.children[0];
     assert.equal(dots.length, 2);

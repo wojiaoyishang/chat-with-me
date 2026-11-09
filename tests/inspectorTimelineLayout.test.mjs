@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage } from '../src/features/chat/page/components/inspectorTimelineLayout.js';
+import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage, timelineWindow } from '../src/features/chat/page/components/inspectorTimelineLayout.js';
+
+test('long timeline renders only the visible axis window and nearby overscan', () => {
+    for (const left of [0, 5000, 1679000]) {
+        const {start,end}=timelineWindow(10000, left, 840, 168);
+        assert.ok(start>=0 && end<=10000 && start<=end);
+        assert.ok(end-start<=22);
+        assert.ok(start<=Math.min(9999, Math.floor(left/168)));
+    }
+    assert.deepEqual(timelineWindow(0,0,840,168),{start:0,end:0});
+});
 
 test('messages and calls occupy distinct rows on the same event-order axis', () => {
     const events = ['system', 'user', 'assistant', 'model_call', 'tool_result', 'model_call']

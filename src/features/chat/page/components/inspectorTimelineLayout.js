@@ -57,3 +57,9 @@ export function callOverlapCounts(calls) {
     }
     return counts;
 }
+
+/** Fixed-width axes render only the viewport plus a small overscan. */
+export function timelineWindow(count, left, width, itemWidth, overscan = 8) {
+    const start = Math.max(0, Math.floor(Math.max(0, left) / itemWidth) - overscan);
+    return { start: Math.min(start, count), end: Math.min(count, Math.ceil((Math.max(0, left) + Math.max(width, itemWidth)) / itemWidth) + overscan) };
+}

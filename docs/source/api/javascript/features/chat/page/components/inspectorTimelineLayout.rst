@@ -3,7 +3,7 @@ src/features/chat/page/components/inspectorTimelineLayout 模块
 
 .. js:module:: src/features/chat/page/components/inspectorTimelineLayout
 
-该模块实现聊天 Surface、消息树、语音、输入区或消息交互。
+Fixed-width axes render only the viewport plus a small overscan.
 
 .. note::
 
@@ -15,7 +15,7 @@ src/features/chat/page/components/inspectorTimelineLayout 模块
 
 * **源码文件**：``src/features/chat/page/components/inspectorTimelineLayout.js``
 * **模块标识**：``src/features/chat/page/components/inspectorTimelineLayout``
-* **顶层函数/组件/Hook**：4
+* **顶层函数/组件/Hook**：5
 * **类**：0
 * **局部函数与匿名回调**：7
 
@@ -117,6 +117,37 @@ src/features/chat/page/components/inspectorTimelineLayout 模块
    **主要协作调用**：``calls.map((call) => { const start = Date.parse(call.createdAt); const end = call.completedAt ? Date.parse(call.complete…``、``calls.map``、``active.filter``、``counts.set``、``counts.get``、``active.push``。
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/inspectorTimelineLayout.js:2808:3204:FUNCTION
+
+.. js:function:: timelineWindow(count, left, width, itemWidth, overscan)
+
+   Fixed-width axes render only the viewport plus a small overscan.
+
+   **性质**：同步函数；导出 API；源码第 ``62``—``65`` 行。
+
+   **参数**
+
+   ``count``
+      调用方传入的 ``count`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``left``
+      调用方传入的 ``left`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``width``
+      调用方传入的 ``width`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``itemWidth``
+      调用方传入的 ``itemWidth`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``overscan`` （默认值 ``8``）
+      调用方传入的 ``overscan`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``{ start: Math.min(start, count), end: Math.min(count, Math.ceil((Math.max(0, left) + Math.max(width, itemWidth)) / itemWidth) + overscan) }``。
+
+   **主要协作调用**：``Math.max``、``Math.floor``、``Math.min``、``Math.ceil``。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------

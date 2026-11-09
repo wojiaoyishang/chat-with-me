@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Virtuoso } from 'react-virtuoso';
 import { ArrowLeft, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import apiClient from '@/lib/apiClient.js';
 import { apiEndpoint } from '@/config.js';
@@ -7,38 +8,83 @@ import { formatLocalTimestamp } from '@/lib/clientText.js';
 import InspectorHighlight from './InspectorHighlight.jsx';
 import InspectorMediaBadges from './InspectorMediaBadges.jsx';
 import InspectorAttachments from './InspectorAttachments.jsx';
-import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage } from './inspectorTimelineLayout.js';
+import { buildTimelineLanes, callOverlapCounts, inputRelationships, buildCallCoverage, timelineWindow } from './inspectorTimelineLayout.js';
 import { createInspectorReadCache } from './inspectorReadCache.js';
 
 const labels = { system: '系统', user: '用户', assistant: '助手', model_call: '模型请求', tool_call: '工具调用', tool_result: '工具结果' };
 const colors = { system: 'bg-slate-400', user: 'bg-blue-500', assistant: 'bg-violet-500', model_call: 'bg-purple-500', tool_call: 'bg-amber-500', tool_result: 'bg-emerald-500' };
 const statuses = { running: '执行中', completed: '已完成', success: '成功', failure: '失败', failed: '失败', error: '错误', cancelled: '已取消', captured: '已捕获', unknown: '状态未知' };
 const text = (value) => typeof value === 'string' ? value : JSON.stringify(value, null, 2);
-const centerSelectedNode = (viewport, eventId = '', behavior = 'smooth') => {
+const centerSelectedNode = (viewport, eventId = '', behavior = 'smooth', index = -1, itemWidth = 28) => {
     const node = eventId
         ? Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find((item) => item.dataset.eventId === eventId)
         : viewport?.querySelector('[aria-current="step"]');
     if (node) viewport.scrollTo({ left: Math.max(0, node.offsetLeft - (viewport.clientWidth - node.offsetWidth) / 2), behavior });
+    if (!node && index >= 0) viewport?.scrollTo({ left: Math.max(0, index * itemWidth - (viewport.clientWidth - itemWidth) / 2), behavior });
     return node;
 };
-const alignExpandedCard = (viewport, pane, eventId = '', behavior = 'smooth') => {
-    const node = centerSelectedNode(viewport, eventId, behavior);
-    if (!node || !pane?.clientHeight) return;
+const alignExpandedCard = (viewport, pane, eventId = '', behavior = 'smooth', index = -1) => {
+    const node = centerSelectedNode(viewport, eventId, behavior, index, 168);
+    if (!node || !pane?.clientHeight) return node;
     const card = node.getBoundingClientRect();
     const container = pane.getBoundingClientRect();
     if (card.bottom > container.bottom) pane.scrollTop += card.bottom - container.bottom + 8;
     else if (card.top < container.top) pane.scrollTop = Math.max(0, pane.scrollTop + card.top - container.top - 8);
+    return node;
 };
 
+function useAxisWindow(ref, count, itemWidth) {
+    const [range, setRange] = useState({ start: 0, end: 64 });
+    useEffect(() => {
+        const element = ref.current;
+        if (!element) return undefined;
+        const update = () => {
+            const next = timelineWindow(count, element.scrollLeft, element.clientWidth || 720, itemWidth);
+            setRange((current) => current.start === next.start && current.end === next.end ? current : next);
+        };
+        update();
+        element.addEventListener('scroll', update, { passive: true });
+        const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
+        observer?.observe(element);
+        return () => { element.removeEventListener('scroll', update); observer?.disconnect(); };
+    }, [ref, count, itemWidth]);
+    return range;
+}
+
 export default function InspectorEventTimeline({ section, renderCall, renderReplacements, onJump }) {
-    const events = useMemo(() => section.events || [], [section.events]);
-    // Discard details on refresh/branch changes, retain them while navigating this index.
+    const [page, setPage] = useState(section);
+    const [pageLoading, setPageLoading] = useState(false);
+    const [searchEvents, setSearchEvents] = useState(null);
+    const pageRequest = useRef(null);
+    const selectedEventRef = useRef('');
+    const pageEvents = useMemo(() => page.events || [], [page.events]);
+    useEffect(() => {
+        pageRequest.current?.abort();
+        setPage((current) => {
+            // Browsing older immutable calls must not jump back to the newest
+            // page when an appended message refreshes the parent section.
+            const selectionLeftWindow = section.totalCalls > current.totalCalls
+                && current.events?.some((event) => event.eventId === selectedEventRef.current)
+                && !section.events?.some((event) => event.eventId === selectedEventRef.current);
+            if ((current.callOffset > 0 || selectionLeftWindow) && current.conversationId === section.conversationId && section.totalCalls >= current.totalCalls) {
+                const added = section.totalCalls - current.totalCalls;
+                return { ...current, totalCalls: section.totalCalls, callOffset: current.callOffset + added,
+                    nextCallOffset: current.nextCallOffset == null ? null : current.nextCallOffset + added };
+            }
+            return section;
+        });
+        setPageLoading(false);
+    }, [section]);
+    useEffect(() => () => pageRequest.current?.abort(), []);
+    // Immutable details survive appends; contentVersion changes invalidate them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const detailCache = useMemo(() => createInspectorReadCache(), [events]);
-    const [selectedId, setSelectedId] = useState(section.selectedEventId || events.at(-1)?.eventId || '');
+    const detailCache = useMemo(() => createInspectorReadCache(), [section.conversationId]);
+    const [selectedId, setSelectedId] = useState(section.selectedEventId || pageEvents.at(-1)?.eventId || '');
+    selectedEventRef.current = selectedId;
     const [query, setQuery] = useState('');
     const [kind, setKind] = useState('all');
     const [matches, setMatches] = useState(null);
+    const [searchTotal, setSearchTotal] = useState(0);
     const [detail, setDetail] = useState(null);
     const [error, setError] = useState('');
     const [searchError, setSearchError] = useState('');
@@ -53,15 +99,37 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     const manualNavigation = useRef(false);
     const pendingPreview = useRef('');
     const keyword = query.trim();
+    const events = keyword && searchEvents ? searchEvents : pageEvents;
+    const matchedIds = useMemo(() => new Set((matches || []).map((item) => item.eventId)), [matches]);
     const visible = useMemo(() => events.filter((event) =>
-        (kind === 'all' || event.kind === kind) && (!keyword || matches?.some((match) => match.eventId === event.eventId))), [events, kind, keyword, matches]);
+        (kind === 'all' || event.kind === kind) && (!keyword || matchedIds.has(event.eventId))), [events, kind, keyword, matchedIds]);
     const selected = events.find((event) => event.eventId === selectedId);
     const activeEvent = events.find((event) => event.eventId === hoveredId) || selected;
     const relationships = useMemo(() => inputRelationships(events, activeEvent), [events, activeEvent]);
     const coverage = useMemo(() => buildCallCoverage(visible, relationships), [visible, relationships]);
     const allCoverage = useMemo(() => buildCallCoverage(visible, inputRelationships(events, { sentByCallIds: events.filter((event) => event.kind === 'model_call').map((event) => event.modelCallId) })), [visible, events]);
     const lanes = useMemo(() => buildTimelineLanes(visible), [visible]);
-    const overlaps = useMemo(() => callOverlapCounts(section.modelCalls || []), [section.modelCalls]);
+    const overlaps = useMemo(() => callOverlapCounts(page.modelCalls || []), [page.modelCalls]);
+    const compactRange = useAxisWindow(compactTrack, visible.length, 28);
+    const detailRange = useAxisWindow(track, visible.length, 168);
+    const selectedIndex = visible.findIndex((event) => event.eventId === selectedId);
+    const loadPage = async (offset, modelCallId = null) => {
+        pageRequest.current?.abort();
+        const controller = new AbortController();
+        pageRequest.current = controller;
+        setPageLoading(true);
+        setError('');
+        try {
+            const data = await detailCache.read({ conversationId: section.conversationId, action: 'timeline',
+                revision: section.revision, callOffset: offset, callLimit: page.callLimit || 30,
+                ...(modelCallId ? { modelCallId } : {}) }, { signal: controller.signal });
+            if (!controller.signal.aborted) {
+                setPage(data.section); setQuery('');
+                if (modelCallId) setSelectedId(`call:${modelCallId}`);
+            }
+        } catch (failure) { if (!controller.signal.aborted) setError(failure.message || '加载时间线失败'); }
+        finally { if (!controller.signal.aborted) setPageLoading(false); }
+    };
     const related = (event) => event.kind === 'model_call' ? relationships.calls.has(event.modelCallId)
         : relationships.sent.has(event.eventId) || relationships.inherited.has(event.eventId);
     useEffect(() => {
@@ -72,21 +140,22 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     useEffect(() => {
         const controller = new AbortController();
         setMatches(null);
+        setSearchTotal(0);
         setSearchError('');
-        if (!keyword) { setSearching(false); return () => controller.abort(); }
+        if (!keyword) { setSearchEvents(null); setSearching(false); return () => controller.abort(); }
         setSearching(true);
         const timer = setTimeout(async () => {
             try {
                 const data = await apiClient.get(apiEndpoint.CHAT_RUNTIME_TIMELINE_ENDPOINT, {
-                    signal: controller.signal, params: { conversationId: section.conversationId, action: 'search', query: keyword },
+                    signal: controller.signal, timeout: 30000, params: { conversationId: section.conversationId, action: 'search', query: keyword },
                 });
-                if (!controller.signal.aborted) setMatches(data.matches || []);
+                if (!controller.signal.aborted) { setMatches(data.matches || []); setSearchEvents(data.events || null); setSearchTotal(data.total ?? data.matches?.length ?? 0); }
             } catch (err) {
                 if (!controller.signal.aborted) setSearchError(err.message || '搜索失败');
             } finally { if (!controller.signal.aborted) setSearching(false); }
         }, 250);
         return () => { clearTimeout(timer); controller.abort(); };
-    }, [keyword, section.conversationId]);
+    }, [keyword, section.conversationId, section.revision]);
     useEffect(() => {
         if (visible.length && !visible.some((event) => event.eventId === selectedId)) setSelectedId(visible[0].eventId);
     }, [visible, selectedId]);
@@ -94,22 +163,25 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         const controller = new AbortController();
         setDetail(null);
         setError('');
-        if (selectedId) detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, {
+        if (selectedId) detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.contentVersion,
+            ...(selected?.modelCallId ? { modelCallId: selected.modelCallId, callOffset: 0, callLimit: 1 } : {}) }, {
             signal: controller.signal,
         }).then((data) => { if (!controller.signal.aborted) setDetail(data); })
             .catch((err) => { if (!controller.signal.aborted) setError(err.message || '加载事件失败'); });
         return () => controller.abort();
-    }, [selectedId, section.conversationId, detailCache]);
+    }, [selectedId, selected?.contentVersion, selected?.modelCallId, section.conversationId, detailCache]);
     useEffect(() => {
+        centerSelectedNode(track.current, selectedId, 'smooth', selectedIndex, 168);
+        centerSelectedNode(compactTrack.current, selectedId, 'smooth', selectedIndex, 28);
         alignExpandedCard(track.current, popupScroll.current);
-        centerSelectedNode(compactTrack.current);
-    }, [selectedId]);
+    }, [selectedId, selectedIndex]);
     useEffect(() => {
         if (expanded && pendingPreview.current && !manualNavigation.current) {
-            alignExpandedCard(track.current, popupScroll.current, pendingPreview.current, 'instant');
-            pendingPreview.current = '';
+            const node = alignExpandedCard(track.current, popupScroll.current, pendingPreview.current, 'instant',
+                visible.findIndex((event) => event.eventId === pendingPreview.current));
+            if (node) pendingPreview.current = '';
         }
-    }, [expanded]);
+    }, [expanded, detailRange.start, detailRange.end, visible]);
     useEffect(() => {
         detailViewport.current?.scrollTo({ top: 0 });
     }, [selectedId]);
@@ -122,9 +194,11 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
     const preview = (eventId, pointer) => {
         if (pointer.pointerType !== 'mouse' || pointer.buttons || manualNavigation.current) return;
         setHoveredId(eventId);
-        pendingPreview.current = expanded ? '' : eventId;
+        pendingPreview.current = eventId;
         setExpanded(true);
-        alignExpandedCard(track.current, popupScroll.current, eventId, 'instant');
+        const node = alignExpandedCard(track.current, popupScroll.current, eventId, 'instant',
+            visible.findIndex((event) => event.eventId === eventId));
+        if (expanded && node) pendingPreview.current = '';
     };
     const beginManualNavigation = () => {
         manualNavigation.current = true;
@@ -140,8 +214,8 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
             <option value="all">全部类型</option>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
     </div>;
-    const count = `当前分支 · ${events.length} 个事件${keyword ? ` · ${visible.length} 个命中` : ''}`;
-    const eventButton = (event, vertical = false, axisIndex) => <button key={event.eventId} data-event-id={event.eventId} data-axis-index={axisIndex} data-related={related(event) ? 'true' : undefined} data-preview={!vertical && hoveredId === event.eventId ? 'true' : undefined} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} onClick={(click) => choose(event.eventId, click)} onPointerEnter={(pointer) => { if (!vertical && pointer.pointerType === 'mouse') setHoveredId(event.eventId); }} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors duration-75 ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center justify-self-center'} ${event.kind === 'model_call' && !related(event) ? 'opacity-35' : ''} ${selectedId === event.eventId || (!vertical && hoveredId === event.eventId) ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : related(event) ? 'bg-primary/[0.025]' : 'hover:bg-muted/60'}`}>
+    const count = `当前分支 · ${events.length} 个事件${keyword ? ` · ${visible.length} 个命中${searchTotal > events.length ? `（共 ${searchTotal} 项，请细化关键词）` : ''}` : ''}`;
+    const eventButton = (event, vertical = false, axisIndex) => <button key={event.eventId} data-event-id={event.eventId} data-axis-index={axisIndex} data-related={related(event) ? 'true' : undefined} data-preview={!vertical && hoveredId === event.eventId ? 'true' : undefined} type="button" aria-current={selectedId === event.eventId ? 'step' : undefined} style={axisIndex != null ? { gridColumn: axisIndex + 1 } : undefined} onClick={(click) => choose(event.eventId, click)} onPointerEnter={(pointer) => { if (!vertical && pointer.pointerType === 'mouse') setHoveredId(event.eventId); }} title={event.eventId} className={`relative rounded-lg p-2 text-xs transition-colors duration-75 ${vertical ? 'ml-5 block w-[calc(100%-1.25rem)] text-left' : 'flex w-40 shrink-0 flex-col items-center justify-self-center'} ${event.kind === 'model_call' && !related(event) ? 'opacity-35' : ''} ${selectedId === event.eventId || (!vertical && hoveredId === event.eventId) ? 'bg-primary/5 ring-1 ring-inset ring-primary/30' : related(event) ? 'bg-primary/[0.025]' : 'hover:bg-muted/60'}`}>
         <span className={`${vertical ? 'absolute -left-[1.125rem] top-3' : 'mb-2'} size-3 shrink-0 rounded-full ring-4 ring-background ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
         <span className="block font-medium">#{event.order} · {labels[event.kind] || event.kind}{event.status ? ` · ${statuses[event.status] || event.status}` : ''}</span>
         <span className="mt-1 block w-full truncate"><InspectorHighlight text={event.title} query={query} /></span>
@@ -152,17 +226,24 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         {vertical && <span className="mt-1 block text-muted-foreground">{event.createdAt ? formatLocalTimestamp(event.createdAt) : '时间未捕获'}</span>}
     </button>;
     const laneLabels = (compact) => <div aria-hidden="true" className={`grid shrink-0 grid-rows-2 text-[10px] text-muted-foreground ${compact ? 'h-10 w-7' : 'w-8 gap-2'}`}>{lanes.map((lane) => <span key={lane.id} className="flex items-center justify-center">{lane.label}</span>)}</div>;
-    const renderLanes = (compact) => <div className={`w-max min-w-full ${compact ? '' : 'space-y-2'}`}>
-        {lanes.map((lane) => <div key={lane.id} data-lane={lane.id} aria-label={lane.id === 'messages' ? '消息与工具事件轨道' : 'Model Call 轨道'} className={`relative grid items-start ${compact ? '' : 'min-h-24 gap-x-2'}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, visible.length)}, minmax(${compact ? '1.75rem' : '10rem'}, 1fr))` }}>
-            {lane.slots.map((event, index) => !event ? <div key={`empty-${index}`} data-axis-index={index} aria-hidden="true" className={compact ? 'flex h-5 items-center' : 'h-24'}>{compact && <span className="h-2 w-full bg-muted/50" />}</div> : compact ? <button key={event.eventId} data-event-id={event.eventId} data-axis-index={index} data-related={related(event) ? 'true' : undefined} type="button" aria-label={`#${event.order} · ${labels[event.kind] || event.kind} · ${event.title}`} aria-current={selectedId === event.eventId ? 'step' : undefined} title={`#${event.order} · ${event.title}${event.kind === 'model_call' && overlaps.has(event.modelCallId) ? ' · 时间重叠' : ''}`} onPointerEnter={(pointer) => preview(event.eventId, pointer)} onClick={(click) => choose(event.eventId, click)} className="group relative flex h-5 min-w-7 items-center justify-center rounded-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary">
+    const renderLanes = (compact) => { const range = compact ? compactRange : detailRange; return <div className={`w-max min-w-full ${compact ? '' : 'space-y-2'}`}>
+        {lanes.map((lane) => <div key={lane.id} data-lane={lane.id} aria-label={lane.id === 'messages' ? '消息与工具事件轨道' : 'Model Call 轨道'} className={`relative grid items-start ${compact ? '' : 'min-h-24 gap-x-2'}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, visible.length)}, ${compact ? '1.75rem' : '10rem'})` }}>
+            {lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map(({ event, index }) => !event ? <div key={`empty-${index}`} style={{ gridColumn: index + 1 }} data-axis-index={index} aria-hidden="true" className={compact ? 'flex h-5 items-center' : 'h-24'}>{compact && <span className="h-2 w-full bg-muted/50" />}</div> : compact ? <button key={event.eventId} style={{ gridColumn: index + 1 }} data-event-id={event.eventId} data-axis-index={index} data-related={related(event) ? 'true' : undefined} type="button" aria-label={`#${event.order} · ${labels[event.kind] || event.kind} · ${event.title}`} aria-current={selectedId === event.eventId ? 'step' : undefined} title={`#${event.order} · ${event.title}${event.kind === 'model_call' && overlaps.has(event.modelCallId) ? ' · 时间重叠' : ''}`} onPointerEnter={(pointer) => preview(event.eventId, pointer)} onClick={(click) => choose(event.eventId, click)} className="group relative flex h-5 min-w-7 items-center justify-center rounded-none p-0 outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <span aria-hidden="true" className={`h-2 w-full rounded-none transition-opacity duration-75 motion-reduce:transition-none ${selectedId === event.eventId ? 'opacity-100 ring-1 ring-inset ring-primary' : hoveredId === event.eventId ? 'opacity-100' : related(event) ? 'opacity-90 ring-1 ring-inset ring-primary/20' : event.kind === 'model_call' ? 'opacity-20 group-hover:opacity-100' : 'opacity-60 group-hover:opacity-100'} ${['failed', 'failure', 'error', 'cancelled'].includes(event.status) ? 'bg-red-500' : colors[event.kind] || 'bg-slate-400'}`} />
                 {event.kind === 'model_call' && overlaps.has(event.modelCallId) && <span aria-hidden="true" className="absolute bottom-0 h-px w-full bg-amber-500" />}
             </button> : eventButton(event, false, index))}
             {lane.id === 'model_calls' && [...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map((range, coverageIndex) => <span key={coverageIndex} data-input-coverage={range.mode} aria-hidden="true" className={`pointer-events-none absolute inset-x-0 top-0 grid ${compact ? 'h-5 items-center' : 'h-1 gap-x-2'}`} style={{ gridTemplateColumns: `repeat(${Math.max(1, visible.length)}, minmax(0, 1fr))` }}><span className={range.muted ? 'h-1 bg-slate-200' : range.mode === 'sent' ? 'h-1 bg-purple-500' : 'h-1 border-t-2 border-dashed border-purple-300'} style={{ gridColumn: `${range.start + 1} / ${range.end + 1}` }} /></span>)}
         </div>)}
         {!visible.length && <span className="px-2 text-muted-foreground">{searching ? '正在搜索…' : '没有事件'}</span>}
-    </div>;
+    </div>; };
     return <div className="flex h-full min-h-0 flex-col">
+        {page.callOffset != null && <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-3 py-2 text-xs text-muted-foreground">
+            <span>{pageLoading ? '正在加载…' : `共 ${page.totalCalls || 0} 次请求 · 当前 ${page.modelCalls?.length || 0} 次`}</span>
+            <div className="flex gap-2">
+                <button disabled={pageLoading || page.nextCallOffset == null} className="rounded px-2 py-1 hover:bg-muted disabled:opacity-40" onClick={() => loadPage(page.nextCallOffset)}>更早记录</button>
+                <button disabled={pageLoading || !page.callOffset} className="rounded px-2 py-1 hover:bg-muted disabled:opacity-40" onClick={() => loadPage(Math.max(0, page.callOffset - page.callLimit))}>较新记录</button>
+            </div>
+        </div>}
         <div className="relative z-20 mx-3 my-1 hidden h-12 shrink-0 rounded-lg bg-background shadow-sm ring-1 ring-border/40 sm:block"
             onWheelCapture={beginManualNavigation}
             onPointerDownCapture={beginManualNavigation}
@@ -200,10 +281,9 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
         </div>
         <div className={`${mobileDetail ? 'hidden' : 'flex'} min-h-0 flex-1 flex-col sm:hidden`}>
             <div className="shrink-0 space-y-2 border-b p-3">{filters}<p className="text-xs text-muted-foreground">{count}</p>{searchError && <p className="text-xs text-destructive">{searchError}</p>}</div>
-            <div className="pretty-scrollbar min-h-0 flex-1 overflow-y-auto p-3">
-                <div className="relative space-y-2"><div className="absolute bottom-3 left-[7px] top-3 w-px bg-border" />{visible.map((event) => eventButton(event, true))}</div>
-                {!visible.length && <p className="text-sm text-muted-foreground">{searching ? '正在搜索…' : '没有可查看的事件。'}</p>}
-            </div>
+            <Virtuoso className="pretty-scrollbar min-h-0 flex-1" data={visible} increaseViewportBy={200}
+                computeItemKey={(_index, event) => event.eventId}
+                itemContent={(_index, event) => <div className="p-2">{eventButton(event, true)}</div>} />
         </div>
         <div ref={detailViewport} className={`${mobileDetail ? 'block' : 'hidden'} pretty-scrollbar min-h-0 flex-1 overflow-y-auto p-3 sm:block sm:p-5`}>
             <button type="button" className="mb-3 flex items-center gap-1 text-sm text-primary sm:hidden" onClick={() => setMobileDetail(false)}><ArrowLeft className="size-4" />返回时间线</button>
@@ -223,7 +303,11 @@ export default function InspectorEventTimeline({ section, renderCall, renderRepl
                         {detail.sourcePayload && <details key={`source-${selectedId}-${keyword}`} open={Boolean(keyword)} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">解析前的消息与 replacement 记录</summary><pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed"><InspectorHighlight text={text(detail.sourcePayload)} query={query} /></pre></details>}
                         <details key={`${selectedId}-${keyword}`} open={Boolean(keyword)} className="rounded-xl border p-3"><summary className="cursor-pointer text-sm">完整后端数据与协议字段</summary><pre className="mt-3 whitespace-pre-wrap break-words font-mono text-xs leading-relaxed"><InspectorHighlight text={text(detail.payload)} query={query} /></pre></details>
                     </>}
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs"><span className="shrink-0 text-muted-foreground">关联请求：</span>{[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds || []), selected?.modelCallId].filter(Boolean))].map((id) => <button key={id} type="button" className="inline-flex items-center rounded-md border px-2 py-1 text-primary" onClick={() => { setQuery(''); setKind('all'); setSelectedId(`call:${id}`); }}>Call {id.slice(0, 8)}</button>)}</div>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs"><span className="shrink-0 text-muted-foreground">关联请求：</span>{[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds || []), selected?.modelCallId].filter(Boolean))].map((id) => <button key={id} type="button" className="inline-flex items-center rounded-md border px-2 py-1 text-primary" onClick={() => {
+                        setKind('all');
+                        if (pageEvents.some((event) => event.eventId === `call:${id}`)) { setQuery(''); setSelectedId(`call:${id}`); }
+                        else void loadPage(0, id);
+                    }}>Call {id.slice(0, 8)}</button>)}</div>
                 </>}
             </div>}
         </div>

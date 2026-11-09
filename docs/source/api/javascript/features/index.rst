@@ -129,9 +129,9 @@
      - 34
      - ``src/features/chat/page/components/InspectorBackendMessages.jsx``
    * - :doc:`src/features/chat/page/components/InspectorEventTimeline </api/javascript/features/chat/page/components/InspectorEventTimeline>`
-     - 4
+     - 5
      - 0
-     - 67
+     - 87
      - ``src/features/chat/page/components/InspectorEventTimeline.jsx``
    * - :doc:`src/features/chat/page/components/InspectorHighlight </api/javascript/features/chat/page/components/InspectorHighlight>`
      - 1
@@ -201,10 +201,10 @@
    * - :doc:`src/features/chat/page/components/inspectorReadCache </api/javascript/features/chat/page/components/inspectorReadCache>`
      - 1
      - 0
-     - 2
+     - 9
      - ``src/features/chat/page/components/inspectorReadCache.js``
    * - :doc:`src/features/chat/page/components/inspectorTimelineLayout </api/javascript/features/chat/page/components/inspectorTimelineLayout>`
-     - 4
+     - 5
      - 0
      - 7
      - ``src/features/chat/page/components/inspectorTimelineLayout.js``
@@ -236,7 +236,7 @@
    * - :doc:`src/features/chat/page/hooks/useRuntimeInspector </api/javascript/features/chat/page/hooks/useRuntimeInspector>`
      - 4
      - 0
-     - 32
+     - 36
      - ``src/features/chat/page/hooks/useRuntimeInspector.js``
    * - :doc:`src/features/chat/page/openChatWindow </api/javascript/features/chat/page/openChatWindow>`
      - 7

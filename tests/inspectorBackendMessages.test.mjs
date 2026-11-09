@@ -11,7 +11,7 @@ const root = '../src/features/chat/page/components/';
 const source = fs.readFileSync(new URL(`${root}InspectorBackendMessages.jsx`, import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export default function', 'function');
 const highlight = fs.readFileSync(new URL(`${root}InspectorHighlight.jsx`, import.meta.url), 'utf8').replace('export default function', 'function');
 const cacheSource = fs.readFileSync(new URL(`${root}inspectorReadCache.js`, import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export function', 'function');
-const context = { require: createRequire(import.meta.url), exports: {}, AbortController, setTimeout, clearTimeout,
+const context = { require: createRequire(import.meta.url), exports: {}, AbortController, DOMException, setTimeout, clearTimeout,
     connection: 'default', userId: '1',
     getBackendConnection: () => ({ id: context.connection }), getConnectionUserId: () => context.userId,
     isCurrentConnection: (scope) => scope.id === context.connection,
@@ -130,4 +130,21 @@ test('cached diagnostics cannot be reused after changing backend or account', as
     const second=context.exports.createCache();
     context.userId='2';
     await assert.rejects(()=>second.read({id:1}),/连接或账户已变更/);
+});
+
+test('concurrent readers share one request and cancellation only detaches that reader', async()=>{
+    let resolve, calls=0, signal;
+    context.get=async(_, options)=>{ calls++; signal=options.signal; return new Promise(done=>{resolve=done;}); };
+    const cache=context.exports.createCache();
+    const firstController=new AbortController();
+    const first=cache.read({id:'same'}, {signal:firstController.signal});
+    const second=cache.read({id:'same'});
+    assert.equal(calls,1);
+    firstController.abort();
+    await assert.rejects(first, {name:'AbortError'});
+    assert.equal(signal.aborted,false);
+    resolve({text:'shared'});
+    assert.equal((await second).text,'shared');
+    assert.equal((await cache.read({id:'same'})).text,'shared');
+    assert.equal(calls,1);
 });

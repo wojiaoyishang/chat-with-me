@@ -50,7 +50,7 @@ V53 起 ``ModelCallBrowser`` 还展示后端计算的 ``apiProtocol``、``openai
 .. js:module:: src/features/chat/page/hooks/useRuntimeInspector
    :no-index:
 
-.. js:function:: useRuntimeInspector(conversationId)
+.. js:function:: useRuntimeInspector(conversationId, branchKey)
    :no-index:
 
    Inspector 专用 Controller。维护可取消 HTTP 请求、Section/ModelCall 缓存和 stale 状态，并通过稳定

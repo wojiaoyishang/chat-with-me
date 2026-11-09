@@ -15,25 +15,25 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 * **源码文件**：``src/features/chat/page/components/InspectorEventTimeline.jsx``
 * **模块标识**：``src/features/chat/page/components/InspectorEventTimeline``
-* **顶层函数/组件/Hook**：4
+* **顶层函数/组件/Hook**：5
 * **类**：0
-* **局部函数与匿名回调**：67
+* **局部函数与匿名回调**：87
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``@/lib/apiClient.js``、``@/config.js``、``@/lib/horizontalWheel.js``、``@/lib/clientText.js``、``./InspectorHighlight.jsx``、``./InspectorMediaBadges.jsx``、``./InspectorAttachments.jsx``、``./inspectorTimelineLayout.js``、``./inspectorReadCache.js``。
+``react``、``react-virtuoso``、``lucide-react``、``@/lib/apiClient.js``、``@/config.js``、``@/lib/horizontalWheel.js``、``@/lib/clientText.js``、``./InspectorHighlight.jsx``、``./InspectorMediaBadges.jsx``、``./InspectorAttachments.jsx``、``./inspectorTimelineLayout.js``、``./inspectorReadCache.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1229:1307:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1292:1370:FUNCTION
 
 .. js:function:: text(value)
 
    实现 ``text`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``16``—``16`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``17``—``17`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
    **主要协作调用**：``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1336:1751:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1399:1985:FUNCTION
 
-.. js:function:: centerSelectedNode(viewport, eventId, behavior)
+.. js:function:: centerSelectedNode(viewport, eventId, behavior, index, itemWidth)
 
    实现 ``centerSelectedNode`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``17``—``23`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``18``—``25`` 行。
 
    **参数**
 
@@ -65,21 +65,27 @@ src/features/chat/page/components/InspectorEventTimeline 模块
    ``behavior`` （默认值 ``'smooth'``）
       调用方传入的 ``behavior`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
+   ``index`` （默认值 ``-1``）
+      调用方传入的 ``index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``itemWidth`` （默认值 ``28``）
+      调用方传入的 ``itemWidth`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
    **返回值**
 
    根据执行分支返回结果；代表性返回表达式为 ``node``。
 
-   **主要协作调用**：``Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find``、``Array.from``、``viewport?.querySelectorAll``、``viewport?.querySelector``、``viewport.scrollTo``、``Math.max``。
+   **主要协作调用**：``Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find``、``Array.from``、``viewport?.querySelectorAll``、``viewport?.querySelector``、``viewport.scrollTo``、``Math.max``、``viewport?.scrollTo``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1779:2266:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2013:2547:FUNCTION
 
-.. js:function:: alignExpandedCard(viewport, pane, eventId, behavior)
+.. js:function:: alignExpandedCard(viewport, pane, eventId, behavior, index)
 
    实现 ``alignExpandedCard`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``24``—``31`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``26``—``34`` 行。
 
    **参数**
 
@@ -95,19 +101,53 @@ src/features/chat/page/components/InspectorEventTimeline 模块
    ``behavior`` （默认值 ``'smooth'``）
       调用方传入的 ``behavior`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
+   ``index`` （默认值 ``-1``）
+      调用方传入的 ``index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``undefined``。
+   根据执行分支返回结果；代表性返回表达式为 ``node``。
 
    **主要协作调用**：``centerSelectedNode``、``node.getBoundingClientRect``、``pane.getBoundingClientRect``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2267:23259:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2548:3410:FUNCTION
+
+.. js:function:: useAxisWindow(ref, count, itemWidth)
+
+   封装 ``useAxisWindow`` Hook，向调用组件提供相关状态、动作与生命周期清理。
+
+   **性质**：同步函数；模块内部入口；源码第 ``36``—``52`` 行。
+
+   **参数**
+
+   ``ref``
+      调用方传入的 ``ref`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``count``
+      调用方传入的 ``count`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``itemWidth``
+      调用方传入的 ``itemWidth`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``range``。
+
+   **副作用**
+
+   * 注册事件、DOM 或运行时订阅。
+
+   **主要协作调用**：``useState``、``useEffect``。
+
+   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3410:29255:FUNCTION
 
 .. js:function:: InspectorEventTimeline({ section, renderCall, renderReplacements, onJump })
 
    渲染 ``InspectorEventTimeline`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``33``—``231`` 行。
+   **性质**：同步函数；导出 API；源码第 ``54``—``315`` 行。
 
    **参数**
 
@@ -116,32 +156,32 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``<div className="flex h-full min-h-0 flex-col"> <div className="relative z-20 mx-3 my-1 hidden h-12 shrink-0 rounded-lg bg-background shadow-sm ring-1 ring-border/40 sm:block" onWh…``。
+   根据执行分支返回结果；代表性返回表达式为 ``<div className="flex h-full min-h-0 flex-col"> {page.callOffset != null && <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-3 py-2 text-xs te…``。
 
    **副作用**
 
    * 发起 HTTP 请求或访问外部服务。
 
-   **主要协作调用**：``useMemo``、``useState``、``events.at``、``useRef``、``query.trim``、``events.find``、``useEffect``、``Object.entries(labels).map``、``Object.entries``、``laneLabels``、``renderLanes``、``[-1, 1].map``。
+   **主要协作调用**：``useState``、``useRef``、``useMemo``、``useEffect``、``pageEvents.at``、``query.trim``、``events.find``、``useAxisWindow``、``visible.findIndex``、``Object.entries(labels).map``、``Object.entries``、``laneLabels``。
 
-   **内部回调数量**：41。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：49。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1494:1536:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:1585:1627:FUNCTION
 
-.. rubric:: ``Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find callback @ 19``
+.. rubric:: ``Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find callback @ 20``
 
 .. code-block:: javascript
 
-   Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find callback @ 19(item)
+   Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find callback @ 20(item)
 
 作为 ``Array.from(viewport?.querySelectorAll('[data-event-id]') || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``19``—``19`` 行；所属函数 ``centerSelectedNode``。
+**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``centerSelectedNode``。
 
 **参数**
 
@@ -152,17 +192,45 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2401:2427:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2679:3361:FUNCTION
 
-.. rubric:: ``useMemo callback @ 34``
+.. rubric:: ``useEffect callback @ 38``
 
 .. code-block:: javascript
 
-   useMemo callback @ 34()
+   useEffect callback @ 38()
 
-封装 ``Memo`` 的 React 状态、订阅与生命周期。
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``34``—``34`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``38``—``50`` 行；所属函数 ``useAxisWindow``。
+
+**参数**
+
+无。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``undefined``、``() => { element.removeEventListener('scroll', update); observer?.disconnect(); }``。
+
+**副作用**
+
+* 注册事件、DOM 或运行时订阅。
+
+**主要协作调用**：``update``、``element.addEventListener``、``observer?.observe``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2789:3027:FUNCTION
+
+.. rubric:: ``update``
+
+.. code-block:: javascript
+
+   update()
+
+更新与 ``update`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``41``—``44`` 行；所属函数 ``useEffect callback @ 38``。
 
 **参数**
 
@@ -172,141 +240,54 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2634:2666:FUNCTION
-
-.. rubric:: ``useMemo callback @ 37``
-
-.. code-block:: javascript
-
-   useMemo callback @ 37()
-
-封装 ``Memo`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``InspectorEventTimeline``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``createInspectorReadCache``。
-
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3608:3763:FUNCTION
-
-.. rubric:: ``useMemo callback @ 56``
-
-.. code-block:: javascript
-
-   useMemo callback @ 56()
-
-封装 ``Memo`` 的 React 状态、订阅与生命周期。
-
-**性质**：同步局部函数；源码第 ``56``—``57`` 行；所属函数 ``InspectorEventTimeline``。
-
-**参数**
-
-无。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``events.filter``。
+**主要协作调用**：``timelineWindow``、``setRange``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3628:3762:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:2928:3014:FUNCTION
 
-.. rubric:: ``events.filter callback @ 56``
+.. rubric:: ``setRange callback @ 43``
 
 .. code-block:: javascript
 
-   events.filter callback @ 56(event)
+   setRange callback @ 43(current)
 
-作为 ``events.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+设置与 ``Range`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``56``—``57`` 行；所属函数 ``useMemo callback @ 56``。
+**性质**：同步局部函数；源码第 ``43``—``43`` 行；所属函数 ``update``。
 
 **参数**
 
-``event``
-   语义事件名或 EventEnvelope。
+``current``
+   调用方传入的 ``current`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``matches?.some``。
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3272:3353:FUNCTION
 
-**内部回调数量**：1。这些回调也会在本页逐项说明。
-
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3718:3760:FUNCTION
-
-.. rubric:: ``matches?.some callback @ 57``
+.. rubric:: ``returned callback @ 49``
 
 .. code-block:: javascript
 
-   matches?.some callback @ 57(match)
+   returned callback @ 49()
 
-作为 ``matches?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``events.filter callback @ 56``。
+**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``useEffect callback @ 38``。
 
 **参数**
 
-``match``
-   调用方传入的 ``match`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+无。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3834:3873:FUNCTION
+**主要协作调用**：``element.removeEventListener``、``observer?.disconnect``。
 
-.. rubric:: ``events.find callback @ 58``
-
-.. code-block:: javascript
-
-   events.find callback @ 58(event)
-
-作为 ``events.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``InspectorEventTimeline``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3913:3951:FUNCTION
-
-.. rubric:: ``events.find callback @ 59``
-
-.. code-block:: javascript
-
-   events.find callback @ 59(event)
-
-作为 ``events.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``59``—``59`` 行；所属函数 ``InspectorEventTimeline``。
-
-**参数**
-
-``event``
-   语义事件名或 EventEnvelope。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4001:4046:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3798:3821:FUNCTION
 
 .. rubric:: ``useMemo callback @ 60``
 
@@ -326,19 +307,330 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``inputRelationships``。
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3854:4917:FUNCTION
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4102:4149:FUNCTION
-
-.. rubric:: ``useMemo callback @ 61``
+.. rubric:: ``useEffect callback @ 61``
 
 .. code-block:: javascript
 
-   useMemo callback @ 61()
+   useEffect callback @ 61()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``61``—``77`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``pageRequest.current?.abort``、``setPage``、``setPageLoading``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:3918:4876:FUNCTION
+
+.. rubric:: ``setPage callback @ 63``
+
+.. code-block:: javascript
+
+   setPage callback @ 63(current)
+
+设置与 ``Page`` 相关的数据或状态。
+
+**性质**：同步局部函数；源码第 ``63``—``75`` 行；所属函数 ``useEffect callback @ 61``。
+
+**参数**
+
+``current``
+   调用方传入的 ``current`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+根据执行分支返回结果；代表性返回表达式为 ``{ ...current, totalCalls: section.totalCalls, callOffset: current.callOffset + added, nextCallOffset: current.nextCallOffset == null ? null : current.nextCallOffset + added }``、``section``。
+
+**主要协作调用**：``current.events?.some``、``section.events?.some``。
+
+**内部回调数量**：2。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4211:4264:FUNCTION
+
+.. rubric:: ``current.events?.some callback @ 67``
+
+.. code-block:: javascript
+
+   current.events?.some callback @ 67(event)
+
+作为 ``current.events?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``67``—``67`` 行；所属函数 ``setPage callback @ 63``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4308:4361:FUNCTION
+
+.. rubric:: ``section.events?.some callback @ 68``
+
+.. code-block:: javascript
+
+   section.events?.some callback @ 68(event)
+
+作为 ``section.events?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``68``—``68`` 行；所属函数 ``setPage callback @ 63``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4946:4986:FUNCTION
+
+.. rubric:: ``useEffect callback @ 78``
+
+.. code-block:: javascript
+
+   useEffect callback @ 78()
+
+封装 ``Effect`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4951:4986:FUNCTION
+
+.. rubric:: ``anonymous callback @ 78``
+
+.. code-block:: javascript
+
+   anonymous callback @ 78()
+
+实现 ``anonymous`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``78``—``78`` 行；所属函数 ``useEffect callback @ 78``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``pageRequest.current?.abort``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:5170:5202:FUNCTION
+
+.. rubric:: ``useMemo callback @ 81``
+
+.. code-block:: javascript
+
+   useMemo callback @ 81()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``61``—``61`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``createInspectorReadCache``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6340:6398:FUNCTION
+
+.. rubric:: ``useMemo callback @ 103``
+
+.. code-block:: javascript
+
+   useMemo callback @ 103()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``(matches || []).map``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6374:6396:FUNCTION
+
+.. rubric:: ``(matches || []).map callback @ 103``
+
+.. code-block:: javascript
+
+   (matches || []).map callback @ 103(item)
+
+作为 ``(matches || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``useMemo callback @ 103``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6441:6568:FUNCTION
+
+.. rubric:: ``useMemo callback @ 104``
+
+.. code-block:: javascript
+
+   useMemo callback @ 104()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``104``—``105`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``events.filter``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6461:6567:FUNCTION
+
+.. rubric:: ``events.filter callback @ 104``
+
+.. code-block:: javascript
+
+   events.filter callback @ 104(event)
+
+作为 ``events.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``104``—``105`` 行；所属函数 ``useMemo callback @ 104``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``matchedIds.has``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6642:6681:FUNCTION
+
+.. rubric:: ``events.find callback @ 106``
+
+.. code-block:: javascript
+
+   events.find callback @ 106(event)
+
+作为 ``events.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``106``—``106`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6721:6759:FUNCTION
+
+.. rubric:: ``events.find callback @ 107``
+
+.. code-block:: javascript
+
+   events.find callback @ 107(event)
+
+作为 ``events.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6809:6854:FUNCTION
+
+.. rubric:: ``useMemo callback @ 108``
+
+.. code-block:: javascript
+
+   useMemo callback @ 108()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``108``—``108`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``inputRelationships``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6910:6957:FUNCTION
+
+.. rubric:: ``useMemo callback @ 109``
+
+.. code-block:: javascript
+
+   useMemo callback @ 109()
+
+封装 ``Memo`` 的 React 状态、订阅与生命周期。
+
+**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -350,17 +642,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``buildCallCoverage``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4211:4379:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7019:7187:FUNCTION
 
-.. rubric:: ``useMemo callback @ 62``
+.. rubric:: ``useMemo callback @ 110``
 
 .. code-block:: javascript
 
-   useMemo callback @ 62()
+   useMemo callback @ 110()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -374,17 +666,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4302:4340:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7110:7148:FUNCTION
 
-.. rubric:: ``events.filter callback @ 62``
+.. rubric:: ``events.filter callback @ 110``
 
 .. code-block:: javascript
 
-   events.filter callback @ 62(event)
+   events.filter callback @ 110(event)
 
 作为 ``events.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``useMemo callback @ 62``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``useMemo callback @ 110``。
 
 **参数**
 
@@ -395,17 +687,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4346:4374:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7154:7182:FUNCTION
 
-.. rubric:: ``events.filter((event) => event.kind === 'model_call').map callback @ 62``
+.. rubric:: ``events.filter((event) => event.kind === 'model_call').map callback @ 110``
 
 .. code-block:: javascript
 
-   events.filter((event) => event.kind === 'model_call').map callback @ 62(event)
+   events.filter((event) => event.kind === 'model_call').map callback @ 110(event)
 
 作为 ``events.filter((event) => event.kind === 'model_call').map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``useMemo callback @ 62``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``useMemo callback @ 110``。
 
 **参数**
 
@@ -416,17 +708,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4428:4461:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7236:7269:FUNCTION
 
-.. rubric:: ``useMemo callback @ 63``
+.. rubric:: ``useMemo callback @ 111``
 
 .. code-block:: javascript
 
-   useMemo callback @ 63()
+   useMemo callback @ 111()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -438,17 +730,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``buildTimelineLanes``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4505:4554:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7313:7359:FUNCTION
 
-.. rubric:: ``useMemo callback @ 64``
+.. rubric:: ``useMemo callback @ 112``
 
 .. code-block:: javascript
 
-   useMemo callback @ 64()
+   useMemo callback @ 112()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``64``—``64`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``112``—``112`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -460,7 +752,54 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``callOverlapCounts``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4599:4778:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7569:7608:FUNCTION
+
+.. rubric:: ``visible.findIndex callback @ 115``
+
+.. code-block:: javascript
+
+   visible.findIndex callback @ 115(event)
+
+实现 ``visible.findIndex`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7632:8549:FUNCTION
+
+.. rubric:: ``loadPage``
+
+.. code-block:: javascript
+
+   async loadPage(offset, modelCallId)
+
+加载与 ``Page`` 相关的数据或状态。
+
+**性质**：异步局部函数；源码第 ``116``—``132`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+``offset``
+   调用方传入的 ``offset`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``modelCallId`` （默认值 ``null``）
+   目标对象的公共或运行时标识。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``pageRequest.current?.abort``、``setPageLoading``、``setError``、``detailCache.read``、``setPage``、``setQuery``、``setSelectedId``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8571:8750:FUNCTION
 
 .. rubric:: ``related``
 
@@ -470,7 +809,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 实现 ``related`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``65``—``66`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``133``—``134`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -483,17 +822,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``relationships.calls.has``、``relationships.sent.has``、``relationships.inherited.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4795:5017:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8767:8989:FUNCTION
 
-.. rubric:: ``useEffect callback @ 67``
+.. rubric:: ``useEffect callback @ 135``
 
 .. code-block:: javascript
 
-   useEffect callback @ 67()
+   useEffect callback @ 135()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``67``—``71`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``135``—``139`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -507,17 +846,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:4964:5009:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8936:8981:FUNCTION
 
-.. rubric:: ``returned callback @ 70``
+.. rubric:: ``returned callback @ 138``
 
 .. code-block:: javascript
 
-   returned callback @ 70()
+   returned callback @ 138()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``70``—``70`` 行；所属函数 ``useEffect callback @ 67``。
+**性质**：同步局部函数；源码第 ``138``—``138`` 行；所属函数 ``useEffect callback @ 135``。
 
 **参数**
 
@@ -529,17 +868,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``detachExpanded``、``detachCompact``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:5039:5952:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:9011:10090:FUNCTION
 
-.. rubric:: ``useEffect callback @ 72``
+.. rubric:: ``useEffect callback @ 140``
 
 .. code-block:: javascript
 
-   useEffect callback @ 72()
+   useEffect callback @ 140()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``72``—``89`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``140``—``158`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -553,21 +892,21 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``setMatches``、``setSearchError``、``setSearching``、``setTimeout``。
+**主要协作调用**：``setMatches``、``setSearchTotal``、``setSearchError``、``setSearchEvents``、``setSearching``、``setTimeout``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:5206:5231:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:9229:9254:FUNCTION
 
-.. rubric:: ``returned callback @ 76``
+.. rubric:: ``returned callback @ 145``
 
 .. code-block:: javascript
 
-   returned callback @ 76()
+   returned callback @ 145()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``76``—``76`` 行；所属函数 ``useEffect callback @ 72``。
+**性质**：同步局部函数；源码第 ``145``—``145`` 行；所属函数 ``useEffect callback @ 140``。
 
 **参数**
 
@@ -579,17 +918,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:5298:5870:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:9321:10008:FUNCTION
 
-.. rubric:: ``setTimeout callback @ 78``
+.. rubric:: ``setTimeout callback @ 147``
 
 .. code-block:: javascript
 
-   async setTimeout callback @ 78()
+   async setTimeout callback @ 147()
 
 设置与 ``Timeout`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``78``—``87`` 行；所属函数 ``useEffect callback @ 72``。
+**性质**：异步局部函数；源码第 ``147``—``156`` 行；所属函数 ``useEffect callback @ 140``。
 
 **参数**
 
@@ -603,19 +942,19 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 * 发起 HTTP 请求或访问外部服务。
 
-**主要协作调用**：``apiClient.get``、``setMatches``、``setSearchError``、``setSearching``。
+**主要协作调用**：``apiClient.get``、``setMatches``、``setSearchEvents``、``setSearchTotal``、``setSearchError``、``setSearching``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:5893:5944:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10031:10082:FUNCTION
 
-.. rubric:: ``returned callback @ 88``
+.. rubric:: ``returned callback @ 157``
 
 .. code-block:: javascript
 
-   returned callback @ 88()
+   returned callback @ 157()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``88``—``88`` 行；所属函数 ``useEffect callback @ 72``。
+**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``useEffect callback @ 140``。
 
 **参数**
 
@@ -627,17 +966,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``clearTimeout``、``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6005:6141:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10161:10297:FUNCTION
 
-.. rubric:: ``useEffect callback @ 90``
+.. rubric:: ``useEffect callback @ 159``
 
 .. code-block:: javascript
 
-   useEffect callback @ 90()
+   useEffect callback @ 159()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``90``—``92`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``159``—``161`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -651,17 +990,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6058:6097:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10214:10253:FUNCTION
 
-.. rubric:: ``visible.some callback @ 91``
+.. rubric:: ``visible.some callback @ 160``
 
 .. code-block:: javascript
 
-   visible.some callback @ 91(event)
+   visible.some callback @ 160(event)
 
 作为 ``visible.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``91``—``91`` 行；所属函数 ``useEffect callback @ 90``。
+**性质**：同步局部函数；源码第 ``160``—``160`` 行；所属函数 ``useEffect callback @ 159``。
 
 **参数**
 
@@ -672,17 +1011,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6182:6687:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10338:10994:FUNCTION
 
-.. rubric:: ``useEffect callback @ 93``
+.. rubric:: ``useEffect callback @ 162``
 
 .. code-block:: javascript
 
-   useEffect callback @ 93()
+   useEffect callback @ 162()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``93``—``102`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``162``—``172`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -692,21 +1031,21 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``() => controller.abort()``。
 
-**主要协作调用**：``setDetail``、``setError``、``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller…``、``detailCache.read``。
+**主要协作调用**：``setDetail``、``setError``、``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co…``、``detailCache.read``。
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6473:6535:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10780:10842:FUNCTION
 
-.. rubric:: ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller… callback @ 99``
+.. rubric:: ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co… callback @ 169``
 
 .. code-block:: javascript
 
-   detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller… callback @ 99(data)
+   detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co… callback @ 169(data)
 
-实现 ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller…`` 对应的前端处理。
+实现 ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``99``—``99`` 行；所属函数 ``useEffect callback @ 93``。
+**性质**：同步局部函数；源码第 ``169``—``169`` 行；所属函数 ``useEffect callback @ 162``。
 
 **参数**
 
@@ -719,17 +1058,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setDetail``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6557:6636:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10864:10943:FUNCTION
 
-.. rubric:: ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller… callback @ 100``
+.. rubric:: ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co… callback @ 170``
 
 .. code-block:: javascript
 
-   detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller… callback @ 100(err)
+   detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co… callback @ 170(err)
 
-实现 ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId }, { signal: controller…`` 对应的前端处理。
+实现 ``detailCache.read({ conversationId: section.conversationId, action: 'event', eventId: selectedId, revision: selected?.co…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``useEffect callback @ 93``。
+**性质**：同步局部函数；源码第 ``170``—``170`` 行；所属函数 ``useEffect callback @ 162``。
 
 **参数**
 
@@ -742,17 +1081,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setError``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6654:6679:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:10961:10986:FUNCTION
 
-.. rubric:: ``returned callback @ 101``
+.. rubric:: ``returned callback @ 171``
 
 .. code-block:: javascript
 
-   returned callback @ 101()
+   returned callback @ 171()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``101``—``101`` 行；所属函数 ``useEffect callback @ 93``。
+**性质**：同步局部函数；源码第 ``171``—``171`` 行；所属函数 ``useEffect callback @ 162``。
 
 **参数**
 
@@ -764,17 +1103,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``controller.abort``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6756:6885:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11112:11368:FUNCTION
 
-.. rubric:: ``useEffect callback @ 103``
+.. rubric:: ``useEffect callback @ 173``
 
 .. code-block:: javascript
 
-   useEffect callback @ 103()
+   useEffect callback @ 173()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``103``—``106`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``173``—``177`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -784,19 +1123,19 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``alignExpandedCard``、``centerSelectedNode``。
+**主要协作调用**：``centerSelectedNode``、``alignExpandedCard``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:6917:7167:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11415:11777:FUNCTION
 
-.. rubric:: ``useEffect callback @ 107``
+.. rubric:: ``useEffect callback @ 178``
 
 .. code-block:: javascript
 
-   useEffect callback @ 107()
+   useEffect callback @ 178()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``107``—``112`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``178``—``184`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -806,19 +1145,42 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``alignExpandedCard``。
+**主要协作调用**：``alignExpandedCard``、``visible.findIndex``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7197:7266:FUNCTION
+**内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. rubric:: ``useEffect callback @ 113``
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11653:11704:FUNCTION
+
+.. rubric:: ``visible.findIndex callback @ 181``
 
 .. code-block:: javascript
 
-   useEffect callback @ 113()
+   visible.findIndex callback @ 181(event)
+
+实现 ``visible.findIndex`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``181``—``181`` 行；所属函数 ``useEffect callback @ 178``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11852:11921:FUNCTION
+
+.. rubric:: ``useEffect callback @ 185``
+
+.. code-block:: javascript
+
+   useEffect callback @ 185()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``113``—``115`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``185``—``187`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -830,7 +1192,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``detailViewport.current?.scrollTo``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7302:7477:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11957:12132:FUNCTION
 
 .. rubric:: ``choose``
 
@@ -840,7 +1202,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 实现 ``choose`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``116``—``121`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``188``—``193`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -856,7 +1218,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setSelectedId``、``setHoveredId``、``setMobileDetail``、``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7499:7834:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:12154:12616:FUNCTION
 
 .. rubric:: ``preview``
 
@@ -866,7 +1228,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 实现 ``preview`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``122``—``128`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``194``—``202`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -880,9 +1242,32 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-**主要协作调用**：``setHoveredId``、``setExpanded``、``alignExpandedCard``。
+**主要协作调用**：``setHoveredId``、``setExpanded``、``alignExpandedCard``、``visible.findIndex``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:7870:7965:FUNCTION
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:12510:12546:FUNCTION
+
+.. rubric:: ``visible.findIndex callback @ 200``
+
+.. code-block:: javascript
+
+   visible.findIndex callback @ 200(event)
+
+实现 ``visible.findIndex`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``200``—``200`` 行；所属函数 ``preview``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:12652:12747:FUNCTION
 
 .. rubric:: ``beginManualNavigation``
 
@@ -892,7 +1277,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 实现 ``beginManualNavigation`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``129``—``132`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``203``—``206`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -902,17 +1287,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8264:8303:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:13046:13085:FUNCTION
 
-.. rubric:: ``onChange callback @ 136``
+.. rubric:: ``onChange callback @ 210``
 
 .. code-block:: javascript
 
-   onChange callback @ 136(event)
+   onChange callback @ 210(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``136``—``136`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``210``—``210`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -925,17 +1310,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setQuery``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8550:8588:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:13332:13370:FUNCTION
 
-.. rubric:: ``onChange callback @ 139``
+.. rubric:: ``onChange callback @ 213``
 
 .. code-block:: javascript
 
-   onChange callback @ 139(event)
+   onChange callback @ 213(event)
 
 处理 ``Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``139``—``139`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``213``—``213`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -948,17 +1333,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setKind``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8736:8806:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:13518:13588:FUNCTION
 
-.. rubric:: ``Object.entries(labels).map callback @ 140``
+.. rubric:: ``Object.entries(labels).map callback @ 214``
 
 .. code-block:: javascript
 
-   Object.entries(labels).map callback @ 140([value, label])
+   Object.entries(labels).map callback @ 214([value, label])
 
 作为 ``Object.entries(labels).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``140``—``140`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``214``—``214`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -969,7 +1354,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:8959:11439:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:13808:16360:FUNCTION
 
 .. rubric:: ``eventButton``
 
@@ -979,7 +1364,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 实现 ``eventButton`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``144``—``153`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``218``—``227`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1004,17 +1389,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:9302:9341:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:14221:14260:FUNCTION
 
-.. rubric:: ``onClick callback @ 144``
+.. rubric:: ``onClick callback @ 218``
 
 .. code-block:: javascript
 
-   onClick callback @ 144(click)
+   onClick callback @ 218(click)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``144``—``144`` 行；所属函数 ``eventButton``。
+**性质**：同步局部函数；源码第 ``218``—``218`` 行；所属函数 ``eventButton``。
 
 **参数**
 
@@ -1027,17 +1412,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:9359:9454:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:14278:14373:FUNCTION
 
-.. rubric:: ``onPointerEnter callback @ 144``
+.. rubric:: ``onPointerEnter callback @ 218``
 
 .. code-block:: javascript
 
-   onPointerEnter callback @ 144(pointer)
+   onPointerEnter callback @ 218(pointer)
 
 处理 ``Pointer Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``144``—``144`` 行；所属函数 ``eventButton``。
+**性质**：同步局部函数；源码第 ``218``—``218`` 行；所属函数 ``eventButton``。
 
 **参数**
 
@@ -1050,7 +1435,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setHoveredId``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11464:11727:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16385:16648:FUNCTION
 
 .. rubric:: ``laneLabels``
 
@@ -1060,7 +1445,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 实现 ``laneLabels`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``154``—``154`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``228``—``228`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1075,17 +1460,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11625:11719:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16546:16640:FUNCTION
 
-.. rubric:: ``lanes.map callback @ 154``
+.. rubric:: ``lanes.map callback @ 228``
 
 .. code-block:: javascript
 
-   lanes.map callback @ 154(lane)
+   lanes.map callback @ 228(lane)
 
 作为 ``lanes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``154``—``154`` 行；所属函数 ``laneLabels``。
+**性质**：同步局部函数；源码第 ``228``—``228`` 行；所属函数 ``laneLabels``。
 
 **参数**
 
@@ -1096,7 +1481,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11753:14701:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16674:19838:FUNCTION
 
 .. rubric:: ``renderLanes``
 
@@ -1106,7 +1491,7 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 渲染与 ``Lanes`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``155``—``164`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``229``—``238`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1115,23 +1500,23 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``<div className={\x60w-max min-w-full ${compact ? '' : 'space-y-2'}\x60}> {lanes.map((lane) => <div key={lane.id} data-lane={lane.id} aria-label={lane.id === 'messages' ? '消息与工具事件轨道' : '…``。
 
 **主要协作调用**：``lanes.map``。
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:11854:14574:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16836:19708:FUNCTION
 
-.. rubric:: ``lanes.map callback @ 156``
+.. rubric:: ``lanes.map callback @ 230``
 
 .. code-block:: javascript
 
-   lanes.map callback @ 156(lane)
+   lanes.map callback @ 230(lane)
 
 作为 ``lanes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``156``—``162`` 行；所属函数 ``renderLanes``。
+**性质**：同步局部函数；源码第 ``230``—``236`` 行；所属函数 ``renderLanes``。
 
 **参数**
 
@@ -1142,21 +1527,21 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``Math.max``、``lane.slots.map``、``[...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map``、``allCoverage.map``。
+**主要协作调用**：``Math.max``、``lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map``、``lane.slots.slice(range.start, range.end).map``、``lane.slots.slice``、``[...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map``、``allCoverage.map``。
 
-**内部回调数量**：3。这些回调也会在本页逐项说明。
+**内部回调数量**：4。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:12199:13905:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:17198:17255:FUNCTION
 
-.. rubric:: ``lane.slots.map callback @ 157``
+.. rubric:: ``lane.slots.slice(range.start, range.end).map callback @ 231``
 
 .. code-block:: javascript
 
-   lane.slots.map callback @ 157(event, index)
+   lane.slots.slice(range.start, range.end).map callback @ 231(event, index)
 
-作为 ``lane.slots.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``lane.slots.slice(range.start, range.end).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``157``—``160`` 行；所属函数 ``lanes.map callback @ 156``。
+**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``lanes.map callback @ 230``。
 
 **参数**
 
@@ -1170,21 +1555,42 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:17261:19039:FUNCTION
+
+.. rubric:: ``lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map callback @ 231``
+
+.. code-block:: javascript
+
+   lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map callback @ 231({ event, index })
+
+作为 ``lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``231``—``234`` 行；所属函数 ``lanes.map callback @ 230``。
+
+**参数**
+
+``{ event, index }``
+   调用方传入的 ``event, index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
 **主要协作调用**：``related``、``overlaps.has``、``['failed', 'failure', 'error', 'cancelled'].includes``、``eventButton``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:12866:12910:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:18000:18044:FUNCTION
 
-.. rubric:: ``onPointerEnter callback @ 157``
+.. rubric:: ``onPointerEnter callback @ 231``
 
 .. code-block:: javascript
 
-   onPointerEnter callback @ 157(pointer)
+   onPointerEnter callback @ 231(pointer)
 
 处理 ``Pointer Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``lane.slots.map callback @ 157``。
+**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map callback @ 231``。
 
 **参数**
 
@@ -1197,17 +1603,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``preview``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:12921:12960:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:18055:18094:FUNCTION
 
-.. rubric:: ``onClick callback @ 157``
+.. rubric:: ``onClick callback @ 231``
 
 .. code-block:: javascript
 
-   onClick callback @ 157(click)
+   onClick callback @ 231(click)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``157``—``157`` 行；所属函数 ``lane.slots.map callback @ 157``。
+**性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``lane.slots.slice(range.start, range.end).map((event, index) => ({ event, index: index + range.start })).map callback @ 231``。
 
 **参数**
 
@@ -1220,17 +1626,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:13971:14009:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:19105:19143:FUNCTION
 
-.. rubric:: ``allCoverage.map callback @ 161``
+.. rubric:: ``allCoverage.map callback @ 235``
 
 .. code-block:: javascript
 
-   allCoverage.map callback @ 161(range)
+   allCoverage.map callback @ 235(range)
 
 作为 ``allCoverage.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``lanes.map callback @ 156``。
+**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``lanes.map callback @ 230``。
 
 **参数**
 
@@ -1241,17 +1647,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:14029:14556:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:19163:19690:FUNCTION
 
-.. rubric:: ``[...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map callback @ 161``
+.. rubric:: ``[...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map callback @ 235``
 
 .. code-block:: javascript
 
-   [...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map callback @ 161(range, coverageIndex)
+   [...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map callback @ 235(range, coverageIndex)
 
 作为 ``[...allCoverage.map((range) => ({ ...range, muted: true })), ...coverage].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``161``—``161`` 行；所属函数 ``lanes.map callback @ 156``。
+**性质**：同步局部函数；源码第 ``235``—``235`` 行；所属函数 ``lanes.map callback @ 230``。
 
 **参数**
 
@@ -1267,17 +1673,61 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:15101:15242:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:20380:20415:FUNCTION
 
-.. rubric:: ``onPointerMoveCapture callback @ 170``
+.. rubric:: ``onClick callback @ 243``
 
 .. code-block:: javascript
 
-   onPointerMoveCapture callback @ 170(event)
+   onClick callback @ 243()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``243``—``243`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``loadPage``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:20573:20634:FUNCTION
+
+.. rubric:: ``onClick callback @ 244``
+
+.. code-block:: javascript
+
+   onClick callback @ 244()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``244``—``244`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``loadPage``、``Math.max``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21026:21167:FUNCTION
+
+.. rubric:: ``onPointerMoveCapture callback @ 251``
+
+.. code-block:: javascript
+
+   onPointerMoveCapture callback @ 251(event)
 
 处理 ``Pointer Move Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``170``—``170`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``251``—``251`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1288,17 +1738,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:15273:15341:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21198:21266:FUNCTION
 
-.. rubric:: ``onPointerEnter callback @ 171``
+.. rubric:: ``onPointerEnter callback @ 252``
 
 .. code-block:: javascript
 
-   onPointerEnter callback @ 171(event)
+   onPointerEnter callback @ 252(event)
 
 处理 ``Pointer Enter`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``171``—``171`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``252``—``252`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1311,17 +1761,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:15372:15519:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21297:21444:FUNCTION
 
-.. rubric:: ``onPointerLeave callback @ 172``
+.. rubric:: ``onPointerLeave callback @ 253``
 
 .. code-block:: javascript
 
-   onPointerLeave callback @ 172(event)
+   onPointerLeave callback @ 253(event)
 
 处理 ``Pointer Leave`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``172``—``172`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``253``—``253`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1334,17 +1784,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``event.currentTarget.querySelector``、``setExpanded``、``setHoveredId``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:15550:15627:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21475:21552:FUNCTION
 
-.. rubric:: ``onFocusCapture callback @ 173``
+.. rubric:: ``onFocusCapture callback @ 254``
 
 .. code-block:: javascript
 
-   onFocusCapture callback @ 173(event)
+   onFocusCapture callback @ 254(event)
 
 处理 ``Focus Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``173``—``173`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``254``—``254`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1357,17 +1807,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``event.target.matches``、``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:15657:15769:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21582:21694:FUNCTION
 
-.. rubric:: ``onBlurCapture callback @ 174``
+.. rubric:: ``onBlurCapture callback @ 255``
 
 .. code-block:: javascript
 
-   onBlurCapture callback @ 174(event)
+   onBlurCapture callback @ 255(event)
 
 处理 ``Blur Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``174``—``174`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``255``—``255`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1380,17 +1830,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``event.currentTarget.contains``、``setExpanded``、``setHoveredId``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16262:16799:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22187:22724:FUNCTION
 
-.. rubric:: ``[-1, 1].map callback @ 181``
+.. rubric:: ``[-1, 1].map callback @ 262``
 
 .. code-block:: javascript
 
-   [-1, 1].map callback @ 181(direction)
+   [-1, 1].map callback @ 262(direction)
 
 作为 ``[-1, 1].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``181``—``185`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``262``—``266`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1405,17 +1855,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16332:16371:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22257:22296:FUNCTION
 
-.. rubric:: ``visible.findIndex callback @ 182``
+.. rubric:: ``visible.findIndex callback @ 263``
 
 .. code-block:: javascript
 
-   visible.findIndex callback @ 182(event)
+   visible.findIndex callback @ 263(event)
 
 实现 ``visible.findIndex`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``182``—``182`` 行；所属函数 ``[-1, 1].map callback @ 181``。
+**性质**：同步局部函数；源码第 ``263``—``263`` 行；所属函数 ``[-1, 1].map callback @ 262``。
 
 **参数**
 
@@ -1426,17 +1876,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16638:16678:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22563:22603:FUNCTION
 
-.. rubric:: ``onClick callback @ 184``
+.. rubric:: ``onClick callback @ 265``
 
 .. code-block:: javascript
 
-   onClick callback @ 184(event)
+   onClick callback @ 265(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``184``—``184`` 行；所属函数 ``[-1, 1].map callback @ 181``。
+**性质**：同步局部函数；源码第 ``265``—``265`` 行；所属函数 ``[-1, 1].map callback @ 262``。
 
 **参数**
 
@@ -1449,17 +1899,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``choose``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:16944:16972:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22869:22897:FUNCTION
 
-.. rubric:: ``onClick callback @ 186``
+.. rubric:: ``onClick callback @ 267``
 
 .. code-block:: javascript
 
-   onClick callback @ 186()
+   onClick callback @ 267()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``186``—``186`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``267``—``267`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1471,17 +1921,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:17947:18335:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:23872:24260:FUNCTION
 
-.. rubric:: ``[-1, 1].map callback @ 194``
+.. rubric:: ``[-1, 1].map callback @ 275``
 
 .. code-block:: javascript
 
-   [-1, 1].map callback @ 194(direction)
+   [-1, 1].map callback @ 275(direction)
 
 作为 ``[-1, 1].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``194``—``194`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``275``—``275`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1494,17 +1944,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:18099:18234:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:24024:24159:FUNCTION
 
-.. rubric:: ``onClick callback @ 194``
+.. rubric:: ``onClick callback @ 275``
 
 .. code-block:: javascript
 
-   onClick callback @ 194()
+   onClick callback @ 275()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``194``—``194`` 行；所属函数 ``[-1, 1].map callback @ 194``。
+**性质**：同步局部函数；源码第 ``275``—``275`` 行；所属函数 ``[-1, 1].map callback @ 275``。
 
 **参数**
 
@@ -1516,19 +1966,46 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``beginManualNavigation``、``track.current?.scrollBy``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:19370:19405:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:25217:25249:FUNCTION
 
-.. rubric:: ``visible.map callback @ 204``
+.. rubric:: ``computeItemKey callback @ 285``
 
 .. code-block:: javascript
 
-   visible.map callback @ 204(event)
+   computeItemKey callback @ 285(_index, event)
 
-作为 ``visible.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+实现 ``computeItemKey`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``204``—``204`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
+
+``_index``
+   调用方传入的 ``_index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:25281:25353:FUNCTION
+
+.. rubric:: ``itemContent callback @ 286``
+
+.. code-block:: javascript
+
+   itemContent callback @ 286(_index, event)
+
+实现 ``itemContent`` 对应的前端处理。
+
+**性质**：同步局部函数；源码第 ``286``—``286`` 行；所属函数 ``InspectorEventTimeline``。
+
+**参数**
+
+``_index``
+   调用方传入的 ``_index`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 ``event``
    语义事件名或 EventEnvelope。
@@ -1539,17 +2016,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``eventButton``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:19844:19872:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:25645:25673:FUNCTION
 
-.. rubric:: ``onClick callback @ 209``
+.. rubric:: ``onClick callback @ 289``
 
 .. code-block:: javascript
 
-   onClick callback @ 209()
+   onClick callback @ 289()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``209``—``209`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``289``—``289`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1561,17 +2038,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``setMobileDetail``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:20680:20714:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:26483:26517:FUNCTION
 
-.. rubric:: ``onClick callback @ 214``
+.. rubric:: ``onClick callback @ 294``
 
 .. code-block:: javascript
 
-   onClick callback @ 214()
+   onClick callback @ 294()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``214``—``214`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``294``—``294`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1583,17 +2060,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``onJump``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21334:21366:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:27139:27171:FUNCTION
 
-.. rubric:: ``['content', 'reasoningContent', 'escContent'].filter callback @ 221``
+.. rubric:: ``['content', 'reasoningContent', 'escContent'].filter callback @ 301``
 
 .. code-block:: javascript
 
-   ['content', 'reasoningContent', 'escContent'].filter callback @ 221(field)
+   ['content', 'reasoningContent', 'escContent'].filter callback @ 301(field)
 
 作为 ``['content', 'reasoningContent', 'escContent'].filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``221``—``221`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1604,17 +2081,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:21372:21748:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:27177:27553:FUNCTION
 
-.. rubric:: ``['content', 'reasoningContent', 'escContent'].filter((field) => detail.payload[field]).map callback @ 221``
+.. rubric:: ``['content', 'reasoningContent', 'escContent'].filter((field) => detail.payload[field]).map callback @ 301``
 
 .. code-block:: javascript
 
-   ['content', 'reasoningContent', 'escContent'].filter((field) => detail.payload[field]).map callback @ 221(field)
+   ['content', 'reasoningContent', 'escContent'].filter((field) => detail.payload[field]).map callback @ 301(field)
 
 作为 ``['content', 'reasoningContent', 'escContent'].filter((field) => detail.payload[field]).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``221``—``221`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1627,17 +2104,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **主要协作调用**：``text``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:22950:23176:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:28755:29172:FUNCTION
 
-.. rubric:: ``[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 226``
+.. rubric:: ``[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 306``
 
 .. code-block:: javascript
 
-   [...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 226(id)
+   [...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 306(id)
 
 实现 ``[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``226``—``226`` 行；所属函数 ``InspectorEventTimeline``。
+**性质**：同步局部函数；源码第 ``306``—``310`` 行；所属函数 ``InspectorEventTimeline``。
 
 **参数**
 
@@ -1652,17 +2129,17 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:23076:23144:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:28881:29140:FUNCTION
 
-.. rubric:: ``onClick callback @ 226``
+.. rubric:: ``onClick callback @ 306``
 
 .. code-block:: javascript
 
-   onClick callback @ 226()
+   onClick callback @ 306()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``226``—``226`` 行；所属函数 ``[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 226``。
+**性质**：同步局部函数；源码第 ``306``—``310`` 行；所属函数 ``[...new Set([...(selected?.sentByCallIds || []), ...(selected?.inheritedByCallIds || []), ...(selected?.usedByCallIds |… callback @ 306``。
 
 **参数**
 
@@ -1672,4 +2149,27 @@ src/features/chat/page/components/InspectorEventTimeline 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``setQuery``、``setKind``、``setSelectedId``。
+**主要协作调用**：``setKind``、``pageEvents.some``、``setQuery``、``setSelectedId``、``loadPage``。
+
+**内部回调数量**：1。这些回调也会在本页逐项说明。
+
+.. CWM-AST-FUNCTION src/features/chat/page/components/InspectorEventTimeline.jsx:28975:29016:FUNCTION
+
+.. rubric:: ``pageEvents.some callback @ 308``
+
+.. code-block:: javascript
+
+   pageEvents.some callback @ 308(event)
+
+作为 ``pageEvents.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``308``—``308`` 行；所属函数 ``onClick callback @ 306``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。

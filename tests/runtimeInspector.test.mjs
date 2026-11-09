@@ -103,6 +103,14 @@ test('switching branches discards inspector caches and loads the new branch', as
     await hook.openInspector();
     hook = render('u|a');
     assert.equal(hook.document.tabs[0].section.modelCalls[0].modelCallId, 'call-a');
+    const originalSection = hook.document.tabs[0].section;
+    render('u|a|next');
+    hook = render('u|a|next');
+    assert.equal(hook.document.tabs[0].section, originalSection, 'appends keep the mounted section during refresh');
+    assert.equal(hook.loading, false);
+    await new Promise((resolve) => setTimeout(resolve, 230));
+    hook = render('u|a|next');
+    assert.equal(hook.document.tabs[0].section.modelCalls[0].modelCallId, 'call-a');
     branchCall = 'call-b';
     render('u|b');
     hook = render('u|b');
