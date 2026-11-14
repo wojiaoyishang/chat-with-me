@@ -57,20 +57,22 @@ const MessageActions = memo(({
     };
 
     const renderTools = (extraClassName = '') => {
-        if (!shouldShowTools) return null;
+        if (!shouldShowTools && !ignoredIndicator) return null;
 
         return (
             <div
-                className={`min-w-0 max-w-full overflow-x-auto overscroll-x-contain pb-1 transition-opacity duration-200 [-webkit-overflow-scrolling:touch] ${toolVisibilityClassName} ${extraClassName}`}
+                data-message-tools="true"
+                className={`flex min-w-0 max-w-full items-center gap-1 overflow-x-auto overscroll-x-contain pb-1 transition-opacity duration-200 [-webkit-overflow-scrolling:touch] ${toolVisibilityClassName} ${extraClassName}`}
             >
-                <MessageTools
+                {ignoredIndicator}
+                {shouldShowTools && <MessageTools
                     msg={msg}
                     msgId={msgId}
                     conversationId={conversationId}
                     readonly={readonly}
                     speechState={speechState}
                     onSettingsOpenChange={onSettingsOpenChange}
-                />
+                />}
             </div>
         );
     };
@@ -100,7 +102,6 @@ const MessageActions = memo(({
                 className="flex w-full min-w-0 items-center justify-end mt-1 min-h-[2rem] pr-12 transition-all duration-300"
             >
                 <div className="ml-auto flex min-w-0 max-w-full items-center justify-end gap-1">
-                    {ignoredIndicator}
                     {renderTools('max-w-[calc(100vw-7rem)] sm:max-w-full')}
                     {renderPaginator()}
                 </div>
@@ -115,7 +116,6 @@ const MessageActions = memo(({
         >
             <div className="flex min-w-0 max-w-full items-center justify-start gap-1">
                 {renderPaginator()}
-                {ignoredIndicator}
                 {renderTools('max-w-[calc(100vw-4rem)] sm:max-w-full')}
             </div>
         </div>

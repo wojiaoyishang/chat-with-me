@@ -1,5 +1,5 @@
 import React, {memo} from 'react';
-import {Bot, Check, CircleUserRound, Cpu, Wrench} from 'lucide-react';
+import {Bot, Check, CircleUserRound, Cpu, EyeOff, Minimize2, Wrench} from 'lucide-react';
 import {Badge} from '@/components/ui/badge';
 import {Card} from '@/components/ui/card';
 
@@ -74,7 +74,7 @@ const MessageSummaryItem = memo(({
     return (
         <Card
             className={`gap-0 overflow-hidden p-0 shadow-none transition-colors ${config.cardClass} ${
-                active ? 'border-primary/60 bg-primary/5' : 'hover:bg-accent/45'
+                selected || active ? 'border-primary/60 bg-primary/5' : 'hover:bg-accent/45'
             }`}
         >
             <button
@@ -88,6 +88,8 @@ const MessageSummaryItem = memo(({
                     <span className="hidden sm:inline">{config.label}</span>
                 </Badge>
                 {containsTool && <Wrench className="size-3.5 shrink-0 text-muted-foreground"/>}
+                {item?.contextState?.forgotten && <EyeOff className="size-3.5 shrink-0 text-muted-foreground" aria-label="已忽略"/>}
+                {item?.contextState?.compactions?.length > 0 && <Minimize2 className="size-3.5 shrink-0 text-muted-foreground" aria-label="已压缩"/>}
                 <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={preview}>{preview}</span>
                 <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     {indexLabel ?? (Number.isInteger(item?.orderIndex) ? `#${item.orderIndex + 1}` : '')}

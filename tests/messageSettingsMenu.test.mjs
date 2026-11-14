@@ -7,11 +7,10 @@ import React, {act, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 const translations = JSON.parse(fs.readFileSync('src/assets/locales/zh.json', 'utf8'));
-const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ToolContextActions.jsx', 'IgnoredContextIndicator.jsx', 'ContextStateIndicator.jsx', 'MessageContextBadges.jsx', 'ConversationFreezeContext.jsx', 'MessageIgnoringContext.jsx']);
+const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ToolContextActions.jsx', 'IgnoredContextIndicator.jsx', 'ContextStateIndicator.jsx', 'MessageContextBadges.jsx', 'ConversationFreezeContext.jsx']);
 await build({
     stdin: {contents: `export {default} from './src/features/chat/ui/message/components/MessageItem.jsx';
         export {default as ToolContextActions} from './src/features/chat/ui/message/components/ToolContextActions.jsx';
-        export {MessageIgnoringContext} from './src/features/chat/ui/message/MessageIgnoringContext.jsx';
         export {useExecutionStore} from './src/features/execution/useExecutionStore.js';`, resolveDir: process.cwd()},
     outfile: 'temp/message-settings-react-test.mjs',
     bundle: true, packages: 'external', platform: 'node', format: 'esm', jsx: 'automatic',
@@ -78,9 +77,9 @@ async function setup(t, api = {}, initial = {}) {
         },
     };
     globalThis.__messageSettings = fixture;
-    const {default: MessageItem, ToolContextActions, MessageIgnoringContext, useExecutionStore} = await import(`../temp/message-settings-react-test.mjs?test=${++moduleId}`);
+    const {default: MessageItem, ToolContextActions, useExecutionStore} = await import(`../temp/message-settings-react-test.mjs?test=${++moduleId}`);
     const container = document.getElementById('root'), root = createRoot(container);
-    function Harness({msgId = 'message-one', conversationId = 'chat-one', message = baseMessage(), additional = [], relatedMessages = {}, ignoringDisabled = false}) {
+    function Harness({msgId = 'message-one', conversationId = 'chat-one', message = baseMessage(), additional = [], relatedMessages = {}}) {
         const [patches, setPatches] = useState({});
         fixture.apply = envelope => {
             if (envelope.conversationId !== conversationId) return;
@@ -88,14 +87,14 @@ async function setup(t, api = {}, initial = {}) {
             if (envelope.event === 'context.state.changed') setPatches(previous => ({...previous,
                 ...Object.fromEntries(Object.entries(envelope.payload.messageStates || {}).map(([id, state]) => [id, {...previous[id], contextState: state}]))}));
         };
-        return React.createElement(MessageIgnoringContext.Provider, {value: ignoringDisabled}, [
+        return [
             {msgId, message},
             ...additional,
         ].map(item => React.createElement(MessageItem, {
             key: item.msgId, msgId: item.msgId, conversationId,
             msg: patches[item.msgId] ? {...item.message, ...patches[item.msgId]} : item.message,
             messages: {...relatedMessages, [item.msgId]: item.message}, leavingMessages: new Set(), t: fixture.t,
-        })));
+        }));
     }
     let props = {message: baseMessage(initial)};
     const render = patch => act(async () => { props = {...props, ...patch}; root.render(React.createElement(Harness, props)); await new Promise(resolve => setTimeout(resolve, 10)); });
@@ -113,9 +112,9 @@ async function setup(t, api = {}, initial = {}) {
         delete globalThis.__messageSettings;
         delete globalThis.IS_REACT_ACT_ENVIRONMENT;
     });
-    const renderTool = ({ignoringDisabled = false, ...props} = {}) => act(async () => root.render(
-        React.createElement(MessageIgnoringContext.Provider, {value: ignoringDisabled},
-            React.createElement(ToolContextActions, {conversationId: 'chat-one', messageId: 'message-one', toolCallId: 'tool-one', ...props}))));
+    const renderTool = (props = {}) => act(async () => root.render(
+        React.createElement(ToolContextActions, {conversationId: 'chat-one', messageId: 'message-one', toolCallId: 'tool-one', ...props})));
+
     return {container, dom, fixture, render, renderTool, button, click, open, useExecutionStore};
 }
 
@@ -202,30 +201,27 @@ test('ignored user messages show one status beside their action buttons, includi
     }
 });
 
-test('conversation ignore override updates indicators and menu live without rewriting message state', async t => {
-    const ui = await setup(t);
-    const message = baseMessage({contextState: {forgotten: true}});
-    await ui.render({message});
-    assert.ok(ui.container.querySelector('[data-context-state="ignored"]'));
-    await ui.render({ignoringDisabled: true});
-    assert.equal(ui.container.querySelector('[data-context-state="ignored"]'), null);
-    await ui.open();
-    assert.ok(ui.button('从上下文忘记').disabled);
-    assert.equal(ui.button('压缩此消息').disabled, false);
-    await ui.render({ignoringDisabled: false});
-    assert.ok(ui.container.querySelector('[data-context-state="ignored"]'));
-    assert.equal(ui.button('取消忽略').disabled, false);
-    assert.equal(message.contextState.forgotten, true);
-    assert.equal(ui.fixture.posts.length, 0);
+test('ignored user indicators follow the toolbar visibility and share its vertical alignment', async t => {
+    const ui = await setup(t, {}, {contextState: {forgotten: true}});
+    await ui.render();
+    const message = ui.container.querySelector('[data-message-id]');
+    const indicator = message.querySelector('[data-context-state="ignored"]');
+    const tools = indicator.closest('[data-message-tools]');
+    assert.ok(tools);
+    assert.match(tools.className, /items-center/);
+    assert.match(tools.className, /opacity-0.*invisible.*pointer-events-none/);
+    await act(async () => message.dispatchEvent(new ui.dom.window.MouseEvent('mouseover', {bubbles: true, relatedTarget: document.body})));
+    assert.match(tools.className, /opacity-100.*visible.*pointer-events-auto/);
+    await act(async () => message.dispatchEvent(new ui.dom.window.MouseEvent('mouseout', {bubbles: true, relatedTarget: document.body})));
+    assert.match(tools.className, /opacity-0.*invisible/);
 });
 
-test('conversation ignore override disables tool forgetting and retains summary restoration', async t => {
+test('tool ignores and compaction each retain an explicit restore action', async t => {
     const ui = await setup(t);
-    await ui.renderTool({ignoringDisabled: true, status: {status: 'forgotten'}, messageContextState: {forgotten: true}});
-    assert.ok(ui.button('忘记').disabled);
-    assert.equal(ui.button('压缩').disabled, false);
-    await ui.renderTool({ignoringDisabled: true, status: {status: 'compacted'}});
-    assert.equal(ui.button('恢复').disabled, false);
+    await ui.renderTool({status: {status: 'forgotten'}});
+    assert.ok(ui.button('恢复'));
+    await ui.renderTool({status: {status: 'compacted'}});
+    assert.ok(ui.button('恢复'));
 });
 
 test('compression polls only its accepted job and applies its result without reloading chat history', async t => {

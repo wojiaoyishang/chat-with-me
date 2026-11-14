@@ -31,6 +31,14 @@ export const clientAdapter = {
         if (name === 'backend.switch') return switchBackend(payload.profileId);
         if (name === 'backend.manage') { window.dispatchEvent(new CustomEvent(BACKEND_MANAGE_EVENT)); return {}; }
         if (name === 'client.local-settings') { setLocalSetting(storageKey(payload.key, payload), payload.value); return payload.value; }
+        if (name === 'conversation.context.changed') {
+            if (!payload.conversationId || !Number.isInteger(payload.state?.contextRevision))
+                throw new Error('上下文操作返回的状态无效。');
+            const {emitEvent} = await import('../../context/useEventStore.jsx');
+            emitEvent({event: 'context.state.changed', payload: payload.state,
+                conversationId: payload.conversationId, localOnly: true});
+            return {};
+        }
         if (name === 'auth.logout') {
             const scope = getBackendConnection();
             const { default: api } = await import('../../lib/apiClient.js');

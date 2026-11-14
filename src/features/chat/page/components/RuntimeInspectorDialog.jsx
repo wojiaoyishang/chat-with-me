@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import React, { memo, useEffect, useMemo, useState } from 'react';
 import {
     Activity,
     Archive,
@@ -26,7 +26,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import MessageSummaryItem from './MessageSummaryItem.jsx';
+import InspectorMessageBrowser from './InspectorMessageBrowser.jsx';
 import InspectorHighlight from './InspectorHighlight.jsx';
 import InspectorEventTimeline from './InspectorEventTimeline.jsx';
 import InspectorBackendMessages from './InspectorBackendMessages.jsx';
@@ -975,41 +975,12 @@ const ToolBrowser = ({ section, onLoadToolCall, loadingToolCallId }) => {
     );
 };
 
-const BriefBrowser = ({ section, activeMessageId, onJump }) => {
-    const items = Array.isArray(section?.items) ? section.items : [];
-    const virtuosoRef = useRef(null);
-    const activeIndex = items.findIndex((item) => item.messageId === activeMessageId);
-    useEffect(() => {
-        if (activeIndex < 0) return;
-        requestAnimationFrame(() => virtuosoRef.current?.scrollToIndex?.({ index: activeIndex, align: 'center' }));
-    }, [activeIndex]);
-    if (!items.length) return <EmptyState>暂无可展示的消息摘要。</EmptyState>;
-    return (
-        <Virtuoso
-            ref={virtuosoRef}
-            data={items}
-            className="h-full pretty-scrollbar"
-            increaseViewportBy={320}
-            itemContent={(_index, item) => (
-                <div className="px-3 py-1 sm:px-4">
-                    <MessageSummaryItem
-                        item={item}
-                        variant="map"
-                        active={item.messageId === activeMessageId}
-                        onClick={() => onJump?.(item.messageId)}
-                    />
-                </div>
-            )}
-        />
-    );
-};
-
 const sectionRenderers = {
     'backend-message-browser': ({ section, onJump }) => <InspectorBackendMessages key={`${section.conversationId}:${section.revision}`} section={section} onJump={onJump} />,
     'event-timeline': ({ section, onJump }) => <InspectorEventTimeline key={section.conversationId} section={section} onJump={onJump} renderCall={(call) => <ModelCallDetails key={call.modelCallId} section={{ modelCalls: [call] }} />} renderReplacements={(nodes, query) => <ReplacementTree nodes={nodes} query={query} />} />,
     'context-browser': ContextBrowser,
     'tool-browser': ToolBrowser,
-    'message-summary-browser': BriefBrowser,
+    'message-summary-browser': props => <InspectorMessageBrowser key={props.section.conversationId} {...props}/>,
 };
 
 const RuntimeSectionRenderer = ({
@@ -1046,6 +1017,7 @@ const RuntimeSectionRenderer = ({
 
 const RuntimeInspectorDialog = memo(
     ({
+        conversationId,
         open,
         document,
         loading = false,
@@ -1054,6 +1026,7 @@ const RuntimeInspectorDialog = memo(
         activeTab = 'brief',
         activeMessageId,
         briefItems = [],
+        briefOrderFingerprint,
         briefLoading = false,
         modelCallLoadingId = '',
         toolCallLoadingId = '',
@@ -1071,6 +1044,8 @@ const RuntimeInspectorDialog = memo(
                 ? {
                       ...(currentTab?.section || {}),
                       type: 'message-summary-browser',
+                      conversationId: conversationId || document?.conversationId,
+                      orderFingerprint: briefOrderFingerprint,
                       loaded: !briefLoading || briefItems.length > 0,
                       items: briefItems,
                       focusMessageId: activeMessageId,

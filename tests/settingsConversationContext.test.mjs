@@ -42,3 +42,24 @@ test('backend memory editor loads and saves through generic actions with its exa
         assert.equal(settingsUI.changed.length, 0, 'memory must not be stored as ChatBox options');
     } finally { await ui.close(); }
 });
+
+test('restore-all action is a one-shot conversation request and publishes its result without saving composer options', async () => {
+    const state = {contextRevision: 9, messageStates: {a: {}}, replacementStates: {}};
+    const restore = {type: 'actions', actions: [{id: 'restore-ignored-messages', label: '强制取消所有消息忽略',
+        endpoint: '/chat/conversations/{context.conversationId}/context', method: 'POST', body: {action: 'restore_all'},
+        disabledWhen: {left: ref('context.conversationId'), op: 'eq', right: ''}, effects: [
+            {type: 'client', action: 'conversation.context.changed', body: {conversationId: ref('context.conversationId'), state: ref('response')}},
+            {type: 'toast', message: '已取消所有消息和工具结果的忽略'},
+        ]}]};
+    const ui = await mount([restore], null, async () => state, {surface: 'conversation', conversationId: 'owned'});
+    try {
+        await click(button('强制取消所有消息忽略'));
+        const [method, endpoint, body] = settingsUI.calls[0];
+        assert.equal(method, 'post');
+        assert.equal(endpoint, '/chat/conversations/owned/context');
+        assert.deepEqual(body, {action: 'restore_all'});
+        assert.deepEqual(settingsUI.clientCalls[0], ['conversation.context.changed', {conversationId: 'owned', state}]);
+        assert.equal(settingsUI.changed.length, 0);
+        assert.equal(document.querySelector('[role="switch"]'), null);
+    } finally { await ui.close(); }
+});

@@ -32,7 +32,6 @@ import StoryReader from '@/features/story/StoryReader.jsx';
 import useConversationFreeze from './freeze/useConversationFreeze.js';
 import ConversationFreezeNotice from './freeze/ConversationFreezeNotice.jsx';
 import {ConversationFreezeContext} from './freeze/ConversationFreezeContext.jsx';
-import {MessageIgnoringContext} from './ui/message/MessageIgnoringContext.jsx';
 import { ExecutionHost } from '@/features/execution';
 import { clearWorkspaceTransfers, upsertWorkspaceTransfer } from '@/features/workspace/useWorkspaceTransferStore.js';
 import { getVisionAttachmentIds, normalizeAttachmentList } from './attachmentVision.js';
@@ -2939,6 +2938,14 @@ function ChatPage({
                             ? payload.replacementStates
                             : {};
 
+                    setMessageSummaries(previous => {
+                        const next = previous.map(item => Object.hasOwn(messageStates, item.messageId)
+                            ? {...item, contextState: messageStates[item.messageId]}
+                            : item);
+                        messageSummariesRef.current = next;
+                        return next;
+                    });
+
                     const newMessages = produce(messagesRef.current, (draft) => {
                         for (const [messageId, state] of Object.entries(messageStates)) {
                             if (!draft[messageId]) continue;
@@ -3599,7 +3606,6 @@ function ChatPage({
 
     return (
         <ConversationFreezeContext.Provider value={conversationFreeze}>
-        <MessageIgnoringContext.Provider value={advancedSettingsValues.contextDisableIgnoring === true}>
         <WidgetPresentationProvider chatBoxHostElement={widgetChatBoxHostElement}>
             <>
                 <Motion.div
@@ -3889,6 +3895,8 @@ function ChatPage({
                         </div>
 
                         <RuntimeInspectorDialog
+                            conversationId={conversationId}
+                            briefOrderFingerprint={messageSummaryFingerprintRef.current}
                             open={runtimeInspectorOpen}
                             document={runtimeInspectorDocument}
                             loading={runtimeInspectorLoading}
@@ -4097,7 +4105,6 @@ function ChatPage({
                 />
             </>
         </WidgetPresentationProvider>
-        </MessageIgnoringContext.Provider>
         </ConversationFreezeContext.Provider>
     );
 }
