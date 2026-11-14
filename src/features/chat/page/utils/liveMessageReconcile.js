@@ -1,9 +1,9 @@
 import { mergeNetworkData } from './networkMerge.js';
-import {mergeMessageConfig, mergeMessageContextState} from './messageConfigUpdates.js';
+import {mergeMessageConfig, mergeMessageContextState, preserveReplacementContextStatus} from './messageConfigUpdates.js';
 import {mergeBodyForwardingStatus} from './bodyForwardingStatus.js';
 
 const preserveMessageSettings = (snapshot, current) => {
-    if (!snapshot?.messageConfig && !current?.messageConfig) return snapshot;
+    if (!snapshot?.messageConfig && !current?.messageConfig && !snapshot?.contextState && !current?.contextState) return snapshot;
     const merged = {...snapshot, messageConfig: mergeMessageConfig(current?.messageConfig, snapshot.messageConfig)};
     const stateSource = (current?.contextStateRevision || 0) > (snapshot.contextStateRevision || 0) ? current : snapshot;
     return mergeMessageContextState(merged, stateSource.contextState, stateSource.contextStateRevision);
@@ -15,8 +15,8 @@ const asOrder = (value) => Array.isArray(value) ? value.filter(Boolean) : [];
 const withoutHistorySentinel = (value) => asOrder(value).filter((id) => id !== HISTORY_SENTINEL);
 
 const mergeReplacementEntry = (snapshotEntry, liveEntry, preserveStream) => {
-    if (!snapshotEntry || typeof snapshotEntry !== 'object') return liveEntry ?? snapshotEntry;
-    if (!liveEntry || typeof liveEntry !== 'object') return snapshotEntry;
+    if (!snapshotEntry || typeof snapshotEntry !== 'object') return preserveReplacementContextStatus(liveEntry ?? snapshotEntry, snapshotEntry);
+    if (!liveEntry || typeof liveEntry !== 'object') return preserveReplacementContextStatus(snapshotEntry, liveEntry);
 
     const field = Object.hasOwn(snapshotEntry, 'content') ? 'content'
         : Object.hasOwn(snapshotEntry, 'frontend') ? 'frontend' : 'value';
@@ -30,11 +30,11 @@ const mergeReplacementEntry = (snapshotEntry, liveEntry, preserveStream) => {
         && liveContent.startsWith(snapshotContent)
     );
 
-    return {
+    return preserveReplacementContextStatus({
         ...liveEntry,
         ...snapshotEntry,
         ...(canKeepLiveContent ? {[field]: liveContent} : {}),
-    };
+    }, liveEntry);
 };
 
 /**

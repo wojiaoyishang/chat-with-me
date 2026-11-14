@@ -630,15 +630,10 @@ function ListItem({ item, path }) {
         (template = null) => {
             const internalId = generateInternalId();
             const editableId = item.identityField && item.idFactory === 'uuid' ? crypto.randomUUID() : undefined;
-            const defaultItem = { [ROW_KEY]: internalId, ...(editableId ? { [item.identityField]: editableId } : {}) };
-            if (item.children) {
-                item.children.forEach((child) => {
-                    if (['info', 'heading'].includes(child.type)) return;
-                    if (child.name) {
-                        defaultItem[child.name] = child.default ?? (child.nullable ? null : undefined);
-                    }
-                });
-            }
+            const defaultItem = pageValues(
+                item.children || [],
+                editableId ? { [item.identityField]: editableId } : {},
+            );
             const templateValues =
                 template?.values && typeof template.values === 'object'
                     ? JSON.parse(JSON.stringify(template.values))

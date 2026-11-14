@@ -46,13 +46,13 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: (id) => {
+                    id = id.replaceAll('\\', '/');
                     if (id.includes('json-config-editor')) return 'json-config-editor';
-                    // React 核心
-                    if (id.includes('node_modules/react-dom')) {
-                        return 'react-dom';
-                    }
-                    if (id.includes('node_modules/react')) {
-                        return 'react';
+                    // Keep the CommonJS runtime and renderer initialization together.
+                    // A "react*" prefix also captures router/markdown/virtuoso and
+                    // creates a runtime -> renderer -> runtime chunk cycle.
+                    if (/\/node_modules\/(?:react|react-dom|scheduler)\//.test(id)) {
+                        return 'react-runtime';
                     }
 
                     // Zustand 状态管理

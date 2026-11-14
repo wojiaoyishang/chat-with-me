@@ -22,18 +22,18 @@ src/components/markdown/card-block/status/StatusWidget 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``@/features/chat/speech/useFrontendFeedback.js``、``../blocks/ToolLogBlock.jsx``、``@/features/chat/speech/FrontendFeedbackButtons.jsx``、``@/features/chat/speech/frontendFeedback.js``、``react``、``react-i18next``、``../constants.jsx``、``../expandedStore.js``、``../useExpandedState.js``、``../utils.js``、``./StatusBody.jsx``、``./StatusHeader.jsx``、``./StickyStatusHeader.jsx``、``./toolLogReferences.js``、``@/features/chat/ui/message/components/IgnoredContextIndicator.jsx``、``@/features/chat/ui/message/components/CompactedContextIndicator.jsx``、``@/lib/tools.jsx``。
+``@/features/chat/speech/useFrontendFeedback.js``、``../blocks/ToolLogBlock.jsx``、``@/features/chat/speech/FrontendFeedbackButtons.jsx``、``@/features/chat/speech/frontendFeedback.js``、``react``、``react-i18next``、``../constants.jsx``、``../expandedStore.js``、``../useExpandedState.js``、``../utils.js``、``./StatusBody.jsx``、``./StatusHeader.jsx``、``./StickyStatusHeader.jsx``、``./toolLogReferences.js``、``@/features/chat/ui/message/components/IgnoredContextIndicator.jsx``、``@/features/chat/ui/message/components/CompactedContextIndicator.jsx``、``@/features/chat/ui/message/components/ToolContextActions.jsx``、``@/lib/tools.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:1885:2519:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:1980:2614:FUNCTION
 
 .. js:function:: getBadgeTextColor(backgroundColor)
 
    读取与 ``Badge Text Color`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``37``—``57`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``38``—``58`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
    **主要协作调用**：``backgroundColor.replace``、``parseInt``、``hex.slice``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:2547:2863:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:2642:2958:FUNCTION
 
 .. js:function:: parseActionFields(rawFields)
 
    解析与 ``Action Fields`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``59``—``72`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``60``—``73`` 行。
 
    **参数**
 
@@ -70,17 +70,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:2892:19933:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:2987:20762:FUNCTION
 
-.. rubric:: ``memo callback @ 75``
+.. rubric:: ``memo callback @ 76``
 
 .. code-block:: javascript
 
-   memo callback @ 75({ activeColor, content = '', doneColor, Icon, id, conversationId = null, isProcessing = false, titl…)
+   memo callback @ 76({ activeColor, content = '', doneColor, Icon, id, conversationId = null, isProcessing = false, titl…)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``75``—``426`` 行。
+**性质**：同步局部函数；源码第 ``76``—``435`` 行。
 
 **参数**
 
@@ -95,17 +95,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **内部回调数量**：14。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:3935:4105:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4030:4200:FUNCTION
 
-.. rubric:: ``useMemo callback @ 103``
+.. rubric:: ``useMemo callback @ 104``
 
 .. code-block:: javascript
 
-   useMemo callback @ 103()
+   useMemo callback @ 104()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``103``—``106`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``104``—``107`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -117,17 +117,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``getExpandedKey``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4185:4279:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4280:4374:FUNCTION
 
-.. rubric:: ``useMemo callback @ 109``
+.. rubric:: ``useMemo callback @ 110``
 
 .. code-block:: javascript
 
-   useMemo callback @ 109()
+   useMemo callback @ 110()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``109``—``109`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``110``—``110`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -139,17 +139,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``parseFrontendFeedback``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4490:4528:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4585:4623:FUNCTION
 
-.. rubric:: ``feedbackItems.map callback @ 113``
+.. rubric:: ``feedbackItems.map callback @ 114``
 
 .. code-block:: javascript
 
-   feedbackItems.map callback @ 113(item)
+   feedbackItems.map callback @ 114(item)
 
 作为 ``feedbackItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``113``—``113`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -160,17 +160,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4582:4619:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4677:4714:FUNCTION
 
-.. rubric:: ``feedbackStates.some callback @ 114``
+.. rubric:: ``feedbackStates.some callback @ 115``
 
 .. code-block:: javascript
 
-   feedbackStates.some callback @ 114(state)
+   feedbackStates.some callback @ 115(state)
 
 作为 ``feedbackStates.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``114``—``114`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -181,17 +181,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4704:4744:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4799:4839:FUNCTION
 
-.. rubric:: ``feedbackStates.every callback @ 116``
+.. rubric:: ``feedbackStates.every callback @ 117``
 
 .. code-block:: javascript
 
-   feedbackStates.every callback @ 116(state)
+   feedbackStates.every callback @ 117(state)
 
 作为 ``feedbackStates.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``116``—``116`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``117``—``117`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -202,17 +202,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4810:4848:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4905:4943:FUNCTION
 
-.. rubric:: ``feedbackStates.some callback @ 118``
+.. rubric:: ``feedbackStates.some callback @ 119``
 
 .. code-block:: javascript
 
-   feedbackStates.some callback @ 118(state)
+   feedbackStates.some callback @ 119(state)
 
 作为 ``feedbackStates.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``118``—``118`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``119``—``119`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -223,17 +223,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:4916:4956:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:5011:5051:FUNCTION
 
-.. rubric:: ``feedbackStates.some callback @ 120``
+.. rubric:: ``feedbackStates.some callback @ 121``
 
 .. code-block:: javascript
 
-   feedbackStates.some callback @ 120(state)
+   feedbackStates.some callback @ 121(state)
 
 作为 ``feedbackStates.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``120``—``120`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``121``—``121`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -244,17 +244,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:5155:8618:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:5250:8713:FUNCTION
 
-.. rubric:: ``useMemo callback @ 125``
+.. rubric:: ``useMemo callback @ 126``
 
 .. code-block:: javascript
 
-   useMemo callback @ 125()
+   useMemo callback @ 126()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``125``—``205`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``126``—``206`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -268,17 +268,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:5647:6007:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:5742:6102:FUNCTION
 
-.. rubric:: ``[...safeContent.matchAll(BADGE_MARKER_REGEX)] .map callback @ 134``
+.. rubric:: ``[...safeContent.matchAll(BADGE_MARKER_REGEX)] .map callback @ 135``
 
 .. code-block:: javascript
 
-   [...safeContent.matchAll(BADGE_MARKER_REGEX)] .map callback @ 134(match)
+   [...safeContent.matchAll(BADGE_MARKER_REGEX)] .map callback @ 135(match)
 
 作为 ``[...safeContent.matchAll(BADGE_MARKER_REGEX)] .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``134``—``144`` 行；所属函数 ``useMemo callback @ 125``。
+**性质**：同步局部函数；源码第 ``135``—``145`` 行；所属函数 ``useMemo callback @ 126``。
 
 **参数**
 
@@ -291,17 +291,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``toSafeString(match[1]).trim``、``toSafeString``、``toSafeString(match[2]).trim``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:6152:6662:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:6247:6757:FUNCTION
 
-.. rubric:: ``[...safeContent.matchAll(ACTION_MARKER_REGEX)] .map callback @ 148``
+.. rubric:: ``[...safeContent.matchAll(ACTION_MARKER_REGEX)] .map callback @ 149``
 
 .. code-block:: javascript
 
-   [...safeContent.matchAll(ACTION_MARKER_REGEX)] .map callback @ 148(match)
+   [...safeContent.matchAll(ACTION_MARKER_REGEX)] .map callback @ 149(match)
 
 作为 ``[...safeContent.matchAll(ACTION_MARKER_REGEX)] .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``148``—``161`` 行；所属函数 ``useMemo callback @ 125``。
+**性质**：同步局部函数；源码第 ``149``—``162`` 行；所属函数 ``useMemo callback @ 126``。
 
 **参数**
 
@@ -314,17 +314,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``parseActionFields``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:8710:8943:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:8805:9038:FUNCTION
 
-.. rubric:: ``useMemo callback @ 207``
+.. rubric:: ``useMemo callback @ 208``
 
 .. code-block:: javascript
 
-   useMemo callback @ 207()
+   useMemo callback @ 208()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``207``—``217`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``208``—``218`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -336,17 +336,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``lastLine.slice``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:10865:11059:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:10960:11154:FUNCTION
 
-.. rubric:: ``useEffect callback @ 247``
+.. rubric:: ``useEffect callback @ 248``
 
 .. code-block:: javascript
 
-   useEffect callback @ 247()
+   useEffect callback @ 248()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``247``—``253`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``248``—``254`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -358,17 +358,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``hasExpandedUserOverride``、``setExpandedValue``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:12557:13239:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:12652:13334:FUNCTION
 
-.. rubric:: ``badges.map callback @ 283``
+.. rubric:: ``badges.map callback @ 284``
 
 .. code-block:: javascript
 
-   badges.map callback @ 283(badge, index)
+   badges.map callback @ 284(badge, index)
 
 作为 ``badges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``283``—``295`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``284``—``296`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -384,17 +384,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``getBadgeTextColor``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:13402:15461:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:13497:15556:FUNCTION
 
-.. rubric:: ``useMemo callback @ 302``
+.. rubric:: ``useMemo callback @ 303``
 
 .. code-block:: javascript
 
-   useMemo callback @ 302()
+   useMemo callback @ 303()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``302``—``346`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``303``—``347`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -406,17 +406,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``String``、``rawId.endsWith``、``rawId.slice``、``String(resultStatus?.status || rootStatus?.status || '').toLowerCase``、``Array.isArray``、``t``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:15960:15988:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:16055:16083:FUNCTION
 
-.. rubric:: ``onPlayCapture callback @ 355``
+.. rubric:: ``onPlayCapture callback @ 356``
 
 .. code-block:: javascript
 
-   onPlayCapture callback @ 355()
+   onPlayCapture callback @ 356()
 
 处理 ``Play Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``355``—``355`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``356``—``356`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -428,17 +428,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``setKeepMediaOpen``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:18242:19865:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:19071:20694:FUNCTION
 
-.. rubric:: ``feedbackItems.map callback @ 398``
+.. rubric:: ``feedbackItems.map callback @ 407``
 
 .. code-block:: javascript
 
-   feedbackItems.map callback @ 398(item)
+   feedbackItems.map callback @ 407(item)
 
 作为 ``feedbackItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``398``—``422`` 行；所属函数 ``memo callback @ 75``。
+**性质**：同步局部函数；源码第 ``407``—``431`` 行；所属函数 ``memo callback @ 76``。
 
 **参数**
 
@@ -453,17 +453,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:18421:18735:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:19250:19564:FUNCTION
 
-.. rubric:: ``state.logs.map callback @ 401``
+.. rubric:: ``state.logs.map callback @ 410``
 
 .. code-block:: javascript
 
-   state.logs.map callback @ 401(log)
+   state.logs.map callback @ 410(log)
 
 作为 ``state.logs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``401``—``407`` 行；所属函数 ``feedbackItems.map callback @ 398``。
+**性质**：同步局部函数；源码第 ``410``—``416`` 行；所属函数 ``feedbackItems.map callback @ 407``。
 
 **参数**
 
@@ -474,17 +474,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:19197:19841:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:20026:20670:FUNCTION
 
-.. rubric:: ``results.map callback @ 415``
+.. rubric:: ``results.map callback @ 424``
 
 .. code-block:: javascript
 
-   results.map callback @ 415(result, index)
+   results.map callback @ 424(result, index)
 
 作为 ``results.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``415``—``421`` 行；所属函数 ``feedbackItems.map callback @ 398``。
+**性质**：同步局部函数；源码第 ``424``—``430`` 行；所属函数 ``feedbackItems.map callback @ 407``。
 
 **参数**
 
@@ -500,17 +500,17 @@ src/components/markdown/card-block/status/StatusWidget 模块
 
 **主要协作调用**：``new Date(state.started_at * 1000).toISOString``、``new Date(state.finished_at * 1000).toISOString``。
 
-.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:19934:20797:FUNCTION
+.. CWM-AST-FUNCTION src/components/markdown/card-block/status/StatusWidget.jsx:20763:21626:FUNCTION
 
-.. rubric:: ``memo callback @ 427``
+.. rubric:: ``memo callback @ 436``
 
 .. code-block:: javascript
 
-   memo callback @ 427(prev, next)
+   memo callback @ 436(prev, next)
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``427``—``446`` 行。
+**性质**：同步局部函数；源码第 ``436``—``455`` 行。
 
 **参数**
 

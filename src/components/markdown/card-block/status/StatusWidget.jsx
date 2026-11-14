@@ -21,6 +21,7 @@ import StickyStatusHeader from './StickyStatusHeader.jsx';
 import { deduplicateToolLogReferences } from './toolLogReferences.js';
 import IgnoredContextIndicator from '@/features/chat/ui/message/components/IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
+import ToolContextActions from '@/features/chat/ui/message/components/ToolContextActions.jsx';
 import {
     CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
     EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
@@ -377,7 +378,15 @@ const StatusWidget = memo(
                         progress={snapshot ? null : progress}
                         truncatedLastLine={truncatedLastLine}
                         titleAccessory={toolContextIndicator}
-                        rightAccessory={<FrontendFeedbackButtons items={feedbackItems} feedback={feedback} />}
+                        rightAccessory={<>
+                            {!snapshot && isToolCalling && isFinished && conversationId && contextId && !String(contextId).startsWith('<') && <ToolContextActions
+                                conversationId={conversationId} messageId={contextId}
+                                toolCallId={String(id || '').replace(/-toolCalling$/, '')}
+                                status={replacement?.[`tool-result-${String(id || '').replace(/-toolCalling$/, '')}`]?.contextStatus || replacement?.[`tool-result-${String(id || '').replace(/-toolCalling$/, '')}`]?.context_status}
+                                messageContextState={messageContextState}/>
+                            }
+                            <FrontendFeedbackButtons items={feedbackItems} feedback={feedback}/>
+                        </>}
                         waitingApprovalLabel={
                             isWaitingSubagent
                                 ? t('tool_subagent_waiting_status', 'Waiting for sub-agent')

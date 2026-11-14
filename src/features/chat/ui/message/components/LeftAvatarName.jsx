@@ -7,7 +7,7 @@ import { useReducedMotion } from 'framer-motion';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
+const LeftAvatarName = memo(({ msg, isLeaving, showDetails, children }) => {
     const displayName = msg?.name || 'U';
     const viewport = useRef(null);
     const marquee = useRef(null);
@@ -71,6 +71,7 @@ const LeftAvatarName = memo(({ msg, isLeaving, showDetails }) => {
             >
                 <div className="flex w-max min-w-full flex-nowrap items-center gap-2 whitespace-nowrap">
                     <MessageIndicators indicators={indicators} />
+                    {children}
                     <time
                         dateTime={createdAt}
                         aria-hidden={!showDetails}

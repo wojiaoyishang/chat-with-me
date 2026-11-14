@@ -55,6 +55,7 @@ import {
 import {
     applyMessageConfigUpdate,
     mergeMessageContextState,
+    preserveReplacementContextStatus,
 } from '@/features/chat/page/utils/messageConfigUpdates.js';
 import {pendingBodyForwarding} from '@/features/chat/page/utils/bodyForwardingStatus.js';
 
@@ -2953,16 +2954,10 @@ function ChatPage({
 
                             for (const [replacementId, contextStatus] of Object.entries(replacements)) {
                                 const current = message.extraInfo.replace[replacementId];
-                                if (current && typeof current === 'object') {
-                                    current.contextStatus =
-                                        contextStatus && typeof contextStatus === 'object' ? contextStatus : {};
-                                } else {
-                                    message.extraInfo.replace[replacementId] = {
-                                        frontend: typeof current === 'string' ? current : '',
-                                        contextStatus:
-                                            contextStatus && typeof contextStatus === 'object' ? contextStatus : {},
-                                    };
-                                }
+                                message.extraInfo.replace[replacementId] = preserveReplacementContextStatus({
+                                    ...(current && typeof current === 'object' ? current : {frontend: typeof current === 'string' ? current : ''}),
+                                    contextStatus: contextStatus && typeof contextStatus === 'object' ? contextStatus : {},
+                                }, current);
                             }
                         }
                     });

@@ -177,20 +177,16 @@ const MessageItem = memo(
         }, [isMid, msg.content, msg.extraInfo?.replace, msg.attachments?.length]);
 
         const renderLeftAvatarName = () => automaticOrigin ? null : (
-            <div className="flex w-full min-w-0 items-center gap-1">
-                <div className="min-w-0 flex-1 select-none">
-                    <LeftAvatarName
-                        msg={msg}
-                        isLeaving={leavingMessages.has(msgId)}
-                        showDetails={isMobile ? isMobileActive : isHovered}
-                    />
-                </div>
+            <LeftAvatarName
+                msg={msg}
+                isLeaving={leavingMessages.has(msgId)}
+                showDetails={isMobile ? isMobileActive : isHovered}
+            >
                 {isMessageCompacted && (
                     <CompactedContextIndicator
                         conversationId={conversationId}
                         messageId={msgId}
                         label={`${getLabel('context_state_compacted', '已压缩')}${messageCompactions.length > 1 ? ` ×${messageCompactions.length}` : ''}`}
-                        className="mb-1"
                     />
                 )}
                 {isMessageForgotten && (
@@ -198,10 +194,9 @@ const MessageItem = memo(
                         conversationId={conversationId}
                         messageId={msgId}
                         label={getLabel('context_state_forgotten', '已忽略')}
-                        className="mb-1"
                     />
                 )}
-            </div>
+            </LeftAvatarName>
         );
 
         const renderRightAvatar = (className = 'h-10 w-10 flex-shrink-0') => automaticOrigin ? null : (

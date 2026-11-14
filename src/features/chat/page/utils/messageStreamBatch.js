@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import {MAX_MESSAGE_DELTA_CHARACTERS, mergeMessageDeltaValues} from '../../../../runtime/protocol/messageDeltas.js';
+import {preserveReplacementContextStatus} from './messageConfigUpdates.js';
 
 export const MESSAGE_STREAM_EVENTS = new Set([
     'message.content.set', 'message.content.delta',
@@ -18,7 +19,11 @@ export function applyMessageStreamOperations(messages, operations) {
                 else {
                     message.extraInfo ||= {};
                     message.extraInfo.replace ||= {};
-                    if (event === 'message.replacement.set') Object.assign(message.extraInfo.replace, patch);
+                    if (event === 'message.replacement.set') {
+                        for (const [id, entry] of Object.entries(patch)) {
+                            message.extraInfo.replace[id] = preserveReplacementContextStatus(entry, message.extraInfo.replace[id]);
+                        }
+                    }
                     else for (const [id, delta] of Object.entries(patch)) {
                         const current = message.extraInfo.replace[id];
                         if (current && typeof current === 'object') {

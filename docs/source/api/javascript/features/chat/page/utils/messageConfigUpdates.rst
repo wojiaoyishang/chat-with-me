@@ -3,7 +3,7 @@ src/features/chat/page/utils/messageConfigUpdates 模块
 
 .. js:module:: src/features/chat/page/utils/messageConfigUpdates
 
-Keep persisted user settings monotonic across HTTP, stream and history delivery.
+Result rendering can stream independently of a user's durable context choice.
 
 .. note::
 
@@ -15,7 +15,7 @@ Keep persisted user settings monotonic across HTTP, stream and history delivery.
 
 * **源码文件**：``src/features/chat/page/utils/messageConfigUpdates.js``
 * **模块标识**：``src/features/chat/page/utils/messageConfigUpdates``
-* **顶层函数/组件/Hook**：5
+* **顶层函数/组件/Hook**：6
 * **类**：0
 * **局部函数与匿名回调**：2
 
@@ -60,13 +60,35 @@ Keep persisted user settings monotonic across HTTP, stream and history delivery.
 
    **主要协作调用**：``Number.isInteger``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:301:1108:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:312:768:FUNCTION
+
+.. js:function:: preserveReplacementContextStatus(incoming, current)
+
+   实现 ``preserveReplacementContextStatus`` 对应的前端处理。
+
+   **性质**：同步函数；导出 API；源码第 ``5``—``11`` 行。
+
+   **参数**
+
+   ``incoming``
+      调用方传入的 ``incoming`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   ``current``
+      调用方传入的 ``current`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+   **返回值**
+
+   根据执行分支返回结果；代表性返回表达式为 ``incoming``、``{...(isRecord(incoming) ? incoming : {frontend: typeof incoming === 'string' ? incoming : ''}), contextStatus: {...status}}``。
+
+   **主要协作调用**：``revisionOf``、``isRecord``。
+
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:892:1699:FUNCTION
 
 .. js:function:: mergeMessageConfig(current, incoming)
 
    合并与 ``Message Config`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``5``—``20`` 行。
+   **性质**：同步函数；导出 API；源码第 ``14``—``29`` 行。
 
    **参数**
 
@@ -84,13 +106,13 @@ Keep persisted user settings monotonic across HTTP, stream and history delivery.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:1150:1730:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:1741:2321:FUNCTION
 
 .. js:function:: mergeMessageContextState(message, state, revision)
 
    合并与 ``Message Context State`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``22``—``34`` 行。
+   **性质**：同步函数；导出 API；源码第 ``31``—``43`` 行。
 
    **参数**
 
@@ -109,13 +131,13 @@ Keep persisted user settings monotonic across HTTP, stream and history delivery.
 
    **主要协作调用**：``isRecord``、``revisionOf``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:1857:3254:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:2448:3845:FUNCTION
 
 .. js:function:: applyMessageConfigUpdate(messages, payload)
 
    应用与 ``Message Config Update`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``37``—``63`` 行。
+   **性质**：同步函数；导出 API；源码第 ``46``—``72`` 行。
 
    **参数**
 
@@ -138,17 +160,17 @@ Keep persisted user settings monotonic across HTTP, stream and history delivery.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:1027:1072:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:1618:1663:FUNCTION
 
-.. rubric:: ``incoming.badges.map callback @ 17``
+.. rubric:: ``incoming.badges.map callback @ 26``
 
 .. code-block:: javascript
 
-   incoming.badges.map callback @ 17(badge)
+   incoming.badges.map callback @ 26(badge)
 
 作为 ``incoming.badges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``mergeMessageConfig``。
+**性质**：同步局部函数；源码第 ``26``—``26`` 行；所属函数 ``mergeMessageConfig``。
 
 **参数**
 
@@ -161,17 +183,17 @@ Keep persisted user settings monotonic across HTTP, stream and history delivery.
 
 **主要协作调用**：``isRecord``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:2808:2847:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/messageConfigUpdates.js:3399:3438:FUNCTION
 
-.. rubric:: ``affected.contextState.compactions.filter callback @ 54``
+.. rubric:: ``affected.contextState.compactions.filter callback @ 63``
 
 .. code-block:: javascript
 
-   affected.contextState.compactions.filter callback @ 54(item)
+   affected.contextState.compactions.filter callback @ 63(item)
 
 作为 ``affected.contextState.compactions.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``54``—``54`` 行；所属函数 ``applyMessageConfigUpdate``。
+**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``applyMessageConfigUpdate``。
 
 **参数**
 

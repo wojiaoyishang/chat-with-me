@@ -7,9 +7,10 @@ import React, {act, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 const translations = JSON.parse(fs.readFileSync('src/assets/locales/zh.json', 'utf8'));
-const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ConversationFreezeContext.jsx']);
+const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ToolContextActions.jsx', 'IgnoredContextIndicator.jsx', 'ContextStateIndicator.jsx', 'ConversationFreezeContext.jsx']);
 await build({
     stdin: {contents: `export {default} from './src/features/chat/ui/message/components/MessageItem.jsx';
+        export {default as ToolContextActions} from './src/features/chat/ui/message/components/ToolContextActions.jsx';
         export {useExecutionStore} from './src/features/execution/useExecutionStore.js';`, resolveDir: process.cwd()},
     outfile: 'temp/message-settings-react-test.mjs',
     bundle: true, packages: 'external', platform: 'node', format: 'esm', jsx: 'automatic',
@@ -23,7 +24,7 @@ await build({
         builder.onResolve({filter: /AttachmentShowcase$/}, ({path}) => ({path, namespace: 'fixture'}));
         builder.onLoad({filter: /.*/, namespace: 'fixture'}, ({path}) => {
             let contents;
-            if (path === '@/lib/apiClient.js') contents = 'export default {get:(...args)=>globalThis.__messageSettings.api.get(...args),patch:(...args)=>globalThis.__messageSettings.api.patch(...args)}';
+            if (path === '@/lib/apiClient.js') contents = 'export default {get:(...args)=>globalThis.__messageSettings.api.get(...args),patch:(...args)=>globalThis.__messageSettings.api.patch(...args),post:(...args)=>globalThis.__messageSettings.api.post(...args)}';
             else if (path === '@/config.js') contents = 'export const apiEndpoint={CHAT_MESSAGES_ENDPOINT:"/chat/messages",CHAT_MESSAGE_CONFIG_ENDPOINT:"/chat/message-config"}';
             else if (path === '@/context/useEventStore.jsx') contents = 'export const emitEvent=envelope=>{globalThis.__messageSettings.events.push(envelope);globalThis.__messageSettings.apply?.(envelope);return{then:()=>Promise.resolve()}}';
             else if (path === 'react-i18next') contents = 'export const useTranslation=()=>({t:(key,args)=>globalThis.__messageSettings.t(key,args)})';
@@ -33,6 +34,7 @@ await build({
             else if (path === '@/context/userContext.jsx') contents = 'export const useUserStore=selector=>selector({user:{}})';
             else if (path === '@/components/modal/universalModal.js') contents = 'export const openRemoteUniversalModal=()=>{}';
             else if (path === '@/features/chat/attachmentVision.js') contents = 'export const normalizeAttachmentList=value=>Array.isArray(value)?value:[]';
+            else if (path === '@/components/message/messageOriginModel.js') contents = 'export const messageAutomationOrigin=()=>null';
             else if (path.endsWith('messageActions.js')) contents = 'export const handleMessageAction=()=>{}';
             else if (path.endsWith('speechContent.js')) contents = 'export const canSpeakMessage=()=>false';
             else if (path.endsWith('/tooltip')) contents = 'import{createContext,useContext,useState,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const Tooltip=({children,open,onOpenChange})=>{const[state,setState]=useState(false);return <C.Provider value={{open:open??state,setOpen:onOpenChange||setState}}>{children}</C.Provider>};export const TooltipTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onMouseEnter:event=>{children.props.onMouseEnter?.(event);c.setOpen(true)},onMouseLeave:event=>{children.props.onMouseLeave?.(event);c.setOpen(false)},onFocus:event=>{children.props.onFocus?.(event);c.setOpen(true)},onBlur:event=>{children.props.onBlur?.(event);c.setOpen(false)}})};export const TooltipContent=({children})=>useContext(C).open?createPortal(<div role="tooltip">{children}</div>,document.body):null';
@@ -42,7 +44,7 @@ await build({
             else if (path.endsWith('/badge')) contents = 'import{cloneElement}from"react";export const Badge=({children,asChild,variant,className,...props})=>{if(!asChild)return <span data-slot="badge" className={className} {...props}>{children}</span>;const merged={...props,"data-slot":"badge",className:[className,children.props.className].filter(Boolean).join(" ")};for(const key of Object.keys(props)){if(/^on[A-Z]/.test(key)&&typeof props[key]==="function"&&typeof children.props[key]==="function")merged[key]=event=>{children.props[key](event);props[key](event)}}return cloneElement(children,merged)}';
             else if (path.endsWith('/dropdown-menu')) contents = 'import{createContext,useContext,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const DropdownMenu=({children,...props})=><C.Provider value={props}>{children}</C.Provider>;export const DropdownMenuTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onClick:event=>{children.props.onClick?.(event);if(!children.props.disabled)c.onOpenChange(!c.open)}})};export const DropdownMenuContent=({children,side,align,sideOffset,collisionPadding,...props})=>useContext(C).open?createPortal(<section role="menu" {...props}>{children}</section>,document.body):null;export const DropdownMenuItem=({children,onSelect,...props})=><button role="menuitem" {...props} onClick={event=>onSelect?.(event)}>{children}</button>;export const DropdownMenuLabel=({children})=><header>{children}</header>;export const DropdownMenuSeparator=()=>null';
             else if (path.endsWith('TextOnlyMessageContent.jsx')) contents = 'export default ({msg})=><p>{msg.content}</p>';
-            else if (path.endsWith('LeftAvatarName.jsx')) contents = 'export default ({msg})=><span>{msg.name}</span>';
+            else if (path.endsWith('LeftAvatarName.jsx')) contents = 'export default ({msg,children})=><span data-test-message-identity="true">{msg.name}{children}</span>';
             else if (path.endsWith('TooltipInfo.jsx')) contents = 'export default ({tip})=>tip?<span data-test-message-info="true">消息详情</span>:null';
             else contents = 'export default ()=>null';
             return {loader: 'jsx', contents};
@@ -66,28 +68,31 @@ async function setup(t, api = {}, initial = {}) {
     for (const key of keys) Object.defineProperty(globalThis, key, {configurable: true, value: dom.window[key]});
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     const fixture = {
-        gets: [], patches: [], events: [], toasts: [], mobile: false,
+        gets: [], patches: [], posts: [], events: [], toasts: [], mobile: false,
         t: (key, args) => key.split('.').reduce((object, part) => object?.[part], translations) || args?.defaultValue || key,
         api: {
             get: async (...args) => { fixture.gets.push(args); return api.get ? api.get(...args) : catalog; },
             patch: async (...args) => { fixture.patches.push(args); return api.patch ? api.patch(...args) : {messageId: 'message-one', messageConfig: serverConfig(args[1].compressible), restoredArtifactIds: []}; },
+            post: async (...args) => { fixture.posts.push(args); return api.post ? api.post(...args) : {contextRevision: 4, messageStates: {'message-one': {forgotten: true}}}; },
         },
     };
     globalThis.__messageSettings = fixture;
-    const {default: MessageItem, useExecutionStore} = await import(`../temp/message-settings-react-test.mjs?test=${++moduleId}`);
+    const {default: MessageItem, ToolContextActions, useExecutionStore} = await import(`../temp/message-settings-react-test.mjs?test=${++moduleId}`);
     const container = document.getElementById('root'), root = createRoot(container);
     function Harness({msgId = 'message-one', conversationId = 'chat-one', message = baseMessage(), additional = [], relatedMessages = {}}) {
         const [patches, setPatches] = useState({});
         fixture.apply = envelope => {
             if (envelope.conversationId !== conversationId) return;
-            setPatches(previous => ({...previous, [envelope.payload.messageId]: envelope.payload.messageConfig}));
+            if (envelope.event === 'message.updated') setPatches(previous => ({...previous, [envelope.payload.messageId]: {messageConfig: envelope.payload.messageConfig}}));
+            if (envelope.event === 'context.state.changed') setPatches(previous => ({...previous,
+                ...Object.fromEntries(Object.entries(envelope.payload.messageStates || {}).map(([id, state]) => [id, {...previous[id], contextState: state}]))}));
         };
         return [
             {msgId, message},
             ...additional,
         ].map(item => React.createElement(MessageItem, {
             key: item.msgId, msgId: item.msgId, conversationId,
-            msg: patches[item.msgId] ? {...item.message, messageConfig: patches[item.msgId]} : item.message,
+            msg: patches[item.msgId] ? {...item.message, ...patches[item.msgId]} : item.message,
             messages: {...relatedMessages, [item.msgId]: item.message}, leavingMessages: new Set(), t: fixture.t,
         }));
     }
@@ -98,7 +103,7 @@ async function setup(t, api = {}, initial = {}) {
     const open = async (id = 'message-one') => {
         const message = container.querySelector(`[data-message-id="${id}"]`);
         await act(async () => message.dispatchEvent(new dom.window.MouseEvent('mouseover', {bubbles: true, relatedTarget: document.body})));
-        await click(message.querySelector('[aria-label="消息配置"]'));
+        await click(message.querySelector('[aria-label="更多"]'));
     };
     t.after(async () => {
         await act(async () => root.unmount());
@@ -107,7 +112,8 @@ async function setup(t, api = {}, initial = {}) {
         delete globalThis.__messageSettings;
         delete globalThis.IS_REACT_ACT_ENVIRONMENT;
     });
-    return {container, dom, fixture, render, button, click, open, useExecutionStore};
+    const renderTool = props => act(async () => root.render(React.createElement(ToolContextActions, {conversationId: 'chat-one', messageId: 'message-one', toolCallId: 'tool-one', ...props})));
+    return {container, dom, fixture, render, renderTool, button, click, open, useExecutionStore};
 }
 
 test('resumed execution makes its original message readonly until the authoritative execution ends', async t => {
@@ -126,7 +132,7 @@ test('resumed execution makes its original message readonly until the authoritat
         ...paused, runId: 'new-run', active: true, status: 'recovering', updatedAt: 20}));
     assert.equal(actions().length, 0, 'recovery locks actions before a new message snapshot arrives');
     assert.equal(owner().querySelector(`[aria-label="${branchLabel}"]`), null, 'branch switching is readonly too');
-    assert.ok(ui.container.querySelector('[data-message-id="other-message"] [aria-label="消息配置"]'),
+    assert.ok(ui.container.querySelector('[data-message-id="other-message"] [aria-label="更多"]'),
         'another message remains governed by its own permissions');
     await ui.render({message: baseMessage({position: 'left', readonly: false})});
     assert.equal(actions().length, 0, 'late readonly=false history cannot unlock a running message');
@@ -159,6 +165,72 @@ test('server catalog controls message menu and protecting a message immediately 
     await ui.click(ui.button('允许压缩'));
     assert.equal(ui.fixture.patches[1][1].compressible, true);
     assert.equal(ui.container.querySelector(protectedSelector), null);
+});
+
+test('the more menu offers compression and forgetting alongside message configuration', async t => {
+    const ui = await setup(t, {post: async (_path, payload) => ({contextRevision: 4,
+        messageStates: {'message-one': {forgotten: payload.action === 'forget'}}})});
+    await ui.render({message: baseMessage({position: 'left', name: '模型'})});
+    await ui.open();
+    assert.ok(ui.button('压缩此消息'));
+    assert.ok(ui.button('设置不可压缩'));
+    await ui.click(ui.button('从上下文忘记'));
+    assert.deepEqual(ui.fixture.posts[0].slice(0, 2), ['/chat/messages/message-one/context', {conversationId: 'chat-one', action: 'forget'}]);
+    assert.equal(ui.fixture.events[0].event, 'context.state.changed');
+    assert.equal(ui.fixture.events[0].localOnly, true);
+    await ui.open();
+    assert.equal(ui.button('压缩此消息').disabled, true);
+    assert.ok(ui.container.querySelector('[data-context-state="ignored"]').closest('[data-test-message-identity]'), 'ignored status belongs beside the model indicators');
+    await ui.click(ui.button('取消忽略'));
+    assert.deepEqual(ui.fixture.posts[1][1], {conversationId: 'chat-one', action: 'restore'});
+    assert.equal(ui.container.querySelector('[data-context-state="ignored"]'), null);
+    await ui.open();
+    assert.ok(ui.button('从上下文忘记'));
+});
+
+test('compression polls only its accepted job and applies its result without reloading chat history', async t => {
+    const ui = await setup(t, {
+        post: async () => ({messageId: 'message-one', jobId: 'manual-job', status: 'compressing'}),
+        get: async path => path === '/chat/message-config' ? catalog : ({jobId: 'manual-job', status: 'completed',
+            result: {contextRevision: 8, messageStates: {'message-one': {compactions: [{artifactId: 'summary'}]}}}}),
+    });
+    await ui.render();
+    await ui.open();
+    await ui.click(ui.button('压缩此消息'));
+    assert.ok(ui.button('正在压缩…').disabled);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 1570)); });
+    assert.equal(ui.fixture.gets.length, 2);
+    assert.deepEqual(ui.fixture.gets[1][1].params, {conversationId: 'chat-one', jobId: 'manual-job'});
+    assert.deepEqual(ui.fixture.events.map(event => event.event), [
+        'context.compaction_state.changed', 'context.compaction_state.changed', 'context.state.changed']);
+    assert.equal(ui.fixture.events.at(-1).payload.contextRevision, 8);
+    assert.equal(ui.fixture.toasts.at(-1)[0], '上下文已压缩');
+});
+
+test('duplicate forget clicks send one request and failures leave the original context intact', async t => {
+    const pending = deferred();
+    const ui = await setup(t, {post: () => pending.promise});
+    await ui.render();
+    await ui.open();
+    const option = ui.button('从上下文忘记');
+    await act(async () => { option.click(); option.click(); });
+    assert.equal(ui.fixture.posts.length, 1);
+    await act(async () => pending.reject(new Error('权限不足')));
+    assert.equal(ui.fixture.events.length, 0);
+    assert.match(document.querySelector('[role="alert"]').textContent, /权限不足/);
+    assert.equal(ui.fixture.toasts.at(-1)[0], '权限不足');
+});
+
+test('the tool card context actions address the outer tool ID and switch forgotten results to restore', async t => {
+    const ui = await setup(t);
+    await ui.renderTool();
+    await ui.click(ui.button('忘记'));
+    assert.deepEqual(ui.fixture.posts[0].slice(0, 2), ['/chat/messages/message-one/context',
+        {conversationId: 'chat-one', action: 'forget', toolCallId: 'tool-one'}]);
+    await ui.renderTool({status: {status: 'forgotten'}});
+    assert.equal(ui.button('忘记'), undefined);
+    await ui.click(ui.button('恢复'));
+    assert.equal(ui.fixture.posts[1][1].action, 'restore');
 });
 
 test('all messages share one concurrent catalog request and use labels from the backend', async t => {
@@ -224,16 +296,16 @@ test('the message action area remains visible while the settings menu is in its 
 test('readonly and unconfigurable messages expose no menu, but protected readonly messages retain a static toolbar badge', async t => {
     const ui = await setup(t, {}, {readonly: true, messageConfig: serverConfig(false)});
     await ui.render();
-    assert.equal(ui.button('消息配置'), undefined);
+    assert.equal(ui.button('更多'), undefined);
     const protectedIcon = ui.container.querySelector(protectedSelector);
     assert.ok(protectedIcon.closest('[data-message-action-area]'));
     assert.equal(protectedIcon.textContent.trim(), '不可压缩');
     assert.equal(protectedIcon.tagName, 'SPAN');
     assert.equal(ui.fixture.gets.length, 0);
     await ui.render({message: baseMessage({messageConfig: {compressible: true, canConfigure: false}})});
-    assert.equal(ui.button('消息配置'), undefined);
+    assert.equal(ui.button('更多'), undefined);
     await ui.render({msgId: '<ROOT>', message: baseMessage()});
-    assert.equal(ui.button('消息配置'), undefined);
+    assert.equal(ui.button('更多'), undefined);
 });
 
 test('protection is a static labelled badge that follows toolbar visibility without interaction hints', async t => {
@@ -305,7 +377,7 @@ test('backend arrays define multiple badges and their full labels independently 
     assert.equal(rendered[0].textContent, badges[1].label, 'long badge labels are preserved in full');
     assert.match(rendered[0].querySelector('span').className, /whitespace-normal/);
     assert.match(ui.container.querySelector('[data-message-badges]').className, /flex-wrap/);
-    assert.equal(ui.button('消息配置'), undefined, 'readonly badge visibility never enables editing');
+    assert.equal(ui.button('更多'), undefined, 'readonly badge visibility never enables editing');
     assert.equal(ui.fixture.gets.length, 0, 'badge rendering needs no per-message catalog request');
     await ui.render({message: baseMessage({readonly: true, messageConfig: serverConfig(false, {badges: []})})});
     assert.equal(ui.container.querySelector('[data-message-badge]'), null, 'an empty backend list clears badges even if compressible is false');

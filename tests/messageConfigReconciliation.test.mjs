@@ -1,8 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {applyMessageConfigUpdate, mergeMessageConfig, mergeMessageContextState} from '../src/features/chat/page/utils/messageConfigUpdates.js';
+import {applyMessageConfigUpdate, mergeMessageConfig, mergeMessageContextState, preserveReplacementContextStatus} from '../src/features/chat/page/utils/messageConfigUpdates.js';
 import {mergeLiveMessageWithSnapshot, reconcileHistorySnapshotWithLiveState} from '../src/features/chat/page/utils/liveMessageReconcile.js';
+import {applyMessageStreamOperations} from '../src/features/chat/page/utils/messageStreamBatch.js';
+
+test('delayed tool snapshots and streamed replacements preserve a newer user forget or restore', () => {
+    const current = {frontend: 'original card', contextStatus: {status: 'forgotten', revision: 9}};
+    const stale = {frontend: 'updated card', contextStatus: {status: 'compacted', revision: 8}};
+    assert.equal(preserveReplacementContextStatus(stale, current).contextStatus.status, 'forgotten');
+    const messages = {assistant: {content: 'body', extraInfo: {replace: {'tool-result-one': current}}}};
+    const stream = applyMessageStreamOperations(messages, [{event: 'message.replacement.set',
+        value: {assistant: {'tool-result-one': {frontend: 'new card text'}}}}]);
+    assert.equal(stream.assistant.extraInfo.replace['tool-result-one'].contextStatus.revision, 9);
+    assert.equal(stream.assistant.extraInfo.replace['tool-result-one'].frontend, 'new card text');
+    const snapshot = mergeLiveMessageWithSnapshot({extraInfo: {replace: {'tool-result-one': stale}}}, messages.assistant);
+    assert.equal(snapshot.extraInfo.replace['tool-result-one'].contextStatus.status, 'forgotten');
+    const restored = preserveReplacementContextStatus({frontend: 'card', contextStatus: {status: 'active', revision: 10}}, current);
+    assert.equal(restored.contextStatus.status, 'active');
+    assert.equal(preserveReplacementContextStatus(stale, restored).contextStatus.status, 'active');
+});
+
+test('thin history snapshots preserve a newly forgotten message even without a configuration catalog', () => {
+    const current = {content: 'original', contextState: {forgotten: true}, contextStateRevision: 5};
+    const next = mergeLiveMessageWithSnapshot({content: 'original', contextState: {}, contextStateRevision: 4}, current);
+    assert.deepEqual(next.contextState, {forgotten: true});
+    assert.equal(next.contextStateRevision, 5);
+});
 
 const protectedBadge = {id: 'context.protected', label: '不可压缩', icon: 'shield-check', tone: 'warning', order: 100};
 const config = (compressible, revision, badges = compressible ? [] : [protectedBadge]) => ({compressible, canConfigure: true, revision, badges});

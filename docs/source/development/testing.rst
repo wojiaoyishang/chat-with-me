@@ -16,6 +16,25 @@
    npm run build
    docs\make.bat
 
+生产包初始化
+--------------------------------------------------------------------------------
+
+``npm run build`` 在 Vite 打包后自动执行 ``scripts/check-production-runtime.mjs``，
+直接加载生成的 React 运行时包，并检查 React 与 React DOM 客户端均已初始化、版本一致。
+初始化异常会使构建失败；此检查不依赖浏览器、后端服务或登录凭据。
+
+React、React DOM 和 Scheduler 必须按完整包名归入同一个 ``react-runtime`` 分包。
+不要用 ``node_modules/react`` 前缀匹配核心包：它也会匹配 React Router、React Markdown
+和 React Virtuoso 等消费者，使渲染器与核心包形成循环依赖，可能导致生产环境出现
+``Cannot set properties of undefined (setting 'Children')``，而开发服务器仍然正常。
+
+修改分包配置后，还应使用真实浏览器打开生产产物的首页与 ``/login``，确认登录表单正常
+渲染、控制台没有初始化错误；后端不可用时，应能显示连接恢复页面。运行时导入检查不替代
+页面交互验收。发布时同步更新 ``dist/index.html`` 与它引用的完整 ``dist/assets``。
+
+定向回归
+--------------------------------------------------------------------------------
+
 任务与工作流改动可定向执行：
 
 .. code-block:: text
@@ -25,6 +44,10 @@
 
 组件协议还需覆盖未知值、中文标题、分页权限、展开保持、旧字段不再读取，以及前后端共享渲染器
 的一致性；不能仅用源文件字符串存在性代替实际交互验证。
+
+描述式设置新增列表项时，需要验证 ``idFactory=uuid`` 生成的 ID 保留，以及
+``options.timeout`` 等字段初始化为嵌套对象。相应交互回归为
+``node --test tests/settingsRuntimeModel.test.mjs tests/settingsRuntimeUI.test.mjs``。
 
 流式与媒体保活回归
 --------------------------------------------------------------------------------

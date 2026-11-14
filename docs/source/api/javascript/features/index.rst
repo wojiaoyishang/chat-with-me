@@ -264,7 +264,7 @@
      - 5
      - ``src/features/chat/page/utils/liveMessageReconcile.js``
    * - :doc:`src/features/chat/page/utils/messageConfigUpdates </api/javascript/features/chat/page/utils/messageConfigUpdates>`
-     - 5
+     - 6
      - 0
      - 2
      - ``src/features/chat/page/utils/messageConfigUpdates.js``
@@ -561,7 +561,7 @@
    * - :doc:`src/features/chat/ui/message/components/MessageSettingsMenu </api/javascript/features/chat/ui/message/components/MessageSettingsMenu>`
      - 1
      - 0
-     - 12
+     - 16
      - ``src/features/chat/ui/message/components/MessageSettingsMenu.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageTools </api/javascript/features/chat/ui/message/components/MessageTools>`
      - 1
@@ -583,6 +583,11 @@
      - 0
      - 3
      - ``src/features/chat/ui/message/components/TextOnlyMessageContent.jsx``
+   * - :doc:`src/features/chat/ui/message/components/ToolContextActions </api/javascript/features/chat/ui/message/components/ToolContextActions>`
+     - 1
+     - 0
+     - 3
+     - ``src/features/chat/ui/message/components/ToolContextActions.jsx``
    * - :doc:`src/features/chat/ui/message/components/TooltipInfo </api/javascript/features/chat/ui/message/components/TooltipInfo>`
      - 5
      - 0
@@ -623,6 +628,11 @@
      - 0
      - 9
      - ``src/features/chat/ui/message/hooks/useMessageConfigCatalog.js``
+   * - :doc:`src/features/chat/ui/message/hooks/useMessageContextAction </api/javascript/features/chat/ui/message/hooks/useMessageContextAction>`
+     - 2
+     - 0
+     - 7
+     - ``src/features/chat/ui/message/hooks/useMessageContextAction.js``
    * - :doc:`src/features/chat/ui/message/hooks/useMessageEvents </api/javascript/features/chat/ui/message/hooks/useMessageEvents>`
      - 1
      - 0
@@ -1662,6 +1672,7 @@
    /api/javascript/features/chat/ui/message/components/ReplacementContextBadge
    /api/javascript/features/chat/ui/message/components/SpeechOverlayHighlighter
    /api/javascript/features/chat/ui/message/components/TextOnlyMessageContent
+   /api/javascript/features/chat/ui/message/components/ToolContextActions
    /api/javascript/features/chat/ui/message/components/TooltipInfo
    /api/javascript/features/chat/ui/message/components/WidgetResponseMessage
    /api/javascript/features/chat/ui/message/components/chatKnowledgeGraphRenderer
@@ -1670,6 +1681,7 @@
    /api/javascript/features/chat/ui/message/components/overflowMarquee
    /api/javascript/features/chat/ui/message/hooks/useMessageAnimation
    /api/javascript/features/chat/ui/message/hooks/useMessageConfigCatalog
+   /api/javascript/features/chat/ui/message/hooks/useMessageContextAction
    /api/javascript/features/chat/ui/message/hooks/useMessageEvents
    /api/javascript/features/chat/ui/message/styles/messageAnimations
    /api/javascript/features/chat/ui/message/utils/copyContent

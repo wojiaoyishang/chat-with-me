@@ -1,6 +1,15 @@
 const isRecord = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const revisionOf = (value) => Number.isInteger(value) && value >= 0 ? value : 0;
 
+/** Result rendering can stream independently of a user's durable context choice. */
+export const preserveReplacementContextStatus = (incoming, current) => {
+    const previous = current?.contextStatus || current?.context_status;
+    const next = incoming?.contextStatus || incoming?.context_status;
+    const status = revisionOf(previous?.revision) > revisionOf(next?.revision) || !next ? previous : next;
+    if (!isRecord(status)) return incoming;
+    return {...(isRecord(incoming) ? incoming : {frontend: typeof incoming === 'string' ? incoming : ''}), contextStatus: {...status}};
+};
+
 /** Keep persisted user settings monotonic across HTTP, stream and history delivery. */
 export const mergeMessageConfig = (current, incoming) => {
     if (!isRecord(incoming)) return current;

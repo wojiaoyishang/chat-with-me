@@ -2,6 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mount, button, click, edit, upload, ref, resource, act } from './helpers/settingsRuntimeHarness.mjs';
 
+test('new service rows preserve generated IDs and initialize nested option defaults', async () => {
+    const ui = await mount([{
+        type: 'list', name: 'services', text: '网页服务', identityField: 'id', idFactory: 'uuid',
+        children: [
+            { type: 'text', name: 'id', text: '配置 ID', required: true },
+            { type: 'number', name: 'options.timeout', text: '请求超时', default: 180 },
+            { type: 'json', name: 'options.search', text: '搜索附加参数', default: {} },
+        ],
+    }], { services: [] });
+    try {
+        await click(button('ds.add'));
+        const row = settingsUI.changed.at(-1).services[0];
+        assert.match(row.id, /^[0-9a-f-]{36}$/i);
+        assert.deepEqual(row.options, { timeout: 180, search: {} });
+        assert.equal(Object.hasOwn(row, 'options.timeout'), false);
+    } finally { await ui.close(); }
+});
+
 test('the same resource renderer edits nested fields and preserves masked credentials', async () => {
     const ui = await mount([resource()], { items: [{ id: 's1', title: '示例', revision: 3, connection: { headers: { Authorization: '' } }, tools: ['server-owned'] }] });
     try {
