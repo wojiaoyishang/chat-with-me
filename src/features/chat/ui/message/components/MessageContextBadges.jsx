@@ -1,5 +1,6 @@
 import React, {memo} from 'react';
 import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
+import {useIgnoringDisabled} from '../MessageIgnoringContext.jsx';
 
 /**
  * Fallback message-level context status for layouts without a left-side name row.
@@ -16,8 +17,9 @@ const MessageContextBadges = memo(({
     showForgotten = true,
 }) => {
     const normalized = state && typeof state === 'object' ? state : {};
+    const ignoringDisabled = useIgnoringDisabled();
     const forgotten = normalized.forgotten === true;
-    const visibleForgotten = showForgotten && forgotten;
+    const visibleForgotten = showForgotten && forgotten && !ignoringDisabled;
 
     if (!visibleForgotten) return null;
 

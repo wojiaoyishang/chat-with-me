@@ -22,6 +22,7 @@ import { deduplicateToolLogReferences } from './toolLogReferences.js';
 import IgnoredContextIndicator from '@/features/chat/ui/message/components/IgnoredContextIndicator.jsx';
 import CompactedContextIndicator from '@/features/chat/ui/message/components/CompactedContextIndicator.jsx';
 import ToolContextActions from '@/features/chat/ui/message/components/ToolContextActions.jsx';
+import {useIgnoringDisabled} from '@/features/chat/ui/message/MessageIgnoringContext.jsx';
 import {
     CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
     EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
@@ -96,6 +97,7 @@ const StatusWidget = memo(
         // Once a user starts media in this card, completion must not tear down
         // its player. The header still permits an explicit manual collapse.
         const [keepMediaOpen, setKeepMediaOpen] = useState(false);
+        const ignoringDisabled = useIgnoringDisabled();
         const [autoCollapseChatToolCalls] = useLocalSetting(CHAT_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY, true);
         const [autoCollapseExecutionWindowToolCalls] = useLocalSetting(
             EXECUTION_WINDOW_TOOL_CALL_AUTO_COLLAPSE_SETTING_KEY,
@@ -321,7 +323,7 @@ const StatusWidget = memo(
             const messageCompacted =
                 Array.isArray(messageContextState?.compactions) && messageContextState.compactions.length > 0;
 
-            if (normalizedStatus === 'forgotten' || normalizedStatus === 'ignored') {
+            if (!ignoringDisabled && (normalizedStatus === 'forgotten' || normalizedStatus === 'ignored')) {
                 return (
                     <IgnoredContextIndicator
                         conversationId={conversationId}
@@ -344,7 +346,7 @@ const StatusWidget = memo(
             }
 
             return null;
-        }, [contextId, contextStatus, id, isFinished, isToolCalling, conversationId, messageContextState, replacement, snapshot, t]);
+        }, [contextId, contextStatus, id, isFinished, isToolCalling, conversationId, messageContextState, replacement, snapshot, t, ignoringDisabled]);
 
         let currentColor = activeColor;
         if (isWaitingToolState) currentColor = 'text-gray-400';

@@ -1,6 +1,7 @@
 import React, {memo} from 'react';
 import MessagePaginator from './MessagePaginator.jsx';
 import MessageTools from './MessageTools.jsx';
+import IgnoredContextIndicator from './IgnoredContextIndicator.jsx';
 import {normalizeMessageBadges} from '../utils/messageBadgesModel.js';
 
 const MessageActions = memo(({
@@ -23,6 +24,9 @@ const MessageActions = memo(({
     const isRight = msg.position === 'right';
     const isMid = msg.position === 'mid';
     const showPaginator = messages?.[msg?.prevMessage]?.messages?.length > 1;
+    const ignoredIndicator = isRight && msg?.contextState?.forgotten === true ? (
+        <IgnoredContextIndicator conversationId={conversationId} messageId={msgId} label={t('context_state_forgotten')} />
+    ) : null;
     const readonlyCompactions = Array.isArray(msg?.contextState?.compactions) ? msg.contextState.compactions : [];
     const hasReadonlyContextSummary = readonly && (isRight || isMid) && readonlyCompactions.length > 0;
     const shouldShowTools = !readonly || hasReadonlyContextSummary || normalizeMessageBadges(msg?.messageConfig?.badges).length > 0;
@@ -96,6 +100,7 @@ const MessageActions = memo(({
                 className="flex w-full min-w-0 items-center justify-end mt-1 min-h-[2rem] pr-12 transition-all duration-300"
             >
                 <div className="ml-auto flex min-w-0 max-w-full items-center justify-end gap-1">
+                    {ignoredIndicator}
                     {renderTools('max-w-[calc(100vw-7rem)] sm:max-w-full')}
                     {renderPaginator()}
                 </div>
@@ -110,6 +115,7 @@ const MessageActions = memo(({
         >
             <div className="flex min-w-0 max-w-full items-center justify-start gap-1">
                 {renderPaginator()}
+                {ignoredIndicator}
                 {renderTools('max-w-[calc(100vw-4rem)] sm:max-w-full')}
             </div>
         </div>

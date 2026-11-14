@@ -32,6 +32,7 @@ import StoryReader from '@/features/story/StoryReader.jsx';
 import useConversationFreeze from './freeze/useConversationFreeze.js';
 import ConversationFreezeNotice from './freeze/ConversationFreezeNotice.jsx';
 import {ConversationFreezeContext} from './freeze/ConversationFreezeContext.jsx';
+import {MessageIgnoringContext} from './ui/message/MessageIgnoringContext.jsx';
 import { ExecutionHost } from '@/features/execution';
 import { clearWorkspaceTransfers, upsertWorkspaceTransfer } from '@/features/workspace/useWorkspaceTransferStore.js';
 import { getVisionAttachmentIds, normalizeAttachmentList } from './attachmentVision.js';
@@ -3598,6 +3599,7 @@ function ChatPage({
 
     return (
         <ConversationFreezeContext.Provider value={conversationFreeze}>
+        <MessageIgnoringContext.Provider value={advancedSettingsValues.contextDisableIgnoring === true}>
         <WidgetPresentationProvider chatBoxHostElement={widgetChatBoxHostElement}>
             <>
                 <Motion.div
@@ -4095,6 +4097,7 @@ function ChatPage({
                 />
             </>
         </WidgetPresentationProvider>
+        </MessageIgnoringContext.Provider>
         </ConversationFreezeContext.Provider>
     );
 }

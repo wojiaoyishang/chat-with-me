@@ -9,6 +9,7 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, 
 import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import useMessageConfigCatalog from '../hooks/useMessageConfigCatalog.js';
 import useMessageContextAction from '../hooks/useMessageContextAction.js';
+import {useIgnoringDisabled} from '../MessageIgnoringContext.jsx';
 
 export default function MessageSettingsMenu({msg, msgId, conversationId, readonly = false, onOpenChange}) {
     const {t} = useTranslation();
@@ -24,7 +25,8 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
     const {items, loading, error, retry} = useMessageConfigCatalog(open);
     const contextAction = useMessageContextAction({conversationId, messageId: msgId});
     const busy = saving || Boolean(contextAction.pending);
-    const forgotten = Boolean(msg?.contextState?.forgotten);
+    const ignoringDisabled = useIgnoringDisabled();
+    const forgotten = Boolean(msg?.contextState?.forgotten) && !ignoringDisabled;
     const compacted = Boolean(msg?.contextState?.compactions?.length);
     const contextChange = async action => {
         if (busy) return;
@@ -100,7 +102,7 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
                     {contextAction.pending === 'compress' ? <Loader2 className="h-4 w-4 animate-spin"/> : <Minimize2 className="h-4 w-4"/>}
                     <span>{t(contextAction.pending === 'compress' ? 'messageContext.compressing' : 'messageContext.compress')}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled={busy || freeze.blocked} onSelect={event => { event.preventDefault(); void contextChange(forgotten ? 'restore' : 'forget'); }}>
+                <DropdownMenuItem disabled={busy || freeze.blocked || ignoringDisabled} onSelect={event => { event.preventDefault(); void contextChange(forgotten ? 'restore' : 'forget'); }}>
                     {forgotten ? <Undo2 className="h-4 w-4"/> : <EyeOff className="h-4 w-4"/>}
                     <span>{t(forgotten ? 'messageContext.unforget' : 'messageContext.forget')}</span>
                 </DropdownMenuItem>

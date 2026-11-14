@@ -430,7 +430,7 @@ const MessageItem = memo(
                     messageId={msgId}
                     state={msg?.contextState}
                     align={isRight ? 'right' : 'left'}
-                    showForgotten={isRight || isMid}
+                    showForgotten={isMid}
                 />
 
                 {!isMid && <MessageActions {...actionProps} />}
