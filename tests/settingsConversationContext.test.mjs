@@ -63,3 +63,31 @@ test('restore-all action is a one-shot conversation request and publishes its re
         assert.equal(document.querySelector('[role="switch"]'), null);
     } finally { await ui.close(); }
 });
+
+test('cancel-compactions button sends the immediate mutation and publishes restored message and tool states', async () => {
+    const state = {contextRevision: 10, artifactCount: 2, toolResultCount: 1,
+        messageStates: {a: {forgotten: true}}, replacementStates: {b: {'tool-result-one': {status: 'active', revision: 10}}}};
+    const restore = {type: 'actions', actions: [{id: 'restore-compacted-messages', label: '取消所有上下文压缩', icon: 'undo-2',
+        endpoint: '/chat/conversations/{context.conversationId}/context', method: 'POST', body: {action: 'restore_compactions'},
+        disabledWhen: {left: ref('context.conversationId'), op: 'eq', right: ''}, effects: [
+            {type: 'client', action: 'conversation.context.changed', body: {conversationId: ref('context.conversationId'), state: ref('response')}},
+            {type: 'toast', message: '已取消消息和工具结果的上下文压缩'},
+        ]}]};
+    const ui = await mount([restore], null, async () => state, {surface: 'conversation', conversationId: 'owned'});
+    try {
+        assert.ok(button('取消所有上下文压缩').querySelector('[data-slot="action-icon"]'));
+        await click(button('取消所有上下文压缩'));
+        const [method, endpoint, body] = settingsUI.calls[0];
+        assert.equal(method, 'post');
+        assert.equal(endpoint, '/chat/conversations/owned/context');
+        assert.deepEqual(body, {action: 'restore_compactions'});
+        assert.deepEqual(settingsUI.clientCalls[0], ['conversation.context.changed', {conversationId: 'owned', state}]);
+        assert.equal(settingsUI.changed.length, 0);
+    } finally { await ui.close(); }
+    const conversationless = await mount([restore]);
+    try {
+        assert.equal(button('取消所有上下文压缩').disabled, true);
+        await click(button('取消所有上下文压缩'));
+        assert.equal(settingsUI.calls.length, 0);
+    } finally { await conversationless.close(); }
+});

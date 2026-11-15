@@ -1,7 +1,7 @@
 import {
     Check, CircleHelp, Copy, Database, Download, ExternalLink, Gauge, KeyRound,
     LogOut, Pause, Pencil, Play, Plug, Plus, QrCode, RefreshCw, Save, Server,
-    Settings2, ShieldCheck, ShieldX, Trash2, Unplug, Upload, UserRound, Users,
+    Settings2, ShieldCheck, ShieldX, Trash2, Undo2, Unplug, Upload, UserRound, Users,
 } from 'lucide-react';
 
 const ACTION_ICONS = {
@@ -12,6 +12,7 @@ const ACTION_ICONS = {
     'external-link': ExternalLink, server: Server, database: Database,
     gauge: Gauge, plus: Plus,
     pause: Pause, 'qr-code': QrCode, users: Users, settings: Settings2,
+    'undo-2': Undo2,
 };
 
 /** Progress belongs to the floating notice, leaving this label's size stable. */
