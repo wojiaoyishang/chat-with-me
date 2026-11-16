@@ -9,11 +9,13 @@ import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, 
 import {useConversationMutationGuard} from '../../../freeze/ConversationFreezeContext.jsx';
 import useMessageConfigCatalog from '../hooks/useMessageConfigCatalog.js';
 import useMessageContextAction from '../hooks/useMessageContextAction.js';
+import MessageCompactionDialog from './MessageCompactionDialog.jsx';
 
 export default function MessageSettingsMenu({msg, msgId, conversationId, readonly = false, onOpenChange}) {
     const {t} = useTranslation();
     const freeze = useConversationMutationGuard(conversationId);
     const [open, setOpen] = useState(false);
+    const [compactionOpen, setCompactionOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
     const inFlight = useRef(false);
@@ -37,7 +39,7 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
     useEffect(() => () => onOpenChange?.(false), [onOpenChange]);
     const changeOpen = (next) => {
         setOpen(next);
-        onOpenChange?.(next);
+        onOpenChange?.(next || compactionOpen);
         if (next) setSaveError('');
     };
     const configurable = Boolean(conversationId && msgId && !String(msgId).startsWith('<') && !readonly && msg?.readonly !== true && msg?.messageConfig?.canConfigure !== false);
@@ -70,13 +72,14 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
 
     if (!configurable) return null;
     return (
-        <DropdownMenu open={open} onOpenChange={changeOpen}>
+        <><DropdownMenu open={open} onOpenChange={changeOpen}>
             <DropdownMenuTrigger asChild>
                 <button type="button" disabled={busy || freeze.blocked} className="shrink-0 cursor-pointer rounded-sm p-1.5 transition-colors hover:bg-gray-200 disabled:cursor-wait" aria-label={t('more')} title={t('more')} onClick={event => event.stopPropagation()}>
                     {busy ? <Loader2 size={16} className="animate-spin text-gray-600"/> : <MoreHorizontal size={16} className="text-gray-600 hover:text-gray-800"/>}
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="end" sideOffset={6} collisionPadding={12} className="w-64" data-message-settings="true" onClick={event => event.stopPropagation()} onPointerDown={event => event.stopPropagation()}>
+            <DropdownMenuContent side="top" align="end" sideOffset={6} collisionPadding={12} className="w-64" data-message-settings="true" onClick={event => event.stopPropagation()} onPointerDown={event => event.stopPropagation()}
+                onCloseAutoFocus={event => {if (compactionOpen) event.preventDefault();}}>
                 <DropdownMenuLabel>{t('messageConfig.title')}</DropdownMenuLabel>
                 <DropdownMenuSeparator/>
                 {loading && <div role="status" className="flex items-center gap-2 px-2 py-2 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin"/>{t('loading')}</div>}
@@ -96,7 +99,12 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
                 {!loading && !error && items?.length === 0 && <p className="px-2 py-2 text-xs text-muted-foreground">{t('messageConfig.empty')}</p>}
                 <DropdownMenuSeparator/>
                 <DropdownMenuItem disabled={busy || freeze.blocked || forgotten || compacted || msg?.messageConfig?.compressible === false}
-                    onSelect={event => { event.preventDefault(); void contextChange('compress'); }}>
+                    onSelect={event => {
+                        event.preventDefault();
+                        changeOpen(false);
+                        setCompactionOpen(true);
+                        onOpenChange?.(true);
+                    }}>
                     {contextAction.pending === 'compress' ? <Loader2 className="h-4 w-4 animate-spin"/> : <Minimize2 className="h-4 w-4"/>}
                     <span>{t(contextAction.pending === 'compress' ? 'messageContext.compressing' : 'messageContext.compress')}</span>
                 </DropdownMenuItem>
@@ -112,5 +120,14 @@ export default function MessageSettingsMenu({msg, msgId, conversationId, readonl
                 {saveError && <p role="alert" className="break-words px-2 py-2 text-xs text-destructive">{saveError}</p>}
             </DropdownMenuContent>
         </DropdownMenu>
+        <MessageCompactionDialog open={compactionOpen} pending={contextAction.pending} error={contextAction.error} blocked={freeze.blocked}
+            onOpenChange={next => {setCompactionOpen(next); onOpenChange?.(open || next);}}
+            onSubmit={async instruction => {
+                if (await contextAction.run('compress', {instruction})) {
+                    setCompactionOpen(false);
+                    onOpenChange?.(false);
+                }
+            }}/>
+        </>
     );
 }

@@ -29,7 +29,7 @@ src/features/chat/page/components/MessageSummaryItem 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/MessageSummaryItem.jsx:812:4362:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/MessageSummaryItem.jsx:831:4915:FUNCTION
 
 .. rubric:: ``memo callback @ 27``
 
@@ -39,7 +39,7 @@ src/features/chat/page/components/MessageSummaryItem 模块
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``27``—``99`` 行。
+**性质**：同步局部函数；源码第 ``27``—``109`` 行。
 
 **参数**
 
@@ -48,23 +48,23 @@ src/features/chat/page/components/MessageSummaryItem 模块
 
 **返回值**
 
-根据执行分支返回结果；代表性返回表达式为 ``( <Card className={\x60h-full gap-0 overflow-hidden p-0 transition-colors ${config.cardClass} ${ selected ? 'ring-2 ring-primary ring-offset-2' : 'hover:border-primary/40 hover:bg-ac…``、``( <Card className={\x60gap-0 overflow-hidden p-0 shadow-none transition-colors ${config.cardClass} ${ active ? 'border-primary/60 bg-primary/5' : 'hover:bg-accent/45' }\x60} > <button t…``。
+根据执行分支返回结果；代表性返回表达式为 ``( <Card className={\x60h-full gap-0 overflow-hidden p-0 transition-colors ${config.cardClass} ${ selected ? 'ring-2 ring-primary ring-offset-2' : 'hover:border-primary/40 hover:bg-ac…``、``( <Card className={\x60gap-0 overflow-hidden p-0 shadow-none transition-colors ${config.cardClass} ${ selected || active ? 'border-primary/60 bg-primary/5' : 'hover:bg-accent/45' }\x60}…``。
 
 **主要协作调用**：``preview.includes``、``Number.isInteger``。
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/MessageSummaryItem.jsx:1688:1709:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/MessageSummaryItem.jsx:2159:2180:FUNCTION
 
-.. rubric:: ``onClick callback @ 50``
+.. rubric:: ``onClick callback @ 58``
 
 .. code-block:: javascript
 
-   onClick callback @ 50()
+   onClick callback @ 58()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``50``—``50`` 行；所属函数 ``memo callback @ 27``。
+**性质**：同步局部函数；源码第 ``58``—``58`` 行；所属函数 ``memo callback @ 27``。
 
 **参数**
 
@@ -76,17 +76,17 @@ src/features/chat/page/components/MessageSummaryItem 模块
 
 **主要协作调用**：``onClick``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/MessageSummaryItem.jsx:3308:3329:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/MessageSummaryItem.jsx:3830:3851:FUNCTION
 
-.. rubric:: ``onClick callback @ 82``
+.. rubric:: ``onClick callback @ 91``
 
 .. code-block:: javascript
 
-   onClick callback @ 82()
+   onClick callback @ 91()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``memo callback @ 27``。
+**性质**：同步局部函数；源码第 ``91``—``91`` 行；所属函数 ``memo callback @ 27``。
 
 **参数**
 

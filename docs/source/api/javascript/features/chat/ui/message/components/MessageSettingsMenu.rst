@@ -17,23 +17,23 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 * **模块标识**：``src/features/chat/ui/message/components/MessageSettingsMenu``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：16
+* **局部函数与匿名回调**：19
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``lucide-react``、``react-i18next``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/context/useEventStore.jsx``、``@/components/ui/dropdown-menu``、``../../../freeze/ConversationFreezeContext.jsx``、``../hooks/useMessageConfigCatalog.js``、``../hooks/useMessageContextAction.js``。
+``react``、``lucide-react``、``react-i18next``、``sonner``、``@/lib/apiClient.js``、``@/config.js``、``@/context/useEventStore.jsx``、``@/components/ui/dropdown-menu``、``../../../freeze/ConversationFreezeContext.jsx``、``../hooks/useMessageConfigCatalog.js``、``../hooks/useMessageContextAction.js``、``./MessageCompactionDialog.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:784:8291:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:854:9190:FUNCTION
 
 .. js:function:: MessageSettingsMenu({msg, msgId, conversationId, readonly = false, onOpenChange})
 
    渲染 ``MessageSettingsMenu`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``13``—``116`` 行。
+   **性质**：同步函数；导出 API；源码第 ``14``—``133`` 行。
 
    **参数**
 
@@ -42,7 +42,7 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <DropdownMenu open={open} onOpenChange={changeOpen}> <DropdownMenuTrigger asChild> <button type="button" disabled={busy || freeze.blocked} className="shrink-0 cursor-pointer rou…``。
+   根据执行分支返回结果；代表性返回表达式为 ``null``、``( <><DropdownMenu open={open} onOpenChange={changeOpen}> <DropdownMenuTrigger asChild> <button type="button" disabled={busy || freeze.blocked} className="shrink-0 cursor-pointer r…``。
 
    **副作用**
 
@@ -50,14 +50,14 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
    **主要协作调用**：``useTranslation``、``useConversationMutationGuard``、``useState``、``useRef``、``useMessageConfigCatalog``、``useMessageContextAction``、``Boolean``、``useEffect``、``String(msgId).startsWith``、``String``、``t``、``items?.map``。
 
-   **内部回调数量**：13。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：16。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:1742:1859:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:1878:1995:FUNCTION
 
 .. rubric:: ``contextChange``
 
@@ -67,7 +67,7 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 实现 ``contextChange`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``29``—``32`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：异步局部函数；源码第 ``31``—``34`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -80,17 +80,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``contextAction.run``、``changeOpen``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:1876:1975:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2012:2111:FUNCTION
 
-.. rubric:: ``useEffect callback @ 33``
+.. rubric:: ``useEffect callback @ 35``
 
 .. code-block:: javascript
 
-   useEffect callback @ 33()
+   useEffect callback @ 35()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``33``—``36`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``35``—``38`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -102,17 +102,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:1932:1967:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2068:2103:FUNCTION
 
-.. rubric:: ``returned callback @ 35``
+.. rubric:: ``returned callback @ 37``
 
 .. code-block:: javascript
 
-   returned callback @ 35()
+   returned callback @ 37()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``35``—``35`` 行；所属函数 ``useEffect callback @ 33``。
+**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``useEffect callback @ 35``。
 
 **参数**
 
@@ -122,17 +122,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:1997:2030:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2133:2166:FUNCTION
 
-.. rubric:: ``useEffect callback @ 37``
+.. rubric:: ``useEffect callback @ 39``
 
 .. code-block:: javascript
 
-   useEffect callback @ 37()
+   useEffect callback @ 39()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -144,17 +144,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2002:2030:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2138:2166:FUNCTION
 
-.. rubric:: ``anonymous callback @ 37``
+.. rubric:: ``anonymous callback @ 39``
 
 .. code-block:: javascript
 
-   anonymous callback @ 37()
+   anonymous callback @ 39()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``37``—``37`` 行；所属函数 ``useEffect callback @ 37``。
+**性质**：同步局部函数；源码第 ``39``—``39`` 行；所属函数 ``useEffect callback @ 39``。
 
 **参数**
 
@@ -166,7 +166,7 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``onOpenChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2072:2183:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2208:2337:FUNCTION
 
 .. rubric:: ``changeOpen``
 
@@ -176,7 +176,7 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 实现 ``changeOpen`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``38``—``42`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``40``—``44`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -189,7 +189,7 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``setOpen``、``onOpenChange``、``setSaveError``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2381:4061:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:2535:4215:FUNCTION
 
 .. rubric:: ``save``
 
@@ -199,7 +199,7 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 保存与 ``save`` 相关的数据或状态。
 
-**性质**：异步局部函数；源码第 ``44``—``69`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：异步局部函数；源码第 ``46``—``71`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -218,17 +218,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``freeze.canMutate``、``setSaving``、``setSaveError``、``apiClient.patch``、``encodeURIComponent``、``t``、``emitEvent``、``changeOpen``、``toast.success``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:4454:4486:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:4610:4642:FUNCTION
 
-.. rubric:: ``onClick callback @ 75``
+.. rubric:: ``onClick callback @ 77``
 
 .. code-block:: javascript
 
-   onClick callback @ 75(event)
+   onClick callback @ 77(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``75``—``75`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``77``—``77`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -241,17 +241,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:4867:4899:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5023:5055:FUNCTION
 
-.. rubric:: ``onClick callback @ 79``
+.. rubric:: ``onClick callback @ 81``
 
 .. code-block:: javascript
 
-   onClick callback @ 79(event)
+   onClick callback @ 81(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``79``—``79`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -264,17 +264,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:4916:4948:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5072:5104:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 79``
+.. rubric:: ``onPointerDown callback @ 81``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 79(event)
+   onPointerDown callback @ 81(event)
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``79``—``79`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``81``—``81`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -287,17 +287,40 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5490:5535:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5141:5195:FUNCTION
 
-.. rubric:: ``onSelect callback @ 85``
+.. rubric:: ``onCloseAutoFocus callback @ 82``
 
 .. code-block:: javascript
 
-   onSelect callback @ 85(event)
+   onCloseAutoFocus callback @ 82(event)
+
+处理 ``Close Auto Focus`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``82``—``82`` 行；所属函数 ``MessageSettingsMenu``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5737:5782:FUNCTION
+
+.. rubric:: ``onSelect callback @ 88``
+
+.. code-block:: javascript
+
+   onSelect callback @ 88(event)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``85``—``85`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``88``—``88`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -310,17 +333,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.preventDefault``、``retry``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5642:6368:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5889:6615:FUNCTION
 
-.. rubric:: ``items?.map callback @ 87``
+.. rubric:: ``items?.map callback @ 90``
 
 .. code-block:: javascript
 
-   items?.map callback @ 87(definition)
+   items?.map callback @ 90(definition)
 
 作为 ``items?.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``87``—``95`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``90``—``98`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -333,17 +356,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:5965:6024:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:6212:6271:FUNCTION
 
-.. rubric:: ``onSelect callback @ 90``
+.. rubric:: ``onSelect callback @ 93``
 
 .. code-block:: javascript
 
-   onSelect callback @ 90(event)
+   onSelect callback @ 93(event)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``items?.map callback @ 87``。
+**性质**：同步局部函数；源码第 ``93``—``93`` 行；所属函数 ``items?.map callback @ 90``。
 
 **参数**
 
@@ -356,17 +379,40 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.preventDefault``、``save``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:6735:6803:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:6982:7205:FUNCTION
 
-.. rubric:: ``onSelect callback @ 99``
+.. rubric:: ``onSelect callback @ 102``
 
 .. code-block:: javascript
 
-   onSelect callback @ 99(event)
+   onSelect callback @ 102(event)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``99``—``99`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``102``—``107`` 行；所属函数 ``MessageSettingsMenu``。
+
+**参数**
+
+``event``
+   语义事件名或 EventEnvelope。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``event.preventDefault``、``changeOpen``、``setCompactionOpen``、``onOpenChange``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:7600:7690:FUNCTION
+
+.. rubric:: ``onSelect callback @ 111``
+
+.. code-block:: javascript
+
+   onSelect callback @ 111(event)
+
+处理 ``Select`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``111``—``111`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -379,17 +425,17 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.preventDefault``、``contextChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:7198:7288:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:8036:8103:FUNCTION
 
-.. rubric:: ``onSelect callback @ 103``
+.. rubric:: ``onSelect callback @ 115``
 
 .. code-block:: javascript
 
-   onSelect callback @ 103(event)
+   onSelect callback @ 115(event)
 
 处理 ``Select`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``103``—``103`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``115``—``115`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
@@ -402,25 +448,48 @@ src/features/chat/ui/message/components/MessageSettingsMenu 模块
 
 **主要协作调用**：``event.preventDefault``、``contextChange``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:7633:7700:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:8852:8916:FUNCTION
 
-.. rubric:: ``onSelect callback @ 107``
+.. rubric:: ``onOpenChange callback @ 124``
 
 .. code-block:: javascript
 
-   onSelect callback @ 107(event)
+   onOpenChange callback @ 124(next)
 
-处理 ``Select`` 用户交互或运行时事件。
+处理 ``Open Change`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``107``—``107`` 行；所属函数 ``MessageSettingsMenu``。
+**性质**：同步局部函数；源码第 ``124``—``124`` 行；所属函数 ``MessageSettingsMenu``。
 
 **参数**
 
-``event``
-   语义事件名或 EventEnvelope。
+``next``
+   调用方传入的 ``next`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``event.preventDefault``、``contextChange``。
+**主要协作调用**：``setCompactionOpen``、``onOpenChange``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/MessageSettingsMenu.jsx:8941:9163:FUNCTION
+
+.. rubric:: ``onSubmit callback @ 125``
+
+.. code-block:: javascript
+
+   async onSubmit callback @ 125(instruction)
+
+处理 ``Submit`` 用户交互或运行时事件。
+
+**性质**：异步局部函数；源码第 ``125``—``130`` 行；所属函数 ``MessageSettingsMenu``。
+
+**参数**
+
+``instruction``
+   调用方传入的 ``instruction`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``contextAction.run``、``setCompactionOpen``、``onOpenChange``。

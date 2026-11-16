@@ -7,7 +7,7 @@ import React, {act, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 
 const translations = JSON.parse(fs.readFileSync('src/assets/locales/zh.json', 'utf8'));
-const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageBadges.jsx', 'ToolContextActions.jsx', 'IgnoredContextIndicator.jsx', 'ContextStateIndicator.jsx', 'MessageContextBadges.jsx', 'ConversationFreezeContext.jsx']);
+const realComponents = new Set(['MessageItem.jsx', 'MessageActions.jsx', 'MessageTools.jsx', 'MessagePaginator.jsx', 'MessageSettingsMenu.jsx', 'MessageCompactionDialog.jsx', 'MessageBadges.jsx', 'ToolContextActions.jsx', 'IgnoredContextIndicator.jsx', 'ContextStateIndicator.jsx', 'MessageContextBadges.jsx', 'ConversationFreezeContext.jsx']);
 await build({
     stdin: {contents: `export {default} from './src/features/chat/ui/message/components/MessageItem.jsx';
         export {default as ToolContextActions} from './src/features/chat/ui/message/components/ToolContextActions.jsx';
@@ -41,8 +41,10 @@ await build({
             else if (path.endsWith('/popover')) contents = 'import{createContext,useContext,useState,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const Popover=({children,open,onOpenChange})=>{const[state,setState]=useState(false);return <C.Provider value={{open:open??state,setOpen:onOpenChange||setState}}>{children}</C.Provider>};export const PopoverTrigger=({children,asChild,...props})=>{const c=useContext(C);return cloneElement(children,{...props,onClick:event=>{children.props.onClick?.(event);props.onClick?.(event);if(!event.defaultPrevented)c.setOpen(!c.open)}})};export const PopoverContent=({children})=>useContext(C).open?createPortal(<section role="dialog" data-test-popover="true">{children}</section>,document.body):null';
             else if (path.endsWith('/avatar')) contents = 'export const Avatar=({children})=><span>{children}</span>;export const AvatarFallback=Avatar;export const AvatarImage=()=>null';
             else if (path.endsWith('/button')) contents = 'export const Button=({children,variant,size,...props})=><button {...props}>{children}</button>';
+            else if (path.endsWith('/textarea')) contents = 'export const Textarea=({onChange,...props})=><textarea {...props} onInput={onChange}/>';
+            else if (path.endsWith('/dialog')) contents = 'import{createContext,useContext}from"react";import{createPortal}from"react-dom";const C=createContext({});export const Dialog=({children,open,onOpenChange})=><C.Provider value={{open,onOpenChange}}>{children}</C.Provider>;export const DialogContent=({children,...props})=>useContext(C).open?createPortal(<section role="dialog" {...props}>{children}</section>,document.body):null;export const DialogHeader=({children})=><header>{children}</header>;export const DialogFooter=({children})=><footer>{children}</footer>;export const DialogTitle=({children})=><h2>{children}</h2>;export const DialogDescription=({children})=><p>{children}</p>';
             else if (path.endsWith('/badge')) contents = 'import{cloneElement}from"react";export const Badge=({children,asChild,variant,className,...props})=>{if(!asChild)return <span data-slot="badge" className={className} {...props}>{children}</span>;const merged={...props,"data-slot":"badge",className:[className,children.props.className].filter(Boolean).join(" ")};for(const key of Object.keys(props)){if(/^on[A-Z]/.test(key)&&typeof props[key]==="function"&&typeof children.props[key]==="function")merged[key]=event=>{children.props[key](event);props[key](event)}}return cloneElement(children,merged)}';
-            else if (path.endsWith('/dropdown-menu')) contents = 'import{createContext,useContext,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const DropdownMenu=({children,...props})=><C.Provider value={props}>{children}</C.Provider>;export const DropdownMenuTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onClick:event=>{children.props.onClick?.(event);if(!children.props.disabled)c.onOpenChange(!c.open)}})};export const DropdownMenuContent=({children,side,align,sideOffset,collisionPadding,...props})=>useContext(C).open?createPortal(<section role="menu" {...props}>{children}</section>,document.body):null;export const DropdownMenuItem=({children,onSelect,...props})=><button role="menuitem" {...props} onClick={event=>onSelect?.(event)}>{children}</button>;export const DropdownMenuLabel=({children})=><header>{children}</header>;export const DropdownMenuSeparator=()=>null';
+            else if (path.endsWith('/dropdown-menu')) contents = 'import{createContext,useContext,cloneElement}from"react";import{createPortal}from"react-dom";const C=createContext({});export const DropdownMenu=({children,...props})=><C.Provider value={props}>{children}</C.Provider>;export const DropdownMenuTrigger=({children})=>{const c=useContext(C);return cloneElement(children,{onClick:event=>{children.props.onClick?.(event);if(!children.props.disabled)c.onOpenChange(!c.open)}})};export const DropdownMenuContent=({children,side,align,sideOffset,collisionPadding,onCloseAutoFocus,...props})=>useContext(C).open?createPortal(<section role="menu" {...props}>{children}</section>,document.body):null;export const DropdownMenuItem=({children,onSelect,...props})=><button role="menuitem" {...props} onClick={event=>onSelect?.(event)}>{children}</button>;export const DropdownMenuLabel=({children})=><header>{children}</header>;export const DropdownMenuSeparator=()=>null';
             else if (path.endsWith('TextOnlyMessageContent.jsx')) contents = 'export default ({msg})=><p>{msg.content}</p>';
             else if (path.endsWith('LeftAvatarName.jsx')) contents = 'export default ({msg,children})=><span data-test-message-identity="true">{msg.name}{children}</span>';
             else if (path.endsWith('TooltipInfo.jsx')) contents = 'export default ({tip})=>tip?<span data-test-message-info="true">消息详情</span>:null';
@@ -233,6 +235,14 @@ test('compression polls only its accepted job and applies its result without rel
     await ui.render();
     await ui.open();
     await ui.click(ui.button('压缩此消息'));
+    assert.equal(ui.fixture.posts.length, 0, 'the prompt dialog precedes submission');
+    const input = document.querySelector('textarea');
+    await act(async () => {
+        Object.getOwnPropertyDescriptor(ui.dom.window.HTMLTextAreaElement.prototype, 'value').set.call(input, '保留日期和约定');
+        input.dispatchEvent(new ui.dom.window.Event('input', {bubbles: true}));
+    });
+    await ui.click(ui.button('开始压缩'));
+    assert.equal(ui.fixture.posts[0][1].instruction, '保留日期和约定');
     assert.ok(ui.button('正在压缩…').disabled);
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 1570)); });
     assert.equal(ui.fixture.gets.length, 2);
@@ -241,6 +251,19 @@ test('compression polls only its accepted job and applies its result without rel
         'context.compaction_state.changed', 'context.compaction_state.changed', 'context.state.changed']);
     assert.equal(ui.fixture.events.at(-1).payload.contextRevision, 8);
     assert.equal(ui.fixture.toasts.at(-1)[0], '上下文已压缩');
+});
+
+test('tool compression also accepts a prompt and cancelling the dialog sends no request', async t => {
+    const ui = await setup(t, {post: async () => ({jobId: 'tool-job', status: 'completed', result: {contextRevision: 8}})});
+    await ui.renderTool();
+    await ui.click(ui.button('压缩'));
+    assert.match(document.querySelector('[role="dialog"]').textContent, /压缩工具结果/);
+    await ui.click(ui.button('取消'));
+    assert.equal(document.querySelector('[role="dialog"]'), null);
+    assert.equal(ui.fixture.posts.length, 0);
+    await ui.click(ui.button('压缩'));
+    await ui.click(ui.button('开始压缩'));
+    assert.deepEqual(ui.fixture.posts[0][1], {conversationId: 'chat-one', action: 'compress', toolCallId: 'tool-one', instruction: ''});
 });
 
 test('duplicate forget clicks send one request and failures leave the original context intact', async t => {

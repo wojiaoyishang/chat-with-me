@@ -50,13 +50,13 @@ src/features/chat/ui/message/hooks/useMessageContextAction 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:691:3904:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:691:4027:FUNCTION
 
 .. js:function:: useMessageContextAction({conversationId, messageId, toolCallId})
 
    封装 ``useMessageContextAction`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``20``—``80`` 行。
+   **性质**：同步函数；导出 API；源码第 ``20``—``83`` 行。
 
    **参数**
 
@@ -178,22 +178,25 @@ src/features/chat/ui/message/hooks/useMessageContextAction 模块
 
 **主要协作调用**：``request.current?.abort``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:1350:3842:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:1350:3965:FUNCTION
 
 .. rubric:: ``run``
 
 .. code-block:: javascript
 
-   async run(action)
+   async run(action, {instruction = ''})
 
 实现 ``run`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``35``—``78`` 行；所属函数 ``useMessageContextAction``。
+**性质**：异步局部函数；源码第 ``35``—``81`` 行；所属函数 ``useMessageContextAction``。
 
 **参数**
 
 ``action``
    调用方传入的 ``action`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+``{instruction = ''}`` （默认值 ``{}``）
+   调用方传入的 ``instruction = ''`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -210,7 +213,7 @@ src/features/chat/ui/message/hooks/useMessageContextAction 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:1587:1667:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:1614:1694:FUNCTION
 
 .. rubric:: ``active``
 
@@ -230,7 +233,7 @@ src/features/chat/ui/message/hooks/useMessageContextAction 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:1692:1773:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/hooks/useMessageContextAction.js:1719:1800:FUNCTION
 
 .. rubric:: ``publish``
 

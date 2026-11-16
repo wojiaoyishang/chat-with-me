@@ -1,4 +1,5 @@
 import React, {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Loader2} from 'lucide-react';
 import {Card} from '@/components/ui/card';
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 
@@ -24,6 +25,7 @@ const normalizeWheelDelta = (event) => {
 const QuickUserMessageNavigator = memo(({
     items = [],
     activeMessageId,
+    pendingMessageId,
     onSelect,
     visible = true,
     t,
@@ -328,6 +330,7 @@ const QuickUserMessageNavigator = memo(({
                 isExpanded ? 'w-[76px]' : 'w-5'
             }`}
             aria-label={t?.('quick_message_navigation') || '快速消息导航'}
+            aria-busy={Boolean(pendingMessageId)}
             onMouseEnter={expandNavigator}
             onMouseLeave={scheduleCollapse}
             onFocusCapture={expandNavigator}
@@ -423,9 +426,10 @@ const QuickUserMessageNavigator = memo(({
                                             onClick={() => onSelect?.(item.messageId)}
                                             className="group flex h-5 w-full cursor-pointer items-center justify-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                                             aria-label={`${absoluteIndex + 1}. ${item.preview || ''}`}
+                                            aria-busy={item.messageId === pendingMessageId}
                                             tabIndex={isExpanded ? 0 : -1}
                                         >
-                                            <span
+                                            {item.messageId === pendingMessageId ? <Loader2 className="size-3.5 animate-spin text-primary"/> : <span
                                                 className={`block h-1 origin-center rounded-full transition-[width,height,transform,background-color,opacity] duration-150 group-hover:h-1.5 group-hover:scale-x-125 group-focus-visible:h-1.5 group-focus-visible:scale-x-125 ${
                                                     isActive
                                                         ? 'h-1.5 bg-primary'
@@ -434,12 +438,12 @@ const QuickUserMessageNavigator = memo(({
                                                             : 'bg-muted-foreground/30 group-hover:bg-primary/70 group-focus-visible:bg-primary/70'
                                                 }`}
                                                 style={{width: `${markerWidth}px`}}
-                                            />
+                                            />}
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent side="left" sideOffset={10} className="max-w-72">
                                         <div className="max-w-64 truncate">
-                                            {item.preview || (t?.('empty_message') || '空消息')}
+                                            {item.messageId === pendingMessageId ? '正在定位消息…' : item.preview || (t?.('empty_message') || '空消息')}
                                         </div>
                                     </TooltipContent>
                                 </Tooltip>

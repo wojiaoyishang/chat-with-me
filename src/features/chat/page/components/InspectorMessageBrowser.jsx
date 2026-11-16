@@ -1,8 +1,9 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {EyeOff, Loader2, Undo2} from 'lucide-react';
+import {EyeOff, Loader2, Maximize2, Undo2} from 'lucide-react';
 import {Virtuoso} from 'react-virtuoso';
 import {toast} from 'sonner';
 import {Button} from '@/components/ui/button';
+import {Checkbox} from '@/components/ui/checkbox';
 import apiClient from '@/lib/apiClient.js';
 import {emitEvent} from '@/context/useEventStore.jsx';
 import {useConversationMutationGuard} from '../../freeze/ConversationFreezeContext.jsx';
@@ -71,12 +72,14 @@ export default function InspectorMessageBrowser({section, activeMessageId, onJum
             if (controller.signal.aborted) return;
             if (!Number.isInteger(result?.contextRevision)) throw new Error('上下文操作返回的状态无效。');
             emitEvent({event: 'context.state.changed', payload: result, conversationId, localOnly: true});
-            toast.success(action === 'forget' ? `已忽略 ${selected.size} 条消息` : `已取消 ${selected.size} 条消息的忽略`);
+            toast.success(action === 'forget' ? `已忽略 ${selected.size} 条消息`
+                : action === 'restore_compactions' ? '已取消所选消息的压缩'
+                    : `已取消 ${selected.size} 条消息的忽略`);
             setSelected(new Set());
             anchor.current = null;
         } catch (cause) {
             if (!controller.signal.aborted) {
-                const message = cause?.message || '无法修改消息的忽略状态，请重试。';
+                const message = cause?.message || '无法修改消息的上下文状态，请重试。';
                 setError(message);
                 toast.error(message);
             }
@@ -96,20 +99,24 @@ export default function InspectorMessageBrowser({section, activeMessageId, onJum
                 <Button size="sm" variant="outline" disabled={!selected.size || Boolean(pending) || freeze.blocked} onClick={() => void run('restore')}>
                     {pending === 'restore' ? <Loader2 className="size-4 animate-spin"/> : <Undo2 className="size-4"/>}取消所选忽略
                 </Button>
+                <Button size="sm" variant="outline" disabled={!selected.size || Boolean(pending) || freeze.blocked} onClick={() => void run('restore_compactions')}>
+                    {pending === 'restore_compactions' ? <Loader2 className="size-4 animate-spin"/> : <Maximize2 className="size-4"/>}取消所选压缩
+                </Button>
                 <Button size="sm" disabled={!selected.size || Boolean(pending) || freeze.blocked} onClick={() => void run('forget')}>
                     {pending === 'forget' ? <Loader2 className="size-4 animate-spin"/> : <EyeOff className="size-4"/>}忽略所选
                 </Button>
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">勾选消息，按住 Shift 连续选择范围。忽略会将消息原文和附件排除出模型上下文，压缩会用摘要替代原文。</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">取消压缩会恢复覆盖所选消息的整份摘要，以及所选消息内已压缩的工具结果。</p>
             {error && <p role="alert" className="break-words text-xs text-destructive">{error}</p>}
         </div>
         <Virtuoso ref={virtuoso} data={items} className="min-h-0 flex-1 pretty-scrollbar" increaseViewportBy={320}
             computeItemKey={(_index, item) => item.messageId}
             itemContent={(index, item) => <div className="flex min-w-0 items-center gap-2 px-3 py-1 sm:px-4">
-                <input type="checkbox" className="size-4 shrink-0 cursor-pointer accent-primary disabled:cursor-default"
+                <Checkbox className="cursor-pointer"
                     checked={selected.has(item.messageId)} disabled={!eligible.has(item.messageId) || Boolean(pending) || freeze.blocked}
                     aria-label={`选择消息 ${item.messageId}`} title="选择消息，按住 Shift 选择连续范围"
-                    onClick={event => select(index, event.shiftKey)} onChange={() => {}}/>
+                    onClick={event => select(index, event.shiftKey)}/>
                 <div className="min-w-0 flex-1">
                     <MessageSummaryItem item={item} variant="map" selected={selected.has(item.messageId)}
                         active={item.messageId === activeMessageId} onClick={() => onJump?.(item.messageId)}/>

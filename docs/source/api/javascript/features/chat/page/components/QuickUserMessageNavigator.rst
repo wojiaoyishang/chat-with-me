@@ -22,18 +22,18 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``react``、``@/components/ui/card``、``@/components/ui/tooltip``。
+``react``、``lucide-react``、``@/components/ui/card``、``@/components/ui/tooltip``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:576:633:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:614:671:FUNCTION
 
 .. js:function:: clamp(value, min, max)
 
    实现 ``clamp`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``16``—``16`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``17``—``17`` 行。
 
    **参数**
 
@@ -52,13 +52,13 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
    **主要协作调用**：``Math.min``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:663:818:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:701:856:FUNCTION
 
 .. js:function:: normalizeWheelDelta(event)
 
    规范化与 ``Wheel Delta`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``18``—``22`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``19``—``23`` 行。
 
    **参数**
 
@@ -74,22 +74,22 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:860:20492:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:898:20844:FUNCTION
 
-.. rubric:: ``memo callback @ 24``
+.. rubric:: ``memo callback @ 25``
 
 .. code-block:: javascript
 
-   memo callback @ 24({ items = [], activeMessageId, onSelect, visible = true, t, })
+   memo callback @ 25({ items = [], activeMessageId, pendingMessageId, onSelect, visible = true, t, })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``24``—``453`` 行。
+**性质**：同步局部函数；源码第 ``25``—``457`` 行。
 
 **参数**
 
-``{ items = [], activeMessageId, onSelect, visible = true, t, }``
-   调用方传入的 ``items = , activeMessageId, onSelect, visible = true, t,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ items = [], activeMessageId, pendingMessageId, onSelect, visible = true, t, }``
+   调用方传入的 ``items = , activeMessageId, pendingMessageId, onSelect, visible = true, t,`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -101,21 +101,21 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 * 注册事件、DOM 或运行时订阅。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**主要协作调用**：``useRef``、``useState``、``useMemo``、``useCallback``、``useEffect``、``clamp``、``t``、``Math.min``、``collapsedMarkers.map``、``visibleSlots.map``。
+**主要协作调用**：``useRef``、``useState``、``useMemo``、``useCallback``、``useEffect``、``clamp``、``t``、``Boolean``、``Math.min``、``collapsedMarkers.map``、``visibleSlots.map``。
 
 **内部回调数量**：29。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1453:1502:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1513:1562:FUNCTION
 
-.. rubric:: ``useMemo callback @ 42``
+.. rubric:: ``useMemo callback @ 44``
 
 .. code-block:: javascript
 
-   useMemo callback @ 42()
+   useMemo callback @ 44()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``42``—``42`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -129,17 +129,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1472:1501:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1532:1561:FUNCTION
 
-.. rubric:: ``items.filter callback @ 42``
+.. rubric:: ``items.filter callback @ 44``
 
 .. code-block:: javascript
 
-   items.filter callback @ 42(item)
+   items.filter callback @ 44(item)
 
 作为 ``items.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``42``—``42`` 行；所属函数 ``useMemo callback @ 42``。
+**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``useMemo callback @ 44``。
 
 **参数**
 
@@ -150,17 +150,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1548:1630:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1608:1690:FUNCTION
 
-.. rubric:: ``useMemo callback @ 43``
+.. rubric:: ``useMemo callback @ 45``
 
 .. code-block:: javascript
 
-   useMemo callback @ 43()
+   useMemo callback @ 45()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``43``—``45`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``45``—``47`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -174,17 +174,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1581:1622:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1641:1682:FUNCTION
 
-.. rubric:: ``items.map callback @ 44``
+.. rubric:: ``items.map callback @ 46``
 
 .. code-block:: javascript
 
-   items.map callback @ 44(item, index)
+   items.map callback @ 46(item, index)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``44``—``44`` 行；所属函数 ``useMemo callback @ 43``。
+**性质**：同步局部函数；源码第 ``46``—``46`` 行；所属函数 ``useMemo callback @ 45``。
 
 **参数**
 
@@ -198,17 +198,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1676:1762:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1736:1822:FUNCTION
 
-.. rubric:: ``useMemo callback @ 46``
+.. rubric:: ``useMemo callback @ 48``
 
 .. code-block:: javascript
 
-   useMemo callback @ 46()
+   useMemo callback @ 48()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``46``—``48`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``48``—``50`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -222,17 +222,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1713:1754:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1773:1814:FUNCTION
 
-.. rubric:: ``userItems.map callback @ 47``
+.. rubric:: ``userItems.map callback @ 49``
 
 .. code-block:: javascript
 
-   userItems.map callback @ 47(item, index)
+   userItems.map callback @ 49(item, index)
 
 作为 ``userItems.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``47``—``47`` 行；所属函数 ``useMemo callback @ 46``。
+**性质**：同步局部函数；源码第 ``49``—``49`` 行；所属函数 ``useMemo callback @ 48``。
 
 **参数**
 
@@ -246,17 +246,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1823:2612:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:1883:2672:FUNCTION
 
-.. rubric:: ``useMemo callback @ 49``
+.. rubric:: ``useMemo callback @ 51``
 
 .. code-block:: javascript
 
-   useMemo callback @ 49()
+   useMemo callback @ 51()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``49``—``68`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``51``—``70`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -272,17 +272,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``itemIndexById.get``、``Number``、``Math.floor``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:2700:2777:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:2760:2837:FUNCTION
 
-.. rubric:: ``useMemo callback @ 71``
+.. rubric:: ``useMemo callback @ 73``
 
 .. code-block:: javascript
 
-   useMemo callback @ 71()
+   useMemo callback @ 73()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``71``—``71`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``73``—``73`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -298,17 +298,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``Math.max``、``userIndexById.get``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:2938:3150:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:2998:3210:FUNCTION
 
-.. rubric:: ``useMemo callback @ 76``
+.. rubric:: ``useMemo callback @ 78``
 
 .. code-block:: javascript
 
-   useMemo callback @ 76()
+   useMemo callback @ 78()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``76``—``80`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``78``—``82`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -324,17 +324,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``itemIndexById.get``、``Math.max``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:3257:3995:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:3317:4055:FUNCTION
 
-.. rubric:: ``useMemo callback @ 82``
+.. rubric:: ``useMemo callback @ 84``
 
 .. code-block:: javascript
 
-   useMemo callback @ 82()
+   useMemo callback @ 84()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``82``—``101`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``84``—``103`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -348,17 +348,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:3432:3987:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:3492:4047:FUNCTION
 
-.. rubric:: ``Array.from callback @ 86``
+.. rubric:: ``Array.from callback @ 88``
 
 .. code-block:: javascript
 
-   Array.from callback @ 86(_, markerIndex)
+   Array.from callback @ 88(_, markerIndex)
 
 实现 ``Array.from`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``86``—``100`` 行；所属函数 ``useMemo callback @ 82``。
+**性质**：同步局部函数；源码第 ``88``—``102`` 行；所属函数 ``useMemo callback @ 84``。
 
 **参数**
 
@@ -376,17 +376,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:3931:3960:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:3991:4020:FUNCTION
 
-.. rubric:: ``bucket.some callback @ 98``
+.. rubric:: ``bucket.some callback @ 100``
 
 .. code-block:: javascript
 
-   bucket.some callback @ 98(item)
+   bucket.some callback @ 100(item)
 
 作为 ``bucket.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``98``—``98`` 行；所属函数 ``Array.from callback @ 86``。
+**性质**：同步局部函数；源码第 ``100``—``100`` 行；所属函数 ``Array.from callback @ 88``。
 
 **参数**
 
@@ -397,17 +397,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4044:4215:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4104:4275:FUNCTION
 
-.. rubric:: ``useMemo callback @ 102``
+.. rubric:: ``useMemo callback @ 104``
 
 .. code-block:: javascript
 
-   useMemo callback @ 102()
+   useMemo callback @ 104()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``102``—``105`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``104``—``107`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -421,17 +421,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4077:4214:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4137:4274:FUNCTION
 
-.. rubric:: ``collapsedMarkerBuckets.map callback @ 102``
+.. rubric:: ``collapsedMarkerBuckets.map callback @ 104``
 
 .. code-block:: javascript
 
-   collapsedMarkerBuckets.map callback @ 102(bucket)
+   collapsedMarkerBuckets.map callback @ 104(bucket)
 
 作为 ``collapsedMarkerBuckets.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``102``—``105`` 行；所属函数 ``useMemo callback @ 102``。
+**性质**：同步局部函数；源码第 ``104``—``107`` 行；所属函数 ``useMemo callback @ 104``。
 
 **参数**
 
@@ -442,17 +442,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4303:4451:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4363:4511:FUNCTION
 
-.. rubric:: ``useCallback callback @ 107``
+.. rubric:: ``useCallback callback @ 109``
 
 .. code-block:: javascript
 
-   useCallback callback @ 107(offset)
+   useCallback callback @ 109(offset)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``107``—``110`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``109``—``112`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -463,17 +463,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``undefined``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4502:4878:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4562:4938:FUNCTION
 
-.. rubric:: ``useCallback callback @ 112``
+.. rubric:: ``useCallback callback @ 114``
 
 .. code-block:: javascript
 
-   useCallback callback @ 112(resetOffset)
+   useCallback callback @ 114(resetOffset)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``112``—``123`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``114``—``125`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -490,17 +490,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``window.cancelAnimationFrame``、``applyWheelOffset``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4916:5046:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:4976:5106:FUNCTION
 
-.. rubric:: ``useEffect callback @ 125``
+.. rubric:: ``useEffect callback @ 127``
 
 .. code-block:: javascript
 
-   useEffect callback @ 125()
+   useEffect callback @ 127()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``125``—``129`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``127``—``131`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -512,17 +512,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``stopWheelAnimation``、``setCursorIndex``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5099:5320:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5159:5380:FUNCTION
 
-.. rubric:: ``useEffect callback @ 131``
+.. rubric:: ``useEffect callback @ 133``
 
 .. code-block:: javascript
 
-   useEffect callback @ 131()
+   useEffect callback @ 133()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``131``—``136`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``133``—``138`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -534,17 +534,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``clamp``、``Math.max``、``setCursorIndex``、``stopWheelAnimation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5403:5547:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5463:5607:FUNCTION
 
-.. rubric:: ``useCallback callback @ 138``
+.. rubric:: ``useCallback callback @ 140``
 
 .. code-block:: javascript
 
-   useCallback callback @ 138()
+   useCallback callback @ 140()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``138``—``142`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``140``—``144`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -560,17 +560,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5592:5868:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5652:5928:FUNCTION
 
-.. rubric:: ``useCallback callback @ 144``
+.. rubric:: ``useCallback callback @ 146``
 
 .. code-block:: javascript
 
-   useCallback callback @ 144()
+   useCallback callback @ 146()
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``144``—``152`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``146``—``154`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -588,17 +588,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5746:5835:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5806:5895:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 148``
+.. rubric:: ``window.setTimeout callback @ 150``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 148()
+   window.setTimeout callback @ 150()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``148``—``151`` 行；所属函数 ``useCallback callback @ 144``。
+**性质**：同步局部函数；源码第 ``150``—``153`` 行；所属函数 ``useCallback callback @ 146``。
 
 **参数**
 
@@ -610,17 +610,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``setIsAwake``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:5967:6101:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6027:6161:FUNCTION
 
-.. rubric:: ``useCallback callback @ 154``
+.. rubric:: ``useCallback callback @ 156``
 
 .. code-block:: javascript
 
-   useCallback callback @ 154(restartIdleTimer)
+   useCallback callback @ 156(restartIdleTimer)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``154``—``158`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``156``—``160`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -633,17 +633,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``setIsAwake``、``clearIdleTimer``、``scheduleIdle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6151:6304:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6211:6364:FUNCTION
 
-.. rubric:: ``useEffect callback @ 160``
+.. rubric:: ``useEffect callback @ 162``
 
 .. code-block:: javascript
 
-   useEffect callback @ 160()
+   useEffect callback @ 162()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``160``—``167`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``162``—``169`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -655,17 +655,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``setIsAwake``、``clearIdleTimer``、``scheduleIdle``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6366:7256:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6426:7316:FUNCTION
 
-.. rubric:: ``useEffect callback @ 169``
+.. rubric:: ``useEffect callback @ 171``
 
 .. code-block:: javascript
 
-   useEffect callback @ 169()
+   useEffect callback @ 171()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``169``—``190`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``171``—``192`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -684,7 +684,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6475:6721:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6535:6781:FUNCTION
 
 .. rubric:: ``handlePageActivity``
 
@@ -694,7 +694,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 处理 ``Page Activity`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``172``—``178`` 行；所属函数 ``useEffect callback @ 169``。
+**性质**：同步局部函数；源码第 ``174``—``180`` 行；所属函数 ``useEffect callback @ 171``。
 
 **参数**
 
@@ -712,17 +712,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6602:6709:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:6662:6769:FUNCTION
 
-.. rubric:: ``window.requestAnimationFrame callback @ 174``
+.. rubric:: ``window.requestAnimationFrame callback @ 176``
 
 .. code-block:: javascript
 
-   window.requestAnimationFrame callback @ 174()
+   window.requestAnimationFrame callback @ 176()
 
 实现 ``window.requestAnimationFrame`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``174``—``177`` 行；所属函数 ``handlePageActivity``。
+**性质**：同步局部函数；源码第 ``176``—``179`` 行；所属函数 ``handlePageActivity``。
 
 **参数**
 
@@ -734,17 +734,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``wakeNavigator``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7001:7249:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7061:7309:FUNCTION
 
-.. rubric:: ``returned callback @ 185``
+.. rubric:: ``returned callback @ 187``
 
 .. code-block:: javascript
 
-   returned callback @ 185()
+   returned callback @ 187()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``185``—``189`` 行；所属函数 ``useEffect callback @ 169``。
+**性质**：同步局部函数；源码第 ``187``—``191`` 行；所属函数 ``useEffect callback @ 171``。
 
 **参数**
 
@@ -760,17 +760,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7318:7416:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7378:7476:FUNCTION
 
-.. rubric:: ``useEffect callback @ 192``
+.. rubric:: ``useEffect callback @ 194``
 
 .. code-block:: javascript
 
-   useEffect callback @ 192()
+   useEffect callback @ 194()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``192``—``195`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``194``—``197`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -782,17 +782,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``wakeNavigator``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7495:7753:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7555:7813:FUNCTION
 
-.. rubric:: ``useEffect callback @ 197``
+.. rubric:: ``useEffect callback @ 199``
 
 .. code-block:: javascript
 
-   useEffect callback @ 197()
+   useEffect callback @ 199()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``197``—``202`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``199``—``204`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -808,17 +808,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7500:7753:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7560:7813:FUNCTION
 
-.. rubric:: ``anonymous callback @ 197``
+.. rubric:: ``anonymous callback @ 199``
 
 .. code-block:: javascript
 
-   anonymous callback @ 197()
+   anonymous callback @ 199()
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``197``—``202`` 行；所属函数 ``useEffect callback @ 197``。
+**性质**：同步局部函数；源码第 ``199``—``204`` 行；所属函数 ``useEffect callback @ 199``。
 
 **参数**
 
@@ -834,17 +834,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``window.clearTimeout``、``clearIdleTimer``、``window.cancelAnimationFrame``、``stopWheelAnimation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7828:8332:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7888:8392:FUNCTION
 
-.. rubric:: ``useMemo callback @ 204``
+.. rubric:: ``useMemo callback @ 206``
 
 .. code-block:: javascript
 
-   useMemo callback @ 204()
+   useMemo callback @ 206()
 
 封装 ``Memo`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``204``—``217`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``206``—``219`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -858,17 +858,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:7950:8324:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8010:8384:FUNCTION
 
-.. rubric:: ``Array.from callback @ 206``
+.. rubric:: ``Array.from callback @ 208``
 
 .. code-block:: javascript
 
-   Array.from callback @ 206(_, slotIndex)
+   Array.from callback @ 208(_, slotIndex)
 
 实现 ``Array.from`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``206``—``216`` 行；所属函数 ``useMemo callback @ 204``。
+**性质**：同步局部函数；源码第 ``208``—``218`` 行；所属函数 ``useMemo callback @ 206``。
 
 **参数**
 
@@ -882,7 +882,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``{ offset, absoluteIndex, item: absoluteIndex >= 0 && absoluteIndex < userItems.length ? userItems[absoluteIndex] : null, }``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8392:8549:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8452:8609:FUNCTION
 
 .. rubric:: ``clearCollapseTimer``
 
@@ -892,7 +892,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 清空与 ``Collapse Timer`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``219``—``223`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``221``—``225`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -908,7 +908,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``window.clearTimeout``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8579:8682:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8639:8742:FUNCTION
 
 .. rubric:: ``expandNavigator``
 
@@ -918,7 +918,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 实现 ``expandNavigator`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``225``—``229`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``227``—``231`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -930,7 +930,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``clearCollapseTimer``、``wakeNavigator``、``setIsExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8713:8928:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8773:8988:FUNCTION
 
 .. rubric:: ``scheduleCollapse``
 
@@ -940,7 +940,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 实现 ``scheduleCollapse`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``231``—``237`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``233``—``239`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -958,17 +958,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8805:8901:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8865:8961:FUNCTION
 
-.. rubric:: ``window.setTimeout callback @ 233``
+.. rubric:: ``window.setTimeout callback @ 235``
 
 .. code-block:: javascript
 
-   window.setTimeout callback @ 233()
+   window.setTimeout callback @ 235()
 
 实现 ``window.setTimeout`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``233``—``236`` 行；所属函数 ``scheduleCollapse``。
+**性质**：同步局部函数；源码第 ``235``—``238`` 行；所属函数 ``scheduleCollapse``。
 
 **参数**
 
@@ -980,17 +980,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``setIsExpanded``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:8973:11163:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:9033:11223:FUNCTION
 
-.. rubric:: ``useCallback callback @ 239``
+.. rubric:: ``useCallback callback @ 241``
 
 .. code-block:: javascript
 
-   useCallback callback @ 239(timestamp)
+   useCallback callback @ 241(timestamp)
 
 封装 ``Callback`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``239``—``296`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``241``—``298`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -1007,7 +1007,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``clamp``、``Math.max``、``setCursorIndex``、``Math.pow``、``Math.abs``、``applyWheelOffset``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:11228:11834:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:11288:11894:FUNCTION
 
 .. rubric:: ``handleWheel``
 
@@ -1017,7 +1017,7 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 处理 ``Wheel`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``298``—``315`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``300``—``317`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -1034,17 +1034,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``Math.abs``、``event.preventDefault``、``event.stopPropagation``、``wakeNavigator``、``normalizeWheelDelta``、``clamp``、``window.requestAnimationFrame``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:12582:12700:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:12692:12810:FUNCTION
 
-.. rubric:: ``onBlurCapture callback @ 334``
+.. rubric:: ``onBlurCapture callback @ 337``
 
 .. code-block:: javascript
 
-   onBlurCapture callback @ 334(event)
+   onBlurCapture callback @ 337(event)
 
 处理 ``Blur Capture`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``334``—``336`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``337``—``339`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -1057,17 +1057,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``event.currentTarget.contains``、``scheduleCollapse``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:14863:15875:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:14973:15985:FUNCTION
 
-.. rubric:: ``collapsedMarkers.map callback @ 367``
+.. rubric:: ``collapsedMarkers.map callback @ 370``
 
 .. code-block:: javascript
 
-   collapsedMarkers.map callback @ 367(marker, markerIndex)
+   collapsedMarkers.map callback @ 370(marker, markerIndex)
 
 作为 ``collapsedMarkers.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``367``—``382`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``370``—``385`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -1081,17 +1081,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 根据执行分支返回结果；代表性返回表达式为 ``( <span key={marker.key} className={\x60absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-[top,opacity,background-color,transform] duration-700 ease-[cubic-…``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:17085:17115:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:17195:17225:FUNCTION
 
-.. rubric:: ``onPointerDown callback @ 401``
+.. rubric:: ``onPointerDown callback @ 404``
 
 .. code-block:: javascript
 
-   onPointerDown callback @ 401()
+   onPointerDown callback @ 404()
 
 处理 ``Pointer Down`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``401``—``401`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``404``—``404`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -1103,17 +1103,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **主要协作调用**：``stopWheelAnimation``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:17561:20394:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:17671:20746:FUNCTION
 
-.. rubric:: ``visibleSlots.map callback @ 409``
+.. rubric:: ``visibleSlots.map callback @ 412``
 
 .. code-block:: javascript
 
-   visibleSlots.map callback @ 409({item, absoluteIndex, offset}, slotIndex)
+   visibleSlots.map callback @ 412({item, absoluteIndex, offset}, slotIndex)
 
 作为 ``visibleSlots.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``409``—``447`` 行；所属函数 ``memo callback @ 24``。
+**性质**：同步局部函数；源码第 ``412``—``451`` 行；所属函数 ``memo callback @ 25``。
 
 **参数**
 
@@ -1131,17 +1131,17 @@ src/features/chat/page/components/QuickUserMessageNavigator 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:18425:18457:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/components/QuickUserMessageNavigator.jsx:18535:18567:FUNCTION
 
-.. rubric:: ``onClick callback @ 423``
+.. rubric:: ``onClick callback @ 426``
 
 .. code-block:: javascript
 
-   onClick callback @ 423()
+   onClick callback @ 426()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``423``—``423`` 行；所属函数 ``visibleSlots.map callback @ 409``。
+**性质**：同步局部函数；源码第 ``426``—``426`` 行；所属函数 ``visibleSlots.map callback @ 412``。
 
 **参数**
 

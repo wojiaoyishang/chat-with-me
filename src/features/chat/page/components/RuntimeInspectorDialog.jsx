@@ -1055,8 +1055,8 @@ const RuntimeInspectorDialog = memo(
                   : currentTab?.section;
 
         const handleJump = (messageId) => {
+            onJumpToMessage?.(messageId);
             onClose?.();
-            requestAnimationFrame(() => onJumpToMessage?.(messageId));
         };
 
         return (

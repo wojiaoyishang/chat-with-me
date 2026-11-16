@@ -37,6 +37,14 @@ const MessageSummaryItem = memo(({
     const Icon = config.icon;
     const preview = item?.preview || (item?.branchCount ? '[消息内容为空]' : '[空消息]');
     const containsTool = preview.includes('[tool]') || preview.includes('[工具');
+    const contextIcons = <>
+        {item?.contextState?.forgotten && <span title="已忽略，不参与模型上下文" className="inline-flex shrink-0 text-muted-foreground">
+            <EyeOff className="size-3.5" aria-label="已忽略"/>
+        </span>}
+        {item?.contextState?.compactions?.length > 0 && <span title="已压缩，使用摘要参与模型上下文" className="inline-flex shrink-0 text-primary">
+            <Minimize2 className="size-3.5" aria-label="已压缩"/>
+        </span>}
+    </>;
 
     if (variant === 'branch') {
         return (
@@ -56,6 +64,7 @@ const MessageSummaryItem = memo(({
                             <Icon/>
                             {config.label}
                         </Badge>
+                        {contextIcons}
                         <span className="ml-auto shrink-0 text-xs text-muted-foreground">{indexLabel}</span>
                         {active && <Check className="size-4 shrink-0 text-primary"/>}
                     </div>
@@ -88,8 +97,7 @@ const MessageSummaryItem = memo(({
                     <span className="hidden sm:inline">{config.label}</span>
                 </Badge>
                 {containsTool && <Wrench className="size-3.5 shrink-0 text-muted-foreground"/>}
-                {item?.contextState?.forgotten && <EyeOff className="size-3.5 shrink-0 text-muted-foreground" aria-label="已忽略"/>}
-                {item?.contextState?.compactions?.length > 0 && <Minimize2 className="size-3.5 shrink-0 text-muted-foreground" aria-label="已压缩"/>}
+                {contextIcons}
                 <span className="min-w-0 flex-1 truncate text-sm text-foreground" title={preview}>{preview}</span>
                 <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                     {indexLabel ?? (Number.isInteger(item?.orderIndex) ? `#${item.orderIndex + 1}` : '')}

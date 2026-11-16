@@ -5,7 +5,7 @@ import { projectMessageDeletion } from './page/utils/messageDeletion.js';
 import { ConversationOptionsWriter } from './page/utils/conversationOptions.js';
 import { getBackendConnection, isCurrentConnection } from '@/runtime/backend/connection.js';
 import { openChatWindow } from './page/openChatWindow.js';
-import { Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react';
+import { Loader2, Mic, MicOff, Minimize2, PhoneOff, X } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useImmer } from 'use-immer';
@@ -27,6 +27,7 @@ import { DeleteConfirmDialog } from '@/components/ui/DeleteConfirmDialog';
 import RuntimeInspectorDialog from '@/features/chat/page/components/RuntimeInspectorDialog.jsx';
 import RemoteSettingsPanel from '@/features/settings-runtime/RemoteSettingsPanel.jsx';
 import useRuntimeInspector from '@/features/chat/page/hooks/useRuntimeInspector.js';
+import useMessageNavigation from '@/features/chat/page/hooks/useMessageNavigation.js';
 import QuickUserMessageNavigator from '@/features/chat/page/components/QuickUserMessageNavigator.jsx';
 import StoryReader from '@/features/story/StoryReader.jsx';
 import useConversationFreeze from './freeze/useConversationFreeze.js';
@@ -83,8 +84,6 @@ const VOICE_RECOGNITION_ENGINE_SETTING_KEY = 'VoiceRecognitionEngine';
 const VOICE_RECOGNITION_LANGUAGE_SETTING_KEY = 'VoiceRecognitionLanguage';
 const MESSAGE_SUMMARY_PAGE_SIZE = 500;
 const HISTORY_PAGE_SIZE = 20;
-const HISTORY_JUMP_BEFORE = 12;
-const HISTORY_JUMP_AFTER = 32;
 const HISTORY_AUTO_LOAD_ROOT_MARGIN = '260px 0px 0px 0px';
 const CHAT_BOOTSTRAP_TIMEOUT_MS = 30000;
 
@@ -1690,6 +1689,7 @@ function ChatPage({
 
             streamBatchRef.current?.flush();
             const latestOrder = messagesOrderRef.current;
+            if (latestOrder[0] !== '<PREV_MORE>' || latestOrder[1] !== firstLoadedMessageId) return false;
             const loadedOrder = latestOrder[0] === '<PREV_MORE>' ? latestOrder.slice(1) : latestOrder;
             const loadedIds = new Set(loadedOrder);
             const prependedOrder = (data.messagesOrder || []).filter((messageId) => !loadedIds.has(messageId));
@@ -1739,35 +1739,6 @@ function ChatPage({
         setMessages,
     ]);
 
-    useEffect(() => {
-        if (!historyAutoLoadReady || !conversationId || messagesOrder[0] !== '<PREV_MORE>') {
-            return undefined;
-        }
-
-        const container = messagesContainerRef.current;
-        const sentinel = container?.querySelector('[data-history-load-sentinel="true"]');
-        if (!container || !sentinel || typeof IntersectionObserver === 'undefined') {
-            return undefined;
-        }
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (!entries.some((entry) => entry.isIntersecting)) return;
-                loadMoreHistory().catch((error) => {
-                    toast.error(t('load_more_error', { message: error?.message || t('unknown_error') }));
-                });
-            },
-            {
-                root: container,
-                rootMargin: HISTORY_AUTO_LOAD_ROOT_MARGIN,
-                threshold: 0.01,
-            },
-        );
-
-        observer.observe(sentinel);
-        return () => observer.disconnect();
-    }, [conversationId, historyAutoLoadReady, loadMoreHistory, messagesOrder, t]);
-
     const scrollToRenderedMessage = useCallback(
         (messageId, behavior = 'smooth') => {
             const container = messagesContainerRef.current;
@@ -1783,13 +1754,21 @@ function ChatPage({
             setShowScrollToBottomButton(true);
             setActiveVisibleMessageId(String(messageId));
             setHighlightedMessageId(String(messageId));
-            element.scrollIntoView({ behavior, block: 'center' });
+            const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+            const targetTop = container.scrollTop + element.getBoundingClientRect().top
+                - container.getBoundingClientRect().top + (element.clientHeight - container.clientHeight) / 2;
+            const scrollBehavior = reducedMotion || Math.abs(targetTop - container.scrollTop) > 6000 ? 'auto' : behavior;
+            markProgrammaticScroll(scrollBehavior === 'smooth' ? 700 : 200);
+            container.scrollTo({top: Math.max(0, targetTop), behavior: scrollBehavior});
+            if (!reducedMotion) element.animate?.([
+                {backgroundColor: 'rgba(59, 130, 246, 0.12)'}, {backgroundColor: 'transparent'},
+            ], {duration: 900, easing: 'ease-out'});
             window.setTimeout(() => {
                 setHighlightedMessageId((current) => (current === String(messageId) ? null : current));
             }, 1800);
             return true;
         },
-        [isAutoScrollEnabledRef, pendingScrollRef, setShowScrollToBottomButton],
+        [isAutoScrollEnabledRef, markProgrammaticScroll, pendingScrollRef, setShowScrollToBottomButton],
     );
 
     const restoreLatestMessages = useCallback(async () => {
@@ -1857,87 +1836,44 @@ function ChatPage({
         };
     }, [restoreLatestMessages]);
 
-    const jumpToMessage = useCallback(
-        async (messageId) => {
-            if (!messageId) return false;
+    const applyNavigationWindow = useCallback(data => {
+        streamBatchRef.current?.flush();
+        const decorated = decorateMessages(data.messages || {});
+        const nextMessages = {...messagesRef.current};
+        for (const [id, message] of Object.entries(decorated)) {
+            nextMessages[id] = mergeLiveMessageWithSnapshot(message, messagesRef.current[id], {
+                preserveStream: liveStreamMessageIdsRef.current.has(id),
+            });
+        }
+        const nextOrder = data.haveMoreBefore ? ['<PREV_MORE>', ...data.messagesOrder] : [...data.messagesOrder];
+        messagesRef.current = nextMessages;
+        messagesOrderRef.current = nextOrder;
+        historyNavigationLockedRef.current = true;
+        isAutoScrollEnabledRef.current = false;
+        pendingScrollRef.current = false;
+        setMessages(nextMessages);
+        setMessagesOrder(nextOrder);
+        setHistoryAutoLoadReady(true);
+        setShowScrollToBottomButton(true);
+    }, [decorateMessages, isAutoScrollEnabledRef, pendingScrollRef, setMessages, setShowScrollToBottomButton]);
+    const {jumpToMessage, pendingMessageId: navigationMessageId, cancelJump} = useMessageNavigation({
+        conversationId, scrollToMessage: scrollToRenderedMessage, applyWindow: applyNavigationWindow,
+    });
 
-            if (scrollToRenderedMessage(messageId)) return true;
-
-            const loadTargetWindow = async (summaryItems, expectedOrderFingerprint) => {
-                const summaryIndex = summaryItems.findIndex((item) => item.messageId === messageId);
-                if (summaryIndex < 0) {
-                    throw new Error(t('jump_to_message_failed') || '跳转消息失败');
-                }
-
-                const start = Math.max(0, summaryIndex - HISTORY_JUMP_BEFORE);
-                const end = Math.min(summaryItems.length, summaryIndex + HISTORY_JUMP_AFTER + 1);
-                const messageIds = summaryItems.slice(start, end).map((item) => item.messageId);
-                const data = await apiClient.post(apiEndpoint.CHAT_MESSAGES_BATCH_ENDPOINT, {
-                    conversationId: conversationId,
-                    messageIds,
-                    expectedOrderFingerprint,
-                    requireContiguous: true,
-                });
-                if (activeConversationIdRef.current !== conversationId) return false;
-                streamBatchRef.current?.flush();
-                const decorated = decorateMessages(data.messages || {});
-                const nextMessages = { ...messagesRef.current, ...decorated };
-                const nextOrder = data.haveMoreBefore
-                    ? ['<PREV_MORE>', ...(data.messagesOrder || [])]
-                    : [...(data.messagesOrder || [])];
-
-                messagesRef.current = nextMessages;
-                messagesOrderRef.current = nextOrder;
-                setMessages(nextMessages);
-                setMessagesOrder(nextOrder);
-                historyNavigationLockedRef.current = true;
-                isAutoScrollEnabledRef.current = false;
-                pendingScrollRef.current = false;
-                setHistoryAutoLoadReady(true);
-                setShowScrollToBottomButton(true);
-                if (data.orderFingerprint) {
-                    messageSummaryFingerprintRef.current = data.orderFingerprint;
-                }
-
-                await new Promise((resolve) => {
-                    requestAnimationFrame(() => requestAnimationFrame(resolve));
-                });
-                if (!scrollToRenderedMessage(messageId, 'auto')) {
-                    throw new Error(t('jump_to_message_failed') || '跳转消息失败');
-                }
-                return true;
-            };
-
-            try {
-                let summaryItems = messageSummariesRef.current;
-                if (!summaryItems.some((item) => item.messageId === messageId)) {
-                    summaryItems = await loadMessageSummaries();
-                }
-
-                try {
-                    return await loadTargetWindow(summaryItems, messageSummaryFingerprintRef.current);
-                } catch (error) {
-                    if (Number(error?.code) !== 409) throw error;
-                    const refreshedItems = await loadMessageSummaries({ silent: true });
-                    return await loadTargetWindow(refreshedItems, messageSummaryFingerprintRef.current);
-                }
-            } catch (error) {
-                toast.error(error?.message || t('jump_to_message_failed') || '跳转消息失败');
-                return false;
-            }
-        },
-        [
-            conversationId,
-            decorateMessages,
-            isAutoScrollEnabledRef,
-            loadMessageSummaries,
-            pendingScrollRef,
-            scrollToRenderedMessage,
-            setMessages,
-            setShowScrollToBottomButton,
-            t,
-        ],
-    );
+    useEffect(() => {
+        if (navigationMessageId || !historyAutoLoadReady || !conversationId || messagesOrder[0] !== '<PREV_MORE>') return;
+        const container = messagesContainerRef.current;
+        const sentinel = container?.querySelector('[data-history-load-sentinel="true"]');
+        if (!container || !sentinel || typeof IntersectionObserver === 'undefined') return;
+        const observer = new IntersectionObserver(entries => {
+            if (!entries.some(entry => entry.isIntersecting)) return;
+            loadMoreHistory().catch(error => {
+                toast.error(t('load_more_error', {message: error?.message || t('unknown_error')}));
+            });
+        }, {root: container, rootMargin: HISTORY_AUTO_LOAD_ROOT_MARGIN, threshold: 0.01});
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [conversationId, historyAutoLoadReady, loadMoreHistory, messagesOrder, navigationMessageId, t]);
 
     useEffect(() => {
         if (!conversationId || messagesOrder.length === 0) return;
@@ -1957,6 +1893,7 @@ function ChatPage({
 
     const loadSwitchMessage = useCallback(
         async (msgId, newMsgId) => {
+            cancelJump();
             streamBatchRef.current?.flush();
             if (!(msgId in messagesRef.current)) return false;
             let newOrders = [];
@@ -2049,7 +1986,7 @@ function ChatPage({
             setMessages(nextMessagesState);
             return true;
         },
-        [conversationId, decorateMessages, t, setMessages],
+        [cancelJump, conversationId, decorateMessages, t, setMessages],
     );
 
     // ========= Committed message deletion =========
@@ -3022,6 +2959,7 @@ function ChatPage({
                     if (payload.operation === 'message.appended') {
                         appendSync.request();
                     } else {
+                        cancelJump();
                         appendSync.invalidate();
                         setRandomMark(generateUUID());
                     }
@@ -3183,6 +3121,7 @@ function ChatPage({
         updateStreamingStatus,
         setMessages,
         loadSwitchMessage,
+        cancelJump,
         submitMessageDeletion,
         loadMessageSummaries,
         showQuickUserMessageNavigator,
@@ -3739,6 +3678,7 @@ function ChatPage({
                             <QuickUserMessageNavigator
                                 items={messageSummaries}
                                 activeMessageId={activeVisibleMessageId}
+                                pendingMessageId={navigationMessageId}
                                 onSelect={jumpToMessage}
                                 visible={Boolean(
                                     conversationId &&
@@ -3748,6 +3688,12 @@ function ChatPage({
                                 )}
                                 t={t}
                             />
+
+                            {navigationMessageId && <div role="status" aria-live="polite"
+                                className="absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-background/95 px-4 py-2 text-sm shadow-sm motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-1 motion-safe:duration-150">
+                                <Loader2 className="size-4 animate-spin text-primary"/>正在定位消息…
+                                <button type="button" aria-label="取消消息跳转" className="rounded-full p-1 text-muted-foreground hover:bg-muted" onClick={cancelJump}><X className="size-3.5"/></button>
+                            </div>}
 
                             {isLoading && <LoadingScreen t={t} stage={loadingStage} />}
                             {isLoadingError && <LoadingFailedScreen t={t} />}

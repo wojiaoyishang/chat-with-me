@@ -46,7 +46,7 @@
    * - :doc:`src/features/chat/ChatPage </api/javascript/features/chat/ChatPage>`
      - 13
      - 0
-     - 301
+     - 297
      - ``src/features/chat/ChatPage.jsx``
    * - :doc:`src/features/chat/attachmentLibrary </api/javascript/features/chat/attachmentLibrary>`
      - 2
@@ -143,6 +143,11 @@
      - 0
      - 2
      - ``src/features/chat/page/components/InspectorMediaBadges.jsx``
+   * - :doc:`src/features/chat/page/components/InspectorMessageBrowser </api/javascript/features/chat/page/components/InspectorMessageBrowser>`
+     - 1
+     - 0
+     - 26
+     - ``src/features/chat/page/components/InspectorMessageBrowser.jsx``
    * - :doc:`src/features/chat/page/components/LoadingScreens </api/javascript/features/chat/page/components/LoadingScreens>`
      - 2
      - 0
@@ -179,9 +184,9 @@
      - 21
      - ``src/features/chat/page/components/RightSidebar.jsx``
    * - :doc:`src/features/chat/page/components/RuntimeInspectorDialog </api/javascript/features/chat/page/components/RuntimeInspectorDialog>`
-     - 13
+     - 12
      - 0
-     - 63
+     - 58
      - ``src/features/chat/page/components/RuntimeInspectorDialog.jsx``
    * - :doc:`src/features/chat/page/components/ScrollToBottomButton </api/javascript/features/chat/page/components/ScrollToBottomButton>`
      - 0
@@ -233,6 +238,11 @@
      - 0
      - 2
      - ``src/features/chat/page/hooks/useIndependentChatWindow.js``
+   * - :doc:`src/features/chat/page/hooks/useMessageNavigation </api/javascript/features/chat/page/hooks/useMessageNavigation>`
+     - 2
+     - 0
+     - 10
+     - ``src/features/chat/page/hooks/useMessageNavigation.js``
    * - :doc:`src/features/chat/page/hooks/useRuntimeInspector </api/javascript/features/chat/page/hooks/useRuntimeInspector>`
      - 4
      - 0
@@ -538,6 +548,11 @@
      - 0
      - 1
      - ``src/features/chat/ui/message/components/MessageBadges.jsx``
+   * - :doc:`src/features/chat/ui/message/components/MessageCompactionDialog </api/javascript/features/chat/ui/message/components/MessageCompactionDialog>`
+     - 1
+     - 0
+     - 6
+     - ``src/features/chat/ui/message/components/MessageCompactionDialog.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageContextBadges </api/javascript/features/chat/ui/message/components/MessageContextBadges>`
      - 0
      - 0
@@ -561,7 +576,7 @@
    * - :doc:`src/features/chat/ui/message/components/MessageSettingsMenu </api/javascript/features/chat/ui/message/components/MessageSettingsMenu>`
      - 1
      - 0
-     - 16
+     - 19
      - ``src/features/chat/ui/message/components/MessageSettingsMenu.jsx``
    * - :doc:`src/features/chat/ui/message/components/MessageTools </api/javascript/features/chat/ui/message/components/MessageTools>`
      - 1
@@ -586,7 +601,7 @@
    * - :doc:`src/features/chat/ui/message/components/ToolContextActions </api/javascript/features/chat/ui/message/components/ToolContextActions>`
      - 1
      - 0
-     - 3
+     - 4
      - ``src/features/chat/ui/message/components/ToolContextActions.jsx``
    * - :doc:`src/features/chat/ui/message/components/TooltipInfo </api/javascript/features/chat/ui/message/components/TooltipInfo>`
      - 5
@@ -1584,6 +1599,7 @@
    /api/javascript/features/chat/page/components/InspectorEventTimeline
    /api/javascript/features/chat/page/components/InspectorHighlight
    /api/javascript/features/chat/page/components/InspectorMediaBadges
+   /api/javascript/features/chat/page/components/InspectorMessageBrowser
    /api/javascript/features/chat/page/components/LoadingScreens
    /api/javascript/features/chat/page/components/MessageSummaryItem
    /api/javascript/features/chat/page/components/ModelItem
@@ -1602,6 +1618,7 @@
    /api/javascript/features/chat/page/hooks/useChatWindowMode
    /api/javascript/features/chat/page/hooks/useFileUpload
    /api/javascript/features/chat/page/hooks/useIndependentChatWindow
+   /api/javascript/features/chat/page/hooks/useMessageNavigation
    /api/javascript/features/chat/page/hooks/useRuntimeInspector
    /api/javascript/features/chat/page/openChatWindow
    /api/javascript/features/chat/page/utils/appendedHistory
@@ -1663,6 +1680,7 @@
    /api/javascript/features/chat/ui/message/components/LeftAvatarName
    /api/javascript/features/chat/ui/message/components/MessageActions
    /api/javascript/features/chat/ui/message/components/MessageBadges
+   /api/javascript/features/chat/ui/message/components/MessageCompactionDialog
    /api/javascript/features/chat/ui/message/components/MessageContextBadges
    /api/javascript/features/chat/ui/message/components/MessageIndicators
    /api/javascript/features/chat/ui/message/components/MessageItem

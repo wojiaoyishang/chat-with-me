@@ -32,7 +32,7 @@ export default function useMessageContextAction({conversationId, messageId, tool
         return () => { request.current?.abort(); request.current = null; };
     }, [identity]);
 
-    const run = async action => {
+    const run = async (action, {instruction = ''} = {}) => {
         if (request.current || !freeze.canMutate()) return false;
         const controller = new AbortController();
         const requestIdentity = identity;
@@ -43,7 +43,10 @@ export default function useMessageContextAction({conversationId, messageId, tool
         setError('');
         try {
             const endpoint = `${apiEndpoint.CHAT_MESSAGES_ENDPOINT}/${encodeURIComponent(messageId)}/context`;
-            let response = await apiClient.post(endpoint, {conversationId, action, ...(toolCallId ? {toolCallId} : {})}, {signal: controller.signal});
+            let response = await apiClient.post(endpoint, {
+                conversationId, action, ...(toolCallId ? {toolCallId} : {}),
+                ...(action === 'compress' ? {instruction} : {}),
+            }, {signal: controller.signal});
             if (!active()) return false;
             if (action === 'compress') {
                 const jobId = response?.jobId;

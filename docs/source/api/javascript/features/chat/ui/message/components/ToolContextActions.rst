@@ -17,23 +17,23 @@ src/features/chat/ui/message/components/ToolContextActions 模块
 * **模块标识**：``src/features/chat/ui/message/components/ToolContextActions``
 * **顶层函数/组件/Hook**：1
 * **类**：0
-* **局部函数与匿名回调**：3
+* **局部函数与匿名回调**：4
 
 主要依赖
 --------------------------------------------------------------------------------
 
-``lucide-react``、``react-i18next``、``../hooks/useMessageContextAction.js``。
+``react``、``lucide-react``、``react-i18next``、``../hooks/useMessageContextAction.js``、``./MessageCompactionDialog.jsx``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:184:1987:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:285:2538:FUNCTION
 
 .. js:function:: ToolContextActions({conversationId, messageId, toolCallId, status, messageContextState})
 
    渲染 ``ToolContextActions`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``5``—``22`` 行。
+   **性质**：同步函数；导出 API；源码第 ``7``—``31`` 行。
 
    **参数**
 
@@ -44,26 +44,26 @@ src/features/chat/ui/message/components/ToolContextActions 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``<span className="inline-flex shrink-0 items-center gap-0.5" onClick={event => event.stopPropagation()}> {action.pending ? <span role="status" className="inline-flex items-center g…``。
 
-   **主要协作调用**：``useTranslation``、``useMessageContextAction``、``['forgotten', 'compacted'].includes``、``Boolean``、``t``。
+   **主要协作调用**：``useTranslation``、``useMessageContextAction``、``useState``、``Boolean``、``t``。
 
-   **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
+   **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
 局部函数与匿名回调
 --------------------------------------------------------------------------------
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:850:882:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:1090:1122:FUNCTION
 
-.. rubric:: ``onClick callback @ 11``
+.. rubric:: ``onClick callback @ 15``
 
 .. code-block:: javascript
 
-   onClick callback @ 11(event)
+   onClick callback @ 15(event)
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``11``—``11`` 行；所属函数 ``ToolContextActions``。
+**性质**：同步局部函数；源码第 ``15``—``15`` 行；所属函数 ``ToolContextActions``。
 
 **参数**
 
@@ -76,17 +76,39 @@ src/features/chat/ui/message/components/ToolContextActions 模块
 
 **主要协作调用**：``event.stopPropagation``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:1324:1357:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:1550:1579:FUNCTION
 
-.. rubric:: ``onClick callback @ 13``
+.. rubric:: ``onClick callback @ 17``
 
 .. code-block:: javascript
 
-   onClick callback @ 13()
+   onClick callback @ 17()
 
 处理 ``Click`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``13``—``13`` 行；所属函数 ``ToolContextActions``。
+**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``ToolContextActions``。
+
+**参数**
+
+无。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+**主要协作调用**：``setCompactionOpen``。
+
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:1902:1955:FUNCTION
+
+.. rubric:: ``onClick callback @ 20``
+
+.. code-block:: javascript
+
+   onClick callback @ 20()
+
+处理 ``Click`` 用户交互或运行时事件。
+
+**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``ToolContextActions``。
 
 **参数**
 
@@ -98,24 +120,25 @@ src/features/chat/ui/message/components/ToolContextActions 模块
 
 **主要协作调用**：``action.run``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:1680:1733:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/ToolContextActions.jsx:2393:2520:FUNCTION
 
-.. rubric:: ``onClick callback @ 16``
+.. rubric:: ``onSubmit callback @ 27``
 
 .. code-block:: javascript
 
-   onClick callback @ 16()
+   async onSubmit callback @ 27(instruction)
 
-处理 ``Click`` 用户交互或运行时事件。
+处理 ``Submit`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``16``—``16`` 行；所属函数 ``ToolContextActions``。
+**性质**：异步局部函数；源码第 ``27``—``29`` 行；所属函数 ``ToolContextActions``。
 
 **参数**
 
-无。
+``instruction``
+   调用方传入的 ``instruction`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``action.run``。
+**主要协作调用**：``action.run``、``setCompactionOpen``。
