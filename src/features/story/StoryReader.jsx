@@ -22,6 +22,7 @@ import StoryMediaDeck from '@/features/story/media/StoryMediaDeck.jsx';
 import StoryVideo from '@/features/story/media/StoryVideo.jsx';
 import StoryMediaEditor from '@/features/story/media/StoryMediaEditor.jsx';
 import { normalizeVideoTiming, resolveStoryMediaLayout } from '@/features/story/media/storyMediaLayout.js';
+import { releaseStoryMedia } from '@/features/story/media/storyMediaLifecycle.js';
 
 const FONT_SCALES = { small: 0.88, compact: 0.95, normal: 1, large: 1.15, extraLarge: 1.32 };
 const FONT_LABELS = { small: '小', compact: '较小', normal: '标准', large: '较大', extraLarge: '大' };
@@ -49,6 +50,7 @@ export default function StoryReader({
     const [autoPlayStage, setAutoPlayStage] = useState('idle');
     const [waitingForNext, setWaitingForNext] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const [partPickerOpen, setPartPickerOpen] = useState(false);
     const [mediaEditor, setMediaEditor] = useState(null);
     const [videoDone, setVideoDone] = useState(false);
     const [speechDone, setSpeechDone] = useState(false);
@@ -59,6 +61,8 @@ export default function StoryReader({
     );
     const [videoMetadata, setVideoMetadata] = useState(null);
     const storyContentRef = useRef(null);
+    const storyViewportRef = useRef(null);
+    const partPickerRef = useRef(null);
     const wasOpenRef = useRef(false);
     const activeStoryIdRef = useRef(null);
     const videoRef = useRef(null);
@@ -97,6 +101,15 @@ export default function StoryReader({
     const videoTiming = normalizeVideoTiming(part?.videoTiming);
 
     useEffect(() => {
+        const viewport = storyViewportRef.current;
+        if (!viewport) return;
+        return () => {
+            // Strict Mode replays effects while the current viewport is still mounted.
+            if (!viewport.isConnected) releaseStoryMedia(viewport.querySelectorAll('video, audio, img'));
+        };
+    }, [open, partKey]);
+
+    useEffect(() => {
         if (typeof window === 'undefined') return undefined;
         const handleResize = () => setViewportWidth(window.innerWidth);
         window.addEventListener('resize', handleResize);
@@ -120,6 +133,7 @@ export default function StoryReader({
             wasOpenRef.current = false;
             activeStoryIdRef.current = null;
             setSettingsOpen(false);
+            setPartPickerOpen(false);
             setMediaEditor(null);
             setAutoPlayActive(false);
             setAutoPlayStage('idle');
@@ -136,6 +150,7 @@ export default function StoryReader({
             pauseVideo(false);
         }
         setMediaEditor(null);
+        setPartPickerOpen(false);
         activeStoryIdRef.current = story.storyId;
         activePlaybackKeyRef.current = '';
         speechCycleRef.current = { key: '', started: false, sawActive: false };
@@ -180,7 +195,12 @@ export default function StoryReader({
     useEffect(() => {
         if (!open) return undefined;
         const handleKeyDown = (event) => {
-            if (event.key !== 'Escape' || mediaEditor) return;
+            if (event.defaultPrevented || event.key !== 'Escape' || mediaEditor) return;
+            if (partPickerOpen) {
+                event.preventDefault();
+                setPartPickerOpen(false);
+                return;
+            }
             if (settingsOpen) {
                 setSettingsOpen(false);
                 return;
@@ -190,7 +210,7 @@ export default function StoryReader({
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [open, closeReader, settingsOpen, mediaEditor]);
+    }, [open, closeReader, settingsOpen, mediaEditor, partPickerOpen]);
 
     useEffect(() => () => pauseVideo(false), [pauseVideo]);
 
@@ -203,6 +223,7 @@ export default function StoryReader({
     const playCurrentVideo = useCallback(
         async ({ reset = true, playbackKey = '' } = {}) => {
             const video = videoRef.current;
+            const targetPartKey = renderedPartKeyRef.current;
             if (!video || !videoSrc) {
                 if (playbackKey && activePlaybackKeyRef.current === playbackKey) {
                     videoDoneKeyRef.current = playbackKey;
@@ -218,8 +239,9 @@ export default function StoryReader({
                 video.muted = videoMuted;
                 setVideoPlaybackError('');
                 await video.play();
-                return true;
+                return videoRef.current === video && renderedPartKeyRef.current === targetPartKey;
             } catch (error) {
+                if (videoRef.current !== video || renderedPartKeyRef.current !== targetPartKey) return false;
                 console.warn('Story video autoplay failed:', error);
                 setVideoPlaybackError(
                     t('story_video_autoplay_blocked', '浏览器阻止了视频自动播放，可点击视频手动播放。'),
@@ -415,6 +437,11 @@ export default function StoryReader({
     const imageLayout = mediaLayout.imageLayout;
     const setPart = (next) => {
         if (!next) return;
+        setPartPickerOpen(false);
+        if (next.sequence === part?.sequence) return;
+        activePlaybackKeyRef.current = '';
+        onStopSpeech?.();
+        pauseVideo(false);
         setWaitingForNext(false);
         setSuppressedVideoAutoplayKey('');
         setSequence(next.sequence);
@@ -432,7 +459,8 @@ export default function StoryReader({
         setAutoPlayActive(true);
     };
 
-    const handleVideoEnded = () => {
+    const handleVideoEnded = (event) => {
+        if (event.currentTarget !== videoRef.current) return;
         const currentKey = renderedPartKeyRef.current;
 
         // Outside Story Auto Play, loop means the video itself repeats indefinitely.
@@ -457,6 +485,7 @@ export default function StoryReader({
 
     const handleVideoMetadata = (event) => {
         const video = event?.currentTarget;
+        if (video !== videoRef.current) return;
         const width = Number(video?.videoWidth || 0);
         const height = Number(video?.videoHeight || 0);
         if (width > 0 && height > 0) {
@@ -644,7 +673,7 @@ export default function StoryReader({
                 </div>
             </header>
 
-            <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-10">
+            <main key={partKey} ref={storyViewportRef} className="min-h-0 flex-1 animate-in overflow-y-auto px-4 py-6 fade-in-0 duration-150 motion-reduce:animate-none sm:px-8 sm:py-10">
                 {!part ? (
                     <div className="flex h-full flex-col items-center justify-center gap-3 text-amber-700">
                         {story.status === 'generating'
@@ -680,13 +709,51 @@ export default function StoryReader({
                     <ChevronLeft className="mr-1 h-4 w-4" />
                     {t('story_previous_part', '上一篇')}
                 </Button>
-                <span className="min-w-24 text-center text-sm text-gray-500">
-                    {waitingForNext
-                        ? t('story_waiting_next_part', '等待新篇幅…')
-                        : part
-                          ? `${part.sequence} / ${parts.length}`
-                          : `0 / ${parts.length}`}
-                </span>
+                <Popover open={partPickerOpen} onOpenChange={setPartPickerOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="min-w-24 text-sm tabular-nums text-gray-600 hover:bg-amber-100 hover:text-amber-900"
+                            disabled={!parts.length}
+                            aria-label={t('story_select_part', '选择篇幅')}
+                            title={t('story_select_part', '选择篇幅')}
+                        >
+                            {waitingForNext
+                                ? t('story_waiting_next_part', '等待新篇幅…')
+                                : `${part?.sequence || 0} / ${parts.length}`}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                        ref={partPickerRef}
+                        side="top"
+                        align="center"
+                        sideOffset={12}
+                        className="w-[min(24rem,calc(100vw-2rem))] border-amber-200 bg-[#fffaf0] p-3 text-gray-900"
+                        aria-label={t('story_select_part', '选择篇幅')}
+                        onOpenAutoFocus={(event) => {
+                            event.preventDefault();
+                            const current = partPickerRef.current?.querySelector('[aria-current="page"]');
+                            current?.focus({ preventScroll: true });
+                            current?.scrollIntoView?.({ block: 'nearest' });
+                        }}
+                    >
+                        <div className="mb-3 text-sm font-semibold text-amber-950">{t('story_parts_list', '篇幅列表')}</div>
+                        <nav className="grid max-h-[50vh] grid-cols-5 gap-2 overflow-y-auto p-1 sm:grid-cols-6" aria-label={t('story_parts_list', '篇幅列表')}>
+                            {parts.map((item) => (
+                                <button
+                                    key={item.partId}
+                                    type="button"
+                                    aria-current={item.partId === part?.partId ? 'page' : undefined}
+                                    title={item.title || String(item.sequence)}
+                                    onClick={() => setPart(item)}
+                                    className={`flex aspect-square min-w-0 items-center justify-center rounded-lg border text-sm tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 motion-reduce:transition-none ${item.partId === part?.partId ? 'border-amber-700 bg-amber-700 font-semibold text-white' : 'border-amber-200 bg-white text-amber-950 hover:border-amber-500 hover:bg-amber-100'}`}
+                                >
+                                    {item.sequence}
+                                </button>
+                            ))}
+                        </nav>
+                    </PopoverContent>
+                </Popover>
                 <Button
                     variant="outline"
                     onClick={() => setPart(parts[partIndex + 1])}

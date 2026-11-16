@@ -437,6 +437,8 @@
     "story_read_aloud": "朗读",
     "story_waiting_first_part": "正在创作第一个篇幅…",
     "story_previous_part": "上一篇",
+    "story_select_part": "选择篇幅",
+    "story_parts_list": "篇幅列表",
     "story_next_part": "下一篇",
     "story_waiting_next_part": "等待新篇幅…",
     "story_paused": "创作已暂停",

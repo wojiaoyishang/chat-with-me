@@ -438,6 +438,8 @@
     "story_read_aloud": "Read aloud",
     "story_waiting_first_part": "Writing the first part…",
     "story_previous_part": "Previous",
+    "story_select_part": "Select part",
+    "story_parts_list": "Story parts",
     "story_next_part": "Next",
     "story_waiting_next_part": "Waiting for a new part…",
     "story_paused": "Writing paused",

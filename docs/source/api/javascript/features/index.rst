@@ -1241,7 +1241,7 @@
    * - :doc:`src/features/story/StoryReader </api/javascript/features/story/StoryReader>`
      - 1
      - 0
-     - 49
+     - 54
      - ``src/features/story/StoryReader.jsx``
    * - :doc:`src/features/story/StorySelectorButton </api/javascript/features/story/StorySelectorButton>`
      - 1
@@ -1261,13 +1261,18 @@
    * - :doc:`src/features/story/media/StoryVideo </api/javascript/features/story/media/StoryVideo>`
      - 0
      - 0
-     - 1
+     - 4
      - ``src/features/story/media/StoryVideo.jsx``
    * - :doc:`src/features/story/media/storyMediaLayout </api/javascript/features/story/media/storyMediaLayout>`
      - 7
      - 0
      - 0
      - ``src/features/story/media/storyMediaLayout.js``
+   * - :doc:`src/features/story/media/storyMediaLifecycle </api/javascript/features/story/media/storyMediaLifecycle>`
+     - 1
+     - 0
+     - 0
+     - ``src/features/story/media/storyMediaLifecycle.js``
    * - :doc:`src/features/story/storyLibraryState </api/javascript/features/story/storyLibraryState>`
      - 5
      - 0
@@ -1824,6 +1829,7 @@
    /api/javascript/features/story/media/StoryMediaEditor
    /api/javascript/features/story/media/StoryVideo
    /api/javascript/features/story/media/storyMediaLayout
+   /api/javascript/features/story/media/storyMediaLifecycle
    /api/javascript/features/story/storyLibraryState
    /api/javascript/features/tasks/BackendManagementPage
    /api/javascript/features/tasks/RunObservation

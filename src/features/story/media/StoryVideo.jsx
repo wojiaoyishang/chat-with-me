@@ -1,4 +1,5 @@
-import {forwardRef} from 'react';
+import {forwardRef, useEffect, useImperativeHandle, useRef} from 'react';
+import {releaseStoryMedia} from './storyMediaLifecycle.js';
 
 const StoryVideo = forwardRef(function StoryVideo({
     src,
@@ -8,6 +9,16 @@ const StoryVideo = forwardRef(function StoryVideo({
     onEnded,
     onLoadedMetadata,
 }, ref) {
+    const videoRef = useRef(null);
+    useImperativeHandle(ref, () => videoRef.current);
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        return () => {
+            if (!video.isConnected) releaseStoryMedia([video]);
+        };
+    }, [src]);
+
     if (!src) return null;
     const ratio = Number(aspectRatio);
     const frameRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 16 / 9;
@@ -21,7 +32,7 @@ const StoryVideo = forwardRef(function StoryVideo({
             >
                 <video
                     key={src}
-                    ref={ref}
+                    ref={videoRef}
                     src={src}
                     className="absolute inset-0 block h-full w-full bg-black object-contain"
                     controls
