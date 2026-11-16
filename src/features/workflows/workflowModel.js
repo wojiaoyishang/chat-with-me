@@ -1,10 +1,11 @@
 /** Serializable workflow helpers shared by the canvas, forms, and tests. */
+import { generateUUID } from '../../lib/uuid.js';
 import {
   workflowLeafIds,
   projectWorkflowRegions,
   pruneDeletedWorkflowRegions,
 } from "./workflowRegions.js";
-export const workflowId = () => globalThis.crypto.randomUUID();
+export const workflowId = () => generateUUID();
 export const clone = (value) =>
   value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 

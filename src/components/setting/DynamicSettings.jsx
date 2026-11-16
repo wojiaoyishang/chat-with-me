@@ -58,6 +58,7 @@ import apiClient from '@/lib/apiClient.js';
 import { toast } from 'sonner';
 import { onEvent } from '@/context/useEventStore.jsx';
 import { useWindowPopoverLayer } from '@/lib/windowLayers.js';
+import { generateUUID } from '@/lib/uuid.js';
 
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -629,7 +630,7 @@ function ListItem({ item, path }) {
     const addItem = useCallback(
         (template = null) => {
             const internalId = generateInternalId();
-            const editableId = item.identityField && item.idFactory === 'uuid' ? crypto.randomUUID() : undefined;
+            const editableId = item.identityField && item.idFactory === 'uuid' ? generateUUID() : undefined;
             const defaultItem = pageValues(
                 item.children || [],
                 editableId ? { [item.identityField]: editableId } : {},
@@ -695,7 +696,7 @@ function ListItem({ item, path }) {
             if (!original) return;
             const copy = {
                 ...original,
-                ...(item.identityField && item.idFactory === 'uuid' ? { [item.identityField]: crypto.randomUUID() } : {}),
+                ...(item.identityField && item.idFactory === 'uuid' ? { [item.identityField]: generateUUID() } : {}),
                 [ROW_KEY]: generateInternalId(), // 生成全新的 internalId
             };
             update(listPath, [...list, copy]);

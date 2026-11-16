@@ -10,6 +10,7 @@ import WorkspaceCommandEditor from '@/features/workspace/components/WorkspaceCom
 import { commandRows, commandProfileFromRows } from '@/features/workspace/components/commandProfile.js';
 import { requestEndpoint, resolveValue } from './model.js';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { generateUUID } from '@/lib/uuid.js';
 
 function FieldBlock({ item, children, invalid }) {
     return <section className="min-w-0 space-y-2 border-b border-border/50 py-4 last:border-0" data-settings-invalid={Boolean(invalid) || undefined} data-settings-message={invalid || undefined}>
@@ -120,7 +121,7 @@ export function PolicyRulesField({ item, value, onChange, context }) {
             </div>)}
             {!rules.length && <p className="p-3 text-xs text-muted-foreground">没有额外规则</p>}
         </div>
-        <Button type="button" variant="outline" size="sm" disabled={context.disabled} onClick={() => update([...rules, { id: crypto.randomUUID(), enabled: true, effect: 'deny', matcher: { type: 'glob', pattern: '' }, mounts: [], ...(item.operations?.length ? { operations: item.operations.map((op) => op.value) } : {}) }])}><Plus className="size-4" />添加规则</Button>
+        <Button type="button" variant="outline" size="sm" disabled={context.disabled} onClick={() => update([...rules, { id: generateUUID(), enabled: true, effect: 'deny', matcher: { type: 'glob', pattern: '' }, mounts: [], ...(item.operations?.length ? { operations: item.operations.map((op) => op.value) } : {}) }])}><Plus className="size-4" />添加规则</Button>
     </FieldBlock>;
 }
 

@@ -4,6 +4,7 @@ import apiClient from '@/lib/apiClient';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import {subscribeMobile, mobileSnapshot, mobileServerSnapshot} from './mobileViewport.js';
 import ThreeDotLoading from '@/components/ui/ThreeDotLoading.jsx';
+export { generateUUID } from './uuid.js';
 
 export const LOCAL_SETTING_CHANGE_EVENT = 'chat-local-setting-change';
 export const MESSAGE_NAVIGATOR_SETTING_KEY = 'ShowQuickUserMessageNavigator';
@@ -173,27 +174,6 @@ export function hasFolderInDragItems(items) {
     }
 
     return false;
-}
-
-/*
- * 生成随机 uuid
- */
-export function generateUUID() {
-    if (crypto.randomUUID) {
-        return crypto.randomUUID();
-    }
-
-    // 生成 16 字节的随机数组
-    const bytes = new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-
-    // 设置版本（4）和变体（RFC 4122）
-    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
-    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant RFC4122
-
-    // 转换为十六进制字符串并格式化
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-    return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
 }
 
 export function getLastLine(str) {

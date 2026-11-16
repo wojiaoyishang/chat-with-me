@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { resolveResourceUrl } from '@/lib/virtualUrl.js';
 import { copyTextToClipboard } from '@/lib/tools.jsx';
+import { generateUUID } from '@/lib/uuid.js';
 import { cloneData, executeRequest, formatValue, getValue, matchesCondition, pageValues, requestEndpoint, resolveValue, setValue, settingsPublicContext } from './model.js';
 import { operationKey } from './useActionExecutor.js';
 import { validateSettingsFields, validateSettingsScope } from './validation.js';
@@ -249,12 +250,12 @@ export function DiffNode({ item, value, context }) {
 }
 
 export function SecretMapNode({ item, value = EMPTY_MAP, onChange, context }) {
-    const [rows, setRows] = useState(() => Object.entries(value || {}).map(([key, content]) => ({ id: crypto.randomUUID(), key, value: content })));
+    const [rows, setRows] = useState(() => Object.entries(value || {}).map(([key, content]) => ({ id: generateUUID(), key, value: content })));
     const external = useRef(value);
     useEffect(() => {
         if (value === external.current) return;
         external.current = value;
-        setRows(Object.entries(value || {}).map(([key, content]) => ({ id: crypto.randomUUID(), key, value: content })));
+        setRows(Object.entries(value || {}).map(([key, content]) => ({ id: generateUUID(), key, value: content })));
     }, [value]);
     const [error, setError] = useState('');
     const commit = (next) => {
@@ -274,7 +275,7 @@ export function SecretMapNode({ item, value = EMPTY_MAP, onChange, context }) {
             <Button type="button" variant="ghost" size="icon" aria-label="删除键" disabled={context.disabled || item.disabled} onClick={() => commit(rows.filter((entry) => entry.id !== row.id))}><Trash2 className="size-4" /></Button>
         </div>)}
         {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
-        <Button type="button" variant="outline" size="sm" disabled={context.disabled || item.disabled} onClick={() => { setRows([...rows, { id: crypto.randomUUID(), key: '', value: '' }]); setError('请填写每行的键名，或删除空白行。'); }}><Plus className="size-3.5" />{item.addLabel || '添加键值'}</Button>
+        <Button type="button" variant="outline" size="sm" disabled={context.disabled || item.disabled} onClick={() => { setRows([...rows, { id: generateUUID(), key: '', value: '' }]); setError('请填写每行的键名，或删除空白行。'); }}><Plus className="size-3.5" />{item.addLabel || '添加键值'}</Button>
     </div>;
 }
 

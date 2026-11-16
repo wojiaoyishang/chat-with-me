@@ -3,6 +3,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import JsonConfigEditor from '@/components/setting/JsonConfigEditor.jsx';
+import { generateUUID } from '@/lib/uuid.js';
 import { ARGV_SCHEMA, ARGV_UI, validateArgv } from './commandProfile.js';
 
 export default function WorkspaceCommandEditor({ rows, onChange, validationRef, onSave }) {
@@ -14,7 +15,7 @@ export default function WorkspaceCommandEditor({ rows, onChange, validationRef, 
         onChange([
             ...rows,
             {
-                key: crypto.randomUUID(),
+                key: generateUUID(),
                 id: `command_${number}`,
                 argv: '["python", "-m", "pytest"]',
                 cwd: '.',

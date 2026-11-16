@@ -1,8 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { webcrypto } from 'node:crypto';
 import { mount, button, click, edit, upload, ref, resource, act } from './helpers/settingsRuntimeHarness.mjs';
 
-test('new service rows preserve generated IDs and initialize nested option defaults', async () => {
+test('new service rows preserve generated IDs and nested defaults on HTTP origins', async (t) => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { getRandomValues: webcrypto.getRandomValues.bind(webcrypto) } });
+    t.after(() => Object.defineProperty(globalThis, 'crypto', original));
     const ui = await mount([{
         type: 'list', name: 'services', text: '网页服务', identityField: 'id', idFactory: 'uuid',
         children: [
@@ -20,7 +24,10 @@ test('new service rows preserve generated IDs and initialize nested option defau
     } finally { await ui.close(); }
 });
 
-test('the same resource renderer edits nested fields and preserves masked credentials', async () => {
+test('the resource renderer edits existing secret maps without native randomUUID', async (t) => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    Object.defineProperty(globalThis, 'crypto', { configurable: true, value: { getRandomValues: webcrypto.getRandomValues.bind(webcrypto) } });
+    t.after(() => Object.defineProperty(globalThis, 'crypto', original));
     const ui = await mount([resource()], { items: [{ id: 's1', title: '示例', revision: 3, connection: { headers: { Authorization: '' } }, tools: ['server-owned'] }] });
     try {
         await click(button('编辑'));

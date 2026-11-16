@@ -136,7 +136,7 @@ src/runtime/backend/clientAdapter 模块
 
 **主要协作调用**：``setLocalSetting``、``storageKey``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/clientAdapter.js:1488:3086:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/clientAdapter.js:1488:3553:FUNCTION
 
 .. rubric:: ``invoke``
 
@@ -146,7 +146,7 @@ src/runtime/backend/clientAdapter 模块
 
 实现 ``invoke`` 对应的前端处理。
 
-**性质**：异步局部函数；源码第 ``27``—``51`` 行。
+**性质**：异步局部函数；源码第 ``27``—``59`` 行。
 
 **参数**
 
@@ -166,13 +166,14 @@ src/runtime/backend/clientAdapter 模块
 **副作用**
 
 * 发起 HTTP 请求或访问外部服务。
+* 发送本地或远程 CWM 事件/媒体帧。
 * 读取或修改浏览器全局对象、页面或历史状态。
 
-**显式抛出**：``new Error('后端连接已切换。')``、``new Error(\x60客户端不支持此操作：${name}\x60)``。
+**显式抛出**：``new Error('上下文操作返回的状态无效。')``、``new Error('后端连接已切换。')``、``new Error(\x60客户端不支持此操作：${name}\x60)``。
 
-**主要协作调用**：``backendConnectionProbes.run``、``saveBackendProfile``、``deleteBackendProfile``、``switchBackend``、``window.dispatchEvent``、``setLocalSetting``、``storageKey``、``getBackendConnection``、``import``、``isCurrentConnection``、``api.get``、``setConnectionToken``。
+**主要协作调用**：``backendConnectionProbes.run``、``saveBackendProfile``、``deleteBackendProfile``、``switchBackend``、``window.dispatchEvent``、``setLocalSetting``、``storageKey``、``Number.isInteger``、``import``、``emitEvent``、``getBackendConnection``、``isCurrentConnection``。
 
-.. CWM-AST-FUNCTION src/runtime/backend/clientAdapter.js:3102:3499:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/clientAdapter.js:3569:3966:FUNCTION
 
 .. rubric:: ``subscribe``
 
@@ -182,7 +183,7 @@ src/runtime/backend/clientAdapter 模块
 
 订阅与 ``subscribe`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``52``—``58`` 行。
+**性质**：同步局部函数；源码第 ``60``—``66`` 行。
 
 **参数**
 
@@ -202,17 +203,17 @@ src/runtime/backend/clientAdapter 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/runtime/backend/clientAdapter.js:3362:3492:FUNCTION
+.. CWM-AST-FUNCTION src/runtime/backend/clientAdapter.js:3829:3959:FUNCTION
 
-.. rubric:: ``returned callback @ 57``
+.. rubric:: ``returned callback @ 65``
 
 .. code-block:: javascript
 
-   returned callback @ 57()
+   returned callback @ 65()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``57``—``57`` 行；所属函数 ``subscribe``。
+**性质**：同步局部函数；源码第 ``65``—``65`` 行；所属函数 ``subscribe``。
 
 **参数**
 

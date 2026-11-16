@@ -29,6 +29,7 @@ import { yCollab, yUndoManagerKeymap } from 'y-codemirror.next';
 import * as Y from 'yjs';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/lib/tools.jsx';
+import { generateUUID } from '@/lib/uuid.js';
 import DocumentCollaborators from './DocumentCollaborators.jsx';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -118,7 +119,7 @@ function CollaborativeMarkdownEditor({ documentId, conversationId, onStatus, hea
                 upload: async (file) => {
                     if (!isUploadAllowed(file, DOCUMENT_IMAGE_UPLOAD_POLICY))
                         throw new Error(t('document_image_limits'));
-                    const id = crypto.randomUUID();
+                    const id = generateUUID();
                     const started = performance.now();
                     setUploads((previous) => [
                         ...previous.slice(-19),

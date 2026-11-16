@@ -27,7 +27,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:277:726:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:277:779:FUNCTION
 
 .. js:function:: preserveMessageSettings(snapshot, current)
 
@@ -49,7 +49,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **主要协作调用**：``mergeMessageConfig``、``mergeMessageContextState``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:785:846:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:838:899:FUNCTION
 
 .. js:function:: asOrder(value)
 
@@ -68,7 +68,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **主要协作调用**：``Array.isArray``、``value.filter``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:878:944:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:931:997:FUNCTION
 
 .. js:function:: withoutHistorySentinel(value)
 
@@ -89,7 +89,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:976:2040:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:1029:2093:FUNCTION
 
 .. js:function:: mergeReplacementEntry(snapshotEntry, liveEntry, preserveStream)
 
@@ -114,7 +114,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **主要协作调用**：``preserveReplacementContextStatus``、``Object.hasOwn``、``liveContent.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:2577:4693:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:2630:4746:FUNCTION
 
 .. js:function:: mergeLiveMessageWithSnapshot(snapshotMessage, liveMessage, {preserveStream = true})
 
@@ -139,7 +139,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **主要协作调用**：``preserveMessageSettings``、``mergeNetworkData``、``liveContent.startsWith``、``mergeBodyForwardingStatus``、``Object.entries``、``mergeReplacementEntry``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:4990:6132:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:5043:6185:FUNCTION
 
 .. js:function:: mergeSnapshotOrderWithLiveTail(snapshotOrder, currentOrder, messages)
 
@@ -166,7 +166,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:6425:7594:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:6478:7647:FUNCTION
 
 .. js:function:: restoreMissingStreamTail(order, messages, targetMessageId)
 
@@ -193,7 +193,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7649:8797:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7702:8850:FUNCTION
 
 .. js:function:: reconcileHistorySnapshotWithLiveState({ snapshotMessages = {}, snapshotOrder = [], currentMessages = {}, currentOrder = [], liveMessageId…)
 
@@ -219,7 +219,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:912:943:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:965:996:FUNCTION
 
 .. rubric:: ``asOrder(value).filter callback @ 15``
 
@@ -240,7 +240,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:5972:6109:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:6025:6162:FUNCTION
 
 .. rubric:: ``suffix.forEach callback @ 124``
 
@@ -263,7 +263,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
 **主要协作调用**：``seen.has``、``result.push``、``seen.add``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7548:7589:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7601:7642:FUNCTION
 
 .. rubric:: ``missingChain.filter callback @ 168``
 
@@ -286,7 +286,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
 **主要协作调用**：``visibleSet.has``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:7958:8017:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:8011:8070:FUNCTION
 
 .. rubric:: ``withoutHistorySentinel(order).filter callback @ 179``
 
@@ -309,7 +309,7 @@ Merge an HTTP snapshot or message.created patch into the browser's state without
 
 **主要协作调用**：``withoutHistorySentinel(snapshotOrder).includes``、``withoutHistorySentinel``。
 
-.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:8518:8748:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/page/utils/liveMessageReconcile.js:8571:8801:FUNCTION
 
 .. rubric:: ``protectedIds.forEach callback @ 188``
 

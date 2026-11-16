@@ -54,15 +54,20 @@
      - 0
      - ``src/lib/structuralShare.js``
    * - :doc:`src/lib/tools </api/javascript/lib/tools>`
-     - 18
-     - 0
      - 17
+     - 0
+     - 16
      - ``src/lib/tools.jsx``
    * - :doc:`src/lib/utils </api/javascript/lib/utils>`
      - 1
      - 0
      - 0
      - ``src/lib/utils.ts``
+   * - :doc:`src/lib/uuid </api/javascript/lib/uuid>`
+     - 1
+     - 0
+     - 1
+     - ``src/lib/uuid.js``
    * - :doc:`src/lib/virtualUrl </api/javascript/lib/virtualUrl>`
      - 9
      - 0
@@ -88,6 +93,7 @@
    /api/javascript/lib/structuralShare
    /api/javascript/lib/tools
    /api/javascript/lib/utils
+   /api/javascript/lib/uuid
    /api/javascript/lib/virtualUrl
    /api/javascript/lib/windowLayers
 

@@ -7,6 +7,14 @@ Endpoint
 ``src/config.js`` 定义 ``BASE_BACKEND_URL='/api'``、``WEBSOCKET_URL='/ws'`` 和资源 Endpoint。开发与
 生产尽量使用同源反向代理，避免在组件中硬编码 host。
 
+UUID 与 HTTP 部署
+--------------------------------------------------------------------------------
+
+UUID 统一通过 ``src/lib/uuid.js`` 的 ``generateUUID`` 生成；``src/lib/tools.jsx`` 同时导出该函数。
+HTTPS 等安全上下文优先使用浏览器原生 ``crypto.randomUUID``。HTTP 内网部署通过
+``crypto.getRandomValues`` 生成符合 UUID v4 格式的随机 ID，用于命令配置、设置列表、工作流与附件等。
+新增调用应复用该方法，兼容性回归为 ``node --test tests/uuidCompatibility.test.mjs tests/settingsRuntimeUI.test.mjs``。
+
 依赖
 --------------------------------------------------------------------------------
 

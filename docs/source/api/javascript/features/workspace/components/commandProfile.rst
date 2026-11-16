@@ -22,18 +22,18 @@ src/features/workspace/components/commandProfile 模块
 主要依赖
 --------------------------------------------------------------------------------
 
-``@cwm/json-config-editor``。
+``@cwm/json-config-editor``、``../../../lib/uuid.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:267:336:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:321:390:FUNCTION
 
 .. js:function:: validateArgv(argv)
 
    校验与 ``Argv`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``5``—``5`` 行。
+   **性质**：同步函数；导出 API；源码第 ``6``—``6`` 行。
 
    **参数**
 
@@ -46,13 +46,13 @@ src/features/workspace/components/commandProfile 模块
 
    **主要协作调用**：``argv[0]?.trim``。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:337:679:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:391:728:FUNCTION
 
 .. js:function:: commandRows(profile)
 
    实现 ``commandRows`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``16`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``17`` 行。
 
    **参数**
 
@@ -61,19 +61,19 @@ src/features/workspace/components/commandProfile 模块
 
    **返回值**
 
-   根据执行分支返回结果；代表性返回表达式为 ``Object.entries(profile?.commands || {}).map(([id, spec]) => ({ key: crypto.randomUUID(), id, argv: JSON.stringify(spec.argv || []), cwd: spec.cwd || '.', timeout: spec.timeoutSeco…``。
+   根据执行分支返回结果；代表性返回表达式为 ``Object.entries(profile?.commands || {}).map(([id, spec]) => ({ key: generateUUID(), id, argv: JSON.stringify(spec.argv || []), cwd: spec.cwd || '.', timeout: spec.timeoutSeconds |…``。
 
    **主要协作调用**：``Object.entries(profile?.commands || {}).map``、``Object.entries``。
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:679:1512:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:728:1561:FUNCTION
 
 .. js:function:: commandProfileFromRows(rows, profile, invalidMessage)
 
    实现 ``commandProfileFromRows`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``17``—``38`` 行。
+   **性质**：同步函数；导出 API；源码第 ``18``—``39`` 行。
 
    **参数**
 
@@ -99,7 +99,7 @@ src/features/workspace/components/commandProfile 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:189:235:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:243:289:FUNCTION
 
 .. rubric:: ``itemLabel``
 
@@ -109,7 +109,7 @@ src/features/workspace/components/commandProfile 模块
 
 实现 ``itemLabel`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``4``—``4`` 行。
+**性质**：同步局部函数；源码第 ``5``—``5`` 行。
 
 **参数**
 
@@ -120,17 +120,17 @@ src/features/workspace/components/commandProfile 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:436:674:FUNCTION
+.. CWM-AST-FUNCTION src/features/workspace/components/commandProfile.js:490:723:FUNCTION
 
-.. rubric:: ``Object.entries(profile?.commands || {}).map callback @ 8``
+.. rubric:: ``Object.entries(profile?.commands || {}).map callback @ 9``
 
 .. code-block:: javascript
 
-   Object.entries(profile?.commands || {}).map callback @ 8([id, spec])
+   Object.entries(profile?.commands || {}).map callback @ 9([id, spec])
 
 作为 ``Object.entries(profile?.commands || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``8``—``15`` 行；所属函数 ``commandRows``。
+**性质**：同步局部函数；源码第 ``9``—``16`` 行；所属函数 ``commandRows``。
 
 **参数**
 
@@ -141,4 +141,4 @@ src/features/workspace/components/commandProfile 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-**主要协作调用**：``crypto.randomUUID``、``JSON.stringify``。
+**主要协作调用**：``generateUUID``、``JSON.stringify``。

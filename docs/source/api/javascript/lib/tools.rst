@@ -15,9 +15,9 @@ src/lib/tools 模块
 
 * **源码文件**：``src/lib/tools.jsx``
 * **模块标识**：``src/lib/tools``
-* **顶层函数/组件/Hook**：18
+* **顶层函数/组件/Hook**：17
 * **类**：0
-* **局部函数与匿名回调**：17
+* **局部函数与匿名回调**：16
 
 主要依赖
 --------------------------------------------------------------------------------
@@ -27,13 +27,13 @@ src/lib/tools 模块
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:1212:1776:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:1254:1818:FUNCTION
 
 .. js:function:: processSelectedFiles(files)
 
    处理与 ``Selected Files`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``24``—``46`` 行。
+   **性质**：同步函数；导出 API；源码第 ``25``—``47`` 行。
 
    **参数**
 
@@ -48,13 +48,13 @@ src/lib/tools 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:1776:4472:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:1818:4514:FUNCTION
 
 .. js:function:: fileUpload(uploadFile, onProgressUpdate, onComplete, onError)
 
    真实文件上传函数（调用 FastAPI /upload 接口）
 
-   **性质**：同步函数；导出 API；源码第 ``56``—``118`` 行。
+   **性质**：同步函数；导出 API；源码第 ``57``—``119`` 行。
 
    **参数**
 
@@ -82,13 +82,13 @@ src/lib/tools 模块
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:4472:5101:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:4514:5143:FUNCTION
 
 .. js:function:: createFilePicker(accept, onSelect)
 
    创建文件选择器
 
-   **性质**：同步函数；导出 API；源码第 ``126``—``145`` 行。
+   **性质**：同步函数；导出 API；源码第 ``127``—``146`` 行。
 
    **参数**
 
@@ -108,13 +108,13 @@ src/lib/tools 模块
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:5101:5895:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:5143:5937:FUNCTION
 
 .. js:function:: hasFolderInDragItems(items)
 
    检查是否有文件夹被拖拽
 
-   **性质**：同步函数；导出 API；源码第 ``152``—``176`` 行。
+   **性质**：同步函数；导出 API；源码第 ``153``—``177`` 行。
 
    **参数**
 
@@ -127,33 +127,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``item.webkitGetAsEntry``、``item.getAsFile``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:5895:6478:FUNCTION
-
-.. js:function:: generateUUID()
-
-   实现 ``generateUUID`` 对应的前端处理。
-
-   **性质**：同步函数；导出 API；源码第 ``181``—``197`` 行。
-
-   **参数**
-
-   无。
-
-   **返回值**
-
-   根据执行分支返回结果；代表性返回表达式为 ``crypto.randomUUID()``、``[hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-')``。
-
-   **主要协作调用**：``crypto.randomUUID``、``crypto.getRandomValues``、``Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join``、``Array.from``、``[hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join``、``hex.slice``。
-
-   **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
-
-.. CWM-AST-FUNCTION src/lib/tools.jsx:6478:6605:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:5937:6064:FUNCTION
 
 .. js:function:: getLastLine(str)
 
    读取与 ``Last Line`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``199``—``202`` 行。
+   **性质**：同步函数；导出 API；源码第 ``179``—``182`` 行。
 
    **参数**
 
@@ -166,13 +146,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``str.lastIndexOf``、``str.slice``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:6605:7620:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:6064:7079:FUNCTION
 
 .. js:function:: setLocalSetting(key, value)
 
    设置与 ``Local Setting`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``205``—``236`` 行。
+   **性质**：同步函数；导出 API；源码第 ``185``—``216`` 行。
 
    **参数**
 
@@ -195,13 +175,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``JSON.stringify``、``localStorage.getItem``、``JSON.parse``、``localStorage.setItem``、``window.dispatchEvent``、``console.log``、``console.error``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:7620:8280:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:7079:7739:FUNCTION
 
 .. js:function:: getLocalSetting(key, defaultValue)
 
    读取与 ``Local Setting`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``239``—``260`` 行。
+   **性质**：同步函数；导出 API；源码第 ``219``—``240`` 行。
 
    **参数**
 
@@ -221,13 +201,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``localStorage.getItem``、``JSON.parse``、``console.error``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:8280:9339:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:7739:8798:FUNCTION
 
 .. js:function:: useLocalSetting(key, defaultValue)
 
    封装 ``useLocalSetting`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``262``—``290`` 行。
+   **性质**：同步函数；导出 API；源码第 ``242``—``270`` 行。
 
    **参数**
 
@@ -250,13 +230,13 @@ src/lib/tools 模块
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:9339:11184:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:8798:10643:FUNCTION
 
 .. js:function:: copyTextToClipboard(text)
 
    实现 ``copyTextToClipboard`` 对应的前端处理。
 
-   **性质**：异步函数；导出 API；源码第 ``292``—``332`` 行。
+   **性质**：异步函数；导出 API；源码第 ``272``—``312`` 行。
 
    **参数**
 
@@ -277,13 +257,13 @@ src/lib/tools 模块
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:11184:12013:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:10643:11472:FUNCTION
 
 .. js:function:: updateURL(path)
 
    更新与 ``URL`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``334``—``364`` 行。
+   **性质**：同步函数；导出 API；源码第 ``314``—``344`` 行。
 
    **参数**
 
@@ -301,13 +281,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``base.replace``、``path.startsWith``、``path.substring``、``currentPath.substring``、``currentPath.lastIndexOf``、``fullPath.startsWith``、``window.history.pushState``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:12013:12108:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:11472:11567:FUNCTION
 
 .. js:function:: cn(...classes)
 
    实现 ``cn`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``367``—``369`` 行。
+   **性质**：同步函数；导出 API；源码第 ``347``—``349`` 行。
 
    **参数**
 
@@ -320,13 +300,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``classes.filter(Boolean).join``、``classes.filter``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:12108:12571:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:11567:12030:FUNCTION
 
 .. js:function:: getRelativeDate(date)
 
    读取与 ``Relative Date`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``372``—``385`` 行。
+   **性质**：同步函数；导出 API；源码第 ``352``—``365`` 行。
 
    **参数**
 
@@ -339,13 +319,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``yesterday.setDate``、``yesterday.getDate``、``isSameDay``、``Math.floor``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:12571:12789:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:12030:12248:FUNCTION
 
 .. js:function:: isSameDay(date1, date2)
 
    判断与 ``Same Day`` 相关的数据或状态。
 
-   **性质**：同步函数；模块内部入口；源码第 ``388``—``394`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``368``—``374`` 行。
 
    **参数**
 
@@ -361,13 +341,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``date1.getFullYear``、``date2.getFullYear``、``date1.getMonth``、``date2.getMonth``、``date1.getDate``、``date2.getDate``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:12789:12857:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:12248:12316:FUNCTION
 
 .. js:function:: isMobile()
 
    判断与 ``Mobile`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``396``—``398`` 行。
+   **性质**：同步函数；导出 API；源码第 ``376``—``378`` 行。
 
    **参数**
 
@@ -381,13 +361,13 @@ src/lib/tools 模块
 
    * 读取或修改浏览器全局对象、页面或历史状态。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:12857:12991:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:12316:12450:FUNCTION
 
 .. js:function:: useIsMobile()
 
    封装 ``useIsMobile`` Hook，向调用组件提供相关状态、动作与生命周期清理。
 
-   **性质**：同步函数；导出 API；源码第 ``401``—``403`` 行。
+   **性质**：同步函数；导出 API；源码第 ``381``—``383`` 行。
 
    **参数**
 
@@ -403,13 +383,13 @@ src/lib/tools 模块
 
    **主要协作调用**：``useSyncExternalStore``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:13209:13912:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:12668:13371:FUNCTION
 
 .. js:function:: UnifiedLoadingScreen({ text, zIndex = '', compact = false })
 
    渲染 ``UnifiedLoadingScreen`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``411``—``431`` 行。
+   **性质**：同步函数；导出 API；源码第 ``391``—``411`` 行。
 
    **参数**
 
@@ -420,13 +400,13 @@ src/lib/tools 模块
 
    根据执行分支返回结果；代表性返回表达式为 ``( <div className="flex flex-col items-center py-8"> <ThreeDotLoading /> {text && <span className="mt-3 text-xs text-gray-500 text-center">{text}</span>} </div> )``、``( <div className={\x60absolute ${zIndex} inset-0 bg-white flex items-center justify-center\x60}> <div className="flex flex-col items-center"> <ThreeDotLoading /> {text && <span classNam…``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:14238:16584:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:13697:16043:FUNCTION
 
 .. js:function:: UnifiedErrorScreen({ title, subtitle, onRetry, retryText, zIndex = '', compact = false })
 
    渲染 ``UnifiedErrorScreen`` React 组件，并协调该界面的状态、事件和子组件。
 
-   **性质**：同步函数；导出 API；源码第 ``442``—``490`` 行。
+   **性质**：同步函数；导出 API；源码第 ``422``—``470`` 行。
 
    **参数**
 
@@ -442,17 +422,17 @@ src/lib/tools 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:1458:1502:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:1500:1544:FUNCTION
 
-.. rubric:: ``Array.from(files).filter callback @ 33``
+.. rubric:: ``Array.from(files).filter callback @ 34``
 
 .. code-block:: javascript
 
-   Array.from(files).filter callback @ 33(file)
+   Array.from(files).filter callback @ 34(file)
 
 作为 ``Array.from(files).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``33``—``33`` 行；所属函数 ``processSelectedFiles``。
+**性质**：同步局部函数；源码第 ``34``—``34`` 行；所属函数 ``processSelectedFiles``。
 
 **参数**
 
@@ -463,17 +443,17 @@ src/lib/tools 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:1591:1772:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:1633:1814:FUNCTION
 
-.. rubric:: ``fileArray.map callback @ 39``
+.. rubric:: ``fileArray.map callback @ 40``
 
 .. code-block:: javascript
 
-   fileArray.map callback @ 39(file)
+   fileArray.map callback @ 40(file)
 
 作为 ``fileArray.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``39``—``45`` 行；所属函数 ``processSelectedFiles``。
+**性质**：同步局部函数；源码第 ``40``—``46`` 行；所属函数 ``processSelectedFiles``。
 
 **参数**
 
@@ -486,17 +466,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``Date.now``、``Math.random().toString(36).substr``、``Math.random().toString``、``Math.random``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:2390:2399:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:2432:2441:FUNCTION
 
-.. rubric:: ``returned callback @ 60``
+.. rubric:: ``returned callback @ 61``
 
 .. code-block:: javascript
 
-   returned callback @ 60()
+   returned callback @ 61()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``60``—``60`` 行；所属函数 ``fileUpload``。
+**性质**：同步局部函数；源码第 ``61``—``61`` 行；所属函数 ``fileUpload``。
 
 **参数**
 
@@ -506,7 +486,7 @@ src/lib/tools 模块
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:2840:3104:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:2882:3146:FUNCTION
 
 .. rubric:: ``onUploadProgress``
 
@@ -516,7 +496,7 @@ src/lib/tools 模块
 
 处理 ``Upload Progress`` 用户交互或运行时事件。
 
-**性质**：同步局部函数；源码第 ``75``—``80`` 行；所属函数 ``fileUpload``。
+**性质**：同步局部函数；源码第 ``76``—``81`` 行；所属函数 ``fileUpload``。
 
 **参数**
 
@@ -529,17 +509,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``Math.round``、``onProgressUpdate``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:3131:3999:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:3173:4041:FUNCTION
 
-.. rubric:: ``apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 82``
+.. rubric:: ``apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 83``
 
 .. code-block:: javascript
 
-   apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 82(response)
+   apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 83(response)
 
 实现 ``apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``82``—``103`` 行；所属函数 ``fileUpload``。
+**性质**：同步局部函数；源码第 ``83``—``104`` 行；所属函数 ``fileUpload``。
 
 **参数**
 
@@ -552,17 +532,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``uploadFile.file.type?.startsWith``、``onComplete``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:4016:4386:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:4058:4428:FUNCTION
 
-.. rubric:: ``apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 104``
+.. rubric:: ``apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 105``
 
 .. code-block:: javascript
 
-   apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 104(error)
+   apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a… callback @ 105(error)
 
 实现 ``apiClient .post(apiEndpoint.UPLOAD_ENDPOINT, formData, { headers: { 'Content-Type': 'multipart/form-data', }, signal: a…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``104``—``112`` 行；所属函数 ``fileUpload``。
+**性质**：同步局部函数；源码第 ``105``—``113`` 行；所属函数 ``fileUpload``。
 
 **参数**
 
@@ -575,17 +555,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``console.log``、``onError``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:4414:4469:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:4456:4511:FUNCTION
 
-.. rubric:: ``returned callback @ 115``
+.. rubric:: ``returned callback @ 116``
 
 .. code-block:: javascript
 
-   returned callback @ 115()
+   returned callback @ 116()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``115``—``117`` 行；所属函数 ``fileUpload``。
+**性质**：同步局部函数；源码第 ``116``—``118`` 行；所属函数 ``fileUpload``。
 
 **参数**
 
@@ -597,17 +577,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``abortController.abort``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:4662:5098:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:4704:5140:FUNCTION
 
-.. rubric:: ``returned callback @ 127``
+.. rubric:: ``returned callback @ 128``
 
 .. code-block:: javascript
 
-   returned callback @ 127()
+   returned callback @ 128()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``127``—``144`` 行；所属函数 ``createFilePicker``。
+**性质**：同步局部函数；源码第 ``128``—``145`` 行；所属函数 ``createFilePicker``。
 
 **参数**
 
@@ -625,17 +605,17 @@ src/lib/tools 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:4893:5046:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:4935:5088:FUNCTION
 
-.. rubric:: ``anonymous callback @ 135``
+.. rubric:: ``anonymous callback @ 136``
 
 .. code-block:: javascript
 
-   anonymous callback @ 135(e)
+   anonymous callback @ 136(e)
 
 实现 ``anonymous`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``135``—``140`` 行；所属函数 ``returned callback @ 127``。
+**性质**：同步局部函数；源码第 ``136``—``141`` 行；所属函数 ``returned callback @ 128``。
 
 **参数**
 
@@ -648,40 +628,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``onSelect``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:6315:6354:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:7840:7880:FUNCTION
 
-.. rubric:: ``Array.from callback @ 195``
-
-.. code-block:: javascript
-
-   Array.from callback @ 195(b)
-
-实现 ``Array.from`` 对应的前端处理。
-
-**性质**：同步局部函数；源码第 ``195``—``195`` 行；所属函数 ``generateUUID``。
-
-**参数**
-
-``b``
-   调用方传入的 ``b`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``b.toString(16).padStart``、``b.toString``。
-
-.. CWM-AST-FUNCTION src/lib/tools.jsx:8381:8421:FUNCTION
-
-.. rubric:: ``useState callback @ 263``
+.. rubric:: ``useState callback @ 243``
 
 .. code-block:: javascript
 
-   useState callback @ 263()
+   useState callback @ 243()
 
 封装 ``State`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``263``—``263`` 行；所属函数 ``useLocalSetting``。
+**性质**：同步局部函数；源码第 ``243``—``243`` 行；所属函数 ``useLocalSetting``。
 
 **参数**
 
@@ -693,17 +650,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:8439:9074:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:7898:8533:FUNCTION
 
-.. rubric:: ``useEffect callback @ 265``
+.. rubric:: ``useEffect callback @ 245``
 
 .. code-block:: javascript
 
-   useEffect callback @ 265()
+   useEffect callback @ 245()
 
 封装 ``Effect`` 的 React 状态、订阅与生命周期。
 
-**性质**：同步局部函数；源码第 ``265``—``281`` 行；所属函数 ``useLocalSetting``。
+**性质**：同步局部函数；源码第 ``245``—``261`` 行；所属函数 ``useLocalSetting``。
 
 **参数**
 
@@ -722,7 +679,7 @@ src/lib/tools 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:8474:8756:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:7933:8215:FUNCTION
 
 .. rubric:: ``syncSetting``
 
@@ -732,7 +689,7 @@ src/lib/tools 模块
 
 实现 ``syncSetting`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``266``—``273`` 行；所属函数 ``useEffect callback @ 265``。
+**性质**：同步局部函数；源码第 ``246``—``253`` 行；所属函数 ``useEffect callback @ 245``。
 
 **参数**
 
@@ -745,17 +702,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``setValue``、``getLocalSetting``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:8904:9067:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:8363:8526:FUNCTION
 
-.. rubric:: ``returned callback @ 277``
+.. rubric:: ``returned callback @ 257``
 
 .. code-block:: javascript
 
-   returned callback @ 277()
+   returned callback @ 257()
 
 实现 ``returned`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``277``—``280`` 行；所属函数 ``useEffect callback @ 265``。
+**性质**：同步局部函数；源码第 ``257``—``260`` 行；所属函数 ``useEffect callback @ 245``。
 
 **参数**
 
@@ -771,7 +728,7 @@ src/lib/tools 模块
 
 **主要协作调用**：``window.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:9122:9302:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:8581:8761:FUNCTION
 
 .. rubric:: ``updateValue``
 
@@ -781,7 +738,7 @@ src/lib/tools 模块
 
 更新与 ``Value`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``283``—``287`` 行；所属函数 ``useLocalSetting``。
+**性质**：同步局部函数；源码第 ``263``—``267`` 行；所属函数 ``useLocalSetting``。
 
 **参数**
 
@@ -794,17 +751,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``nextValue``、``setLocalSetting``、``setValue``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:9877:9932:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:9336:9391:FUNCTION
 
-.. rubric:: ``Array.from callback @ 305``
+.. rubric:: ``Array.from callback @ 285``
 
 .. code-block:: javascript
 
-   Array.from callback @ 305(_, index)
+   Array.from callback @ 285(_, index)
 
 实现 ``Array.from`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``305``—``305`` 行；所属函数 ``copyTextToClipboard``。
+**性质**：同步局部函数；源码第 ``285``—``285`` 行；所属函数 ``copyTextToClipboard``。
 
 **参数**
 
@@ -820,17 +777,17 @@ src/lib/tools 模块
 
 **主要协作调用**：``selection.getRangeAt(index).cloneRange``、``selection.getRangeAt``。
 
-.. CWM-AST-FUNCTION src/lib/tools.jsx:11128:11164:FUNCTION
+.. CWM-AST-FUNCTION src/lib/tools.jsx:10587:10623:FUNCTION
 
-.. rubric:: ``ranges.forEach callback @ 329``
+.. rubric:: ``ranges.forEach callback @ 309``
 
 .. code-block:: javascript
 
-   ranges.forEach callback @ 329(range)
+   ranges.forEach callback @ 309(range)
 
 作为 ``ranges.forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``329``—``329`` 行；所属函数 ``copyTextToClipboard``。
+**性质**：同步局部函数；源码第 ``309``—``309`` 行；所属函数 ``copyTextToClipboard``。
 
 **参数**
 

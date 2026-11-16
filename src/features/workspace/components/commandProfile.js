@@ -1,4 +1,5 @@
 import { parse } from '@cwm/json-config-editor';
+import { generateUUID } from '../../../lib/uuid.js';
 
 export const ARGV_SCHEMA = { type: 'array', minItems: 1, maxItems: 100, items: { type: 'string' } };
 export const ARGV_UI = { itemLabel: (index) => index === 0 ? '程序' : `参数 ${index}` };
@@ -6,7 +7,7 @@ export const validateArgv = (argv) => argv[0]?.trim() ? [] : [{ path: '/0', mess
 
 export function commandRows(profile) {
     return Object.entries(profile?.commands || {}).map(([id, spec]) => ({
-        key: crypto.randomUUID(),
+        key: generateUUID(),
         id,
         argv: JSON.stringify(spec.argv || []),
         cwd: spec.cwd || '.',

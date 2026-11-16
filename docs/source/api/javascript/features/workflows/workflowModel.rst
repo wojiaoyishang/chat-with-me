@@ -22,18 +22,18 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 主要依赖
 --------------------------------------------------------------------------------
 
-``./workflowRegions.js``。
+``../../lib/uuid.js``、``./workflowRegions.js``。
 
 顶层函数、组件与 Hook
 --------------------------------------------------------------------------------
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:218:255:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:268:289:FUNCTION
 
 .. js:function:: workflowId()
 
    实现 ``workflowId`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``7``—``7`` 行。
+   **性质**：同步函数；导出 API；源码第 ``8``—``8`` 行。
 
    **参数**
 
@@ -43,15 +43,15 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-   **主要协作调用**：``globalThis.crypto.randomUUID``。
+   **主要协作调用**：``generateUUID``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:277:358:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:311:392:FUNCTION
 
 .. js:function:: clone(value)
 
    实现 ``clone`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``8``—``9`` 行。
+   **性质**：同步函数；导出 API；源码第 ``9``—``10`` 行。
 
    **参数**
 
@@ -64,13 +64,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``JSON.parse``、``JSON.stringify``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:359:827:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:393:861:FUNCTION
 
 .. js:function:: workflowUsesKnowledge(graph, definitions)
 
    Knowledge policy controls follow trusted node effects, including subgraphs.
 
-   **性质**：同步函数；导出 API；源码第 ``12``—``21`` 行。
+   **性质**：同步函数；导出 API；源码第 ``13``—``22`` 行。
 
    **参数**
 
@@ -88,13 +88,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1096:1800:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1130:1834:FUNCTION
 
 .. js:function:: normalizeWorkflowSchema(value)
 
    Catalog annotations may use Pydantic range names; forms use JSON Schema.
 
-   **性质**：同步函数；导出 API；源码第 ``37``—``57`` 行。
+   **性质**：同步函数；导出 API；源码第 ``38``—``58`` 行。
 
    **参数**
 
@@ -109,13 +109,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1800:2089:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1834:2123:FUNCTION
 
 .. js:function:: scalarSchema(schema)
 
    实现 ``scalarSchema`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``59``—``65`` 行。
+   **性质**：同步函数；导出 API；源码第 ``60``—``66`` 行。
 
    **参数**
 
@@ -130,13 +130,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2089:2555:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2123:2589:FUNCTION
 
 .. js:function:: resolveWorkflowSchema(schema, root)
 
    解析并确定与 ``Workflow Schema`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``67``—``81`` 行。
+   **性质**：同步函数；导出 API；源码第 ``68``—``82`` 行。
 
    **参数**
 
@@ -154,13 +154,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2555:2975:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2589:3009:FUNCTION
 
 .. js:function:: schemaDefaults(schema)
 
    实现 ``schemaDefaults`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``83``—``93`` 行。
+   **性质**：同步函数；导出 API；源码第 ``84``—``94`` 行。
 
    **参数**
 
@@ -175,13 +175,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2975:3769:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:3009:3803:FUNCTION
 
 .. js:function:: normalizeGraph(graph, settingsDefaults)
 
    规范化与 ``Graph`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``95``—``118`` 行。
+   **性质**：同步函数；导出 API；源码第 ``96``—``119`` 行。
 
    **参数**
 
@@ -197,13 +197,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``clone``、``Object.hasOwn``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:3769:4444:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:3803:4478:FUNCTION
 
 .. js:function:: updateWorkflowNodePositions(graph, moved)
 
    更新与 ``Workflow Node Positions`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``120``—``142`` 行。
+   **性质**：同步函数；导出 API；源码第 ``121``—``143`` 行。
 
    **参数**
 
@@ -225,13 +225,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4444:5366:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4478:5400:FUNCTION
 
 .. js:function:: initializeGraph(graph, definitions, settingsDefaults)
 
    实现 ``initializeGraph`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``144``—``174`` 行。
+   **性质**：同步函数；导出 API；源码第 ``145``—``175`` 行。
 
    **参数**
 
@@ -254,13 +254,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5366:5449:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5400:5483:FUNCTION
 
 .. js:function:: nodeCategory(definition)
 
    实现 ``nodeCategory`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``176``—``178`` 行。
+   **性质**：同步函数；导出 API；源码第 ``177``—``179`` 行。
 
    **参数**
 
@@ -271,13 +271,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    根据执行分支返回结果；代表性返回表达式为 ``definition?.category || ""``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5449:5832:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5483:5866:FUNCTION
 
 .. js:function:: workflowNodeNumbers(graph)
 
    Short canvas labels never replace the real IDs used for runtime bindings.
 
-   **性质**：同步函数；导出 API；源码第 ``181``—``192`` 行。
+   **性质**：同步函数；导出 API；源码第 ``182``—``193`` 行。
 
    **参数**
 
@@ -292,13 +292,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5832:7096:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5866:7130:FUNCTION
 
 .. js:function:: workflowNodeMenuTree(menus, definitions)
 
    Menu placement is a server-owned scene path, independent of execution role.
 
-   **性质**：同步函数；导出 API；源码第 ``195``—``233`` 行。
+   **性质**：同步函数；导出 API；源码第 ``196``—``234`` 行。
 
    **参数**
 
@@ -316,13 +316,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7096:7486:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7130:7520:FUNCTION
 
 .. js:function:: workflowRepeatedItems(node, definition)
 
    Repeated ports use stable item IDs; their order belongs to configuration.
 
-   **性质**：同步函数；导出 API；源码第 ``236``—``243`` 行。
+   **性质**：同步函数；导出 API；源码第 ``237``—``244`` 行。
 
    **参数**
 
@@ -338,13 +338,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``Array.isArray``、``schemaDefaults``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7486:9211:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7520:9245:FUNCTION
 
 .. js:function:: effectiveWorkflowDefinition(node, definition)
 
    实现 ``effectiveWorkflowDefinition`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``245``—``295`` 行。
+   **性质**：同步函数；导出 API；源码第 ``246``—``296`` 行。
 
    **参数**
 
@@ -362,13 +362,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:9211:11079:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:9245:11113:FUNCTION
 
 .. js:function:: setWorkflowRepeatedItems(graph, nodeId, definition, items)
 
    One graph update preserves links during reorder and removes obsolete ports.
 
-   **性质**：同步函数；导出 API；源码第 ``298``—``351`` 行。
+   **性质**：同步函数；导出 API；源码第 ``299``—``352`` 行。
 
    **参数**
 
@@ -398,13 +398,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：8。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11079:11277:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11113:11311:FUNCTION
 
 .. js:function:: nextWorkflowRepeatedItemId(items)
 
    实现 ``nextWorkflowRepeatedItemId`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``353``—``358`` 行。
+   **性质**：同步函数；导出 API；源码第 ``354``—``359`` 行。
 
    **参数**
 
@@ -419,13 +419,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11277:11473:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11311:11507:FUNCTION
 
 .. js:function:: workflowPortsCompatible(output, input)
 
    实现 ``workflowPortsCompatible`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``360``—``366`` 行。
+   **性质**：同步函数；导出 API；源码第 ``361``—``367`` 行。
 
    **参数**
 
@@ -441,13 +441,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``(input?.accepts || []).includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11473:13445:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11507:13479:FUNCTION
 
 .. js:function:: workflowInputFields(graph, definitions, path)
 
    实现 ``workflowInputFields`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``368``—``418`` 行。
+   **性质**：同步函数；导出 API；源码第 ``369``—``419`` 行。
 
    **参数**
 
@@ -470,13 +470,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:13445:13759:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:13479:13793:FUNCTION
 
 .. js:function:: sourceNodeValue(node, definition)
 
    实现 ``sourceNodeValue`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``420``—``428`` 行。
+   **性质**：同步函数；导出 API；源码第 ``421``—``429`` 行。
 
    **参数**
 
@@ -492,13 +492,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``clone``、``schemaDefaults``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:13759:14017:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:13793:14051:FUNCTION
 
 .. js:function:: sourceValueConfig(definition, value, current)
 
    实现 ``sourceValueConfig`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``430``—``436`` 行。
+   **性质**：同步函数；导出 API；源码第 ``431``—``437`` 行。
 
    **参数**
 
@@ -515,13 +515,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    根据执行分支返回结果；代表性返回表达式为 ``current``、``source.configField == null ? { ...current, ...value } : { ...current, [source.configField]: value }``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:14017:14509:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:14051:14543:FUNCTION
 
 .. js:function:: workflowValueMissing(value, schema)
 
    Required inputs follow the supplied schema, including compound sources.
 
-   **性质**：同步函数；导出 API；源码第 ``439``—``448`` 行。
+   **性质**：同步函数；导出 API；源码第 ``440``—``449`` 行。
 
    **参数**
 
@@ -539,13 +539,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:14509:15484:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:14543:15518:FUNCTION
 
 .. js:function:: createWorkflowNode(definition, graph, position)
 
    创建与 ``Workflow Node`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``450``—``482`` 行。
+   **性质**：同步函数；导出 API；源码第 ``451``—``483`` 行。
 
    **参数**
 
@@ -564,13 +564,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``schemaDefaults``、``workflowRepeatedItems``、``workflowId``、``normalizeGraph``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:15484:17044:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:15518:17078:FUNCTION
 
 .. js:function:: workflowAddCandidates(definitions, graph, connection, query, context)
 
    Picker candidates obey the same backend-declared port rules as manual links.
 
-   **性质**：同步函数；导出 API；源码第 ``485``—``533`` 行。
+   **性质**：同步函数；导出 API；源码第 ``486``—``534`` 行。
 
    **参数**
 
@@ -597,13 +597,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：4。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:17044:17954:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:17078:17988:FUNCTION
 
 .. js:function:: addWorkflowNodeWithConnection(graph, definition, position, connection, port, definitions, context)
 
    Adding and linking is one immutable update, so one undo removes both.
 
-   **性质**：同步函数；导出 API；源码第 ``536``—``566`` 行。
+   **性质**：同步函数；导出 API；源码第 ``537``—``567`` 行。
 
    **参数**
 
@@ -636,13 +636,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``createWorkflowNode``、``connectWorkflow``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:17954:18343:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:17988:18377:FUNCTION
 
 .. js:function:: isWorkflowCanvasBlankTarget(target)
 
    Node controls, edges and canvas controls never count as empty canvas.
 
-   **性质**：同步函数；导出 API；源码第 ``569``—``576`` 行。
+   **性质**：同步函数；导出 API；源码第 ``570``—``577`` 行。
 
    **参数**
 
@@ -655,13 +655,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``Boolean``、``target?.closest``、``target.closest``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18343:18876:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18377:18910:FUNCTION
 
 .. js:function:: copyWorkflowSelection(graph, ids, inheritedRegions)
 
    实现 ``copyWorkflowSelection`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``578``—``592`` 行。
+   **性质**：同步函数；导出 API；源码第 ``579``—``593`` 行。
 
    **参数**
 
@@ -682,13 +682,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18876:19055:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18910:19089:FUNCTION
 
 .. js:function:: workflowNodeIds(graph)
 
    实现 ``workflowNodeIds`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``594``—``599`` 行。
+   **性质**：同步函数；导出 API；源码第 ``595``—``600`` 行。
 
    **参数**
 
@@ -703,13 +703,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:19055:21994:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:19089:22028:FUNCTION
 
 .. js:function:: instantiateWorkflowGraph(original)
 
    Instantiate a graph tree. Saving/retrying never calls this function.
 
-   **性质**：同步函数；导出 API；源码第 ``602``—``678`` 行。
+   **性质**：同步函数；导出 API；源码第 ``603``—``679`` 行。
 
    **参数**
 
@@ -728,13 +728,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21994:23029:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:22028:23063:FUNCTION
 
 .. js:function:: pasteWorkflowSelection(graph, clipboard, position)
 
    实现 ``pasteWorkflowSelection`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``680``—``708`` 行。
+   **性质**：同步函数；导出 API；源码第 ``681``—``709`` 行。
 
    **参数**
 
@@ -755,13 +755,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23029:23761:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23063:23795:FUNCTION
 
 .. js:function:: workflowSubgraphTemplateNode(source, definitions, title)
 
    Root budgets of a standalone template travel with its reusable wrapper.
 
-   **性质**：同步函数；导出 API；源码第 ``711``—``729`` 行。
+   **性质**：同步函数；导出 API；源码第 ``712``—``730`` 行。
 
    **参数**
 
@@ -782,13 +782,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23761:25291:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23795:25325:FUNCTION
 
 .. js:function:: initializeWorkflowSubgraph(graph, nodeId, saved, definitions)
 
    Confirm a placeholder in place; template sources are copied and globally rekeyed.
 
-   **性质**：同步函数；导出 API；源码第 ``732``—``774`` 行。
+   **性质**：同步函数；导出 API；源码第 ``733``—``775`` 行。
 
    **参数**
 
@@ -814,13 +814,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25291:25682:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25325:25716:FUNCTION
 
 .. js:function:: setWorkflowPortMode(graph, nodeId, port, mode, schema)
 
    设置与 ``Workflow Port Mode`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``776``—``790`` 行。
+   **性质**：同步函数；导出 API；源码第 ``777``—``791`` 行。
 
    **参数**
 
@@ -847,13 +847,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25682:25888:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25716:25922:FUNCTION
 
 .. js:function:: isWorkflowTextEditing(target)
 
    判断与 ``Workflow Text Editing`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``792``—``798`` 行。
+   **性质**：同步函数；导出 API；源码第 ``793``—``799`` 行。
 
    **参数**
 
@@ -866,13 +866,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``Boolean``、``target?.closest``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25888:28135:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25922:28169:FUNCTION
 
 .. js:function:: connectWorkflow(graph, connection, definitions, context)
 
    建立连接与 ``Workflow`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``800``—``864`` 行。
+   **性质**：同步函数；导出 API；源码第 ``801``—``865`` 行。
 
    **参数**
 
@@ -898,13 +898,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：8。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28135:28583:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28169:28617:FUNCTION
 
 .. js:function:: bindWorkflowInput(graph, nodeId, port, binding)
 
    实现 ``bindWorkflowInput`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``866``—``880`` 行。
+   **性质**：同步函数；导出 API；源码第 ``867``—``881`` 行。
 
    **参数**
 
@@ -928,13 +928,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：2。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28583:28985:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28617:29019:FUNCTION
 
 .. js:function:: removeWorkflowNodes(graph, ids)
 
    移除与 ``Workflow Nodes`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``882``—``892`` 行。
+   **性质**：同步函数；导出 API；源码第 ``883``—``893`` 行。
 
    **参数**
 
@@ -952,13 +952,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：3。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28985:32176:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29019:32210:FUNCTION
 
 .. js:function:: catalogNode(definitions, node, graph, visited, context)
 
    实现 ``catalogNode`` 对应的前端处理。
 
-   **性质**：同步函数；导出 API；源码第 ``894``—``999`` 行。
+   **性质**：同步函数；导出 API；源码第 ``895``—``1000`` 行。
 
    **参数**
 
@@ -985,13 +985,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：6。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32176:32549:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32210:32583:FUNCTION
 
 .. js:function:: workflowGraphAtPath(graph, path)
 
    Subgraphs are scoped graphs. Editor navigation never replaces the root draft.
 
-   **性质**：同步函数；导出 API；源码第 ``1002``—``1011`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1003``—``1012`` 行。
 
    **参数**
 
@@ -1009,13 +1009,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32549:32976:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32583:33010:FUNCTION
 
 .. js:function:: workflowGraphContext(graph, path)
 
    Context permits typed passthrough inference across explicit subgraph ports.
 
-   **性质**：同步函数；导出 API；源码第 ``1014``—``1025`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1015``—``1026`` 行。
 
    **参数**
 
@@ -1033,13 +1033,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32976:35190:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:33010:35224:FUNCTION
 
 .. js:function:: updateWorkflowGraphAtPath(graph, path, update, boundary)
 
    更新与 ``Workflow Graph At Path`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``1027``—``1087`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1028``—``1088`` 行。
 
    **参数**
 
@@ -1063,13 +1063,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：1。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:35190:38318:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:35224:38352:FUNCTION
 
 .. js:function:: workflowSubgraphDefinition(node, definitions, depth, parentGraph, context, visited)
 
    Public port contracts always come from the actual internal endpoint.
 
-   **性质**：同步函数；导出 API；源码第 ``1090``—``1186`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1091``—``1187`` 行。
 
    **参数**
 
@@ -1099,13 +1099,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：5。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38318:38411:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38352:38445:FUNCTION
 
 .. js:function:: workflowUniqueId(used)
 
    实现 ``workflowUniqueId`` 对应的前端处理。
 
-   **性质**：同步函数；模块内部入口；源码第 ``1188``—``1192`` 行。
+   **性质**：同步函数；模块内部入口；源码第 ``1189``—``1193`` 行。
 
    **参数**
 
@@ -1118,13 +1118,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **主要协作调用**：``workflowId``、``used.add``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38411:43003:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38445:43037:FUNCTION
 
 .. js:function:: wrapWorkflowSubgraph(graph, ids, definitions, name, parentInterface)
 
    Boundary rewiring, positions and interface creation form one undoable edit.
 
-   **性质**：同步函数；导出 API；源码第 ``1195``—``1332`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1196``—``1333`` 行。
 
    **参数**
 
@@ -1153,13 +1153,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：14。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43003:47157:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43037:47191:FUNCTION
 
 .. js:function:: unwrapWorkflowSubgraph(graph, id)
 
    Removing a group restores public literal bindings and parameter overrides.
 
-   **性质**：同步函数；导出 API；源码第 ``1335``—``1461`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1336``—``1462`` 行。
 
    **参数**
 
@@ -1183,13 +1183,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：15。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47157:49718:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47191:49752:FUNCTION
 
 .. js:function:: workflowRuntimeForGraph(graph, runtime, path, paths)
 
    Runtime leaves retain slash paths; collapsed groups aggregate all descendants.
 
-   **性质**：同步函数；导出 API；源码第 ``1464``—``1545`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1465``—``1546`` 行。
 
    **参数**
 
@@ -1213,13 +1213,13 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
    **内部回调数量**：10。这些回调会在本页“局部函数与匿名回调”中逐项列出。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49718:49976:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49752:50010:FUNCTION
 
 .. js:function:: isWorkflowEditorMessage(event, frameWindow, origin)
 
    判断与 ``Workflow Editor Message`` 相关的数据或状态。
 
-   **性质**：同步函数；导出 API；源码第 ``1547``—``1555`` 行。
+   **性质**：同步函数；导出 API；源码第 ``1548``—``1556`` 行。
 
    **参数**
 
@@ -1241,17 +1241,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:544:819:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:578:853:FUNCTION
 
-.. rubric:: ``(graph?.nodes || []).some callback @ 13``
+.. rubric:: ``(graph?.nodes || []).some callback @ 14``
 
 .. code-block:: javascript
 
-   (graph?.nodes || []).some callback @ 13(node)
+   (graph?.nodes || []).some callback @ 14(node)
 
 作为 ``(graph?.nodes || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``13``—``19`` 行；所属函数 ``workflowUsesKnowledge``。
+**性质**：同步局部函数；源码第 ``14``—``20`` 行；所属函数 ``workflowUsesKnowledge``。
 
 **参数**
 
@@ -1266,17 +1266,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:685:730:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:719:764:FUNCTION
 
-.. rubric:: ``definitions.find callback @ 17``
+.. rubric:: ``definitions.find callback @ 18``
 
 .. code-block:: javascript
 
-   definitions.find callback @ 17(definition)
+   definitions.find callback @ 18(definition)
 
 作为 ``definitions.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``17``—``17`` 行；所属函数 ``(graph?.nodes || []).some callback @ 13``。
+**性质**：同步局部函数；源码第 ``18``—``18`` 行；所属函数 ``(graph?.nodes || []).some callback @ 14``。
 
 **参数**
 
@@ -1287,17 +1287,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:775:818:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:809:852:FUNCTION
 
-.. rubric:: ``( definitions.find((definition) => definition.kind === node.kind) ?.effects || [] ).some callback @ 19``
+.. rubric:: ``( definitions.find((definition) => definition.kind === node.kind) ?.effects || [] ).some callback @ 20``
 
 .. code-block:: javascript
 
-   ( definitions.find((definition) => definition.kind === node.kind) ?.effects || [] ).some callback @ 19(effect)
+   ( definitions.find((definition) => definition.kind === node.kind) ?.effects || [] ).some callback @ 20(effect)
 
 作为 ``( definitions.find((definition) => definition.kind === node.kind) ?.effects || [] ).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``19``—``19`` 行；所属函数 ``(graph?.nodes || []).some callback @ 13``。
+**性质**：同步局部函数；源码第 ``20``—``20`` 行；所属函数 ``(graph?.nodes || []).some callback @ 14``。
 
 **参数**
 
@@ -1310,17 +1310,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``effect.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1422:1494:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1456:1528:FUNCTION
 
-.. rubric:: ``Object.entries(value).map callback @ 41``
+.. rubric:: ``Object.entries(value).map callback @ 42``
 
 .. code-block:: javascript
 
-   Object.entries(value).map callback @ 41([key, item])
+   Object.entries(value).map callback @ 42([key, item])
 
 作为 ``Object.entries(value).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``41``—``44`` 行；所属函数 ``normalizeWorkflowSchema``。
+**性质**：同步局部函数；源码第 ``42``—``45`` 行；所属函数 ``normalizeWorkflowSchema``。
 
 **参数**
 
@@ -1333,17 +1333,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``normalizeWorkflowSchema``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1936:2014:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:1970:2048:FUNCTION
 
-.. rubric:: ``(anyOf || oneOf || []).find callback @ 62``
+.. rubric:: ``(anyOf || oneOf || []).find callback @ 63``
 
 .. code-block:: javascript
 
-   (anyOf || oneOf || []).find callback @ 62(item)
+   (anyOf || oneOf || []).find callback @ 63(item)
 
 作为 ``(anyOf || oneOf || []).find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``62``—``62`` 行；所属函数 ``scalarSchema``。
+**性质**：同步局部函数；源码第 ``63``—``63`` 行；所属函数 ``scalarSchema``。
 
 **参数**
 
@@ -1354,17 +1354,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2283:2374:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2317:2408:FUNCTION
 
-.. rubric:: ``schema.$ref .slice(2) .split("/") .reduce callback @ 73``
+.. rubric:: ``schema.$ref .slice(2) .split("/") .reduce callback @ 74``
 
 .. code-block:: javascript
 
-   schema.$ref .slice(2) .split("/") .reduce callback @ 73(value, token)
+   schema.$ref .slice(2) .split("/") .reduce callback @ 74(value, token)
 
 作为 ``schema.$ref .slice(2) .split("/") .reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``73``—``74`` 行；所属函数 ``resolveWorkflowSchema``。
+**性质**：同步局部函数；源码第 ``74``—``75`` 行；所属函数 ``resolveWorkflowSchema``。
 
 **参数**
 
@@ -1380,17 +1380,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``token.replaceAll("~1", "/").replaceAll``、``token.replaceAll``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2821:2873:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2855:2907:FUNCTION
 
-.. rubric:: ``Object.entries(schema.properties || {}) .filter callback @ 88``
+.. rubric:: ``Object.entries(schema.properties || {}) .filter callback @ 89``
 
 .. code-block:: javascript
 
-   Object.entries(schema.properties || {}) .filter callback @ 88([, property])
+   Object.entries(schema.properties || {}) .filter callback @ 89([, property])
 
 作为 ``Object.entries(schema.properties || {}) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``88``—``88`` 行；所属函数 ``schemaDefaults``。
+**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``schemaDefaults``。
 
 **参数**
 
@@ -1403,17 +1403,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``Object.hasOwn``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2888:2940:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:2922:2974:FUNCTION
 
-.. rubric:: ``Object.entries(schema.properties || {}) .filter(([, property]) => Object.hasOwn(property, "default")) .map callback @ 89``
+.. rubric:: ``Object.entries(schema.properties || {}) .filter(([, property]) => Object.hasOwn(property, "default")) .map callback @ 90``
 
 .. code-block:: javascript
 
-   Object.entries(schema.properties || {}) .filter(([, property]) => Object.hasOwn(property, "default")) .map callback @ 89([key, property])
+   Object.entries(schema.properties || {}) .filter(([, property]) => Object.hasOwn(property, "default")) .map callback @ 90([key, property])
 
 作为 ``Object.entries(schema.properties || {}) .filter(([, property]) => Object.hasOwn(property, "default")) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``89``—``89`` 行；所属函数 ``schemaDefaults``。
+**性质**：同步局部函数；源码第 ``90``—``90`` 行；所属函数 ``schemaDefaults``。
 
 **参数**
 
@@ -1426,17 +1426,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``schemaDefaults``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:3889:3998:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:3923:4032:FUNCTION
 
-.. rubric:: ``moved .filter callback @ 124``
+.. rubric:: ``moved .filter callback @ 125``
 
 .. code-block:: javascript
 
-   moved .filter callback @ 124(node)
+   moved .filter callback @ 125(node)
 
 作为 ``moved .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``124``—``126`` 行；所属函数 ``updateWorkflowNodePositions``。
+**性质**：同步局部函数；源码第 ``125``—``127`` 行；所属函数 ``updateWorkflowNodePositions``。
 
 **参数**
 
@@ -1449,17 +1449,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``Number.isFinite``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4019:4053:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4053:4087:FUNCTION
 
-.. rubric:: ``moved .filter( (node) => Number.isFinite(node.position?.x) && Number.isFinite(node.position?.y), ) .map callback @ 128``
+.. rubric:: ``moved .filter( (node) => Number.isFinite(node.position?.x) && Number.isFinite(node.position?.y), ) .map callback @ 129``
 
 .. code-block:: javascript
 
-   moved .filter( (node) => Number.isFinite(node.position?.x) && Number.isFinite(node.position?.y), ) .map callback @ 128(node)
+   moved .filter( (node) => Number.isFinite(node.position?.x) && Number.isFinite(node.position?.y), ) .map callback @ 129(node)
 
 作为 ``moved .filter( (node) => Number.isFinite(node.position?.x) && Number.isFinite(node.position?.y), ) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``128``—``128`` 行；所属函数 ``updateWorkflowNodePositions``。
+**性质**：同步局部函数；源码第 ``129``—``129`` 行；所属函数 ``updateWorkflowNodePositions``。
 
 **参数**
 
@@ -1470,17 +1470,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4116:4392:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4150:4426:FUNCTION
 
-.. rubric:: ``graph.nodes.map callback @ 131``
+.. rubric:: ``graph.nodes.map callback @ 132``
 
 .. code-block:: javascript
 
-   graph.nodes.map callback @ 131(node)
+   graph.nodes.map callback @ 132(node)
 
 作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``131``—``140`` 行；所属函数 ``updateWorkflowNodePositions``。
+**性质**：同步局部函数；源码第 ``132``—``141`` 行；所属函数 ``updateWorkflowNodePositions``。
 
 **参数**
 
@@ -1497,17 +1497,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``positions.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4596:4637:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4630:4671:FUNCTION
 
-.. rubric:: ``next.nodes.some callback @ 146``
+.. rubric:: ``next.nodes.some callback @ 147``
 
 .. code-block:: javascript
 
-   next.nodes.some callback @ 146(node)
+   next.nodes.some callback @ 147(node)
 
 作为 ``next.nodes.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``146``—``146`` 行；所属函数 ``initializeGraph``。
+**性质**：同步局部函数；源码第 ``147``—``147`` 行；所属函数 ``initializeGraph``。
 
 **参数**
 
@@ -1520,17 +1520,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``Object.hasOwn``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4718:4850:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4752:4884:FUNCTION
 
-.. rubric:: ``next.nodes.some callback @ 150``
+.. rubric:: ``next.nodes.some callback @ 151``
 
 .. code-block:: javascript
 
-   next.nodes.some callback @ 150(node)
+   next.nodes.some callback @ 151(node)
 
 作为 ``next.nodes.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``150``—``152`` 行；所属函数 ``initializeGraph``。
+**性质**：同步局部函数；源码第 ``151``—``153`` 行；所属函数 ``initializeGraph``。
 
 **参数**
 
@@ -1543,17 +1543,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``["interface_inputs", "interface_outputs"].includes``、``node.id?.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:4978:5347:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5012:5381:FUNCTION
 
-.. rubric:: ``next.nodes.map callback @ 158``
+.. rubric:: ``next.nodes.map callback @ 159``
 
 .. code-block:: javascript
 
-   next.nodes.map callback @ 158(node)
+   next.nodes.map callback @ 159(node)
 
 作为 ``next.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``158``—``172`` 行；所属函数 ``initializeGraph``。
+**性质**：同步局部函数；源码第 ``159``—``173`` 行；所属函数 ``initializeGraph``。
 
 **参数**
 
@@ -1566,7 +1566,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``initializeGraph``、``schemaDefaults``、``catalogNode``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5630:5795:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:5664:5829:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -1576,7 +1576,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``184``—``189`` 行；所属函数 ``workflowNodeNumbers``。
+**性质**：同步局部函数；源码第 ``185``—``190`` 行；所属函数 ``workflowNodeNumbers``。
 
 **参数**
 
@@ -1589,7 +1589,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``visit``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6001:6258:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6035:6292:FUNCTION
 
 .. rubric:: ``build``
 
@@ -1599,7 +1599,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 构造与 ``build`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``196``—``204`` 行；所属函数 ``workflowNodeMenuTree``。
+**性质**：同步局部函数；源码第 ``197``—``205`` 行；所属函数 ``workflowNodeMenuTree``。
 
 **参数**
 
@@ -1620,17 +1620,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6079:6257:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6113:6291:FUNCTION
 
-.. rubric:: ``items.map callback @ 199``
+.. rubric:: ``items.map callback @ 200``
 
 .. code-block:: javascript
 
-   items.map callback @ 199(item)
+   items.map callback @ 200(item)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``199``—``204`` 行；所属函数 ``build``。
+**性质**：同步局部函数；源码第 ``200``—``205`` 行；所属函数 ``build``。
 
 **参数**
 
@@ -1643,17 +1643,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``build``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6362:6384:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6396:6418:FUNCTION
 
-.. rubric:: ``definitions.filter callback @ 207``
+.. rubric:: ``definitions.filter callback @ 208``
 
 .. code-block:: javascript
 
-   definitions.filter callback @ 207(node)
+   definitions.filter callback @ 208(node)
 
 作为 ``definitions.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``207``—``207`` 行；所属函数 ``workflowNodeMenuTree``。
+**性质**：同步局部函数；源码第 ``208``—``208`` 行；所属函数 ``workflowNodeMenuTree``。
 
 **参数**
 
@@ -1664,17 +1664,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6507:6531:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6541:6565:FUNCTION
 
-.. rubric:: ``children.find callback @ 211``
+.. rubric:: ``children.find callback @ 212``
 
 .. code-block:: javascript
 
-   children.find callback @ 211(item)
+   children.find callback @ 212(item)
 
 作为 ``children.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``211``—``211`` 行；所属函数 ``workflowNodeMenuTree``。
+**性质**：同步局部函数；源码第 ``212``—``212`` 行；所属函数 ``workflowNodeMenuTree``。
 
 **参数**
 
@@ -1685,7 +1685,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6913:7069:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6947:7103:FUNCTION
 
 .. rubric:: ``prune``
 
@@ -1695,7 +1695,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``prune`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``228``—``231`` 行；所属函数 ``workflowNodeMenuTree``。
+**性质**：同步局部函数；源码第 ``229``—``232`` 行；所属函数 ``workflowNodeMenuTree``。
 
 **参数**
 
@@ -1710,38 +1710,15 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6946:7001:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:6980:7035:FUNCTION
 
-.. rubric:: ``items .map callback @ 230``
+.. rubric:: ``items .map callback @ 231``
 
 .. code-block:: javascript
 
-   items .map callback @ 230(item)
+   items .map callback @ 231(item)
 
 作为 ``items .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``230``—``230`` 行；所属函数 ``prune``。
-
-**参数**
-
-``item``
-   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-**主要协作调用**：``prune``。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7017:7068:FUNCTION
-
-.. rubric:: ``items .map((item) => ({ ...item, children: prune(item.children) })) .filter callback @ 231``
-
-.. code-block:: javascript
-
-   items .map((item) => ({ ...item, children: prune(item.children) })) .filter callback @ 231(item)
-
-作为 ``items .map((item) => ({ ...item, children: prune(item.children) })) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
 **性质**：同步局部函数；源码第 ``231``—``231`` 行；所属函数 ``prune``。
 
@@ -1754,17 +1731,40 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7730:7774:FUNCTION
+**主要协作调用**：``prune``。
 
-.. rubric:: ``(definition.inputs || []).filter callback @ 250``
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7051:7102:FUNCTION
+
+.. rubric:: ``items .map((item) => ({ ...item, children: prune(item.children) })) .filter callback @ 232``
 
 .. code-block:: javascript
 
-   (definition.inputs || []).filter callback @ 250(port)
+   items .map((item) => ({ ...item, children: prune(item.children) })) .filter callback @ 232(item)
+
+作为 ``items .map((item) => ({ ...item, children: prune(item.children) })) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``232``—``232`` 行；所属函数 ``prune``。
+
+**参数**
+
+``item``
+   调用方传入的 ``item`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7764:7808:FUNCTION
+
+.. rubric:: ``(definition.inputs || []).filter callback @ 251``
+
+.. code-block:: javascript
+
+   (definition.inputs || []).filter callback @ 251(port)
 
 作为 ``(definition.inputs || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``250``—``250`` 行；所属函数 ``effectiveWorkflowDefinition``。
+**性质**：同步局部函数；源码第 ``251``—``251`` 行；所属函数 ``effectiveWorkflowDefinition``。
 
 **参数**
 
@@ -1777,17 +1777,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``port.name.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7890:7933:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:7924:7967:FUNCTION
 
-.. rubric:: ``Object.entries(definition.inputSchema?.properties || {}).filter callback @ 254``
+.. rubric:: ``Object.entries(definition.inputSchema?.properties || {}).filter callback @ 255``
 
 .. code-block:: javascript
 
-   Object.entries(definition.inputSchema?.properties || {}).filter callback @ 254([name])
+   Object.entries(definition.inputSchema?.properties || {}).filter callback @ 255([name])
 
 作为 ``Object.entries(definition.inputSchema?.properties || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``254``—``254`` 行；所属函数 ``effectiveWorkflowDefinition``。
+**性质**：同步局部函数；源码第 ``255``—``255`` 行；所属函数 ``effectiveWorkflowDefinition``。
 
 **参数**
 
@@ -1800,17 +1800,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``name.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8014:8053:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8048:8087:FUNCTION
 
-.. rubric:: ``(definition.inputSchema?.required || []).filter callback @ 258``
+.. rubric:: ``(definition.inputSchema?.required || []).filter callback @ 259``
 
 .. code-block:: javascript
 
-   (definition.inputSchema?.required || []).filter callback @ 258(name)
+   (definition.inputSchema?.required || []).filter callback @ 259(name)
 
 作为 ``(definition.inputSchema?.required || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``258``—``258`` 行；所属函数 ``effectiveWorkflowDefinition``。
+**性质**：同步局部函数；源码第 ``259``—``259`` 行；所属函数 ``effectiveWorkflowDefinition``。
 
 **参数**
 
@@ -1823,17 +1823,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``name.startsWith``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8110:9029:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8144:9063:FUNCTION
 
-.. rubric:: ``workflowRepeatedItems(node, definition).forEach callback @ 260``
+.. rubric:: ``workflowRepeatedItems(node, definition).forEach callback @ 261``
 
 .. code-block:: javascript
 
-   workflowRepeatedItems(node, definition).forEach callback @ 260(item, index)
+   workflowRepeatedItems(node, definition).forEach callback @ 261(item, index)
 
 作为 ``workflowRepeatedItems(node, definition).forEach callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``260``—``288`` 行；所属函数 ``effectiveWorkflowDefinition``。
+**性质**：同步局部函数；源码第 ``261``—``289`` 行；所属函数 ``effectiveWorkflowDefinition``。
 
 **参数**
 
@@ -1851,17 +1851,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8167:8202:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8201:8236:FUNCTION
 
-.. rubric:: ``repeated.kinds?.find callback @ 261``
+.. rubric:: ``repeated.kinds?.find callback @ 262``
 
 .. code-block:: javascript
 
-   repeated.kinds?.find callback @ 261(entry)
+   repeated.kinds?.find callback @ 262(entry)
 
 作为 ``repeated.kinds?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``261``—``261`` 行；所属函数 ``workflowRepeatedItems(node, definition).forEach callback @ 260``。
+**性质**：同步局部函数；源码第 ``262``—``262`` 行；所属函数 ``workflowRepeatedItems(node, definition).forEach callback @ 261``。
 
 **参数**
 
@@ -1872,17 +1872,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8507:8667:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:8541:8701:FUNCTION
 
-.. rubric:: ``Object.entries(template.display || {}).map callback @ 267``
+.. rubric:: ``Object.entries(template.display || {}).map callback @ 268``
 
 .. code-block:: javascript
 
-   Object.entries(template.display || {}).map callback @ 267([key, value])
+   Object.entries(template.display || {}).map callback @ 268([key, value])
 
 作为 ``Object.entries(template.display || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``267``—``272`` 行；所属函数 ``workflowRepeatedItems(node, definition).forEach callback @ 260``。
+**性质**：同步局部函数；源码第 ``268``—``273`` 行；所属函数 ``workflowRepeatedItems(node, definition).forEach callback @ 261``。
 
 **参数**
 
@@ -1895,17 +1895,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``value.replaceAll``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:9452:9480:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:9486:9514:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 300``
+.. rubric:: ``graph.nodes.find callback @ 301``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 300(item)
+   graph.nodes.find callback @ 301(item)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``300``—``300`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``301``—``301`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -1916,17 +1916,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:9892:9925:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:9926:9959:FUNCTION
 
-.. rubric:: ``repeated.kinds?.some callback @ 310``
+.. rubric:: ``repeated.kinds?.some callback @ 311``
 
 .. code-block:: javascript
 
-   repeated.kinds?.some callback @ 310(kind)
+   repeated.kinds?.some callback @ 311(kind)
 
 作为 ``repeated.kinds?.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``310``—``310`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``311``—``311`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -1937,17 +1937,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10113:10143:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10147:10177:FUNCTION
 
-.. rubric:: ``workflowRepeatedItems(node, definition).map callback @ 316``
+.. rubric:: ``workflowRepeatedItems(node, definition).map callback @ 317``
 
 .. code-block:: javascript
 
-   workflowRepeatedItems(node, definition).map callback @ 316(item)
+   workflowRepeatedItems(node, definition).map callback @ 317(item)
 
 作为 ``workflowRepeatedItems(node, definition).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``316``—``316`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``317``—``317`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -1958,17 +1958,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10203:10248:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10237:10282:FUNCTION
 
-.. rubric:: ``items .filter callback @ 320``
+.. rubric:: ``items .filter callback @ 321``
 
 .. code-block:: javascript
 
-   items .filter callback @ 320(item)
+   items .filter callback @ 321(item)
 
 作为 ``items .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``320``—``320`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``321``—``321`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -1985,17 +1985,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``previous.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10261:10292:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10295:10326:FUNCTION
 
-.. rubric:: ``items .filter((item) => previous.get(item.id) === item.kind) .map callback @ 321``
+.. rubric:: ``items .filter((item) => previous.get(item.id) === item.kind) .map callback @ 322``
 
 .. code-block:: javascript
 
-   items .filter((item) => previous.get(item.id) === item.kind) .map callback @ 321(item)
+   items .filter((item) => previous.get(item.id) === item.kind) .map callback @ 322(item)
 
 作为 ``items .filter((item) => previous.get(item.id) === item.kind) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``321``—``321`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``322``—``322`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -2006,17 +2006,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10382:10447:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10416:10481:FUNCTION
 
-.. rubric:: ``Object.entries(node.inputs || {}).filter callback @ 325``
+.. rubric:: ``Object.entries(node.inputs || {}).filter callback @ 326``
 
 .. code-block:: javascript
 
-   Object.entries(node.inputs || {}).filter callback @ 325([name])
+   Object.entries(node.inputs || {}).filter callback @ 326([name])
 
 作为 ``Object.entries(node.inputs || {}).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``325``—``325`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``326``—``326`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -2029,17 +2029,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``name.startsWith``、``retained.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10693:10890:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10727:10924:FUNCTION
 
-.. rubric:: ``graph.nodes.map callback @ 335``
+.. rubric:: ``graph.nodes.map callback @ 336``
 
 .. code-block:: javascript
 
-   graph.nodes.map callback @ 335(entry)
+   graph.nodes.map callback @ 336(entry)
 
 作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``335``—``342`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``336``—``343`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -2052,17 +2052,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``clone``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10929:11064:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:10963:11098:FUNCTION
 
-.. rubric:: ``graph.edges.filter callback @ 345``
+.. rubric:: ``graph.edges.filter callback @ 346``
 
 .. code-block:: javascript
 
-   graph.edges.filter callback @ 345(edge)
+   graph.edges.filter callback @ 346(edge)
 
 作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``345``—``348`` 行；所属函数 ``setWorkflowRepeatedItems``。
+**性质**：同步局部函数；源码第 ``346``—``349`` 行；所属函数 ``setWorkflowRepeatedItems``。
 
 **参数**
 
@@ -2075,17 +2075,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``edge.targetPort.startsWith``、``retained.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11165:11182:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11199:11216:FUNCTION
 
-.. rubric:: ``items.map callback @ 354``
+.. rubric:: ``items.map callback @ 355``
 
 .. code-block:: javascript
 
-   items.map callback @ 354(item)
+   items.map callback @ 355(item)
 
 作为 ``items.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``354``—``354`` 行；所属函数 ``nextWorkflowRepeatedItemId``。
+**性质**：同步局部函数；源码第 ``355``—``355`` 行；所属函数 ``nextWorkflowRepeatedItemId``。
 
 **参数**
 
@@ -2096,17 +2096,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11590:11647:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11624:11681:FUNCTION
 
-.. rubric:: ``graph.nodes .filter callback @ 370``
+.. rubric:: ``graph.nodes .filter callback @ 371``
 
 .. code-block:: javascript
 
-   graph.nodes .filter callback @ 370(node)
+   graph.nodes .filter callback @ 371(node)
 
 作为 ``graph.nodes .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``370``—``370`` 行；所属函数 ``workflowInputFields``。
+**性质**：同步局部函数；源码第 ``371``—``371`` 行；所属函数 ``workflowInputFields``。
 
 **参数**
 
@@ -2119,17 +2119,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``Boolean``、``catalogNode``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11658:12099:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:11692:12133:FUNCTION
 
-.. rubric:: ``graph.nodes .filter((node) => Boolean(catalogNode(definitions, node)?.source)) .map callback @ 371``
+.. rubric:: ``graph.nodes .filter((node) => Boolean(catalogNode(definitions, node)?.source)) .map callback @ 372``
 
 .. code-block:: javascript
 
-   graph.nodes .filter((node) => Boolean(catalogNode(definitions, node)?.source)) .map callback @ 371(node)
+   graph.nodes .filter((node) => Boolean(catalogNode(definitions, node)?.source)) .map callback @ 372(node)
 
 作为 ``graph.nodes .filter((node) => Boolean(catalogNode(definitions, node)?.source)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``371``—``383`` 行；所属函数 ``workflowInputFields``。
+**性质**：同步局部函数；源码第 ``372``—``384`` 行；所属函数 ``workflowInputFields``。
 
 **参数**
 
@@ -2142,17 +2142,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``catalogNode``、``sourceNodeValue``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:12142:12205:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:12176:12239:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 385``
+.. rubric:: ``graph.nodes.filter callback @ 386``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 385(node)
+   graph.nodes.filter callback @ 386(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``385``—``385`` 行；所属函数 ``workflowInputFields``。
+**性质**：同步局部函数；源码第 ``386``—``386`` 行；所属函数 ``workflowInputFields``。
 
 **参数**
 
@@ -2163,17 +2163,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:12955:13003:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:12989:13037:FUNCTION
 
-.. rubric:: ``childGraph.nodes.find callback @ 399``
+.. rubric:: ``childGraph.nodes.find callback @ 400``
 
 .. code-block:: javascript
 
-   childGraph.nodes.find callback @ 399(entry)
+   childGraph.nodes.find callback @ 400(entry)
 
 作为 ``childGraph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``399``—``399`` 行；所属函数 ``workflowInputFields``。
+**性质**：同步局部函数；源码第 ``400``—``400`` 行；所属函数 ``workflowInputFields``。
 
 **参数**
 
@@ -2184,17 +2184,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:14410:14483:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:14444:14517:FUNCTION
 
-.. rubric:: ``(schema.required || []).some callback @ 444``
+.. rubric:: ``(schema.required || []).some callback @ 445``
 
 .. code-block:: javascript
 
-   (schema.required || []).some callback @ 444(key)
+   (schema.required || []).some callback @ 445(key)
 
 作为 ``(schema.required || []).some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``444``—``445`` 行；所属函数 ``workflowValueMissing``。
+**性质**：同步局部函数；源码第 ``445``—``446`` 行；所属函数 ``workflowValueMissing``。
 
 **参数**
 
@@ -2207,17 +2207,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``workflowValueMissing``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:15749:15788:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:15783:15822:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 494``
+.. rubric:: ``graph.nodes.find callback @ 495``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 494(item)
+   graph.nodes.find callback @ 495(item)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``494``—``494`` 行；所属函数 ``workflowAddCandidates``。
+**性质**：同步局部函数；源码第 ``495``—``495`` 行；所属函数 ``workflowAddCandidates``。
 
 **参数**
 
@@ -2228,17 +2228,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16056:16099:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16090:16133:FUNCTION
 
-.. rubric:: ``definition?.[ connection.handleType === "source" ? "outputs" : "inputs" ]?.find callback @ 503``
+.. rubric:: ``definition?.[ connection.handleType === "source" ? "outputs" : "inputs" ]?.find callback @ 504``
 
 .. code-block:: javascript
 
-   definition?.[ connection.handleType === "source" ? "outputs" : "inputs" ]?.find callback @ 503(port)
+   definition?.[ connection.handleType === "source" ? "outputs" : "inputs" ]?.find callback @ 504(port)
 
 作为 ``definition?.[ connection.handleType === "source" ? "outputs" : "inputs" ]?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``503``—``503`` 行；所属函数 ``workflowAddCandidates``。
+**性质**：同步局部函数；源码第 ``504``—``504`` 行；所属函数 ``workflowAddCandidates``。
 
 **参数**
 
@@ -2249,17 +2249,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16216:16250:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16250:16284:FUNCTION
 
-.. rubric:: ``definitions .filter callback @ 508``
+.. rubric:: ``definitions .filter callback @ 509``
 
 .. code-block:: javascript
 
-   definitions .filter callback @ 508(definition)
+   definitions .filter callback @ 509(definition)
 
 作为 ``definitions .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``508``—``508`` 行；所属函数 ``workflowAddCandidates``。
+**性质**：同步局部函数；源码第 ``509``—``509`` 行；所属函数 ``workflowAddCandidates``。
 
 **参数**
 
@@ -2270,17 +2270,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16265:17040:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16299:17074:FUNCTION
 
-.. rubric:: ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 509``
+.. rubric:: ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 510``
 
 .. code-block:: javascript
 
-   definitions .filter((definition) => !definition.hidden) .flatMap callback @ 509(definition)
+   definitions .filter((definition) => !definition.hidden) .flatMap callback @ 510(definition)
 
 实现 ``definitions .filter((definition) => !definition.hidden) .flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``509``—``532`` 行；所属函数 ``workflowAddCandidates``。
+**性质**：同步局部函数；源码第 ``510``—``533`` 行；所属函数 ``workflowAddCandidates``。
 
 **参数**
 
@@ -2295,17 +2295,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16527:16691:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16561:16725:FUNCTION
 
-.. rubric:: ``( definition[ connection.handleType === "source" ? "inputs" : "outputs" ] || [] ).filter callback @ 516``
+.. rubric:: ``( definition[ connection.handleType === "source" ? "inputs" : "outputs" ] || [] ).filter callback @ 517``
 
 .. code-block:: javascript
 
-   ( definition[ connection.handleType === "source" ? "inputs" : "outputs" ] || [] ).filter callback @ 516(port)
+   ( definition[ connection.handleType === "source" ? "inputs" : "outputs" ] || [] ).filter callback @ 517(port)
 
 作为 ``( definition[ connection.handleType === "source" ? "inputs" : "outputs" ] || [] ).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``516``—``519`` 行；所属函数 ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 509``。
+**性质**：同步局部函数；源码第 ``517``—``520`` 行；所属函数 ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 510``。
 
 **参数**
 
@@ -2318,17 +2318,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``workflowPortsCompatible``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16758:16975:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16792:17009:FUNCTION
 
-.. rubric:: ``ports .filter callback @ 523``
+.. rubric:: ``ports .filter callback @ 524``
 
 .. code-block:: javascript
 
-   ports .filter callback @ 523(port)
+   ports .filter callback @ 524(port)
 
 作为 ``ports .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``523``—``529`` 行；所属函数 ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 509``。
+**性质**：同步局部函数；源码第 ``524``—``530`` 行；所属函数 ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 510``。
 
 **参数**
 
@@ -2343,17 +2343,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16819:16962:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:16853:16996:FUNCTION
 
-.. rubric:: ``[definition.display, port?.display].some callback @ 524``
+.. rubric:: ``[definition.display, port?.display].some callback @ 525``
 
 .. code-block:: javascript
 
-   [definition.display, port?.display].some callback @ 524(display)
+   [definition.display, port?.display].some callback @ 525(display)
 
 作为 ``[definition.display, port?.display].some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``524``—``528`` 行；所属函数 ``ports .filter callback @ 523``。
+**性质**：同步局部函数；源码第 ``525``—``529`` 行；所属函数 ``ports .filter callback @ 524``。
 
 **参数**
 
@@ -2366,17 +2366,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``Object.values(display || {}) .join(" ") .toLocaleLowerCase() .includes``、``Object.values(display || {}) .join(" ") .toLocaleLowerCase``、``Object.values(display || {}) .join``、``Object.values``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:17000:17032:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:17034:17066:FUNCTION
 
-.. rubric:: ``ports .filter((port) => [definition.display, port?.display].some((display) => Object.values(display || {}) .join(" ") .… callback @ 531``
+.. rubric:: ``ports .filter((port) => [definition.display, port?.display].some((display) => Object.values(display || {}) .join(" ") .… callback @ 532``
 
 .. code-block:: javascript
 
-   ports .filter((port) => [definition.display, port?.display].some((display) => Object.values(display || {}) .join(" ") .… callback @ 531(port)
+   ports .filter((port) => [definition.display, port?.display].some((display) => Object.values(display || {}) .join(" ") .… callback @ 532(port)
 
 实现 ``ports .filter((port) => [definition.display, port?.display].some((display) => Object.values(display || {}) .join(" ") .…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``531``—``531`` 行；所属函数 ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 509``。
+**性质**：同步局部函数；源码第 ``532``—``532`` 行；所属函数 ``definitions .filter((definition) => !definition.hidden) .flatMap callback @ 510``。
 
 **参数**
 
@@ -2387,17 +2387,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18488:18519:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18522:18553:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 580``
+.. rubric:: ``graph.nodes.filter callback @ 581``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 580(node)
+   graph.nodes.filter callback @ 581(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``580``—``580`` 行；所属函数 ``copyWorkflowSelection``。
+**性质**：同步局部函数；源码第 ``581``—``581`` 行；所属函数 ``copyWorkflowSelection``。
 
 **参数**
 
@@ -2410,17 +2410,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18710:18781:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18744:18815:FUNCTION
 
-.. rubric:: ``graph.edges.filter callback @ 588``
+.. rubric:: ``graph.edges.filter callback @ 589``
 
 .. code-block:: javascript
 
-   graph.edges.filter callback @ 588(edge)
+   graph.edges.filter callback @ 589(edge)
 
 作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``588``—``588`` 行；所属函数 ``copyWorkflowSelection``。
+**性质**：同步局部函数；源码第 ``589``—``589`` 行；所属函数 ``copyWorkflowSelection``。
 
 **参数**
 
@@ -2433,17 +2433,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18840:18866:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18874:18900:FUNCTION
 
-.. rubric:: ``(graph.outputNodes || []).filter callback @ 590``
+.. rubric:: ``(graph.outputNodes || []).filter callback @ 591``
 
 .. code-block:: javascript
 
-   (graph.outputNodes || []).filter callback @ 590(key)
+   (graph.outputNodes || []).filter callback @ 591(key)
 
 作为 ``(graph.outputNodes || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``590``—``590`` 行；所属函数 ``copyWorkflowSelection``。
+**性质**：同步局部函数；源码第 ``591``—``591`` 行；所属函数 ``copyWorkflowSelection``。
 
 **参数**
 
@@ -2456,17 +2456,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18948:19051:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:18982:19085:FUNCTION
 
-.. rubric:: ``graph.nodes.flatMap callback @ 595``
+.. rubric:: ``graph.nodes.flatMap callback @ 596``
 
 .. code-block:: javascript
 
-   graph.nodes.flatMap callback @ 595(node)
+   graph.nodes.flatMap callback @ 596(node)
 
 实现 ``graph.nodes.flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``595``—``598`` 行；所属函数 ``workflowNodeIds``。
+**性质**：同步局部函数；源码第 ``596``—``599`` 行；所属函数 ``workflowNodeIds``。
 
 **参数**
 
@@ -2479,7 +2479,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``workflowNodeIds``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:19295:21624:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:19329:21658:FUNCTION
 
 .. rubric:: ``visit``
 
@@ -2489,7 +2489,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``visit`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``606``—``666`` 行；所属函数 ``instantiateWorkflowGraph``。
+**性质**：同步局部函数；源码第 ``607``—``667`` 行；所属函数 ``instantiateWorkflowGraph``。
 
 **参数**
 
@@ -2508,17 +2508,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:19353:19386:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:19387:19420:FUNCTION
 
-.. rubric:: ``current.nodes.map callback @ 607``
+.. rubric:: ``current.nodes.map callback @ 608``
 
 .. code-block:: javascript
 
-   current.nodes.map callback @ 607(node)
+   current.nodes.map callback @ 608(node)
 
 作为 ``current.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``607``—``607`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``608``—``608`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -2531,17 +2531,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``workflowId``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:20633:20733:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:20667:20767:FUNCTION
 
-.. rubric:: ``Object.entries(node.inputs || {}).map callback @ 636``
+.. rubric:: ``Object.entries(node.inputs || {}).map callback @ 637``
 
 .. code-block:: javascript
 
-   Object.entries(node.inputs || {}).map callback @ 636([key, value])
+   Object.entries(node.inputs || {}).map callback @ 637([key, value])
 
 作为 ``Object.entries(node.inputs || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``636``—``639`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``637``—``640`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -2558,17 +2558,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``ports.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:20831:20935:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:20865:20969:FUNCTION
 
-.. rubric:: ``Object.entries(node.config || {}).map callback @ 642``
+.. rubric:: ``Object.entries(node.config || {}).map callback @ 643``
 
 .. code-block:: javascript
 
-   Object.entries(node.config || {}).map callback @ 642([key, value])
+   Object.entries(node.config || {}).map callback @ 643([key, value])
 
 作为 ``Object.entries(node.config || {}).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``642``—``645`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``643``—``646`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -2585,17 +2585,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``ports.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21091:21118:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21125:21152:FUNCTION
 
-.. rubric:: ``node.subgraph.execution.branchOrder.map callback @ 649``
+.. rubric:: ``node.subgraph.execution.branchOrder.map callback @ 650``
 
 .. code-block:: javascript
 
-   node.subgraph.execution.branchOrder.map callback @ 649(key)
+   node.subgraph.execution.branchOrder.map callback @ 650(key)
 
 作为 ``node.subgraph.execution.branchOrder.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``649``—``649`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``650``—``650`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -2612,17 +2612,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``child.ids.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21558:21585:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21592:21619:FUNCTION
 
-.. rubric:: ``(current.outputNodes || []).map callback @ 662``
+.. rubric:: ``(current.outputNodes || []).map callback @ 663``
 
 .. code-block:: javascript
 
-   (current.outputNodes || []).map callback @ 662(key)
+   (current.outputNodes || []).map callback @ 663(key)
 
 作为 ``(current.outputNodes || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``662``—``663`` 行；所属函数 ``visit``。
+**性质**：同步局部函数；源码第 ``663``—``664`` 行；所属函数 ``visit``。
 
 **参数**
 
@@ -2639,7 +2639,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``ids.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21664:21952:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21698:21986:FUNCTION
 
 .. rubric:: ``remapRegions``
 
@@ -2649,7 +2649,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``remapRegions`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``668``—``675`` 行；所属函数 ``instantiateWorkflowGraph``。
+**性质**：同步局部函数；源码第 ``669``—``676`` 行；所属函数 ``instantiateWorkflowGraph``。
 
 **参数**
 
@@ -2668,17 +2668,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21813:21835:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:21847:21869:FUNCTION
 
-.. rubric:: ``region.nodeIds.map callback @ 671``
+.. rubric:: ``region.nodeIds.map callback @ 672``
 
 .. code-block:: javascript
 
-   region.nodeIds.map callback @ 671(id)
+   region.nodeIds.map callback @ 672(id)
 
 作为 ``region.nodeIds.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``671``—``671`` 行；所属函数 ``remapRegions``。
+**性质**：同步局部函数；源码第 ``672``—``672`` 行；所属函数 ``remapRegions``。
 
 **参数**
 
@@ -2695,28 +2695,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``allIds.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:22283:22314:FUNCTION
-
-.. rubric:: ``copied.nodes.map callback @ 686``
-
-.. code-block:: javascript
-
-   copied.nodes.map callback @ 686(node)
-
-作为 ``copied.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``686``—``686`` 行；所属函数 ``pasteWorkflowSelection``。
-
-**参数**
-
-``node``
-   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:22362:22393:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:22317:22348:FUNCTION
 
 .. rubric:: ``copied.nodes.map callback @ 687``
 
@@ -2737,17 +2716,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23003:23020:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:22396:22427:FUNCTION
 
-.. rubric:: ``copied.nodes.map callback @ 706``
+.. rubric:: ``copied.nodes.map callback @ 688``
 
 .. code-block:: javascript
 
-   copied.nodes.map callback @ 706(node)
+   copied.nodes.map callback @ 688(node)
 
 作为 ``copied.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``706``—``706`` 行；所属函数 ``pasteWorkflowSelection``。
+**性质**：同步局部函数；源码第 ``688``—``688`` 行；所属函数 ``pasteWorkflowSelection``。
 
 **参数**
 
@@ -2758,17 +2737,38 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23378:23395:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23037:23054:FUNCTION
 
-.. rubric:: ``source.nodes.map callback @ 717``
+.. rubric:: ``copied.nodes.map callback @ 707``
 
 .. code-block:: javascript
 
-   source.nodes.map callback @ 717(node)
+   copied.nodes.map callback @ 707(node)
+
+作为 ``copied.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``707``—``707`` 行；所属函数 ``pasteWorkflowSelection``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23412:23429:FUNCTION
+
+.. rubric:: ``source.nodes.map callback @ 718``
+
+.. code-block:: javascript
+
+   source.nodes.map callback @ 718(node)
 
 作为 ``source.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``717``—``717`` 行；所属函数 ``workflowSubgraphTemplateNode``。
+**性质**：同步局部函数；源码第 ``718``—``718`` 行；所属函数 ``workflowSubgraphTemplateNode``。
 
 **参数**
 
@@ -2779,17 +2779,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23662:23728:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23696:23762:FUNCTION
 
-.. rubric:: ``projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback @ 725``
+.. rubric:: ``projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback @ 726``
 
 .. code-block:: javascript
 
-   projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback @ 725(region)
+   projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback @ 726(region)
 
 作为 ``projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``725``—``725`` 行；所属函数 ``workflowSubgraphTemplateNode``。
+**性质**：同步局部函数；源码第 ``726``—``726`` 行；所属函数 ``workflowSubgraphTemplateNode``。
 
 **参数**
 
@@ -2804,17 +2804,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23696:23727:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23730:23761:FUNCTION
 
-.. rubric:: ``existing.some callback @ 725``
+.. rubric:: ``existing.some callback @ 726``
 
 .. code-block:: javascript
 
-   existing.some callback @ 725(item)
+   existing.some callback @ 726(item)
 
 作为 ``existing.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``725``—``725`` 行；所属函数 ``projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback @ 725``。
+**性质**：同步局部函数；源码第 ``726``—``726`` 行；所属函数 ``projectWorkflowRegions(source.executionRegions || [], [wrapper]).filter callback @ 726``。
 
 **参数**
 
@@ -2825,17 +2825,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:23966:23994:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:24000:24028:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 733``
+.. rubric:: ``graph.nodes.find callback @ 734``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 733(node)
+   graph.nodes.find callback @ 734(node)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``733``—``733`` 行；所属函数 ``initializeWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``734``—``734`` 行；所属函数 ``initializeWorkflowSubgraph``。
 
 **参数**
 
@@ -2846,17 +2846,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:24572:24600:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:24606:24634:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 748``
+.. rubric:: ``graph.nodes.filter callback @ 749``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 748(node)
+   graph.nodes.filter callback @ 749(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``748``—``748`` 行；所属函数 ``initializeWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``749``—``749`` 行；所属函数 ``initializeWorkflowSubgraph``。
 
 **参数**
 
@@ -2867,17 +2867,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25218:25276:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25252:25310:FUNCTION
 
-.. rubric:: ``graph.nodes.map callback @ 770``
+.. rubric:: ``graph.nodes.map callback @ 771``
 
 .. code-block:: javascript
 
-   graph.nodes.map callback @ 770(node)
+   graph.nodes.map callback @ 771(node)
 
 作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``770``—``771`` 行；所属函数 ``initializeWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``771``—``772`` 行；所属函数 ``initializeWorkflowSubgraph``。
 
 **参数**
 
@@ -2888,17 +2888,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25403:25431:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:25437:25465:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 777``
+.. rubric:: ``graph.nodes.find callback @ 778``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 777(item)
+   graph.nodes.find callback @ 778(item)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``777``—``777`` 行；所属函数 ``setWorkflowPortMode``。
+**性质**：同步局部函数；源码第 ``778``—``778`` 行；所属函数 ``setWorkflowPortMode``。
 
 **参数**
 
@@ -2909,28 +2909,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26004:26043:FUNCTION
-
-.. rubric:: ``graph.nodes.find callback @ 801``
-
-.. code-block:: javascript
-
-   graph.nodes.find callback @ 801(node)
-
-作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``801``—``801`` 行；所属函数 ``connectWorkflow``。
-
-**参数**
-
-``node``
-   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26080:26119:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26038:26077:FUNCTION
 
 .. rubric:: ``graph.nodes.find callback @ 802``
 
@@ -2951,122 +2930,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26500:26534:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26114:26153:FUNCTION
 
-.. rubric:: ``effectiveWorkflowDefinition( source, catalogNode(definitions, source, graph, new Set(), context), )?.outputs?.find callback @ 810``
-
-.. code-block:: javascript
-
-   effectiveWorkflowDefinition( source, catalogNode(definitions, source, graph, new Set(), context), )?.outputs?.find callback @ 810(port)
-
-作为 ``effectiveWorkflowDefinition( source, catalogNode(definitions, source, graph, new Set(), context), )?.outputs?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``810``—``810`` 行；所属函数 ``connectWorkflow``。
-
-**参数**
-
-``port``
-   调用方传入的 ``port`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26677:26711:FUNCTION
-
-.. rubric:: ``effectiveWorkflowDefinition( target, catalogNode(definitions, target, graph, new Set(), context), )?.inputs?.find callback @ 814``
+.. rubric:: ``graph.nodes.find callback @ 803``
 
 .. code-block:: javascript
 
-   effectiveWorkflowDefinition( target, catalogNode(definitions, target, graph, new Set(), context), )?.inputs?.find callback @ 814(port)
+   graph.nodes.find callback @ 803(node)
 
-作为 ``effectiveWorkflowDefinition( target, catalogNode(definitions, target, graph, new Set(), context), )?.inputs?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``814``—``814`` 行；所属函数 ``connectWorkflow``。
-
-**参数**
-
-``port``
-   调用方传入的 ``port`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27300:27391:FUNCTION
-
-.. rubric:: ``graph.edges.filter callback @ 830``
-
-.. code-block:: javascript
-
-   graph.edges.filter callback @ 830(edge)
-
-作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``830``—``831`` 行；所属函数 ``connectWorkflow``。
-
-**参数**
-
-``edge``
-   调用方传入的 ``edge`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27424:27595:FUNCTION
-
-.. rubric:: ``edges.some callback @ 835``
-
-.. code-block:: javascript
-
-   edges.some callback @ 835(edge)
-
-作为 ``edges.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``835``—``839`` 行；所属函数 ``connectWorkflow``。
-
-**参数**
-
-``edge``
-   调用方传入的 ``edge`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27746:27763:FUNCTION
-
-.. rubric:: ``edges.map callback @ 846``
-
-.. code-block:: javascript
-
-   edges.map callback @ 846(edge)
-
-作为 ``edges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``846``—``846`` 行；所属函数 ``connectWorkflow``。
-
-**参数**
-
-``edge``
-   调用方传入的 ``edge`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27874:27940:FUNCTION
-
-.. rubric:: ``graph.nodes.map callback @ 850``
-
-.. code-block:: javascript
-
-   graph.nodes.map callback @ 850(node)
-
-作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``850``—``851`` 行；所属函数 ``connectWorkflow``。
+**性质**：同步局部函数；源码第 ``803``—``803`` 行；所属函数 ``connectWorkflow``。
 
 **参数**
 
@@ -3077,17 +2951,59 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28258:28328:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26534:26568:FUNCTION
 
-.. rubric:: ``graph.edges.filter callback @ 870``
+.. rubric:: ``effectiveWorkflowDefinition( source, catalogNode(definitions, source, graph, new Set(), context), )?.outputs?.find callback @ 811``
 
 .. code-block:: javascript
 
-   graph.edges.filter callback @ 870(edge)
+   effectiveWorkflowDefinition( source, catalogNode(definitions, source, graph, new Set(), context), )?.outputs?.find callback @ 811(port)
+
+作为 ``effectiveWorkflowDefinition( source, catalogNode(definitions, source, graph, new Set(), context), )?.outputs?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``811``—``811`` 行；所属函数 ``connectWorkflow``。
+
+**参数**
+
+``port``
+   调用方传入的 ``port`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:26711:26745:FUNCTION
+
+.. rubric:: ``effectiveWorkflowDefinition( target, catalogNode(definitions, target, graph, new Set(), context), )?.inputs?.find callback @ 815``
+
+.. code-block:: javascript
+
+   effectiveWorkflowDefinition( target, catalogNode(definitions, target, graph, new Set(), context), )?.inputs?.find callback @ 815(port)
+
+作为 ``effectiveWorkflowDefinition( target, catalogNode(definitions, target, graph, new Set(), context), )?.inputs?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``815``—``815`` 行；所属函数 ``connectWorkflow``。
+
+**参数**
+
+``port``
+   调用方传入的 ``port`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27334:27425:FUNCTION
+
+.. rubric:: ``graph.edges.filter callback @ 831``
+
+.. code-block:: javascript
+
+   graph.edges.filter callback @ 831(edge)
 
 作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``870``—``870`` 行；所属函数 ``bindWorkflowInput``。
+**性质**：同步局部函数；源码第 ``831``—``832`` 行；所属函数 ``connectWorkflow``。
 
 **参数**
 
@@ -3098,17 +3014,101 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28364:28574:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27458:27629:FUNCTION
 
-.. rubric:: ``graph.nodes.map callback @ 872``
+.. rubric:: ``edges.some callback @ 836``
 
 .. code-block:: javascript
 
-   graph.nodes.map callback @ 872(node)
+   edges.some callback @ 836(edge)
+
+作为 ``edges.some callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``836``—``840`` 行；所属函数 ``connectWorkflow``。
+
+**参数**
+
+``edge``
+   调用方传入的 ``edge`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27780:27797:FUNCTION
+
+.. rubric:: ``edges.map callback @ 847``
+
+.. code-block:: javascript
+
+   edges.map callback @ 847(edge)
+
+作为 ``edges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``847``—``847`` 行；所属函数 ``connectWorkflow``。
+
+**参数**
+
+``edge``
+   调用方传入的 ``edge`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:27908:27974:FUNCTION
+
+.. rubric:: ``graph.nodes.map callback @ 851``
+
+.. code-block:: javascript
+
+   graph.nodes.map callback @ 851(node)
 
 作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``872``—``878`` 行；所属函数 ``bindWorkflowInput``。
+**性质**：同步局部函数；源码第 ``851``—``852`` 行；所属函数 ``connectWorkflow``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28292:28362:FUNCTION
+
+.. rubric:: ``graph.edges.filter callback @ 871``
+
+.. code-block:: javascript
+
+   graph.edges.filter callback @ 871(edge)
+
+作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``871``—``871`` 行；所属函数 ``bindWorkflowInput``。
+
+**参数**
+
+``edge``
+   调用方传入的 ``edge`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28398:28608:FUNCTION
+
+.. rubric:: ``graph.nodes.map callback @ 873``
+
+.. code-block:: javascript
+
+   graph.nodes.map callback @ 873(node)
+
+作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``873``—``879`` 行；所属函数 ``bindWorkflowInput``。
 
 **参数**
 
@@ -3119,17 +3119,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 根据执行分支返回结果；代表性返回表达式为 ``node``、``{ ...node, inputs }``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28757:28788:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28791:28822:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 886``
+.. rubric:: ``graph.nodes.filter callback @ 887``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 886(node)
+   graph.nodes.filter callback @ 887(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``886``—``886`` 行；所属函数 ``removeWorkflowNodes``。
+**性质**：同步局部函数；源码第 ``887``—``887`` 行；所属函数 ``removeWorkflowNodes``。
 
 **参数**
 
@@ -3142,17 +3142,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``removed.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28841:28865:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28875:28899:FUNCTION
 
-.. rubric:: ``(graph.outputNodes || []).filter callback @ 887``
+.. rubric:: ``(graph.outputNodes || []).filter callback @ 888``
 
 .. code-block:: javascript
 
-   (graph.outputNodes || []).filter callback @ 887(id)
+   (graph.outputNodes || []).filter callback @ 888(id)
 
 作为 ``(graph.outputNodes || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``887``—``887`` 行；所属函数 ``removeWorkflowNodes``。
+**性质**：同步局部函数；源码第 ``888``—``888`` 行；所属函数 ``removeWorkflowNodes``。
 
 **参数**
 
@@ -3165,17 +3165,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``removed.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28898:28969:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:28932:29003:FUNCTION
 
-.. rubric:: ``graph.edges.filter callback @ 889``
+.. rubric:: ``graph.edges.filter callback @ 890``
 
 .. code-block:: javascript
 
-   graph.edges.filter callback @ 889(edge)
+   graph.edges.filter callback @ 890(edge)
 
 作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``889``—``889`` 行；所属函数 ``removeWorkflowNodes``。
+**性质**：同步局部函数；源码第 ``890``—``890`` 行；所属函数 ``removeWorkflowNodes``。
 
 **参数**
 
@@ -3188,17 +3188,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``removed.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29123:29152:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29157:29186:FUNCTION
 
-.. rubric:: ``context.map callback @ 901``
+.. rubric:: ``context.map callback @ 902``
 
 .. code-block:: javascript
 
-   context.map callback @ 901(entry)
+   context.map callback @ 902(entry)
 
 作为 ``context.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``901``—``901`` 行；所属函数 ``catalogNode``。
+**性质**：同步局部函数；源码第 ``902``—``902`` 行；所属函数 ``catalogNode``。
 
 **参数**
 
@@ -3209,17 +3209,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29402:29525:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29436:29559:FUNCTION
 
-.. rubric:: ``definitions.find callback @ 915``
+.. rubric:: ``definitions.find callback @ 916``
 
 .. code-block:: javascript
 
-   definitions.find callback @ 915(definition)
+   definitions.find callback @ 916(definition)
 
 作为 ``definitions.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``915``—``917`` 行；所属函数 ``catalogNode``。
+**性质**：同步局部函数；源码第 ``916``—``918`` 行；所属函数 ``catalogNode``。
 
 **参数**
 
@@ -3232,17 +3232,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``String``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29553:29598:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29587:29632:FUNCTION
 
-.. rubric:: ``definitions.find callback @ 918``
+.. rubric:: ``definitions.find callback @ 919``
 
 .. code-block:: javascript
 
-   definitions.find callback @ 918(definition)
+   definitions.find callback @ 919(definition)
 
 作为 ``definitions.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``918``—``918`` 行；所属函数 ``catalogNode``。
+**性质**：同步局部函数；源码第 ``919``—``919`` 行；所属函数 ``catalogNode``。
 
 **参数**
 
@@ -3253,7 +3253,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29775:31504:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:29809:31538:FUNCTION
 
 .. rubric:: ``resolveEdges``
 
@@ -3263,7 +3263,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 解析并确定与 ``Edges`` 相关的数据或状态。
 
-**性质**：同步局部函数；源码第 ``926``—``978`` 行；所属函数 ``catalogNode``。
+**性质**：同步局部函数；源码第 ``927``—``979`` 行；所属函数 ``catalogNode``。
 
 **参数**
 
@@ -3287,17 +3287,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：5。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30027:30059:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30061:30093:FUNCTION
 
-.. rubric:: ``sourceGraph?.nodes.find callback @ 929``
+.. rubric:: ``sourceGraph?.nodes.find callback @ 930``
 
 .. code-block:: javascript
 
-   sourceGraph?.nodes.find callback @ 929(entry)
+   sourceGraph?.nodes.find callback @ 930(entry)
 
 作为 ``sourceGraph?.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``929``—``929`` 行；所属函数 ``resolveEdges``。
+**性质**：同步局部函数；源码第 ``930``—``930`` 行；所属函数 ``resolveEdges``。
 
 **参数**
 
@@ -3308,17 +3308,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30134:30180:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30168:30214:FUNCTION
 
-.. rubric:: ``Object.entries(boundNode?.inputs || {}) .filter callback @ 931``
+.. rubric:: ``Object.entries(boundNode?.inputs || {}) .filter callback @ 932``
 
 .. code-block:: javascript
 
-   Object.entries(boundNode?.inputs || {}) .filter callback @ 931([name])
+   Object.entries(boundNode?.inputs || {}) .filter callback @ 932([name])
 
 作为 ``Object.entries(boundNode?.inputs || {}) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``931``—``931`` 行；所属函数 ``resolveEdges``。
+**性质**：同步局部函数；源码第 ``932``—``932`` 行；所属函数 ``resolveEdges``。
 
 **参数**
 
@@ -3329,17 +3329,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30193:30216:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30227:30250:FUNCTION
 
-.. rubric:: ``Object.entries(boundNode?.inputs || {}) .filter(([name]) => !targetPort || name === targetPort) .map callback @ 932``
+.. rubric:: ``Object.entries(boundNode?.inputs || {}) .filter(([name]) => !targetPort || name === targetPort) .map callback @ 933``
 
 .. code-block:: javascript
 
-   Object.entries(boundNode?.inputs || {}) .filter(([name]) => !targetPort || name === targetPort) .map callback @ 932()
+   Object.entries(boundNode?.inputs || {}) .filter(([name]) => !targetPort || name === targetPort) .map callback @ 933()
 
 作为 ``Object.entries(boundNode?.inputs || {}) .filter(([name]) => !targetPort || name === targetPort) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``932``—``932`` 行；所属函数 ``resolveEdges``。
+**性质**：同步局部函数；源码第 ``933``—``933`` 行；所属函数 ``resolveEdges``。
 
 **参数**
 
@@ -3349,17 +3349,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30287:30410:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30321:30444:FUNCTION
 
-.. rubric:: ``(sourceGraph?.edges || []) .filter callback @ 936``
+.. rubric:: ``(sourceGraph?.edges || []) .filter callback @ 937``
 
 .. code-block:: javascript
 
-   (sourceGraph?.edges || []) .filter callback @ 936(entry)
+   (sourceGraph?.edges || []) .filter callback @ 937(entry)
 
 作为 ``(sourceGraph?.edges || []) .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``936``—``938`` 行；所属函数 ``resolveEdges``。
+**性质**：同步局部函数；源码第 ``937``—``939`` 行；所属函数 ``resolveEdges``。
 
 **参数**
 
@@ -3370,17 +3370,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30435:30951:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30469:30985:FUNCTION
 
-.. rubric:: ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 940``
+.. rubric:: ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 941``
 
 .. code-block:: javascript
 
-   (sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 940(edge)
+   (sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 941(edge)
 
 实现 ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``940``—``957`` 行；所属函数 ``resolveEdges``。
+**性质**：同步局部函数；源码第 ``941``—``958`` 行；所属函数 ``resolveEdges``。
 
 **参数**
 
@@ -3395,17 +3395,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30497:30545:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30531:30579:FUNCTION
 
-.. rubric:: ``sourceGraph.nodes.find callback @ 942``
+.. rubric:: ``sourceGraph.nodes.find callback @ 943``
 
 .. code-block:: javascript
 
-   sourceGraph.nodes.find callback @ 942(entry)
+   sourceGraph.nodes.find callback @ 943(entry)
 
 作为 ``sourceGraph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``942``—``942`` 行；所属函数 ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 940``。
+**性质**：同步局部函数；源码第 ``943``—``943`` 行；所属函数 ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 941``。
 
 **参数**
 
@@ -3416,17 +3416,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30886:30927:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:30920:30961:FUNCTION
 
-.. rubric:: ``effectiveWorkflowDefinition( upstream, catalogNode( definitions, upstream, sourceGraph, new Set(visited), ancestors, ),… callback @ 955``
+.. rubric:: ``effectiveWorkflowDefinition( upstream, catalogNode( definitions, upstream, sourceGraph, new Set(visited), ancestors, ),… callback @ 956``
 
 .. code-block:: javascript
 
-   effectiveWorkflowDefinition( upstream, catalogNode( definitions, upstream, sourceGraph, new Set(visited), ancestors, ),… callback @ 955(entry)
+   effectiveWorkflowDefinition( upstream, catalogNode( definitions, upstream, sourceGraph, new Set(visited), ancestors, ),… callback @ 956(entry)
 
 实现 ``effectiveWorkflowDefinition( upstream, catalogNode( definitions, upstream, sourceGraph, new Set(visited), ancestors, ),…`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``955``—``955`` 行；所属函数 ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 940``。
+**性质**：同步局部函数；源码第 ``956``—``956`` 行；所属函数 ``(sourceGraph?.edges || []) .filter( (entry) => entry.target === targetId && (!targetPort || entry.targetPort === target… callback @ 941``。
 
 **参数**
 
@@ -3437,17 +3437,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:31620:31639:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:31654:31673:FUNCTION
 
-.. rubric:: ``ports.map callback @ 981``
+.. rubric:: ``ports.map callback @ 982``
 
 .. code-block:: javascript
 
-   ports.map callback @ 981(item)
+   ports.map callback @ 982(item)
 
 作为 ``ports.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``981``—``981`` 行；所属函数 ``catalogNode``。
+**性质**：同步局部函数；源码第 ``982``—``982`` 行；所属函数 ``catalogNode``。
 
 **参数**
 
@@ -3458,17 +3458,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:31866:32167:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:31900:32201:FUNCTION
 
-.. rubric:: ``(definition.outputs || []).map callback @ 988``
+.. rubric:: ``(definition.outputs || []).map callback @ 989``
 
 .. code-block:: javascript
 
-   (definition.outputs || []).map callback @ 988(output)
+   (definition.outputs || []).map callback @ 989(output)
 
 作为 ``(definition.outputs || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``988``—``997`` 行；所属函数 ``catalogNode``。
+**性质**：同步局部函数；源码第 ``989``—``998`` 行；所属函数 ``catalogNode``。
 
 **参数**
 
@@ -3479,17 +3479,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32382:32441:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32416:32475:FUNCTION
 
-.. rubric:: ``graph?.nodes?.find callback @ 1005``
+.. rubric:: ``graph?.nodes?.find callback @ 1006``
 
 .. code-block:: javascript
 
-   graph?.nodes?.find callback @ 1005(item)
+   graph?.nodes?.find callback @ 1006(item)
 
 作为 ``graph?.nodes?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1005``—``1005`` 行；所属函数 ``workflowGraphAtPath``。
+**性质**：同步局部函数；源码第 ``1006``—``1006`` 行；所属函数 ``workflowGraphAtPath``。
 
 **参数**
 
@@ -3500,17 +3500,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32780:32839:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:32814:32873:FUNCTION
 
-.. rubric:: ``graph?.nodes.find callback @ 1018``
+.. rubric:: ``graph?.nodes.find callback @ 1019``
 
 .. code-block:: javascript
 
-   graph?.nodes.find callback @ 1018(node)
+   graph?.nodes.find callback @ 1019(node)
 
 作为 ``graph?.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1018``—``1018`` 行；所属函数 ``workflowGraphContext``。
+**性质**：同步局部函数；源码第 ``1019``—``1019`` 行；所属函数 ``workflowGraphContext``。
 
 **参数**
 
@@ -3521,17 +3521,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:33242:35175:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:33276:35209:FUNCTION
 
-.. rubric:: ``graph.nodes.map callback @ 1034``
+.. rubric:: ``graph.nodes.map callback @ 1035``
 
 .. code-block:: javascript
 
-   graph.nodes.map callback @ 1034(node)
+   graph.nodes.map callback @ 1035(node)
 
 作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1034``—``1084`` 行；所属函数 ``updateWorkflowGraphAtPath``。
+**性质**：同步局部函数；源码第 ``1035``—``1085`` 行；所属函数 ``updateWorkflowGraphAtPath``。
 
 **参数**
 
@@ -3546,17 +3546,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:33827:34545:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:33861:34579:FUNCTION
 
-.. rubric:: ``["inputs", "outputs"].map callback @ 1052``
+.. rubric:: ``["inputs", "outputs"].map callback @ 1053``
 
 .. code-block:: javascript
 
-   ["inputs", "outputs"].map callback @ 1052(direction)
+   ["inputs", "outputs"].map callback @ 1053(direction)
 
 作为 ``["inputs", "outputs"].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1052``—``1067`` 行；所属函数 ``graph.nodes.map callback @ 1034``。
+**性质**：同步局部函数；源码第 ``1053``—``1068`` 行；所属函数 ``graph.nodes.map callback @ 1035``。
 
 **参数**
 
@@ -3571,17 +3571,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:34107:34458:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:34141:34492:FUNCTION
 
-.. rubric:: ``(node.subgraph.interface?.[direction] || []).map callback @ 1058``
+.. rubric:: ``(node.subgraph.interface?.[direction] || []).map callback @ 1059``
 
 .. code-block:: javascript
 
-   (node.subgraph.interface?.[direction] || []).map callback @ 1058(entry)
+   (node.subgraph.interface?.[direction] || []).map callback @ 1059(entry)
 
 作为 ``(node.subgraph.interface?.[direction] || []).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1058``—``1064`` 行；所属函数 ``["inputs", "outputs"].map callback @ 1052``。
+**性质**：同步局部函数；源码第 ``1059``—``1065`` 行；所属函数 ``["inputs", "outputs"].map callback @ 1053``。
 
 **参数**
 
@@ -3592,17 +3592,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:34703:35080:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:34737:35114:FUNCTION
 
-.. rubric:: ``( node.subgraph.interface?.parameters || [] ).map callback @ 1071``
+.. rubric:: ``( node.subgraph.interface?.parameters || [] ).map callback @ 1072``
 
 .. code-block:: javascript
 
-   ( node.subgraph.interface?.parameters || [] ).map callback @ 1071(parameter)
+   ( node.subgraph.interface?.parameters || [] ).map callback @ 1072(parameter)
 
 作为 ``( node.subgraph.interface?.parameters || [] ).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1071``—``1079`` 行；所属函数 ``graph.nodes.map callback @ 1034``。
+**性质**：同步局部函数；源码第 ``1072``—``1080`` 行；所属函数 ``graph.nodes.map callback @ 1035``。
 
 **参数**
 
@@ -3617,17 +3617,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:34826:35027:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:34860:35061:FUNCTION
 
-.. rubric:: ``(parameter.targets || []).flatMap callback @ 1074``
+.. rubric:: ``(parameter.targets || []).flatMap callback @ 1075``
 
 .. code-block:: javascript
 
-   (parameter.targets || []).flatMap callback @ 1074(target)
+   (parameter.targets || []).flatMap callback @ 1075(target)
 
 实现 ``(parameter.targets || []).flatMap`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1074``—``1077`` 行；所属函数 ``( node.subgraph.interface?.parameters || [] ).map callback @ 1071``。
+**性质**：同步局部函数；源码第 ``1075``—``1078`` 行；所属函数 ``( node.subgraph.interface?.parameters || [] ).map callback @ 1072``。
 
 **参数**
 
@@ -3638,7 +3638,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:35528:36800:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:35562:36834:FUNCTION
 
 .. rubric:: ``endpointPort``
 
@@ -3648,7 +3648,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``endpointPort`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1100``—``1139`` 行；所属函数 ``workflowSubgraphDefinition``。
+**性质**：同步局部函数；源码第 ``1101``—``1140`` 行；所属函数 ``workflowSubgraphDefinition``。
 
 **参数**
 
@@ -3666,17 +3666,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:35969:36007:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:36003:36041:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 1114``
+.. rubric:: ``graph.nodes.find callback @ 1115``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 1114(item)
+   graph.nodes.find callback @ 1115(item)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1114``—``1114`` 行；所属函数 ``endpointPort``。
+**性质**：同步局部函数；源码第 ``1115``—``1115`` 行；所属函数 ``endpointPort``。
 
 **参数**
 
@@ -3687,17 +3687,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:36324:36368:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:36358:36402:FUNCTION
 
-.. rubric:: ``definition?.[direction]?.find callback @ 1124``
+.. rubric:: ``definition?.[direction]?.find callback @ 1125``
 
 .. code-block:: javascript
 
-   definition?.[direction]?.find callback @ 1124(item)
+   definition?.[direction]?.find callback @ 1125(item)
 
 作为 ``definition?.[direction]?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1124``—``1124`` 行；所属函数 ``endpointPort``。
+**性质**：同步局部函数；源码第 ``1125``—``1125`` 行；所属函数 ``endpointPort``。
 
 **参数**
 
@@ -3708,17 +3708,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:36863:36903:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:36897:36937:FUNCTION
 
-.. rubric:: ``(subgraph.interface?.inputs || []) .map callback @ 1141``
+.. rubric:: ``(subgraph.interface?.inputs || []) .map callback @ 1142``
 
 .. code-block:: javascript
 
-   (subgraph.interface?.inputs || []) .map callback @ 1141(entry)
+   (subgraph.interface?.inputs || []) .map callback @ 1142(entry)
 
 作为 ``(subgraph.interface?.inputs || []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1141``—``1141`` 行；所属函数 ``workflowSubgraphDefinition``。
+**性质**：同步局部函数；源码第 ``1142``—``1142`` 行；所属函数 ``workflowSubgraphDefinition``。
 
 **参数**
 
@@ -3731,17 +3731,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``endpointPort``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:36990:37031:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:37024:37065:FUNCTION
 
-.. rubric:: ``(subgraph.interface?.outputs || []) .map callback @ 1144``
+.. rubric:: ``(subgraph.interface?.outputs || []) .map callback @ 1145``
 
 .. code-block:: javascript
 
-   (subgraph.interface?.outputs || []) .map callback @ 1144(entry)
+   (subgraph.interface?.outputs || []) .map callback @ 1145(entry)
 
 作为 ``(subgraph.interface?.outputs || []) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1144``—``1144`` 行；所属函数 ``workflowSubgraphDefinition``。
+**性质**：同步局部函数；源码第 ``1145``—``1145`` 行；所属函数 ``workflowSubgraphDefinition``。
 
 **参数**
 
@@ -3754,17 +3754,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``endpointPort``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:37224:37260:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:37258:37294:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 1149``
+.. rubric:: ``graph.nodes.find callback @ 1150``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 1149(item)
+   graph.nodes.find callback @ 1150(item)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1149``—``1149`` 行；所属函数 ``workflowSubgraphDefinition``。
+**性质**：同步局部函数；源码第 ``1150``—``1150`` 行；所属函数 ``workflowSubgraphDefinition``。
 
 **参数**
 
@@ -3775,17 +3775,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38203:38243:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38237:38277:FUNCTION
 
-.. rubric:: ``inputs.map callback @ 1181``
+.. rubric:: ``inputs.map callback @ 1182``
 
 .. code-block:: javascript
 
-   inputs.map callback @ 1181(port)
+   inputs.map callback @ 1182(port)
 
 作为 ``inputs.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1181``—``1181`` 行；所属函数 ``workflowSubgraphDefinition``。
+**性质**：同步局部函数；源码第 ``1182``—``1182`` 行；所属函数 ``workflowSubgraphDefinition``。
 
 **参数**
 
@@ -3796,17 +3796,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38683:38714:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38717:38748:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 1203``
+.. rubric:: ``graph.nodes.filter callback @ 1204``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 1203(node)
+   graph.nodes.filter callback @ 1204(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1203``—``1203`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1204``—``1204`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -3819,17 +3819,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38907:38975:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38941:39009:FUNCTION
 
-.. rubric:: ``(graph.executionRegions || []).filter callback @ 1206``
+.. rubric:: ``(graph.executionRegions || []).filter callback @ 1207``
 
 .. code-block:: javascript
 
-   (graph.executionRegions || []).filter callback @ 1206(region)
+   (graph.executionRegions || []).filter callback @ 1207(region)
 
 作为 ``(graph.executionRegions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1206``—``1207`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1207``—``1208`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -3844,17 +3844,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38944:38974:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:38978:39008:FUNCTION
 
-.. rubric:: ``region.nodeIds.every callback @ 1207``
+.. rubric:: ``region.nodeIds.every callback @ 1208``
 
 .. code-block:: javascript
 
-   region.nodeIds.every callback @ 1207(id)
+   region.nodeIds.every callback @ 1208(id)
 
 作为 ``region.nodeIds.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1207``—``1207`` 行；所属函数 ``(graph.executionRegions || []).filter callback @ 1206``。
+**性质**：同步局部函数；源码第 ``1208``—``1208`` 行；所属函数 ``(graph.executionRegions || []).filter callback @ 1207``。
 
 **参数**
 
@@ -3867,17 +3867,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selectedLeaves.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39041:39058:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39075:39092:FUNCTION
 
-.. rubric:: ``graph.nodes.map callback @ 1210``
+.. rubric:: ``graph.nodes.map callback @ 1211``
 
 .. code-block:: javascript
 
-   graph.nodes.map callback @ 1210(node)
+   graph.nodes.map callback @ 1211(node)
 
 作为 ``graph.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1210``—``1210`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1211``—``1211`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -3888,28 +3888,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39120:39151:FUNCTION
-
-.. rubric:: ``children.map callback @ 1213``
-
-.. code-block:: javascript
-
-   children.map callback @ 1213(node)
-
-作为 ``children.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
-
-**性质**：同步局部函数；源码第 ``1213``—``1213`` 行；所属函数 ``wrapWorkflowSubgraph``。
-
-**参数**
-
-``node``
-   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
-
-**返回值**
-
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
-
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39192:39223:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39154:39185:FUNCTION
 
 .. rubric:: ``children.map callback @ 1214``
 
@@ -3930,7 +3909,28 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39284:40057:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39226:39257:FUNCTION
+
+.. rubric:: ``children.map callback @ 1215``
+
+.. code-block:: javascript
+
+   children.map callback @ 1215(node)
+
+作为 ``children.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
+
+**性质**：同步局部函数；源码第 ``1215``—``1215`` 行；所属函数 ``wrapWorkflowSubgraph``。
+
+**参数**
+
+``node``
+   调用方传入的 ``node`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+
+**返回值**
+
+无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39318:40091:FUNCTION
 
 .. rubric:: ``boundary``
 
@@ -3940,7 +3940,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``boundary`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1217``—``1238`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1218``—``1239`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -3961,17 +3961,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：3。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39464:39535:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39498:39569:FUNCTION
 
-.. rubric:: ``list.find callback @ 1221``
+.. rubric:: ``list.find callback @ 1222``
 
 .. code-block:: javascript
 
-   list.find callback @ 1221(item)
+   list.find callback @ 1222(item)
 
 作为 ``list.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1221``—``1221`` 行；所属函数 ``boundary``。
+**性质**：同步局部函数；源码第 ``1222``—``1222`` 行；所属函数 ``boundary``。
 
 **参数**
 
@@ -3982,17 +3982,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39596:39624:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39630:39658:FUNCTION
 
-.. rubric:: ``children.find callback @ 1224``
+.. rubric:: ``children.find callback @ 1225``
 
 .. code-block:: javascript
 
-   children.find callback @ 1224(node)
+   children.find callback @ 1225(node)
 
 作为 ``children.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1224``—``1224`` 行；所属函数 ``boundary``。
+**性质**：同步局部函数；源码第 ``1225``—``1225`` 行；所属函数 ``boundary``。
 
 **参数**
 
@@ -4003,17 +4003,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39762:39790:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:39796:39824:FUNCTION
 
-.. rubric:: ``effectiveWorkflowDefinition( child, catalogNode(definitions, child), )?.[direction]?.find callback @ 1228``
+.. rubric:: ``effectiveWorkflowDefinition( child, catalogNode(definitions, child), )?.[direction]?.find callback @ 1229``
 
 .. code-block:: javascript
 
-   effectiveWorkflowDefinition( child, catalogNode(definitions, child), )?.[direction]?.find callback @ 1228(item)
+   effectiveWorkflowDefinition( child, catalogNode(definitions, child), )?.[direction]?.find callback @ 1229(item)
 
 作为 ``effectiveWorkflowDefinition( child, catalogNode(definitions, child), )?.[direction]?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1228``—``1228`` 行；所属函数 ``boundary``。
+**性质**：同步局部函数；源码第 ``1229``—``1229`` 行；所属函数 ``boundary``。
 
 **参数**
 
@@ -4024,17 +4024,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40102:40171:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40136:40205:FUNCTION
 
-.. rubric:: ``graph.edges.filter callback @ 1240``
+.. rubric:: ``graph.edges.filter callback @ 1241``
 
 .. code-block:: javascript
 
-   graph.edges.filter callback @ 1240(edge)
+   graph.edges.filter callback @ 1241(edge)
 
 作为 ``graph.edges.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1240``—``1240`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1241``—``1241`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4047,17 +4047,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40218:40257:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40252:40291:FUNCTION
 
-.. rubric:: ``graph.edges .filter callback @ 1243``
+.. rubric:: ``graph.edges .filter callback @ 1244``
 
 .. code-block:: javascript
 
-   graph.edges .filter callback @ 1243(edge)
+   graph.edges .filter callback @ 1244(edge)
 
 作为 ``graph.edges .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1243``—``1243`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1244``—``1244`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4070,17 +4070,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``internalEdges.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40268:40661:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40302:40695:FUNCTION
 
-.. rubric:: ``graph.edges .filter((edge) => !internalEdges.includes(edge)) .map callback @ 1244``
+.. rubric:: ``graph.edges .filter((edge) => !internalEdges.includes(edge)) .map callback @ 1245``
 
 .. code-block:: javascript
 
-   graph.edges .filter((edge) => !internalEdges.includes(edge)) .map callback @ 1244(edge)
+   graph.edges .filter((edge) => !internalEdges.includes(edge)) .map callback @ 1245(edge)
 
 作为 ``graph.edges .filter((edge) => !internalEdges.includes(edge)) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1244``—``1258`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1245``—``1259`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4093,17 +4093,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``、``boundary``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40894:41073:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:40928:41107:FUNCTION
 
-.. rubric:: ``clone(children).map callback @ 1270``
+.. rubric:: ``clone(children).map callback @ 1271``
 
 .. code-block:: javascript
 
-   clone(children).map callback @ 1270(child)
+   clone(children).map callback @ 1271(child)
 
 作为 ``clone(children).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1270``—``1276`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1271``—``1277`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4114,17 +4114,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:41160:41196:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:41194:41230:FUNCTION
 
-.. rubric:: ``(graph.outputNodes || []).filter callback @ 1278``
+.. rubric:: ``(graph.outputNodes || []).filter callback @ 1279``
 
 .. code-block:: javascript
 
-   (graph.outputNodes || []).filter callback @ 1278(key)
+   (graph.outputNodes || []).filter callback @ 1279(key)
 
 作为 ``(graph.outputNodes || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1278``—``1279`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1279``—``1280`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4137,17 +4137,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:42681:42713:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:42715:42747:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 1320``
+.. rubric:: ``graph.nodes.filter callback @ 1321``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 1320(item)
+   graph.nodes.filter callback @ 1321(item)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1320``—``1320`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1321``—``1321`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4160,17 +4160,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:42785:42836:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:42819:42870:FUNCTION
 
-.. rubric:: ``(graph.executionRegions || []).filter callback @ 1322``
+.. rubric:: ``(graph.executionRegions || []).filter callback @ 1323``
 
 .. code-block:: javascript
 
-   (graph.executionRegions || []).filter callback @ 1322(region)
+   (graph.executionRegions || []).filter callback @ 1323(region)
 
 作为 ``(graph.executionRegions || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1322``—``1322`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1323``—``1323`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4183,17 +4183,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``movedRegions.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:42899:42935:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:42933:42969:FUNCTION
 
-.. rubric:: ``(graph.outputNodes || []).filter callback @ 1325``
+.. rubric:: ``(graph.outputNodes || []).filter callback @ 1326``
 
 .. code-block:: javascript
 
-   (graph.outputNodes || []).filter callback @ 1325(key)
+   (graph.outputNodes || []).filter callback @ 1326(key)
 
 作为 ``(graph.outputNodes || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1325``—``1325`` 行；所属函数 ``wrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1326``—``1326`` 行；所属函数 ``wrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4206,17 +4206,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``selected.has``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43172:43196:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43206:43230:FUNCTION
 
-.. rubric:: ``graph.nodes.find callback @ 1336``
+.. rubric:: ``graph.nodes.find callback @ 1337``
 
 .. code-block:: javascript
 
-   graph.nodes.find callback @ 1336(node)
+   graph.nodes.find callback @ 1337(node)
 
 作为 ``graph.nodes.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1336``—``1336`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1337``—``1337`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4227,17 +4227,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43391:43415:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43425:43449:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 1341``
+.. rubric:: ``graph.nodes.filter callback @ 1342``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 1341(node)
+   graph.nodes.filter callback @ 1342(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1341``—``1341`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1342``—``1342`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4248,17 +4248,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43421:43438:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43455:43472:FUNCTION
 
-.. rubric:: ``graph.nodes.filter((node) => node.id !== id).map callback @ 1341``
+.. rubric:: ``graph.nodes.filter((node) => node.id !== id).map callback @ 1342``
 
 .. code-block:: javascript
 
-   graph.nodes.filter((node) => node.id !== id).map callback @ 1341(node)
+   graph.nodes.filter((node) => node.id !== id).map callback @ 1342(node)
 
 作为 ``graph.nodes.filter((node) => node.id !== id).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1341``—``1341`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1342``—``1342`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4269,17 +4269,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43493:43644:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43527:43678:FUNCTION
 
-.. rubric:: ``inner.nodes.map callback @ 1344``
+.. rubric:: ``inner.nodes.map callback @ 1345``
 
 .. code-block:: javascript
 
-   inner.nodes.map callback @ 1344(node)
+   inner.nodes.map callback @ 1345(node)
 
 作为 ``inner.nodes.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1344``—``1349`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1345``—``1350`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4292,17 +4292,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``used.has``、``workflowUniqueId``、``used.add``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43694:43909:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:43728:43943:FUNCTION
 
-.. rubric:: ``clone(inner.nodes).map callback @ 1351``
+.. rubric:: ``clone(inner.nodes).map callback @ 1352``
 
 .. code-block:: javascript
 
-   clone(inner.nodes).map callback @ 1351(node)
+   clone(inner.nodes).map callback @ 1352(node)
 
 作为 ``clone(inner.nodes).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1351``—``1358`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1352``—``1359`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4319,17 +4319,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``mapping.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:44024:44085:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:44058:44119:FUNCTION
 
-.. rubric:: ``children.find callback @ 1362``
+.. rubric:: ``children.find callback @ 1363``
 
 .. code-block:: javascript
 
-   children.find callback @ 1362(node)
+   children.find callback @ 1363(node)
 
 作为 ``children.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1362``—``1362`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1363``—``1363`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4346,17 +4346,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``mapping.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:44566:44623:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:44600:44657:FUNCTION
 
-.. rubric:: ``children.find callback @ 1377``
+.. rubric:: ``children.find callback @ 1378``
 
 .. code-block:: javascript
 
-   children.find callback @ 1377(node)
+   children.find callback @ 1378(node)
 
 作为 ``children.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1377``—``1377`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1378``—``1378`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4373,17 +4373,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``mapping.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:44885:44931:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:44919:44965:FUNCTION
 
-.. rubric:: ``contract.outputs?.find callback @ 1388``
+.. rubric:: ``contract.outputs?.find callback @ 1389``
 
 .. code-block:: javascript
 
-   contract.outputs?.find callback @ 1388(item)
+   contract.outputs?.find callback @ 1389(item)
 
 作为 ``contract.outputs?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1388``—``1388`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1389``—``1389`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4394,17 +4394,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:45260:45306:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:45294:45340:FUNCTION
 
-.. rubric:: ``contract.inputs?.find callback @ 1400``
+.. rubric:: ``contract.inputs?.find callback @ 1401``
 
 .. code-block:: javascript
 
-   contract.inputs?.find callback @ 1400(item)
+   contract.inputs?.find callback @ 1401(item)
 
 作为 ``contract.inputs?.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1400``—``1400`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1401``—``1401`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4415,17 +4415,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:45625:45642:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:45659:45676:FUNCTION
 
-.. rubric:: ``edges.map callback @ 1412``
+.. rubric:: ``edges.map callback @ 1413``
 
 .. code-block:: javascript
 
-   edges.map callback @ 1412(edge)
+   edges.map callback @ 1413(edge)
 
 作为 ``edges.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1412``—``1412`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1413``—``1413`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4436,17 +4436,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46469:46559:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46503:46593:FUNCTION
 
-.. rubric:: ``( parameter.targets || [] ).map callback @ 1435``
+.. rubric:: ``( parameter.targets || [] ).map callback @ 1436``
 
 .. code-block:: javascript
 
-   ( parameter.targets || [] ).map callback @ 1435(target)
+   ( parameter.targets || [] ).map callback @ 1436(target)
 
 作为 ``( parameter.targets || [] ).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1435``—``1438`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1436``—``1439`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4463,17 +4463,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``mapping.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46660:46684:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46694:46718:FUNCTION
 
-.. rubric:: ``graph.nodes.filter callback @ 1444``
+.. rubric:: ``graph.nodes.filter callback @ 1445``
 
 .. code-block:: javascript
 
-   graph.nodes.filter callback @ 1444(node)
+   graph.nodes.filter callback @ 1445(node)
 
 作为 ``graph.nodes.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1444``—``1444`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1445``—``1445`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4484,17 +4484,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46825:46938:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46859:46972:FUNCTION
 
-.. rubric:: ``[ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback @ 1448``
+.. rubric:: ``[ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback @ 1449``
 
 .. code-block:: javascript
 
-   [ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback @ 1448(region)
+   [ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback @ 1449(region)
 
 作为 ``[ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1448``—``1451`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1449``—``1452`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4513,17 +4513,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46895:46927:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:46929:46961:FUNCTION
 
-.. rubric:: ``region.nodeIds.map callback @ 1450``
+.. rubric:: ``region.nodeIds.map callback @ 1451``
 
 .. code-block:: javascript
 
-   region.nodeIds.map callback @ 1450(key)
+   region.nodeIds.map callback @ 1451(key)
 
 作为 ``region.nodeIds.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1450``—``1450`` 行；所属函数 ``[ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback @ 1448``。
+**性质**：同步局部函数；源码第 ``1451``—``1451`` 行；所属函数 ``[ ...(graph.executionRegions || []), ...(inner.executionRegions || []), ].map callback @ 1449``。
 
 **参数**
 
@@ -4540,17 +4540,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``mapping.get``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47006:47025:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47040:47059:FUNCTION
 
-.. rubric:: ``(graph.outputNodes || []).filter callback @ 1453``
+.. rubric:: ``(graph.outputNodes || []).filter callback @ 1454``
 
 .. code-block:: javascript
 
-   (graph.outputNodes || []).filter callback @ 1453(key)
+   (graph.outputNodes || []).filter callback @ 1454(key)
 
 作为 ``(graph.outputNodes || []).filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1453``—``1453`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1454``—``1454`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4561,17 +4561,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47117:47134:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47151:47168:FUNCTION
 
-.. rubric:: ``children.map callback @ 1458``
+.. rubric:: ``children.map callback @ 1459``
 
 .. code-block:: javascript
 
-   children.map callback @ 1458(node)
+   children.map callback @ 1459(node)
 
 作为 ``children.map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1458``—``1458`` 行；所属函数 ``unwrapWorkflowSubgraph``。
+**性质**：同步局部函数；源码第 ``1459``—``1459`` 行；所属函数 ``unwrapWorkflowSubgraph``。
 
 **参数**
 
@@ -4582,7 +4582,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47381:47587:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47415:47621:FUNCTION
 
 .. rubric:: ``leafCount``
 
@@ -4592,7 +4592,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``leafCount`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1471``—``1479`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1472``—``1480`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4607,17 +4607,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47416:47571:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47450:47605:FUNCTION
 
-.. rubric:: ``value.nodes.reduce callback @ 1473``
+.. rubric:: ``value.nodes.reduce callback @ 1474``
 
 .. code-block:: javascript
 
-   value.nodes.reduce callback @ 1473(total, node)
+   value.nodes.reduce callback @ 1474(total, node)
 
 作为 ``value.nodes.reduce callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1473``—``1477`` 行；所属函数 ``leafCount``。
+**性质**：同步局部函数；源码第 ``1474``—``1478`` 行；所属函数 ``leafCount``。
 
 **参数**
 
@@ -4633,17 +4633,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``leafCount``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47635:47762:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47669:47796:FUNCTION
 
-.. rubric:: ``Object.entries(runtime).map callback @ 1480``
+.. rubric:: ``Object.entries(runtime).map callback @ 1481``
 
 .. code-block:: javascript
 
-   Object.entries(runtime).map callback @ 1480([id, state])
+   Object.entries(runtime).map callback @ 1481([id, state])
 
 作为 ``Object.entries(runtime).map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1480``—``1484`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1481``—``1485`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4656,17 +4656,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``id.split``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47949:48000:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:47983:48034:FUNCTION
 
-.. rubric:: ``entries.find callback @ 1490``
+.. rubric:: ``entries.find callback @ 1491``
 
 .. code-block:: javascript
 
-   entries.find callback @ 1490(state)
+   entries.find callback @ 1491(state)
 
 作为 ``entries.find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1490``—``1490`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1491``—``1491`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4679,17 +4679,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``state.nodePath.join``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48093:48233:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48127:48267:FUNCTION
 
-.. rubric:: ``entries.filter callback @ 1495``
+.. rubric:: ``entries.filter callback @ 1496``
 
 .. code-block:: javascript
 
-   entries.filter callback @ 1495(state)
+   entries.filter callback @ 1496(state)
 
 作为 ``entries.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1495``—``1497`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1496``—``1498`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4704,17 +4704,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48185:48232:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48219:48266:FUNCTION
 
-.. rubric:: ``nodePath.every callback @ 1497``
+.. rubric:: ``nodePath.every callback @ 1498``
 
 .. code-block:: javascript
 
-   nodePath.every callback @ 1497(part, index)
+   nodePath.every callback @ 1498(part, index)
 
 作为 ``nodePath.every callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1497``—``1497`` 行；所属函数 ``entries.filter callback @ 1495``。
+**性质**：同步局部函数；源码第 ``1498``—``1498`` 行；所属函数 ``entries.filter callback @ 1496``。
 
 **参数**
 
@@ -4728,7 +4728,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48259:48349:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48293:48383:FUNCTION
 
 .. rubric:: ``count``
 
@@ -4738,7 +4738,7 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 实现 ``count`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``1499``—``1500`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1500``—``1501`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4753,17 +4753,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48299:48341:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:48333:48375:FUNCTION
 
-.. rubric:: ``descendants.filter callback @ 1500``
+.. rubric:: ``descendants.filter callback @ 1501``
 
 .. code-block:: javascript
 
-   descendants.filter callback @ 1500(value)
+   descendants.filter callback @ 1501(value)
 
 作为 ``descendants.filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1500``—``1500`` 行；所属函数 ``count``。
+**性质**：同步局部函数；源码第 ``1501``—``1501`` 行；所属函数 ``count``。
 
 **参数**
 
@@ -4776,17 +4776,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 **主要协作调用**：``statuses.includes``。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49009:49034:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49043:49068:FUNCTION
 
-.. rubric:: ``descendants .find callback @ 1521``
+.. rubric:: ``descendants .find callback @ 1522``
 
 .. code-block:: javascript
 
-   descendants .find callback @ 1521(state)
+   descendants .find callback @ 1522(state)
 
 作为 ``descendants .find callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1521``—``1521`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1522``—``1522`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4797,17 +4797,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49124:49150:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49158:49184:FUNCTION
 
-.. rubric:: ``descendants .map callback @ 1524``
+.. rubric:: ``descendants .map callback @ 1525``
 
 .. code-block:: javascript
 
-   descendants .map callback @ 1524(state)
+   descendants .map callback @ 1525(state)
 
 作为 ``descendants .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1524``—``1524`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1525``—``1525`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4818,17 +4818,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49339:49366:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49373:49400:FUNCTION
 
-.. rubric:: ``descendants .map callback @ 1530``
+.. rubric:: ``descendants .map callback @ 1531``
 
 .. code-block:: javascript
 
-   descendants .map callback @ 1530(state)
+   descendants .map callback @ 1531(state)
 
 作为 ``descendants .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1530``—``1530`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1531``—``1531`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4839,17 +4839,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49512:49563:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49546:49597:FUNCTION
 
-.. rubric:: ``descendants .filter callback @ 1537``
+.. rubric:: ``descendants .filter callback @ 1538``
 
 .. code-block:: javascript
 
-   descendants .filter callback @ 1537(state)
+   descendants .filter callback @ 1538(state)
 
 作为 ``descendants .filter callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1537``—``1537`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1538``—``1538`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 
@@ -4860,17 +4860,17 @@ Serializable workflow helpers shared by the canvas, forms, and tests.
 
 无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
 
-.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49578:49600:FUNCTION
+.. CWM-AST-FUNCTION src/features/workflows/workflowModel.js:49612:49634:FUNCTION
 
-.. rubric:: ``descendants .filter((state) => state.status === "failed" && state.error) .map callback @ 1538``
+.. rubric:: ``descendants .filter((state) => state.status === "failed" && state.error) .map callback @ 1539``
 
 .. code-block:: javascript
 
-   descendants .filter((state) => state.status === "failed" && state.error) .map callback @ 1538(state)
+   descendants .filter((state) => state.status === "failed" && state.error) .map callback @ 1539(state)
 
 作为 ``descendants .filter((state) => state.status === "failed" && state.error) .map callback`` 集合回调，对当前元素执行映射、筛选、排序或归并。
 
-**性质**：同步局部函数；源码第 ``1538``—``1538`` 行；所属函数 ``workflowRuntimeForGraph``。
+**性质**：同步局部函数；源码第 ``1539``—``1539`` 行；所属函数 ``workflowRuntimeForGraph``。
 
 **参数**
 

@@ -29,7 +29,7 @@ src/features/chat/ui/message/components/IgnoredContextIndicator 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/IgnoredContextIndicator.jsx:175:527:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/IgnoredContextIndicator.jsx:175:535:FUNCTION
 
 .. rubric:: ``memo callback @ 5``
 
@@ -48,4 +48,4 @@ src/features/chat/ui/message/components/IgnoredContextIndicator 模块
 
 **返回值**
 
-无显式 return；普通函数完成时返回 ``undefined``，React 组件可能通过隐式 JSX 分支返回。
+根据执行分支返回结果；代表性返回表达式为 ``<ContextStateIndicator icon={EyeOff} conversationId={conversationId} messageId={messageId} replacementId={replacementId} label={label} state="ignored" className={className} />``。

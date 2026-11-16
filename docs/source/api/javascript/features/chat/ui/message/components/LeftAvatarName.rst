@@ -29,22 +29,22 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 这些函数没有稳定的模块级导出名称，但仍会影响组件生命周期、事件处理和状态更新，因此逐项记录。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:497:4115:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:497:4156:FUNCTION
 
 .. rubric:: ``memo callback @ 10``
 
 .. code-block:: javascript
 
-   memo callback @ 10({ msg, isLeaving, showDetails })
+   memo callback @ 10({ msg, isLeaving, showDetails, children })
 
 实现 ``memo`` 对应的前端处理。
 
-**性质**：同步局部函数；源码第 ``10``—``85`` 行。
+**性质**：同步局部函数；源码第 ``10``—``86`` 行。
 
 **参数**
 
-``{ msg, isLeaving, showDetails }``
-   调用方传入的 ``msg, isLeaving, showDetails`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
+``{ msg, isLeaving, showDetails, children }``
+   调用方传入的 ``msg, isLeaving, showDetails, children`` 参数；具体结构由调用位置和 TypeScript/JSDoc 约束。
 
 **返回值**
 
@@ -58,7 +58,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：6。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:743:1464:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:753:1474:FUNCTION
 
 .. rubric:: ``useEffect callback @ 16``
 
@@ -86,7 +86,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：2。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:856:1321:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:866:1331:FUNCTION
 
 .. rubric:: ``wheel``
 
@@ -109,7 +109,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``Math.abs``、``Math.max``、``Math.min``、``event.preventDefault``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1407:1457:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1417:1467:FUNCTION
 
 .. rubric:: ``returned callback @ 29``
 
@@ -131,7 +131,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``element.removeEventListener``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1493:1786:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1503:1796:FUNCTION
 
 .. rubric:: ``useEffect callback @ 31``
 
@@ -155,7 +155,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **内部回调数量**：1。这些回调也会在本页逐项说明。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1723:1779:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:1733:1789:FUNCTION
 
 .. rubric:: ``returned callback @ 36``
 
@@ -177,7 +177,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``controller.dispose``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2275:2346:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2285:2356:FUNCTION
 
 .. rubric:: ``onMouseEnter callback @ 45``
 
@@ -199,7 +199,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``marquee.current?.setPaused``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2374:2492:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:2384:2502:FUNCTION
 
 .. rubric:: ``onMouseLeave callback @ 48``
 
@@ -221,7 +221,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``marquee.current?.setPaused``、``Boolean``、``viewport.current?.matches``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3185:3264:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3195:3274:FUNCTION
 
 .. rubric:: ``onFocus callback @ 65``
 
@@ -243,7 +243,7 @@ src/features/chat/ui/message/components/LeftAvatarName 模块
 
 **主要协作调用**：``marquee.current?.setPaused``。
 
-.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3290:3419:FUNCTION
+.. CWM-AST-FUNCTION src/features/chat/ui/message/components/LeftAvatarName.jsx:3300:3429:FUNCTION
 
 .. rubric:: ``onBlur callback @ 68``
 
